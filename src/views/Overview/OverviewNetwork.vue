@@ -1,63 +1,69 @@
 <template>
-  <div>
-    <div v-if="ethernetData.length === 0">
-      {{ $t('global.status.notAvailable') }}
-    </div>
-    <div
-      v-for="ethernetInterface in ethernetData"
-      v-else
-      :key="ethernetInterface.id"
-    >
-      <h3 class="h5 font-weight-bold">
-        {{ ethernetInterface.Id }}
-      </h3>
-      <b-row>
-        <b-col lg="6" xl="4">
-          <dl>
-            <dt>{{ $t('pageOverview.network.hostname') }}</dt>
-            <dd>{{ ethernetInterface.HostName }}</dd>
-          </dl>
-        </b-col>
-        <b-col lg="6" xl="4">
-          <dl>
-            <dt>{{ $t('pageOverview.network.macAddress') }}</dt>
-            <dd>{{ ethernetInterface.MACAddress }}</dd>
-          </dl>
-        </b-col>
-        <b-col lg="6" xl="4">
-          <dl>
-            <dt>{{ $t('pageOverview.network.ipAddress') }}</dt>
-            <dd
-              v-for="(ip, $index) in ethernetInterface.IPv4Addresses"
-              :key="$index"
-            >
-              {{ ip.Address }}
-            </dd>
-          </dl>
-        </b-col>
-      </b-row>
-    </div>
-  </div>
+  <overview-card
+    v-if="network"
+    :title="$t('pageOverview.networkInformation')"
+    :to="`/settings/network`"
+  >
+    <b-row class="mt-3">
+      <b-col sm="6">
+        <dl>
+          <dt>{{ $t('pageOverview.hostName') }}</dt>
+          <dd>{{ dataFormatter(network.hostname) }}</dd>
+        </dl>
+      </b-col>
+      <b-col sm="6">
+        <dl>
+          <dt>{{ $t('pageOverview.linkStatus') }}</dt>
+          <dd>
+            {{ dataFormatter(network.linkStatus) }}
+          </dd>
+        </dl>
+      </b-col>
+    </b-row>
+    <b-row>
+      <b-col>
+        <dl>
+          <dt>{{ $t('pageOverview.ipv4') }}</dt>
+          <dd>
+            {{ dataFormatter(network.staticAddress) }}
+          </dd>
+        </dl>
+      </b-col>
+      <b-col>
+        <dl>
+          <dt>{{ $t('pageOverview.dhcp') }}</dt>
+          <dd>
+            {{
+              dataFormatter(
+                network.dhcpAddress.length !== 0 ? network.dhcpAddress : null
+              )
+            }}
+          </dd>
+        </dl>
+      </b-col>
+    </b-row>
+  </overview-card>
 </template>
 
 <script>
+import OverviewCard from './OverviewCard';
+import DataFormatterMixin from '@/components/Mixins/DataFormatterMixin';
+
 export default {
   name: 'Network',
+  components: {
+    OverviewCard,
+  },
+  mixins: [DataFormatterMixin],
   computed: {
-    ethernetData() {
-      return this.$store.getters['networkSettings/ethernetData'];
+    network() {
+      return this.$store.getters['network/globalNetworkSettings'][0];
     },
   },
   created() {
-    this.$store.dispatch('networkSettings/getEthernetData').finally(() => {
+    this.$store.dispatch('network/getEthernetData').finally(() => {
       this.$root.$emit('overview-network-complete');
     });
   },
 };
 </script>
-
-<style lang="scss" scoped>
-dd {
-  margin-bottom: 0;
-}
-</style>

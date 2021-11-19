@@ -13,7 +13,21 @@
       <span v-if="btnIconOnly" class="sr-only">{{ title }}</span>
     </b-link>
     <b-link
-      v-else-if="value === 'download'"
+      v-else-if="
+        value === 'download' && downloadInNewTab && downloadLocation !== ''
+      "
+      class="align-bottom btn-icon-only py-0 btn-link"
+      target="_blank"
+      :href="downloadLocation"
+      :title="title"
+    >
+      <slot name="icon" />
+      <span class="sr-only">
+        {{ $t('global.action.download') }}
+      </span>
+    </b-link>
+    <b-link
+      v-else-if="value === 'download' && downloadLocation !== ''"
       class="align-bottom btn-icon-only py-0 btn-link"
       :download="exportName"
       :href="downloadLocation"
@@ -25,7 +39,7 @@
       </span>
     </b-link>
     <b-button
-      v-else
+      v-else-if="showButton"
       variant="link"
       :class="{ 'btn-icon-only': btnIconOnly }"
       :disabled="!enabled"
@@ -71,6 +85,14 @@ export default {
       default: '',
     },
     btnIconOnly: {
+      type: Boolean,
+      default: true,
+    },
+    downloadInNewTab: {
+      type: Boolean,
+      default: false,
+    },
+    showButton: {
       type: Boolean,
       default: true,
     },

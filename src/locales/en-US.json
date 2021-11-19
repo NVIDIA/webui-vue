@@ -7,11 +7,13 @@
       "confirm": "Confirm",
       "copy": "Copy",
       "delete": "Delete",
+      "deleteAll": "Delete all",
       "disable": "Disable",
       "download": "Download",
       "edit": "Edit",
       "enable": "Enable",
       "export": "Export",
+      "exportAll": "Export all",
       "filter": "Filter",
       "refresh": "Refresh",
       "replace": "Replace",
@@ -96,62 +98,62 @@
     "titleRefresh": "Refresh application data"
   },
   "appNavigation": {
-    "accessControl": "Access control",
-    "clientSessions": "@:appPageTitle.clientSessions",
-    "configuration": "Configuration",
-    "control": "Control",
-    "dateTimeSettings": "@:appPageTitle.dateTimeSettings",
+    "resourceManagement": "Resource management",
+    "securityAndAccess": "Security and access",
+    "sessions": "@:appPageTitle.sessions",
+    "settings": "Settings",
+    "operations": "Operations",
+    "dateTime": "@:appPageTitle.dateTime",
     "dumps": "@:appPageTitle.dumps",
     "eventLogs": "@:appPageTitle.eventLogs",
     "factoryReset": "@:appPageTitle.factoryReset",
     "firmware": "@:appPageTitle.firmware",
-    "hardwareStatus": "@:appPageTitle.hardwareStatus",
-    "health": "Health",
+    "hardwareStatus": "Hardware status",
+    "inventory": "@:appPageTitle.inventory",
     "kvm": "@:appPageTitle.kvm",
     "ldap": "@:appPageTitle.ldap",
-    "localUserManagement": "@:appPageTitle.localUserManagement",
-    "managePowerUsage": "@:appPageTitle.managePowerUsage",
-    "networkSettings": "@:appPageTitle.networkSettings",
+    "logs": "Logs",
+    "userManagement": "@:appPageTitle.userManagement",
+    "network": "@:appPageTitle.network",
     "overview": "@:appPageTitle.overview",
     "primaryNavigation": "Primary navigation",
+    "postCodeLogs": "@:appPageTitle.postCodeLogs",
     "powerRestorePolicy": "@:appPageTitle.powerRestorePolicy",
     "rebootBmc": "@:appPageTitle.rebootBmc",
-    "securitySettings": "@:appPageTitle.securitySettings",
+    "policies": "@:appPageTitle.policies",
     "sensors": "@:appPageTitle.sensors",
     "serialOverLan": "SOL console",
-    "serverLed": "@:appPageTitle.serverLed",
     "serverPowerOperations": "@:appPageTitle.serverPowerOperations",
-    "snmpSettings": "@:appPageTitle.snmpSettings",
-    "sslCertificates": "@:appPageTitle.sslCertificates",
-    "virtualMedia": "@:appPageTitle.virtualMedia"
+    "certificates": "@:appPageTitle.certificates",
+    "virtualMedia": "@:appPageTitle.virtualMedia",
+    "power": "@:appPageTitle.power"
   },
   "appPageTitle": {
     "changePassword": "Change password",
-    "clientSessions": "Client sessions",
-    "dateTimeSettings": "Date and time settings",
+    "power": "Power",
+    "sessions": "Sessions",
+    "dateTime": "Date and time",
     "dumps": "Dumps",
     "eventLogs": "Event logs",
     "factoryReset": "Factory reset",
     "firmware": "Firmware",
-    "hardwareStatus": "Hardware status",
+    "inventory": "Inventory and LEDs",
     "kvm": "KVM",
     "ldap": "LDAP",
-    "localUserManagement": "Local user management",
+    "userManagement": "User management",
     "login": "Login",
-    "managePowerUsage": "Manage power usage",
-    "networkSettings": "Network settings",
+    "network": "Network",
     "overview": "Overview",
     "pageNotFound": "Page not found",
+    "postCodeLogs": "POST code logs",
     "powerRestorePolicy": "Power restore policy",
     "profileSettings": "Profile settings",
     "rebootBmc": "Reboot BMC",
-    "securitySettings": "Security settings",
+    "policies": "Policies",
     "sensors": "Sensors",
     "serialOverLan": "Serial over LAN (SOL) console",
-    "serverLed": "Server LED",
     "serverPowerOperations": "Server power operations",
-    "snmpSettings": "SNMP settings",
-    "sslCertificates": "SSL certificates",
+    "certificates": "Certificates",
     "virtualMedia": "Virtual media"
   },
   "pageChangePassword": {
@@ -163,7 +165,7 @@
     "newPassword": "New password",
     "username": "Username"
   },
-  "pageClientSessions": {
+  "pageSessions": {
     "action": {
       "disconnect": "Disconnect"
     },
@@ -182,7 +184,7 @@
       "successDelete": "Successfully disconnected %{count} session. | Successfully disconnected %{count} sessions."
     }
   },
-  "pageDateTimeSettings": {
+  "pageDateTime": {
     "alert": {
       "message": "To change how date and time are displayed (either UTC or browser offset) throughout the application, visit ",
       "link": "Profile Settings"
@@ -193,7 +195,7 @@
       "manual": "Manual",
       "time": {
         "label": "24-hour time",
-        "timezone": "@:pageDateTimeSettings.form.time.label (%{timezone})"
+        "timezone": "@:pageDateTime.form.time.label (%{timezone})"
       },
       "ntpServers": {
         "server1": "Server 1",
@@ -202,8 +204,8 @@
       }
     },
     "toast": {
-      "errorSaveDateTimeSettings": "Error saving date and time settings.",
-      "successSaveDateTimeSettings": "Successfully saved date and time settings."
+      "errorSaveDateTime": "Error saving date and time settings.",
+      "successSaveDateTime": "Successfully saved date and time settings."
     }
   },
   "pageDumps": {
@@ -226,7 +228,6 @@
       "initiateSystemDumpMessage4": "Proceed with dump initiation"
     },
     "table": {
-      "createdBy": "Created by",
       "dateAndTime": "Date and time",
       "dumpType": "Dump type",
       "id": "ID",
@@ -245,8 +246,14 @@
     }
   },
   "pageEventLogs": {
-    "exportFilePrefix": "event_logs_",
+    "additionalDataUri": "Download additional data",
+    "resolve": "Resolve",
+    "resolved": "Resolved",
+    "unresolve": "Unresolve",
+    "unresolved": "Unresolved",
     "modal": {
+      "deleteAllTitle": "Delete all logs",
+      "deleteAllMessage": "Are you sure you want to delete all logs? This action cannot be undone.",
       "deleteTitle": "Delete log | Delete logs",
       "deleteMessage": "Are you sure you want to delete %{count} log? This action cannot be undone. | Are you sure you want to delete %{count} logs? This action cannot be undone."
     },
@@ -258,11 +265,17 @@
       "name": "Name",
       "searchLogs": "Search logs",
       "severity": "Severity",
+      "status": "Status",
       "type": "Type"
     },
     "toast": {
       "errorDelete": "Error deleting %{count} log. | Error deleting %{count} logs.",
-      "successDelete": "Successfully deleted %{count} log. | Successfully deleted %{count} logs."
+      "errorLogStatusUpdate": "Error updating log status.",
+      "errorResolveLogs": "Error resolving %{count} log. | Error resolving %{count} logs.",
+      "errorUnresolveLogs": "Error unresolving %{count} log. | Error unresolving %{count} logs.",
+      "successDelete": "Successfully deleted %{count} log. | Successfully deleted %{count} logs.",
+      "successResolveLogs": "Successfully resolved %{count} log. | Successfully resolved %{count} logs.",
+      "successUnresolveLogs": "Successfully unresolved %{count} log. | Successfully unresolved %{count} logs."
     }
   },
   "pageFactoryReset": {
@@ -324,7 +337,6 @@
         "fileAddress": "File address",
         "fileSource": "File source",
         "imageFile": "Image file",
-        "imageFileHelperText": "Only .tar files accepted",
         "startUpdate": "Start update",
         "tftpServer": "TFTP server",
         "workstation": "Workstation"
@@ -353,49 +365,79 @@
       "verifyUpdateMessage": "Refresh the application to verify firmware updated successfully"
     }
   },
-  "pageHardwareStatus": {
+  "pageInventory": {
     "dimmSlot": "DIMM slot",
     "fans": "Fans",
     "powerSupplies": "Power supplies",
     "bmcManager": "BMC manager",
     "chassis": "Chassis",
     "processors": "Processors",
+    "quicklinkTitle": "Quick links to hardware components",
     "system": "System",
+    "assemblies": "Assemblies",
+    "systemIndicator": {
+      "powerStatus": "Power status",
+      "identifyLed": "System identify LED",
+      "sectionTitle": "LED light control"
+    },
     "table": {
       "assetTag": "Asset tag",
+      "bmcDateTime": "BMC date and time",
       "chassisType": "Chassis type",
       "connectTypesSupported": "Connect types supported",
+      "count": "Count",
       "description": "Description",
       "efficiencyPercent": "Efficiency percent",
+      "fanSpeed": "Fan speed",
       "firmwareVersion": "Firmware version",
       "graphicalConsole": "Graphical console",
+      "hardwareType": "Hardware type",
       "health": "Health",
+      "healthRollup": "Health rollup",
       "id": "ID",
-      "indicatorLed": "Indicator LED",
+      "identifyLed": "Identify LED",
       "instructionSet": "Instruction set",
+      "lastResetTime": "Last reset time",
+      "locationNumber": "Location number",
+      "managerType": "Manager type",
       "manufacturer": "Manufacturer",
       "maxConcurrentSessions": "Max concurrent sessions",
+      "maxSpeedMHz": "Max speed MHz",
+      "maxPowerWatts": "Max power watts",
+      "memoryType": "Memory type",
+      "memorySize": "Memory size",
+      "memorySummary": "Memory summary",
+      "minPowerWatts": "Min power watts",
+      "minSpeedMHz": "Min speed MHz",
       "model": "Model",
       "name": "Name",
       "partNumber": "Part number",
+      "power": "Power",
       "powerInputWatts": "Power input watts",
-      "powerState": "Power state",
-      "processorArchitecture": "Architecture",
-      "processorType": "Type",
+      "processorArchitecture": "Processor architecture",
+      "processorSummary": "Processor summary",
+      "processorType": "Processor type",
       "serialConsole": "Serial console",
       "serialNumber": "Serial number",
       "serviceEnabled": "Service enabled",
       "serviceEntryPointUuid": "Service entry point UUID",
+      "sparePartNumber": "Spare part number",
       "statusHealthRollup": "Status (Health rollup)",
       "statusState": "Status (State)",
+      "subModel": "Sub model",
       "systemType": "System type",
       "totalCores": "Total cores",
-      "uuid": "UUID"
+      "totalThreads": "Total threads",
+      "uuid": "UUID",
+      "version": "Version"
+    },
+    "toast": {
+      "errorDisableIdentifyLed": "Error disabling Identify LED.",
+      "errorEnableIdentifyLed": "Error enabling Identify LED."
     }
   },
   "pageKvm": {
     "openNewTab": "Open in new tab",
-    "subTitle": "Access the KVM console",
     "buttonCtrlAltDelete": "Send Ctrl+Alt+Delete",
     "status": "Status",
     "connected": "Connected",
@@ -453,7 +495,7 @@
       "successSaveRoleGroup": "Successfully saved role group '%{groupName}'."
     }
   },
-  "pageLocalUserManagement": {
+  "pageUserManagement": {
     "accountPolicySettings": "Account policy settings",
     "addUser": "Add user",
     "deleteUser": "Delete user | Delete users",
@@ -521,35 +563,52 @@
     }
   },
   "pageOverview": {
-    "bmcInformation": "BMC information",
-    "firmwareVersion": "Firmware version",
-    "highPriorityEvents": "High priority events",
-    "manufacturer": "Manufacturer",
+    "backupVersion": "Backup",
+    "bmcTime": "BMC time",
+    "criticalEvents": "Critical",
+    "dhcp": "DHCPv4",
+    "dumps": "Dumps",
+    "eventLogs": "Event logs",
+    "firmwareInformation": "Firmware information",
+    "hostName": "Hostname",
+    "idlePower": "Idle power",
+    "inventory": "Inventory and LEDs",
+    "ipv4": "IPv4",
+    "linkStatus": "Link status",
     "model": "Model",
     "networkInformation": "Network information",
     "powerCap": "Power cap",
     "powerConsumption": "Power consumption",
+    "powerInformation": "Power information",
+    "powerMode": "Power mode",
+    "runningVersion": "Running",
     "serialNumber": "Serial number",
     "serverInformation": "Server information",
-    "events": {
-      "date": "Date",
-      "description": "Description",
-      "id": "ID",
-      "noHighEventsMsg": "There are no high priority events to display at this time.",
-      "severity": "Severity",
-      "type": "Type",
-      "viewAllButton": "View all event logs"
+    "solConsole": "@:appNavigation.serialOverLan",
+    "statusInformation": "Status information",
+    "systemIdentifyLed": "System identify LED",
+    "systemInformation": "System information",
+    "total": "Total",
+    "warningEvents": "Warning",
+    "viewMore": "View more"
+  },
+  "pagePostCodeLogs": {
+    "allExportFilePrefix": "All_POST_codes_log_",
+    "downloadFilePrefix": "POST_codes_additional_details_",
+    "exportFilePrefix": "POST_codes_log_",
+    "action": {
+      "downloadDetails": "Download additional details",
+      "exportLogs": "Export log"
     },
-    "network": {
-      "hostname": "Hostname",
-      "ipAddress": "IP address",
-      "macAddress": "MAC address"
+    "button": {
+      "exportAll": "Export all"
     },
-    "quicklinks": {
-      "bmcTime": "BMC time",
-      "editNetworkSettings": "Edit network settings",
-      "serverLed": "Server LED",
-      "solConsole": "@:appNavigation.serialOverLan"
+    "table": {
+      "created": "Created",
+      "bootCount": "Boot count",
+      "postCode": "POST code",
+      "searchLogs": "Search logs",
+      "timeStampOffset": "Time stamp offset"
     }
   },
   "pageProfileSettings": {
@@ -569,16 +628,7 @@
       "successSaveSettings": "Successfully saved account settings."
     }
   },
-  "pageManagePowerUsage": {
-    "description": "Set a power cap to keep power consumption at or below the specified value in watts",
-    "powerCapLabel": "Power cap value (in watts)",
-    "powerCapLabelTextInfo": " Value must be between %{min} and %{max}",
-    "powerCapSettingData": "Apply power cap",
-    "powerCapSettingLabel": "Power cap setting",
-    "powerConsumption": "Current power consumption",
-    "serverPowCapSetting": "Server power cap setting"
-  },
-  "pageNetworkSettings": {
+  "pageNetwork": {
     "dhcp": "DHCP",
     "ipv4": "IPV4",
     "ipv4Configuration": "IPV4 configuration",
@@ -597,8 +647,8 @@
     "table": {
       "addDns": "Add DNS server",
       "addStaticIpv4Address": "Add static IP",
+      "deleteDhcpIpv4": "Delete IPv4 row",
       "deleteDns": "Delete DNS row",
-      "deleteDHCPIpv4": "Delete IPv4 row",
       "deleteStaticIpv4": "Delete IPv4 row",
       "dhcpIpv4AddressRow": "DHCP IPv4 address",
       "dhcpIpv4SubnetRow": "DHCP IPV4 subnet",
@@ -618,7 +668,6 @@
     "description": "The requested resource could not be found."
   },
   "pagePowerRestorePolicy": {
-    "currentPolicy": "Current Policy",
     "description": "Configure power policy to determine how the system starts after a power disturbance.",
     "powerPoliciesLabel": "Power restore policies",
     "policies": {
@@ -644,7 +693,7 @@
       "successRebootStart": "Rebooting BMC."
     }
   },
-  "pageSecuritySettings": {
+  "pagePolicies": {
     "ipmi": "Network IPMI (out-of-band IPMI)",
     "ipmiDescription": "Allow remote management of the platform via IPMI. Tools such as ipmitool require this setting to be enabled.",
     "networkServices": "Network services",
@@ -652,12 +701,12 @@
     "sshDescription": "Allow access to shell sessions via SSH, through port 22 on the BMC.",
     "modal": {
       "disableMessage": {
-        "ipmi": "Are you sure you want to disable @:pageSecuritySettings.ipmi?",
-        "ssh": "Are you sure you want to disable @:pageSecuritySettings.ssh?"
+        "ipmi": "Are you sure you want to disable @:pagePolicies.ipmi?",
+        "ssh": "Are you sure you want to disable @:pagePolicies.ssh?"
       },
       "enableMessage": {
-        "ipmi": "Are you sure you want to enable @:pageSecuritySettings.ipmi?",
-        "ssh": "Are you sure you want to enable @:pageSecuritySettings.ssh?"
+        "ipmi": "Are you sure you want to enable @:pagePolicies.ipmi?",
+        "ssh": "Are you sure you want to enable @:pagePolicies.ssh?"
       }
     },
     "toast": {
@@ -670,6 +719,15 @@
       "successSshDisabled": "Successfully disabled SSH security setting.",
       "successSshEnabled": "Successfully enabled SSH security setting."
     }
+  },
+  "pagePower": {
+    "description": "Set a power cap to keep power consumption at or below the specified value in watts",
+    "powerCapLabel": "Power cap value (in watts)",
+    "powerCapLabelTextInfo": " Value must be between %{min} and %{max}",
+    "powerCapSettingData": "Apply power cap",
+    "powerCapSettingLabel": "Power cap setting",
+    "powerConsumption": "Current power consumption",
+    "serverPowCapSetting": "Server power cap setting"
   },
   "pageSensors": {
     "exportFilePrefix": "sensors_",
@@ -690,16 +748,6 @@
     "openNewTab": "Open in new tab",
     "status": "Status",
     "subTitle": "SOL console redirects the server's serial port output to this window."
-  },
-  "pageServerLed": {
-    "serverLedSubTitle": "Server indicator LED",
-    "serverLedTitle": "LED light control",
-    "toast": {
-      "errorServerLedOff": "Error turning LED off.",
-      "errorServerLedOn": "Error turning LED on.",
-      "successServerLedOff": "Server LED successfully turned off.",
-      "successServerLedOn": "Server LED successfully turned on."
-    }
   },
   "pageServerPowerOperations": {
     "currentStatus": "Current status",
@@ -735,7 +783,7 @@
       "successSaveSettings": "Successfully saved settings."
     }
   },
-  "pageSslCertificates": {
+  "pageCertificates": {
     "addNewCertificate": "Add new certificate",
     "caCertificate": "CA Certificate",
     "deleteCertificate": "Delete certificate",
@@ -793,7 +841,7 @@
     "defaultDeviceName": "Virtual media device",
     "start": "Start",
     "stop": "Stop",
-    "virtualMediaSubTitleFirst": "Save image in a web browser",
+    "virtualMediaSubTitleFirst": "Load image from web browser",
     "virtualMediaSubTitleSecond": "Load image from external server",
     "modal": {
       "password": "Password",

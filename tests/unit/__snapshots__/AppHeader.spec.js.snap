@@ -54,7 +54,7 @@ exports[`AppHeader.vue should render correctly 1`] = `
           to="/"
         >
           <img
-            alt="undefined logo"
+            alt="Built on OpenBMC"
             class="header-logo"
             src="@/assets/images/logo-header.svg"
           />
@@ -68,7 +68,7 @@ exports[`AppHeader.vue should render correctly 1`] = `
       >
         <b-nav-item
           data-test-id="appHeader-container-health"
-          to="/health/event-logs"
+          to="/logs/event-logs"
         >
           <span
             class="status-icon secondary"
@@ -100,7 +100,7 @@ exports[`AppHeader.vue should render correctly 1`] = `
          
         <b-nav-item
           data-test-id="appHeader-container-power"
-          to="/control/server-power-operations"
+          to="/operations/server-power-operations"
         >
           <span
             class="status-icon secondary"

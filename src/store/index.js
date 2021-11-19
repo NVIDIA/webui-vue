@@ -3,32 +3,34 @@ import Vuex from 'vuex';
 
 import GlobalStore from './modules/GlobalStore';
 import AuthenticationStore from './modules/Authentication/AuthenticanStore';
-import ClientSessions from './modules/AccessControl/ClientSessionsStore';
-import LdapStore from './modules/AccessControl/LdapStore';
-import LocalUserManagementStore from './modules/AccessControl/LocalUserMangementStore';
-import SslCertificatesStore from './modules/AccessControl/SslCertificatesStore';
-import FirmwareStore from './modules/Configuration/FirmwareStore';
-import BootSettingsStore from './modules/Control/BootSettingsStore';
-import ControlStore from './modules/Control/ControlStore';
-import PowerControlStore from './modules/Control/PowerControlStore';
-import PowerPolicyStore from './modules/Control/PowerPolicyStore';
-import NetworkSettingStore from './modules/Configuration/NetworkSettingsStore';
-import EventLogStore from './modules/Health/EventLogStore';
-import SensorsStore from './modules/Health/SensorsStore';
-import ServerLedStore from './modules/Control/ServerLedStore';
-import SystemStore from './modules/Health/SystemStore';
-import PowerSupplyStore from './modules/Health/PowerSupplyStore';
-import MemoryStore from './modules/Health/MemoryStore';
-import FanStore from './modules/Health/FanStore';
-import ChassisStore from './modules/Health/ChassisStore';
-import BmcStore from './modules/Health/BmcStore';
-import ProcessorStore from './modules/Health/ProcessorStore';
-import SecuritySettingsStore from './modules/Configuration/SecuritySettingsStore';
-import FactoryResetStore from './modules/Control/FactoryResetStore';
+import SessionsStore from './modules/SecurityAndAccess/SessionsStore';
+import LdapStore from './modules/SecurityAndAccess/LdapStore';
+import UserManagementStore from './modules/SecurityAndAccess/UserManagementStore';
+import CertificatesStore from './modules/SecurityAndAccess/CertificatesStore';
+import FirmwareStore from './modules/Operations/FirmwareStore';
+import BootSettingsStore from './modules/Operations/BootSettingsStore';
+import ControlStore from './modules/Operations/ControlStore';
+import PowerControlStore from './modules/ResourceManagement/PowerControlStore';
+import PowerPolicyStore from './modules/Settings/PowerPolicyStore';
+import NetworkStore from './modules/Settings/NetworkStore';
+import EventLogStore from './modules/Logs/EventLogStore';
+import SensorsStore from './modules/HardwareStatus/SensorsStore';
+import ServerLedStore from './modules/HardwareStatus/ServerLedStore';
+import SystemStore from './modules/HardwareStatus/SystemStore';
+import PowerSupplyStore from './modules/HardwareStatus/PowerSupplyStore';
+import MemoryStore from './modules/HardwareStatus/MemoryStore';
+import FanStore from './modules/HardwareStatus/FanStore';
+import ChassisStore from './modules/HardwareStatus/ChassisStore';
+import BmcStore from './modules/HardwareStatus/BmcStore';
+import ProcessorStore from './modules/HardwareStatus/ProcessorStore';
+import AssemblyStore from './modules/HardwareStatus/AssemblyStore';
+import PostCodeLogsStore from './modules/Logs/PostCodeLogsStore';
+import PoliciesStore from './modules/SecurityAndAccess/PoliciesStore';
+import FactoryResetStore from './modules/Operations/FactoryResetStore';
 
 import WebSocketPlugin from './plugins/WebSocketPlugin';
-import DateTimeStore from './modules/Configuration/DateTimeSettingsStore';
-import VirtualMediaStore from './modules/Control/VirtualMediaStore';
+import DateTimeStore from './modules/Settings/DateTimeStore';
+import VirtualMediaStore from './modules/Operations/VirtualMediaStore';
 
 Vue.use(Vuex);
 
@@ -39,29 +41,31 @@ export default new Vuex.Store({
   modules: {
     global: GlobalStore,
     authentication: AuthenticationStore,
-    clientSessions: ClientSessions,
+    sessions: SessionsStore,
     dateTime: DateTimeStore,
     ldap: LdapStore,
-    localUsers: LocalUserManagementStore,
+    userManagement: UserManagementStore,
     firmware: FirmwareStore,
     serverBootSettings: BootSettingsStore,
     controls: ControlStore,
     powerControl: PowerControlStore,
     powerPolicy: PowerPolicyStore,
     powerSupply: PowerSupplyStore,
-    networkSettings: NetworkSettingStore,
+    network: NetworkStore,
     eventLog: EventLogStore,
     sensors: SensorsStore,
-    sslCertificates: SslCertificatesStore,
     serverLed: ServerLedStore,
+    certificates: CertificatesStore,
     system: SystemStore,
     memory: MemoryStore,
     fan: FanStore,
     chassis: ChassisStore,
     bmc: BmcStore,
     processors: ProcessorStore,
+    assemblies: AssemblyStore,
+    postCodeLogs: PostCodeLogsStore,
     virtualMedia: VirtualMediaStore,
-    securitySettings: SecuritySettingsStore,
+    policies: PoliciesStore,
     factoryReset: FactoryResetStore,
   },
   plugins: [WebSocketPlugin],

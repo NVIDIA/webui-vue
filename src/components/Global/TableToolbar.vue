@@ -6,6 +6,7 @@
           {{ selectedItemsCount }} {{ $t('global.action.selected') }}
         </p>
         <div class="toolbar-actions d-flex">
+          <slot name="toolbar-buttons"></slot>
           <b-button
             v-for="(action, index) in actions"
             :key="index"
@@ -16,7 +17,6 @@
           >
             {{ action.label }}
           </b-button>
-          <slot name="export"></slot>
           <b-button
             variant="secondary"
             class="d-block"
@@ -94,6 +94,26 @@ $toolbar-height: 46px;
   line-height: $toolbar-height;
   margin: 0;
   padding: 0 $spacer;
+}
+
+// Using v-deep to style export slot child-element
+// depricated and vue-js 3
+.toolbar-actions ::v-deep .btn {
+  position: relative;
+  &:after {
+    content: '';
+    position: absolute;
+    left: 0;
+    height: 1.5rem;
+    width: 1px;
+    background: rgba($white, 0.6);
+  }
+  &:last-child,
+  &:first-child {
+    &:after {
+      width: 0;
+    }
+  }
 }
 
 .slide-enter-active {
