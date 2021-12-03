@@ -37,14 +37,23 @@ const VirtualMediaStore = {
           ? true
           : false;
       if (!virtualMediaListEnabled) {
-        const device = {
-          id: i18n.t('pageVirtualMedia.defaultDeviceName'),
+        const device0 = {
+          id: i18n.t('pageVirtualMedia.defaultDeviceNameCD'),
           websocket: '/vm/0/0',
           file: null,
           transferProtocolType: transferProtocolType.OEM,
           isActive: false,
+          acceptFile: '.nrg, .iso, .ISO, .NRG',
         };
-        commit('setProxyDevicesData', [device]);
+        const device1 = {
+          id: i18n.t('pageVirtualMedia.defaultDeviceNameHD'),
+          websocket: '/vm/0/1',
+          file: null,
+          transferProtocolType: transferProtocolType.OEM,
+          isActive: false,
+          acceptFile: '.img, .ima, .IMG, .IMA',
+        };
+        commit('setProxyDevicesData', [device0, device1]);
         return;
       }
 

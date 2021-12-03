@@ -836,7 +836,8 @@
   },
   "pageVirtualMedia": {
     "configureConnection": "Сконфигурировать соединение",
-    "defaultDeviceName": "Виртуальный носитель",
+    "defaultDeviceNameCD": "Виртуальный носитель CD",
+    "defaultDeviceNameHD": "Виртуальный носитель HD",
     "start": "Старт",
     "stop": "Стоп",
     "virtualMediaSubTitleFirst": "Подключить образ с помощью веб браузера",
