@@ -378,7 +378,7 @@
     "systemIndicator": {
       "powerStatus": "Состояние питания",
       "identifyLed": "Идентификационный LED системы",
-      "sectionTitle": "Индикаторы системы"
+      "sectionTitle": "Управление LED"
     },
     "table": {
       "assetTag": "Метка",
@@ -403,11 +403,13 @@
       "manufacturer": "Производитель",
       "maxConcurrentSessions": "Максимальное количество одновременных сессий",
       "maxSpeedMHz": "Макс. скорость МГц",
-      "minSpeedMHz": "Мин. скорость МГц",
       "maxPowerWatts": "Макс. мощность Вт",
-      "minPowerWatts": "Мин. мощность Вт",
-      "model": "Модель",
+      "memoryType": "Тип памяти",
+      "memorySize": "Объём памяти",
       "memorySummary": "Сводная информация по памяти",
+      "minPowerWatts": "Мин. мощность Вт",
+      "minSpeedMHz": "Мин. скорость МГц",
+      "model": "Модель",
       "name": "Имя",
       "partNumber": "Шифр компонента",
       "power": "Питание",
@@ -568,7 +570,7 @@
     "dumps": "Дампы",
     "eventLogs": "Журнал событий",
     "firmwareInformation": "Информация о встроенном ПО",
-    "hostname": "Имя хоста",
+    "hostName": "Имя хоста",
     "idlePower": "Без нагрузки",
     "inventory": "Перечень оборудования и LED",
     "ipv4": "IPv4",
