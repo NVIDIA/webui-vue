@@ -126,7 +126,8 @@
     "serverPowerOperations": "@:appPageTitle.serverPowerOperations",
     "certificates": "@:appPageTitle.certificates",
     "virtualMedia": "@:appPageTitle.virtualMedia",
-    "power": "@:appPageTitle.power"
+    "power": "@:appPageTitle.power",
+    "keyClear": "@:appPageTitle.keyClear"
   },
   "appPageTitle": {
     "changePassword": "Изменить пароль",
@@ -154,7 +155,8 @@
     "serialOverLan": "Консоль Serial over LAN (SOL)",
     "serverPowerOperations": "Управление питанием сервера",
     "certificates": "Сертификаты",
-    "virtualMedia": "Виртуальные носители"
+    "virtualMedia": "Виртуальные носители",
+    "keyClear": "Удаление ключей"
   },
   "pageChangePassword": {
     "changePassword": "Изменить пароль",
@@ -388,6 +390,7 @@
       "capacityMiB": "Объём МиБ",
       "chassisType": "Тип шасси",
       "connectTypesSupported": "Поддерживаемые типы подключений",
+      "coreCount": "Количество ядер",
       "count": "Количество",
       "dataWidthBits": "Ширина шины данных в битах",
       "description": "Описание",
@@ -432,7 +435,8 @@
       "statusState": "Статус (Состояние)",
       "subModel": "Подмодель",
       "systemType": "Тип системы",
-      "totalCores": "Количество ядер",
+      "totalCores": "Общее количество ядер",
+      "totalSystemMemoryGiB": "Общий объём памяти",
       "totalThreads": "Общее количество потоков",
       "uuid": "UUID",
       "version": "Версия"
@@ -440,6 +444,38 @@
     "toast": {
       "errorDisableIdentifyLed": "Ошибка выключения идентификационного LED.",
       "errorEnableIdentifyLed": "Ошибка включения идентификационного LED."
+    }
+  },
+  "pageKeyClear": {
+    "description": "Безопасное удаление конфиденциальных данных содержащихся в системе",
+    "alert": {
+      "description": "В силу конфиденциальности удаляемых данных, для авторизации данной операции требуется верификация посредством физического присутствия.",
+      "title": "Данная операция требует физического присутствия и перезагрузки системы"
+    },
+    "form": {
+      "clearAllSetGenesisIPL": "Удалить всё и установить genesis IPL",
+      "clear": "Удалить",
+      "clearAllLabel": "Удалить всё",
+      "clearAllHeperText":"Удалить все конфиденциальные данные, контролируемые программным обеспечением платформы",
+      "clearHypervisorSystemKeyLabel":"Удалить системный ключ гипервизора",
+      "clearHypervisorSystemKeyHelperText":"Опция указывает гипервизору удалить системный ключ.",
+      "clearOperatingSystemKeysLabel":"Удалить ключи операционной системы",
+      "clearOperatingSystemKeysHelperText":"Опция указывает OPAL удалить ключи Secure Boot операционной системы.",
+      "clearSystemSecurityKeyLabel":"Удалить ключ службы безопасности системы",
+      "clearSystemSecurityKeyHelperText":"Опция указывает OPAL/PEF удалить ключ службы безопасности системы.",
+      "keyClearOptionsLabel": "Опции удаления ключей",
+      "keyClearNotRequested": "Удаление ключей не запрошено",
+      "none": "Нет",
+      "setFactoryDefault": "Установить заводские настройки"
+    },
+    "modal":{
+      "clear": "Удалить ключи",
+      "clearAllMessage": "Все ключи шифрования содержащиеся в выбранных данных будут потеряны. Система больше не будет способна расшифровывать данные требующие удаляемые ключи.",
+      "clearAllTitle": "Внимание: данная операция не обратима"
+    },
+    "toast":{
+      "selectedKeyClearedError": "Ошибка удаления ключей",
+      "selectedKeyClearedSuccess": "Ключи успешно удалены"
     }
   },
   "pageKvm": {
@@ -570,7 +606,7 @@
   },
   "pageOverview": {
     "backupVersion": "Резервный",
-    "bmcTime": "Время BMC",
+    "bmcTime": "Дата и время BMC",
     "criticalEvents": "Критические",
     "dhcp": "DHCPv4",
     "dumps": "Дампы",
@@ -691,6 +727,11 @@
       "AlwaysOff": "Всегда выключено",
       "LastState": "Последнее состояние"
     },
+    "policiesDesc": {
+      "AlwaysOn": "Всегда включено - Система всегда включается при подаче питания.",
+      "AlwaysOff": "Всегда выключено - Система всегда остаётся выключенной при подаче питания.",
+      "LastState": "Последнее состояние - Система возвращается в своё последнее (включённое/выключенное) состояние при подаче питания."
+    },
     "toast": {
       "errorSaveSettings": "Ошибка сохранения настроек.",
       "successSaveSettings": "Политика восстановления питания успешно сохранена."
@@ -712,7 +753,8 @@
   "pagePolicies": {
     "ipmi": "Сетевой IPMI (out-of-band IPMI)",
     "ipmiDescription": "Разрешить удаленное управление платформой через IPMI. Такие иструменты, как ipmitool требуют включения этой функции.",
-    "networkServices": "Сетевые службы",
+    "rtad": "RTAD",
+    "rtadDescription": "Данная опция включает/отключает Remote Trusted Attestation Daemon для программного обеспечения хоста",
     "ssh": "Консоль BMC (через SSH)",
     "sshDescription": "Разрешить доступ к консольной сессии через SSH, через порт 22 на BMC.",
     "modal": {
@@ -728,13 +770,23 @@
     "toast": {
       "errorIpmiDisabled": "Ошибка отключения настроек безопасности IPMI.",
       "errorIpmiEnabled": "Ошибка включения настроек безопасности IPMI.",
+      "errorRtadDisabled": "Ошибка отключения настроек безопасности RTAD.",
+      "errorRtadEnabled": "Ошибка включения настроек безопасности RTAD.",
       "errorSshDisabled": "Ошибка отключения настроек безопасности SSH.",
       "errorSshEnabled": "Ошибка включения настроек безопасности SSH.",
+      "errorVtpmDisabled": "Ошибка отключения настроек безопасности VirtualTPM.",
+      "errorVtpmEnabled": "Ошибка включения настроек безопасности VirtualTPM.",
       "successIpmiDisabled": "Успешное отключение настроек безопасности IPMI.",
       "successIpmiEnabled": "Успешное включение настроек безопасности IPMI.",
+      "successRtadDisabled": "Успешное отключение настроек безопасности RTAD.",
+      "successRtadEnabled": "Успешное включение настроек безопасности RTAD.",
       "successSshDisabled": "Успешное отключение настроек безопасности SSH.",
-      "successSshEnabled": "Успешное включение настроек безопасности SSH."
-    }
+      "successSshEnabled": "Успешное включение настроек безопасности SSH.",
+      "successVtpmDisabled": "Успешное отключение настроек безопасности VirtualTPM.",
+      "successVtpmEnabled": "Успешное включение настроек безопасности VirtualTPM."
+    },
+    "vtpm": "VirtualTPM",
+    "vtpmDescription": "Включение vTPM делает TPM доступным для гостевой операционной системы."
   },
   "pagePower": {
     "description": "Задайте порог мощности, чтобы ограничить потребление питания не превышающее заданное значение в Ваттах",

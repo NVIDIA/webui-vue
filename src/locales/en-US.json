@@ -126,7 +126,8 @@
     "serverPowerOperations": "@:appPageTitle.serverPowerOperations",
     "certificates": "@:appPageTitle.certificates",
     "virtualMedia": "@:appPageTitle.virtualMedia",
-    "power": "@:appPageTitle.power"
+    "power": "@:appPageTitle.power",
+    "keyClear": "@:appPageTitle.keyClear"
   },
   "appPageTitle": {
     "changePassword": "Change password",
@@ -154,7 +155,8 @@
     "serialOverLan": "Serial over LAN (SOL) console",
     "serverPowerOperations": "Server power operations",
     "certificates": "Certificates",
-    "virtualMedia": "Virtual media"
+    "virtualMedia": "Virtual media",
+    "keyClear": "Key clear"
   },
   "pageChangePassword": {
     "changePassword": "Change password",
@@ -444,6 +446,39 @@
       "errorEnableIdentifyLed": "Error enabling Identify LED."
     }
   },
+  "pageKeyClear": {
+    "description": "Securely clear sensitive data on the system",
+    "alert": {
+      "description": "Due to senstivity of the data that will be cleared, verification through physical presence is required to authorize this operation.",
+      "title": "This operation requires physical presence and system reboot"
+    },
+    "form": {
+      "clearAllSetGenesisIPL": "Clear all and set genesis IPL",
+      "clear": "Clear",
+      "clearAllLabel": "Clear all",
+      "clearAllHeperText":"Clear all the sensitive data that is controlled by the platform firmware",
+      "clearHypervisorSystemKeyLabel":"Clear hypervisor system key",
+      "clearHypervisorSystemKeyHelperText":"This indicates the hypervisor to clear the system key.",
+      "clearOperatingSystemKeysLabel":"Clear operating system keys label",
+      "clearOperatingSystemKeysHelperText":"This indicates OPAL to clear the operating system Secure Boot keys.",
+      "clearSystemSecurityKeyLabel":"Clear system security officer key",
+      "clearSystemSecurityKeyHelperText":"This incicates OPAL/PEF to clear teh system security officer keys.",
+      "keyClearOptionsLabel": "Key clear options",
+      "keyClearNotRequested": "Key clear not requested",
+      "none": "None",
+      "setFactoryDefault": "Set factory default"
+    },
+    "modal":{
+      "clear": "Clear keys",
+      "clearAllMessage": "Any encryption keys contained in the selected data will be lost. System will not be able to decrypt any data that requires these keys.",
+      "clearAllTitle": "Warning: This operation is not reversible"
+     
+    },
+    "toast":{
+      "selectedKeyClearedError": "Error clearing keys",
+      "selectedKeyClearedSuccess": "Keys cleared successfully"
+    }
+  },
   "pageKvm": {
     "openNewTab": "Open in new tab",
     "buttonCtrlAltDelete": "Send Ctrl+Alt+Delete",
@@ -572,7 +607,7 @@
   },
   "pageOverview": {
     "backupVersion": "Backup",
-    "bmcTime": "BMC time",
+    "bmcTime": "BMC date and time",
     "criticalEvents": "Critical",
     "dhcp": "DHCPv4",
     "dumps": "Dumps",
@@ -693,6 +728,11 @@
       "AlwaysOff": "Always off",
       "LastState": "Last state"
     },
+    "policiesDesc": {
+      "AlwaysOn": "Always on - The system always powers on when power is applied.",
+      "AlwaysOff": "Always off - The system always remains powered off when power is applied.",
+      "LastState": "Last state - The system returns to its last on or off power state when power is applied."
+    },
     "toast": {
       "errorSaveSettings": "Error saving settings.",
       "successSaveSettings": "Power restore policy updated successfully."
@@ -714,7 +754,8 @@
   "pagePolicies": {
     "ipmi": "Network IPMI (out-of-band IPMI)",
     "ipmiDescription": "Allow remote management of the platform via IPMI. Tools such as ipmitool require this setting to be enabled.",
-    "networkServices": "Network services",
+    "rtad": "RTAD",
+    "rtadDescription": "This option enables or disables the Remote Trusted Attestation Daemon for host firmware",
     "ssh": "BMC shell (via SSH)",
     "sshDescription": "Allow access to shell sessions via SSH, through port 22 on the BMC.",
     "modal": {
@@ -730,13 +771,23 @@
     "toast": {
       "errorIpmiDisabled": "Error disabling IPMI security setting.",
       "errorIpmiEnabled": "Error enabling IPMI security setting.",
+      "errorRtadDisabled": "Error disabling RTAD security setting.",
+      "errorRtadEnabled": "Error enabling RTAD security setting.",
       "errorSshDisabled": "Error disabling SSH security setting.",
       "errorSshEnabled": "Error enabling SSH security setting.",
+      "errorVtpmDisabled": "Error disabling VitualTPM security setting.",
+      "errorVtpmEnabled": "Error enabling VitualTPM security setting.",
       "successIpmiDisabled": "Successfully disabled IPMI security setting.",
       "successIpmiEnabled": "Successfully enabled IPMI security setting.",
+      "successRtadDisabled": "Successfully disabled RTAD security setting.",
+      "successRtadEnabled": "Successfully enabled RTAD security setting.",
       "successSshDisabled": "Successfully disabled SSH security setting.",
-      "successSshEnabled": "Successfully enabled SSH security setting."
-    }
+      "successSshEnabled": "Successfully enabled SSH security setting.",
+      "successVtpmDisabled": "Successfully disabled VitualTPM security setting.",
+      "successVtpmEnabled": "Successfully enabled VitualTPM security setting."
+    },
+    "vtpm": "VirtualTPM",
+    "vtpmDescription": "Enabling vTPM makes a TPM available to the guest operating system."
   },
   "pagePower": {
     "description": "Set a power cap to keep power consumption at or below the specified value in watts",
