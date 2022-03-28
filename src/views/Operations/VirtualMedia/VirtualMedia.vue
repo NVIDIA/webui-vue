@@ -13,7 +13,6 @@
                   v-if="!dev.isActive"
                   :id="concatId(dev.id)"
                   v-model="dev.file"
-                  :accept="dev.acceptFile"
                 >
                   <template #invalid>
                     <b-form-invalid-feedback role="alert">
