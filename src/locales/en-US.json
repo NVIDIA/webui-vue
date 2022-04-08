@@ -909,8 +909,7 @@
   },
   "pageVirtualMedia": {
     "configureConnection": "Configure Connection",
-    "defaultDeviceNameCD": "Virtual media device CD",
-    "defaultDeviceNameHD": "Virtual media device HD",
+    "defaultDeviceName": "Virtual media device",
     "start": "Start",
     "stop": "Stop",
     "virtualMediaSubTitleFirst": "Load image from web browser",
