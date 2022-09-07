@@ -37,7 +37,7 @@
           >
             <img
               class="header-logo"
-              src="@/assets/images/logo-header.svg"
+              src="@/assets/images/nvidia-logo.svg"
               :alt="altLogo"
             />
           </b-navbar-brand>

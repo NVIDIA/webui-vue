@@ -6,7 +6,7 @@
           <div class="login-brand mb-5">
             <img
               width="90px"
-              src="@/assets/images/login-company-logo.svg"
+              src="@/assets/images/nvidia-logo-login.svg"
               :alt="altLogo"
             />
           </div>
