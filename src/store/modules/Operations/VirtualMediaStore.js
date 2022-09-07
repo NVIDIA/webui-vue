@@ -38,13 +38,13 @@ const VirtualMediaStore = {
           : false;
       if (!virtualMediaListEnabled) {
         const device = {
-          id : i18n.t('pageVirtualMedia.defaultDeviceName'),
-          websocket : '/vm/0/0',
-          file : null,
-          transferProtocolType : transferProtocolType.OEM,
-          isActive : false,
+          id: i18n.t('pageVirtualMedia.defaultDeviceName'),
+          websocket: '/vm/0/0',
+          file: null,
+          transferProtocolType: transferProtocolType.OEM,
+          isActive: false,
         };
-        commit('setProxyDevicesData', [ device ]);
+        commit('setProxyDevicesData', [device]);
         return;
       }
 
