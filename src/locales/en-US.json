@@ -612,6 +612,7 @@
     "dumps": "Dumps",
     "eventLogs": "Event logs",
     "firmwareInformation": "Firmware information",
+    "firmwareVersion": "Firmware version",
     "hostName": "Hostname",
     "idlePower": "Idle power",
     "inventory": "Inventory and LEDs",
@@ -626,6 +627,7 @@
     "runningVersion": "Running",
     "serialNumber": "Serial number",
     "serverInformation": "Server information",
+    "serverManufacturer": "Server manufacturer",
     "solConsole": "@:appNavigation.serialOverLan",
     "statusInformation": "Status information",
     "systemIdentifyLed": "System identify LED",
@@ -870,7 +872,8 @@
       "certificateExpiredMessage": "%{certificate} has expired. Consider replacing it with a new certificate.",
       "certificateExpiringMessage": "%{certificate} is expiring soon. Consider replacing it with a new certificate.",
       "certificatesExpiredMessage": "Some certificates have expired. Consider replacing them with new certificates.",
-      "certificatesExpiringMessage": "Some certificates are expiring soon. Consider replacing them with new certificates."
+      "certificatesExpiringMessage": "Some certificates are expiring soon. Consider replacing them with new certificates.",
+      "incorrectCertificateFileType": "File is not a correct certificate type"
     },
     "modal": {
       "alternateName": "Alternate name",
