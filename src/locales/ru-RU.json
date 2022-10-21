@@ -612,6 +612,7 @@
     "dumps": "Дампы",
     "eventLogs": "Журнал событий",
     "firmwareInformation": "Информация о встроенном ПО",
+    "firmwareVersion": "Версия встроенного ПО",
     "hostName": "Имя хоста",
     "idlePower": "Без нагрузки",
     "inventory": "Перечень оборудования и LED",
@@ -626,6 +627,7 @@
     "runningVersion": "Рабочий",
     "serialNumber": "Серийный номер",
     "serverInformation": "Информация о сервере",
+    "serverManufacturer": "Производитель сервера",
     "solConsole": "@:appNavigation.serialOverLan",
     "statusInformation": "Информация о статусе",
     "systemIdentifyLed": "Идентификационный LED системы",
@@ -866,7 +868,8 @@
       "certificateExpiredMessage": "%{certificate} истёк. Рассмотрите вопрос о замене его новым сертификатом.",
       "certificateExpiringMessage": "%{certificate} скоро истекает. Рассмотрите вопрос о замене его новым сертификатом.",
       "certificatesExpiredMessage": "Некоторые сертификаты истекли. Рассмотрите вопрос о замене их новыми сертификатами.",
-      "certificatesExpiringMessage": "Некоторые сертификаты истекают. Рассмотрите вопрос о замене их новыми сертификатами."
+      "certificatesExpiringMessage": "Некоторые сертификаты истекают. Рассмотрите вопрос о замене их новыми сертификатами.",
+      "incorrectCertificateFileType": "Файл не является сертификатом корректного типа"
     },
     "modal": {
       "alternateName": "Альтернативное имя",
