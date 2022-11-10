@@ -222,7 +222,10 @@ export default {
             },
             {
               value: 'delete',
-              enabled: user.UserName === 'root' ? false : true,
+              enabled:
+                user.UserName === 'root' || user.UserName === 'service'
+                  ? false
+                  : true,
               title: this.$tc('pageUserManagement.deleteUser'),
             },
           ],
