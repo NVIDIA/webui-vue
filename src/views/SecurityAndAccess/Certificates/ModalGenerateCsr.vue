@@ -419,7 +419,7 @@ export default {
       })),
       keyPairAlgorithmOptions: ['EC', 'RSA'],
       keyCurveIdOptions: ['prime256v1', 'secp521r1', 'secp384r1'],
-      keyBitLengthOptions: [2048],
+      keyBitLengthOptions: [3072],
       csrString: '',
       csrStringCopied: false,
     };
