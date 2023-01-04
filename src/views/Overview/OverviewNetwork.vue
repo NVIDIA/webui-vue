@@ -23,7 +23,7 @@
     <b-row>
       <b-col>
         <dl>
-          <dt>{{ $t('pageOverview.ipv4') }}</dt>
+          <dt>{{ $t('pageOverview.ipv4StaticAddress') }}</dt>
           <dd>
             {{ dataFormatter(network.staticAddress) }}
           </dd>

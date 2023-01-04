@@ -608,6 +608,7 @@
   "pageOverview": {
     "backupVersion": "Backup",
     "bmcTime": "BMC date and time",
+    "bmcUpTime": "BMC Up Time",
     "criticalEvents": "Critical",
     "dhcp": "DHCPv4",
     "dumps": "Dumps",
@@ -618,6 +619,7 @@
     "idlePower": "Idle power",
     "inventory": "Inventory and LEDs",
     "ipv4": "IPv4",
+    "ipv4StaticAddress" : "Static IPv4",
     "linkStatus": "Link status",
     "model": "Model",
     "networkInformation": "Network information",

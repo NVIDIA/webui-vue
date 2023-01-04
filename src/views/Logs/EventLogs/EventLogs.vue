@@ -34,7 +34,7 @@
           variant="primary"
           :class="{ disabled: allLogs.length === 0 }"
           :download="exportFileNameByDate()"
-          :href="href"
+          @click="href()"
         >
           <icon-export /> {{ $t('global.action.exportAll') }}
         </b-button>
@@ -278,7 +278,7 @@ import TableRowExpandMixin, {
 import SearchFilterMixin, {
   searchFilter,
 } from '@/components/Mixins/SearchFilterMixin';
-
+import { TextLogHandler } from '@/store/modules/Logs/TextLogHandler';
 export default {
   components: {
     IconDelete,
@@ -397,9 +397,6 @@ export default {
     };
   },
   computed: {
-    href() {
-      return `data:text/json;charset=utf-8,${this.exportAllLogs()}`;
-    },
     filteredRows() {
       return this.searchFilter
         ? this.searchTotalFilteredRows
@@ -465,6 +462,13 @@ export default {
         })
         .catch(({ message }) => this.errorToast(message));
     },
+    href() {
+      TextLogHandler().exportDataFromJSON(
+        this.exportAllLogs(),
+        this.exportFileNameByDate(null),
+        null
+      );
+    },
     deleteAllLogs() {
       this.$bvModal
         .msgBoxConfirm(this.$t('pageEventLogs.modal.deleteAllMessage'), {
@@ -498,8 +502,7 @@ export default {
     exportAllLogs() {
       {
         return this.$store.getters['eventLog/allEvents'].map((eventLogs) => {
-          const allEventLogsString = JSON.stringify(eventLogs);
-          return allEventLogsString;
+          return eventLogs;
         });
       }
     },

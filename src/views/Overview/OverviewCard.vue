@@ -7,9 +7,9 @@
           v-if="exportButton || downloadButton"
           :disabled="disabled"
           :download="download"
-          :href="href"
           class="p-0"
           variant="link"
+          @click="href()"
         >
           <span v-if="downloadButton">{{ $t('global.action.download') }}</span>
           <span v-if="exportButton">{{ $t('global.action.exportAll') }}</span>
@@ -23,6 +23,7 @@
 </template>
 
 <script>
+import { TextLogHandler } from '@/store/modules/Logs/TextLogHandler';
 export default {
   name: 'OverviewCard',
   props: {
@@ -63,8 +64,15 @@ export default {
     download() {
       return `${this.fileName}.json`;
     },
+  },
+  methods: {
     href() {
-      return `data:text/json;charset=utf-8,${this.dataForExport}`;
+      var d = TextLogHandler().exportDataFromJSON(
+        this.data,
+        this.fileName,
+        null
+      );
+      return `data:text/csv;charset=utf-8,${d}`;
     },
   },
 };
