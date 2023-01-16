@@ -4,8 +4,8 @@
       v-if="value === 'export'"
       class="align-bottom btn-icon-only py-0 btn-link"
       :download="download"
-      :href="href"
       :title="title"
+      @click="href()"
     >
       <slot name="icon">
         {{ $t('global.action.export') }}
@@ -56,7 +56,7 @@
 
 <script>
 import { omit } from 'lodash';
-
+import { TextLogHandler } from '@/store/modules/Logs/TextLogHandler';
 export default {
   name: 'TableRowAction',
   props: {
@@ -104,8 +104,15 @@ export default {
     download() {
       return `${this.exportName}.json`;
     },
+  },
+  methods: {
     href() {
-      return `data:text/json;charset=utf-8,${this.dataForExport}`;
+      var data = TextLogHandler().exportDataFromJSON(
+        omit(this.rowData, 'actions'),
+        this.exportName,
+        null
+      );
+      return `data:text/plain;charset=utf-8,${data}`;
     },
   },
 };
