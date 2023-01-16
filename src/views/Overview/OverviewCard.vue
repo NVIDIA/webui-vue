@@ -67,12 +67,12 @@ export default {
   },
   methods: {
     href() {
-      var d = TextLogHandler().exportDataFromJSON(
+      var exportData = TextLogHandler().exportDataFromJSON(
         this.data,
         this.fileName,
         null
       );
-      return `data:text/csv;charset=utf-8,${d}`;
+      return `data:text/csv;charset=utf-8,${exportData}`;
     },
   },
 };

@@ -5,7 +5,7 @@ export const TextLogHandler = () => {
     if (!data) return;
     try {
       const fileName = newFileName || 'exported-data';
-      const exportType = exportFromJSON.types[fileExportType || 'json'];
+      const exportType = exportFromJSON.types[fileExportType || 'txt'];
       exportFromJSON({ data, fileName, exportType });
     } catch (e) {
       throw new Error('Parsing failed!');

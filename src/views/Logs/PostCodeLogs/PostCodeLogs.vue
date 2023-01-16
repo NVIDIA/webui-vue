@@ -25,7 +25,7 @@
           variant="primary"
           :disabled="allLogs.length === 0"
           :download="exportFileNameByDate()"
-          :href="href"
+          @click="href()"
         >
           <icon-export /> {{ $t('pagePostCodeLogs.button.exportAll') }}
         </b-button>
@@ -160,6 +160,7 @@ import TableToolbar from '@/components/Global/TableToolbar';
 import TableToolbarExport from '@/components/Global/TableToolbarExport';
 import LoadingBarMixin from '@/components/Mixins/LoadingBarMixin';
 import TableFilterMixin from '@/components/Mixins/TableFilterMixin';
+import { TextLogHandler } from '@/store/modules/Logs/TextLogHandler';
 import BVPaginationMixin, {
   currentPage,
   perPage,
@@ -253,9 +254,6 @@ export default {
     };
   },
   computed: {
-    href() {
-      return `data:text/json;charset=utf-8,${this.exportAllLogsString()}`;
-    },
     filteredRows() {
       return this.searchFilter
         ? this.searchTotalFilteredRows
@@ -305,15 +303,15 @@ export default {
     });
   },
   methods: {
-    exportAllLogsString() {
-      {
-        return this.$store.getters['postCodeLogs/allPostCodes'].map(
-          (postCodes) => {
-            const allLogsString = JSON.stringify(postCodes);
-            return allLogsString;
-          }
-        );
-      }
+    exportAllLogs() {
+      return this.$store.getters['postCodeLogs/allPostCodes'];
+    },
+    href() {
+      TextLogHandler().exportDataFromJSON(
+        this.exportAllLogs(),
+        this.exportFileNameByDate(null),
+        null
+      );
     },
     onFilterChange({ activeFilters }) {
       this.activeFilters = activeFilters;
