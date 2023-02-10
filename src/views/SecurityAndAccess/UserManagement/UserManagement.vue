@@ -217,15 +217,26 @@ export default {
           actions: [
             {
               value: 'edit',
-              enabled: true,
+              enabled: this.editEnable(user),
               title: this.$t('pageUserManagement.editUser'),
             },
             {
               value: 'delete',
+<<<<<<< HEAD
               enabled:
                 user.UserName === 'root' || user.UserName === 'service'
                   ? false
                   : true,
+||||||| b24a483
+              enabled: user.UserName === 'root' ? false : true,
+=======
+              enabled:
+                user.UserName === this.$store.getters['global/username']
+                  ? false
+                  : true && user.UserName === 'root'
+                  ? false
+                  : true,
+>>>>>>> origin/master
               title: this.$tc('pageUserManagement.deleteUser'),
             },
           ],
@@ -250,6 +261,13 @@ export default {
     this.$store.dispatch('userManagement/getAccountRoles');
   },
   methods: {
+    editEnable(user) {
+      if ('root' === this.$store.getters['global/username']) {
+        return true;
+      } else {
+        return user.UserName === 'root' ? false : true;
+      }
+    },
     initModalUser(user) {
       this.activeUser = user;
       this.$bvModal.show('modal-user');
