@@ -20,7 +20,10 @@
             "reset": "Reset",
             "save": "Save",
             "saveSettings": "Save settings",
-            "selected": "Selected"
+            "selected": "Selected",
+            "ok": "OK",
+            "warning": "Warning",
+            "critical": "Critical"
         },
         "ariaLabel": {
             "clearSearch": "Clear search input",
@@ -386,16 +389,16 @@
         "table": {
             "assetTag": "Asset tag",
             "baseModuleType": "Base module type",
-            "busWidthBits": "Bus width bits",
+            "busWidthBits": "Bus width",
             "bmcDateTime": "BMC date and time",
-            "capacityMiB": "Capacity MiB",
+            "capacityMiB": "Capacity",
             "chassisType": "Chassis type",
             "connectTypesSupported": "Connect types supported",
             "coreCount": "Core count",
             "count": "Count",
-            "dataWidthBits": "Data width bits",
+            "dataWidthBits": "Data width",
             "description": "Description",
-            "efficiencyPercent": "Efficiency percent",
+            "efficiencyPercent": "Efficiency",
             "enabled": "Enabled",
             "fanSpeed": "Fan speed",
             "firmwareVersion": "Firmware version",
@@ -411,18 +414,18 @@
             "managerType": "Manager type",
             "manufacturer": "Manufacturer",
             "maxConcurrentSessions": "Max concurrent sessions",
-            "maxSpeedMHz": "Max speed MHz",
-            "maxPowerWatts": "Max power watts",
+            "maxSpeedMHz": "Max speed",
+            "maxPowerWatts": "Max power",
             "memoryType": "Memory type",
             "memorySummary": "Memory summary",
-            "minPowerWatts": "Min power watts",
-            "minSpeedMHz": "Min speed MHz",
+            "minPowerWatts": "Min power",
+            "minSpeedMHz": "Min speed",
             "model": "Model",
             "name": "Name",
-            "operatingSpeedMhz": "Operating speed Mhz",
+            "operatingSpeedMhz": "Operating speed",
             "partNumber": "Part number",
             "power": "Power",
-            "powerInputWatts": "Power input watts",
+            "powerInputWatts": "Power input",
             "processorArchitecture": "Processor architecture",
             "processorSummary": "Processor summary",
             "processorType": "Processor type",
@@ -574,7 +577,12 @@
             "configureManagerResources": "Configure manager resources",
             "configureUsersAndTheirAccounts": "Configure users and their accounts",
             "logInToTheServiceAndReadResources": "Log in to the service and read resources",
-            "updatePasswordForCurrentUserAccount": "Update password for current user account"
+            "updatePasswordForCurrentUserAccount": "Update password for current user account",
+            "privilege": "Privilege",
+            "administrator": "Administrator",
+            "operator": "Operator",
+            "readOnly": "ReadOnly",
+            "noAccess": "NoAccess"
         },
         "toast": {
             "errorBatchDelete": "Error deleting %{count} user. | Error deleting %{count} users.",
@@ -608,6 +616,7 @@
     "pageOverview": {
         "backupVersion": "Backup",
         "bmcTime": "BMC date and time",
+        "bmcUpTime": "BMC Up Time",
         "criticalEvents": "Critical",
         "dhcp": "DHCPv4",
         "dumps": "Dumps",
@@ -618,6 +627,7 @@
         "idlePower": "Idle power",
         "inventory": "Inventory and LEDs",
         "ipv4": "IPv4",
+        "ipv4StaticAddress" : "Static IPv4",
         "linkStatus": "Link status",
         "model": "Model",
         "networkInformation": "Network information",
@@ -648,12 +658,20 @@
         "button": {
             "exportAll": "Export all"
         },
+        "modal": {
+            "deleteAllTitle": "Delete all logs",
+            "deleteAllMessage": "Are you sure you want to delete all logs? This action cannot be undone."
+        },
         "table": {
             "created": "Created",
             "bootCount": "Boot count",
             "postCode": "POST code",
             "searchLogs": "Search logs",
             "timeStampOffset": "Time stamp offset"
+        },
+        "toast": {
+            "errorDelete": "Error deleting %{count} log. | Error deleting %{count} logs.",
+            "successDelete": "Successfully deleted %{count} log. | Successfully deleted %{count} logs."
         }
     },
     "pageProfileSettings": {
@@ -695,6 +713,9 @@
         "speed": "Speed (mbps)",
         "staticDns": "Static DNS",
         "modal": {
+            "confirmDisableDhcp": "Are you sure you want to disable DHCP?",
+            "confirmEnableDhcp": "When DHCP is enabled, static IP addresses will not be accessible.",
+            "dhcpConfirmTitle": "%{dhcpState} DHCP",
             "editHostnameTitle": "Edit hostname",
             "editMacAddressTitle": "Edit MAC address",
             "gateway": "Gateway",
@@ -779,6 +800,7 @@
             "errorSshEnabled": "Error enabling SSH security setting.",
             "errorVtpmDisabled": "Error disabling VirtualTPM security setting.",
             "errorVtpmEnabled": "Error enabling VirtualTPM security setting.",
+            "errorSessionTimeout": "Error in changing session timeout.",
             "successIpmiDisabled": "Successfully disabled IPMI security setting.",
             "successIpmiEnabled": "Successfully enabled IPMI security setting.",
             "successRtadDisabled": "Successfully disabled RTAD security setting.",
@@ -786,10 +808,13 @@
             "successSshDisabled": "Successfully disabled SSH security setting.",
             "successSshEnabled": "Successfully enabled SSH security setting.",
             "successVtpmDisabled": "Successfully disabled VirtualTPM security setting.",
-            "successVtpmEnabled": "Successfully enabled VirtualTPM security setting."
+            "successVtpmEnabled": "Successfully enabled VirtualTPM security setting.",
+            "successSessionTimeout": "Successfully changed the session timeout value."
         },
         "vtpm": "VirtualTPM",
-        "vtpmDescription": "Enabling vTPM makes a TPM available to the guest operating system."
+        "vtpmDescription": "Enabling vTPM makes a TPM available to the guest operating system.",
+        "webSessionTimeOut":"WEB Session Timeout",
+        "webSessionTimeOutDescription" : "Change the Web session timeout in given options"
     },
     "pagePower": {
         "description": "Set a power cap to keep power consumption at or below the specified value in watts",
@@ -823,145 +848,6 @@
         "status": "Status",
         "subTitle": "SOL console redirects the server's serial port output to this window."
     },
-<<<<<<< HEAD
-    "toast": {
-      "errorBatchDelete": "Error deleting %{count} user. | Error deleting %{count} users.",
-      "errorBatchDisable": "Error disabling %{count} user. | Error disabling %{count} users.",
-      "errorBatchEnable": "Error enabling %{count} user. | Error enabling %{count} users.",
-      "errorCreateUser": "Error creating user '%{username}'.",
-      "errorDeleteUser": "Error deleting user '%{username}'.",
-      "errorLoadAccountSettings": "Error loading account settings",
-      "errorLoadUsers": "Error loading users.",
-      "errorSaveSettings": "Error saving account settings.",
-      "errorUpdateUser": "Error updating user '%{username}'.",
-      "successBatchDelete": "Successfully deleted %{count} user. | Successfully deleted %{count} users.",
-      "successBatchDisable": "Successfully disabled %{count} user. | Successfully disabled %{count} users.",
-      "successBatchEnable": "Successfully enabled %{count} user. | Successfully enabled %{count} users.",
-      "successCreateUser": "Created user '%{username}'.",
-      "successDeleteUser": "Deleted user '%{username}'.",
-      "successSaveSettings": "Successfully saved account settings.",
-      "successUpdateUser": "Updated user '%{username}'."
-    }
-  },
-  "pageLogin": {
-    "language": "Language",
-    "logIn": "Log in",
-    "password": "Password",
-    "username": "Username",
-    "alert": {
-      "message": "Invalid username or password"
-    }
-  },
-  "pageOverview": {
-    "backupVersion": "Backup",
-    "bmcTime": "BMC date and time",
-    "bmcUpTime": "BMC Up Time",
-    "criticalEvents": "Critical",
-    "dhcp": "DHCPv4",
-    "dumps": "Dumps",
-    "eventLogs": "Event logs",
-    "firmwareInformation": "Firmware information",
-    "firmwareVersion": "Firmware version",
-    "hostName": "Hostname",
-    "idlePower": "Idle power",
-    "inventory": "Inventory and LEDs",
-    "ipv4": "IPv4",
-    "ipv4StaticAddress" : "Static IPv4",
-    "linkStatus": "Link status",
-    "model": "Model",
-    "networkInformation": "Network information",
-    "powerCap": "Power cap",
-    "powerConsumption": "Power consumption",
-    "powerInformation": "Power information",
-    "powerMode": "Power mode",
-    "runningVersion": "Running",
-    "serialNumber": "Serial number",
-    "serverInformation": "Server information",
-    "serverManufacturer": "Server manufacturer",
-    "solConsole": "@:appNavigation.serialOverLan",
-    "statusInformation": "Status information",
-    "systemIdentifyLed": "System identify LED",
-    "systemInformation": "System information",
-    "total": "Total",
-    "warningEvents": "Warning",
-    "viewMore": "View more"
-  },
-  "pagePostCodeLogs": {
-    "allExportFilePrefix": "All_POST_codes_log_",
-    "downloadFilePrefix": "POST_codes_additional_details_",
-    "exportFilePrefix": "POST_codes_log_",
-    "action": {
-      "downloadDetails": "Download additional details",
-      "exportLogs": "Export log"
-||||||| b24a483
-    "toast": {
-      "errorBatchDelete": "Error deleting %{count} user. | Error deleting %{count} users.",
-      "errorBatchDisable": "Error disabling %{count} user. | Error disabling %{count} users.",
-      "errorBatchEnable": "Error enabling %{count} user. | Error enabling %{count} users.",
-      "errorCreateUser": "Error creating user '%{username}'.",
-      "errorDeleteUser": "Error deleting user '%{username}'.",
-      "errorLoadAccountSettings": "Error loading account settings",
-      "errorLoadUsers": "Error loading users.",
-      "errorSaveSettings": "Error saving account settings.",
-      "errorUpdateUser": "Error updating user '%{username}'.",
-      "successBatchDelete": "Successfully deleted %{count} user. | Successfully deleted %{count} users.",
-      "successBatchDisable": "Successfully disabled %{count} user. | Successfully disabled %{count} users.",
-      "successBatchEnable": "Successfully enabled %{count} user. | Successfully enabled %{count} users.",
-      "successCreateUser": "Created user '%{username}'.",
-      "successDeleteUser": "Deleted user '%{username}'.",
-      "successSaveSettings": "Successfully saved account settings.",
-      "successUpdateUser": "Updated user '%{username}'."
-    }
-  },
-  "pageLogin": {
-    "language": "Language",
-    "logIn": "Log in",
-    "password": "Password",
-    "username": "Username",
-    "alert": {
-      "message": "Invalid username or password"
-    }
-  },
-  "pageOverview": {
-    "backupVersion": "Backup",
-    "bmcTime": "BMC date and time",
-    "criticalEvents": "Critical",
-    "dhcp": "DHCPv4",
-    "dumps": "Dumps",
-    "eventLogs": "Event logs",
-    "firmwareInformation": "Firmware information",
-    "firmwareVersion": "Firmware version",
-    "hostName": "Hostname",
-    "idlePower": "Idle power",
-    "inventory": "Inventory and LEDs",
-    "ipv4": "IPv4",
-    "linkStatus": "Link status",
-    "model": "Model",
-    "networkInformation": "Network information",
-    "powerCap": "Power cap",
-    "powerConsumption": "Power consumption",
-    "powerInformation": "Power information",
-    "powerMode": "Power mode",
-    "runningVersion": "Running",
-    "serialNumber": "Serial number",
-    "serverInformation": "Server information",
-    "serverManufacturer": "Server manufacturer",
-    "solConsole": "@:appNavigation.serialOverLan",
-    "statusInformation": "Status information",
-    "systemIdentifyLed": "System identify LED",
-    "systemInformation": "System information",
-    "total": "Total",
-    "warningEvents": "Warning",
-    "viewMore": "View more"
-  },
-  "pagePostCodeLogs": {
-    "allExportFilePrefix": "All_POST_codes_log_",
-    "downloadFilePrefix": "POST_codes_additional_details_",
-    "exportFilePrefix": "POST_codes_log_",
-    "action": {
-      "downloadDetails": "Download additional details",
-      "exportLogs": "Export log"
-=======
     "pageServerPowerOperations": {
         "currentStatus": "Current status",
         "serverBootSettings": "Boot settings",
@@ -995,7 +881,6 @@
             "errorSaveSettings": "Error saving settings.",
             "successSaveSettings": "Successfully saved settings."
         }
->>>>>>> origin/master
     },
     "pageCertificates": {
         "addNewCertificate": "Add new certificate",
@@ -1051,563 +936,6 @@
             "successReplaceCertificate": "Successfully replaced %{certificate}."
         }
     },
-<<<<<<< HEAD
-    "table": {
-      "created": "Created",
-      "bootCount": "Boot count",
-      "postCode": "POST code",
-      "searchLogs": "Search logs",
-      "timeStampOffset": "Time stamp offset"
-    }
-  },
-  "pageProfileSettings": {
-    "browserOffset": "Browser offset (%{timezone})",
-    "changePassword": "Change password",
-    "confirmPassword": "Confirm new password",
-    "defaultUTC": "Default (UTC)",
-    "newPassword": "New password",
-    "newPassLabelTextInfo": "Password must be between %{min} - %{max} characters",
-    "passwordsDoNotMatch": "Passwords do not match",
-    "profileInfoTitle": "Profile information",
-    "timezone": "Timezone",
-    "timezoneDisplay": "Timezone display preference",
-    "timezoneDisplayDesc": "Select how time is displayed throughout the application",
-    "username": "Username",
-    "toast": {
-      "successUpdatingTimeZone": "Timezone updated successfully."
-    }
-  },
-  "pageNetwork": {
-    "dhcp": "DHCP",
-    "domainName": "domain name",
-    "dns": "DNS server",
-    "fqdn": "FQDN",
-    "hostname": "Hostname",
-    "interfaceSection": "Interface settings",
-    "ipv4": "IPv4",
-    "ipv4Addresses": "IPv4 addresses",
-    "ipv6": "IPv6",
-    "linkStatus": "Link status",
-    "macAddress": "MAC address",
-    "network": "network",
-    "networkSettings": "Network settings",
-    "ntp": "NTP server",
-    "pageDescription": "Configure BMC network settings",
-    "useDns": "Use DNS servers",
-    "useDomainName": "Use domain name",
-    "useNtp": "Use NTP servers",
-    "speed": "Speed (mbps)",
-    "staticDns": "Static DNS",
-    "modal": {
-      "editHostnameTitle": "Edit hostname",
-      "editMacAddressTitle": "Edit MAC address",
-      "gateway": "Gateway",
-      "ipAddress": "IP address",
-      "staticDns": "Static DNS",
-      "subnetMask": "Subnet mask"
-    },
-    "table": {
-      "addDnsAddress": "Add IP address",
-      "addIpv4Address": "Add static IPv4 address",
-      "addressOrigin": "Address origin",
-      "deleteDns": "Delete DNS address",
-      "deleteIpv4": "Delete IPv4 address",
-      "editDns": "Edit DNS address",
-      "editIpv4": "Edit IPv4 address",
-      "gateway": "Gateway",
-      "ipAddress": "IP address",
-      "subnet": "Subnet mask"
-    },
-    "toast": {
-      "errorSaveNetworkSettings": "Error updating %{setting} settings.",
-      "successSaveNetworkSettings": "Successfully updated %{setting} settings."
-    }
-  },
-  "pagePageNotFound": {
-    "description": "The requested resource could not be found."
-  },
-  "pagePowerRestorePolicy": {
-    "description": "Configure power policy to determine how the system starts after a power disturbance.",
-    "powerPoliciesLabel": "Power restore policies",
-    "policies": {
-      "AlwaysOn": "Always on",
-      "AlwaysOff": "Always off",
-      "LastState": "Last state"
-    },
-    "policiesDesc": {
-      "AlwaysOn": "Always on - The system always powers on when power is applied.",
-      "AlwaysOff": "Always off - The system always remains powered off when power is applied.",
-      "LastState": "Last state - The system returns to its last on or off power state when power is applied."
-    },
-    "toast": {
-      "errorSaveSettings": "Error saving settings.",
-      "successSaveSettings": "Power restore policy updated successfully."
-    }
-  },
-  "pageRebootBmc": {
-    "lastReboot": "Last BMC reboot",
-    "rebootBmc": "Reboot BMC",
-    "rebootInformation": "When you reboot the BMC, your web browser loses contact with the BMC for several minutes. When the BMC is back online, you may need to log in again.",
-    "modal": {
-      "confirmMessage": "Are you sure you want to reboot the BMC?",
-      "confirmTitle": "Confirm BMC reboot"
-    },
-    "toast": {
-      "errorRebootStart": "Error rebooting BMC.",
-      "successRebootStart": "Rebooting BMC."
-    }
-  },
-  "pagePolicies": {
-    "ipmi": "Network IPMI (out-of-band IPMI)",
-    "ipmiDescription": "Allow remote management of the platform via IPMI. Tools such as ipmitool require this setting to be enabled.",
-    "rtad": "RTAD",
-    "rtadDescription": "This option enables or disables the Remote Trusted Attestation Daemon for host firmware",
-    "ssh": "BMC shell (via SSH)",
-    "sshDescription": "Allow access to shell sessions via SSH, through port 22 on the BMC.",
-    "modal": {
-      "disableMessage": {
-        "ipmi": "Are you sure you want to disable @:pagePolicies.ipmi?",
-        "ssh": "Are you sure you want to disable @:pagePolicies.ssh?"
-      },
-      "enableMessage": {
-        "ipmi": "Are you sure you want to enable @:pagePolicies.ipmi?",
-        "ssh": "Are you sure you want to enable @:pagePolicies.ssh?"
-      }
-    },
-    "toast": {
-      "errorIpmiDisabled": "Error disabling IPMI security setting.",
-      "errorIpmiEnabled": "Error enabling IPMI security setting.",
-      "errorRtadDisabled": "Error disabling RTAD security setting.",
-      "errorRtadEnabled": "Error enabling RTAD security setting.",
-      "errorSshDisabled": "Error disabling SSH security setting.",
-      "errorSshEnabled": "Error enabling SSH security setting.",
-      "errorVtpmDisabled": "Error disabling VirtualTPM security setting.",
-      "errorVtpmEnabled": "Error enabling VirtualTPM security setting.",
-      "errorSessionTimeout": "Error in changing session timeout.",
-      "successIpmiDisabled": "Successfully disabled IPMI security setting.",
-      "successIpmiEnabled": "Successfully enabled IPMI security setting.",
-      "successRtadDisabled": "Successfully disabled RTAD security setting.",
-      "successRtadEnabled": "Successfully enabled RTAD security setting.",
-      "successSshDisabled": "Successfully disabled SSH security setting.",
-      "successSshEnabled": "Successfully enabled SSH security setting.",
-      "successVtpmDisabled": "Successfully disabled VirtualTPM security setting.",
-      "successVtpmEnabled": "Successfully enabled VirtualTPM security setting.",
-      "successSessionTimeout": "Successfully changed the session timeout value."
-    },
-    "vtpm": "VirtualTPM",
-    "vtpmDescription": "Enabling vTPM makes a TPM available to the guest operating system.",
-    "webSessionTimeOut":"WEB Session Timeout",
-    "webSessionTimeOutDescription" : "Change the Web session timeout in given options"
-  },
-  "pagePower": {
-    "description": "Set a power cap to keep power consumption at or below the specified value in watts",
-    "powerCapLabel": "Power cap value (in watts)",
-    "powerCapLabelTextInfo": " Value must be between %{min} and %{max}",
-    "powerCapSettingData": "Apply power cap",
-    "powerCapSettingLabel": "Power cap setting",
-    "powerConsumption": "Current power consumption",
-    "serverPowCapSetting": "Server power cap setting"
-  },
-  "pageSensors": {
-    "exportFilePrefix": "sensors_",
-    "searchForSensors": "Search for sensors",
-    "table": {
-      "currentValue": "Current value",
-      "lowerWarning": "Lower warning",
-      "lowerCritical": "Lower critical",
-      "name": "Name",
-      "status": "Status",
-      "upperWarning": "Upper warning",
-      "upperCritical": "Upper critical"
-    }
-  },
-  "pageSerialOverLan": {
-    "alert": {
-      "disconnectedAlertMessage" : "System must be powered on to connect"
-    },
-    "connected": "Connected",
-    "disconnected": "Disconnected",
-    "openNewTab": "Open in new tab",
-    "status": "Status",
-    "subTitle": "SOL console redirects the server's serial port output to this window."
-  },
-  "pageServerPowerOperations": {
-    "currentStatus": "Current status",
-    "serverBootSettings": "Boot settings",
-    "serverStatus": "Server status",
-    "immediateReboot": "Immediate – Server reboots without operating system shutting down; may cause data corruption",
-    "immediateShutdown": "Immediate - Server shuts down without operating system shutting down; may cause data corruption",
-    "lastPowerOperation": "Last power operation",
-    "oneTimeBootWarning": "Pending one time boot. Next boot will be performed with the specified one time boot settings. Subsequent boots will be performed with the default settings.",
-    "operationInProgress": "There are no options to display while a power operation is in progress. When complete, power operations will be displayed here.",
-    "operations": "Operations",
-    "orderlyReboot": "Orderly – operating system shuts down, then server reboots",
-    "orderlyShutdown": "Orderly - operating system shuts down, then server shuts down",
-    "powerOn": "Power on",
-    "reboot": "Reboot",
-    "rebootServer": "Reboot server",
-    "shutDown": "Shut down",
-    "shutdownServer": "Shutdown server",
-    "bootSettings": {
-      "bootSettingsOverride": "Boot settings override",
-      "enableOneTimeBoot": "Enable one time boot",
-      "tpmRequiredPolicy": "TPM required policy",
-      "tpmRequiredPolicyHelper": "Enable to ensure the system only boots when the TPM is functional."
-    },
-    "modal": {
-      "confirmRebootMessage": "Are you sure you want to reboot?",
-      "confirmRebootTitle": "Server reboot will cause outage",
-      "confirmShutdownMessage": "Are you sure you want to shut down?",
-      "confirmShutdownTitle": "Server shutdown will cause outage"
-    },
-    "toast": {
-      "errorSaveSettings": "Error saving settings.",
-      "successSaveSettings": "Successfully saved settings."
-    }
-  },
-  "pageCertificates": {
-    "addNewCertificate": "Add new certificate",
-    "caCertificate": "CA Certificate",
-    "deleteCertificate": "Delete certificate",
-    "generateCsr": "Generate CSR",
-    "httpsCertificate": "HTTPS Certificate",
-    "ldapCertificate": "LDAP Certificate",
-    "replaceCertificate": "Replace certificate",
-    "alert": {
-      "certificateExpiredMessage": "%{certificate} has expired. Consider replacing it with a new certificate.",
-      "certificateExpiringMessage": "%{certificate} is expiring soon. Consider replacing it with a new certificate.",
-      "certificatesExpiredMessage": "Some certificates have expired. Consider replacing them with new certificates.",
-      "certificatesExpiringMessage": "Some certificates are expiring soon. Consider replacing them with new certificates.",
-      "incorrectCertificateFileType": "File is not a correct certificate type"
-    },
-    "modal": {
-      "alternateName": "Alternate name",
-      "alternateNameHelperText": "Add multiple alternate names separated by space",
-      "certificateFile": "Certificate file",
-      "certificateSigningRequest": "Certificate Signing Request (CSR)",
-      "certificateType": "Certificate type",
-      "challengePassword": "Challenge password",
-      "city": "City",
-      "commonName": "Common name",
-      "companyName": "Company name",
-      "companyUnit": "Company unit",
-      "contactPerson": "Contact person",
-      "country": "Country/Region",
-      "deleteConfirmMessage": "Are you sure you want to delete '%{certificate}' issued by %{issuedBy}? This action cannot be undone.",
-      "duplicateAlternateName": "Duplicate alternate name",
-      "emailAddress": "Email address",
-      "generateACertificateSigningRequest": "Generate a Certificate Signing Request (CSR)",
-      "keyBitLength": "Key bit length",
-      "keyCurveId": "Key curve ID",
-      "keyPairAlgorithm": "Key pair algorithm",
-      "privateKey": "Private key",
-      "state": "State"
-    },
-    "table": {
-      "certificate": "Certificate",
-      "issuedBy": "Issued by",
-      "issuedTo": "Issued to",
-      "validFrom": "Valid from",
-      "validUntil": "Valid until"
-    },
-    "toast": {
-      "errorAddCertificate": "Error adding certificate.",
-      "errorDeleteCertificate": "Error deleting certificate.",
-      "errorReplaceCertificate": "Error replacing certificate.",
-      "successAddCertificate": "Successfully added %{certificate}.",
-      "successDeleteCertificate": "Successfully deleted %{certificate}.",
-      "successReplaceCertificate": "Successfully replaced %{certificate}."
-    }
-  },
-  "pageVirtualMedia": {
-    "configureConnection": "Configure Connection",
-    "defaultDeviceName": "Virtual media device",
-    "start": "Start",
-    "stop": "Stop",
-    "virtualMediaSubTitleFirst": "Load image from web browser",
-    "virtualMediaSubTitleSecond": "Load image from external server",
-    "modal": {
-      "password": "Password",
-      "serverUri": "External server URI",
-      "title": "Legacy mode configuration",
-      "username": "Username"
-||||||| b24a483
-    "table": {
-      "created": "Created",
-      "bootCount": "Boot count",
-      "postCode": "POST code",
-      "searchLogs": "Search logs",
-      "timeStampOffset": "Time stamp offset"
-    }
-  },
-  "pageProfileSettings": {
-    "browserOffset": "Browser offset (%{timezone})",
-    "changePassword": "Change password",
-    "confirmPassword": "Confirm new password",
-    "defaultUTC": "Default (UTC)",
-    "newPassword": "New password",
-    "newPassLabelTextInfo": "Password must be between %{min} - %{max} characters",
-    "passwordsDoNotMatch": "Passwords do not match",
-    "profileInfoTitle": "Profile information",
-    "timezone": "Timezone",
-    "timezoneDisplay": "Timezone display preference",
-    "timezoneDisplayDesc": "Select how time is displayed throughout the application",
-    "username": "Username",
-    "toast": {
-      "successUpdatingTimeZone": "Timezone updated successfully."
-    }
-  },
-  "pageNetwork": {
-    "dhcp": "DHCP",
-    "domainName": "domain name",
-    "dns": "DNS server",
-    "fqdn": "FQDN",
-    "hostname": "Hostname",
-    "interfaceSection": "Interface settings",
-    "ipv4": "IPv4",
-    "ipv4Addresses": "IPv4 addresses",
-    "ipv6": "IPv6",
-    "linkStatus": "Link status",
-    "macAddress": "MAC address",
-    "network": "network",
-    "networkSettings": "Network settings",
-    "ntp": "NTP server",
-    "pageDescription": "Configure BMC network settings",
-    "useDns": "Use DNS servers",
-    "useDomainName": "Use domain name",
-    "useNtp": "Use NTP servers",
-    "speed": "Speed (mbps)",
-    "staticDns": "Static DNS",
-    "modal": {
-      "editHostnameTitle": "Edit hostname",
-      "editMacAddressTitle": "Edit MAC address",
-      "gateway": "Gateway",
-      "ipAddress": "IP address",
-      "staticDns": "Static DNS",
-      "subnetMask": "Subnet mask"
-    },
-    "table": {
-      "addDnsAddress": "Add IP address",
-      "addIpv4Address": "Add static IPv4 address",
-      "addressOrigin": "Address origin",
-      "deleteDns": "Delete DNS address",
-      "deleteIpv4": "Delete IPv4 address",
-      "editDns": "Edit DNS address",
-      "editIpv4": "Edit IPv4 address",
-      "gateway": "Gateway",
-      "ipAddress": "IP address",
-      "subnet": "Subnet mask"
-    },
-    "toast": {
-      "errorSaveNetworkSettings": "Error updating %{setting} settings.",
-      "successSaveNetworkSettings": "Successfully updated %{setting} settings."
-    }
-  },
-  "pagePageNotFound": {
-    "description": "The requested resource could not be found."
-  },
-  "pagePowerRestorePolicy": {
-    "description": "Configure power policy to determine how the system starts after a power disturbance.",
-    "powerPoliciesLabel": "Power restore policies",
-    "policies": {
-      "AlwaysOn": "Always on",
-      "AlwaysOff": "Always off",
-      "LastState": "Last state"
-    },
-    "policiesDesc": {
-      "AlwaysOn": "Always on - The system always powers on when power is applied.",
-      "AlwaysOff": "Always off - The system always remains powered off when power is applied.",
-      "LastState": "Last state - The system returns to its last on or off power state when power is applied."
-    },
-    "toast": {
-      "errorSaveSettings": "Error saving settings.",
-      "successSaveSettings": "Power restore policy updated successfully."
-    }
-  },
-  "pageRebootBmc": {
-    "lastReboot": "Last BMC reboot",
-    "rebootBmc": "Reboot BMC",
-    "rebootInformation": "When you reboot the BMC, your web browser loses contact with the BMC for several minutes. When the BMC is back online, you may need to log in again.",
-    "modal": {
-      "confirmMessage": "Are you sure you want to reboot the BMC?",
-      "confirmTitle": "Confirm BMC reboot"
-    },
-    "toast": {
-      "errorRebootStart": "Error rebooting BMC.",
-      "successRebootStart": "Rebooting BMC."
-    }
-  },
-  "pagePolicies": {
-    "ipmi": "Network IPMI (out-of-band IPMI)",
-    "ipmiDescription": "Allow remote management of the platform via IPMI. Tools such as ipmitool require this setting to be enabled.",
-    "rtad": "RTAD",
-    "rtadDescription": "This option enables or disables the Remote Trusted Attestation Daemon for host firmware",
-    "ssh": "BMC shell (via SSH)",
-    "sshDescription": "Allow access to shell sessions via SSH, through port 22 on the BMC.",
-    "modal": {
-      "disableMessage": {
-        "ipmi": "Are you sure you want to disable @:pagePolicies.ipmi?",
-        "ssh": "Are you sure you want to disable @:pagePolicies.ssh?"
-      },
-      "enableMessage": {
-        "ipmi": "Are you sure you want to enable @:pagePolicies.ipmi?",
-        "ssh": "Are you sure you want to enable @:pagePolicies.ssh?"
-      }
-    },
-    "toast": {
-      "errorIpmiDisabled": "Error disabling IPMI security setting.",
-      "errorIpmiEnabled": "Error enabling IPMI security setting.",
-      "errorRtadDisabled": "Error disabling RTAD security setting.",
-      "errorRtadEnabled": "Error enabling RTAD security setting.",
-      "errorSshDisabled": "Error disabling SSH security setting.",
-      "errorSshEnabled": "Error enabling SSH security setting.",
-      "errorVtpmDisabled": "Error disabling VirtualTPM security setting.",
-      "errorVtpmEnabled": "Error enabling VirtualTPM security setting.",
-      "successIpmiDisabled": "Successfully disabled IPMI security setting.",
-      "successIpmiEnabled": "Successfully enabled IPMI security setting.",
-      "successRtadDisabled": "Successfully disabled RTAD security setting.",
-      "successRtadEnabled": "Successfully enabled RTAD security setting.",
-      "successSshDisabled": "Successfully disabled SSH security setting.",
-      "successSshEnabled": "Successfully enabled SSH security setting.",
-      "successVtpmDisabled": "Successfully disabled VirtualTPM security setting.",
-      "successVtpmEnabled": "Successfully enabled VirtualTPM security setting."
-    },
-    "vtpm": "VirtualTPM",
-    "vtpmDescription": "Enabling vTPM makes a TPM available to the guest operating system."
-  },
-  "pagePower": {
-    "description": "Set a power cap to keep power consumption at or below the specified value in watts",
-    "powerCapLabel": "Power cap value (in watts)",
-    "powerCapLabelTextInfo": " Value must be between %{min} and %{max}",
-    "powerCapSettingData": "Apply power cap",
-    "powerCapSettingLabel": "Power cap setting",
-    "powerConsumption": "Current power consumption",
-    "serverPowCapSetting": "Server power cap setting"
-  },
-  "pageSensors": {
-    "exportFilePrefix": "sensors_",
-    "searchForSensors": "Search for sensors",
-    "table": {
-      "currentValue": "Current value",
-      "lowerWarning": "Lower warning",
-      "lowerCritical": "Lower critical",
-      "name": "Name",
-      "status": "Status",
-      "upperWarning": "Upper warning",
-      "upperCritical": "Upper critical"
-    }
-  },
-  "pageSerialOverLan": {
-    "alert": {
-      "disconnectedAlertMessage" : "System must be powered on to connect"
-    },
-    "connected": "Connected",
-    "disconnected": "Disconnected",
-    "openNewTab": "Open in new tab",
-    "status": "Status",
-    "subTitle": "SOL console redirects the server's serial port output to this window."
-  },
-  "pageServerPowerOperations": {
-    "currentStatus": "Current status",
-    "serverBootSettings": "Boot settings",
-    "serverStatus": "Server status",
-    "immediateReboot": "Immediate – Server reboots without operating system shutting down; may cause data corruption",
-    "immediateShutdown": "Immediate - Server shuts down without operating system shutting down; may cause data corruption",
-    "lastPowerOperation": "Last power operation",
-    "oneTimeBootWarning": "Pending one time boot. Next boot will be performed with the specified one time boot settings. Subsequent boots will be performed with the default settings.",
-    "operationInProgress": "There are no options to display while a power operation is in progress. When complete, power operations will be displayed here.",
-    "operations": "Operations",
-    "orderlyReboot": "Orderly – operating system shuts down, then server reboots",
-    "orderlyShutdown": "Orderly - operating system shuts down, then server shuts down",
-    "powerOn": "Power on",
-    "reboot": "Reboot",
-    "rebootServer": "Reboot server",
-    "shutDown": "Shut down",
-    "shutdownServer": "Shutdown server",
-    "bootSettings": {
-      "bootSettingsOverride": "Boot settings override",
-      "enableOneTimeBoot": "Enable one time boot",
-      "tpmRequiredPolicy": "TPM required policy",
-      "tpmRequiredPolicyHelper": "Enable to ensure the system only boots when the TPM is functional."
-    },
-    "modal": {
-      "confirmRebootMessage": "Are you sure you want to reboot?",
-      "confirmRebootTitle": "Server reboot will cause outage",
-      "confirmShutdownMessage": "Are you sure you want to shut down?",
-      "confirmShutdownTitle": "Server shutdown will cause outage"
-    },
-    "toast": {
-      "errorSaveSettings": "Error saving settings.",
-      "successSaveSettings": "Successfully saved settings."
-    }
-  },
-  "pageCertificates": {
-    "addNewCertificate": "Add new certificate",
-    "caCertificate": "CA Certificate",
-    "deleteCertificate": "Delete certificate",
-    "generateCsr": "Generate CSR",
-    "httpsCertificate": "HTTPS Certificate",
-    "ldapCertificate": "LDAP Certificate",
-    "replaceCertificate": "Replace certificate",
-    "alert": {
-      "certificateExpiredMessage": "%{certificate} has expired. Consider replacing it with a new certificate.",
-      "certificateExpiringMessage": "%{certificate} is expiring soon. Consider replacing it with a new certificate.",
-      "certificatesExpiredMessage": "Some certificates have expired. Consider replacing them with new certificates.",
-      "certificatesExpiringMessage": "Some certificates are expiring soon. Consider replacing them with new certificates.",
-      "incorrectCertificateFileType": "File is not a correct certificate type"
-    },
-    "modal": {
-      "alternateName": "Alternate name",
-      "alternateNameHelperText": "Add multiple alternate names separated by space",
-      "certificateFile": "Certificate file",
-      "certificateSigningRequest": "Certificate Signing Request (CSR)",
-      "certificateType": "Certificate type",
-      "challengePassword": "Challenge password",
-      "city": "City",
-      "commonName": "Common name",
-      "companyName": "Company name",
-      "companyUnit": "Company unit",
-      "contactPerson": "Contact person",
-      "country": "Country/Region",
-      "deleteConfirmMessage": "Are you sure you want to delete '%{certificate}' issued by %{issuedBy}? This action cannot be undone.",
-      "duplicateAlternateName": "Duplicate alternate name",
-      "emailAddress": "Email address",
-      "generateACertificateSigningRequest": "Generate a Certificate Signing Request (CSR)",
-      "keyBitLength": "Key bit length",
-      "keyCurveId": "Key curve ID",
-      "keyPairAlgorithm": "Key pair algorithm",
-      "privateKey": "Private key",
-      "state": "State"
-    },
-    "table": {
-      "certificate": "Certificate",
-      "issuedBy": "Issued by",
-      "issuedTo": "Issued to",
-      "validFrom": "Valid from",
-      "validUntil": "Valid until"
-    },
-    "toast": {
-      "errorAddCertificate": "Error adding certificate.",
-      "errorDeleteCertificate": "Error deleting certificate.",
-      "errorReplaceCertificate": "Error replacing certificate.",
-      "successAddCertificate": "Successfully added %{certificate}.",
-      "successDeleteCertificate": "Successfully deleted %{certificate}.",
-      "successReplaceCertificate": "Successfully replaced %{certificate}."
-    }
-  },
-  "pageVirtualMedia": {
-    "configureConnection": "Configure Connection",
-    "defaultDeviceName": "Virtual media device",
-    "start": "Start",
-    "stop": "Stop",
-    "virtualMediaSubTitleFirst": "Load image from web browser",
-    "virtualMediaSubTitleSecond": "Load image from external server",
-    "modal": {
-      "password": "Password",
-      "serverUri": "External server URI",
-      "title": "Legacy mode configuration",
-      "username": "Username"
-=======
     "pageVirtualMedia": {
         "configureConnection": "Configure Connection",
         "defaultDeviceName": "Virtual media device",
@@ -1630,7 +958,6 @@
             "serverClosedSuccessfully": "Server closed successfully",
             "serverClosedWithErrors": "Server closed with errors"
         }
->>>>>>> origin/master
     },
     "countries": {
         "AF": "Afghanistan",
@@ -1882,5 +1209,17 @@
         "ZM": "Zambia",
         "ZW": "Zimbabwe",
         "AX": "Åland Islands"
+    },
+    "unit": {
+        "℃": "℃",
+        "A": "A",
+        "bit": "bit",
+        "GiB": "GiB",
+        "MHz": "MHz",
+        "MiB": "MiB",
+        "Percent": "%",
+        "RPM": "RPM",
+        "V": "V",
+        "W": "W"
     }
 }

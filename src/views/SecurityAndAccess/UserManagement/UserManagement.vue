@@ -222,21 +222,12 @@ export default {
             },
             {
               value: 'delete',
-<<<<<<< HEAD
-              enabled:
-                user.UserName === 'root' || user.UserName === 'service'
-                  ? false
-                  : true,
-||||||| b24a483
-              enabled: user.UserName === 'root' ? false : true,
-=======
               enabled:
                 user.UserName === this.$store.getters['global/username']
                   ? false
                   : true && user.UserName === 'root'
                   ? false
                   : true,
->>>>>>> origin/master
               title: this.$tc('pageUserManagement.deleteUser'),
             },
           ],
