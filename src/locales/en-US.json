@@ -181,7 +181,8 @@
             "disconnectMessage": "Are you sure you want to disconnect %{count} session? This action cannot be undone. | Are you sure you want to disconnect %{count} sessions? This action cannot be undone."
         },
         "table": {
-            "clientID": "Client ID",
+            "sessionID": "Session ID",
+            "context": "Context",
             "username": "Username",
             "ipAddress": "IP address",
             "searchSessions": "Search sessions"
@@ -681,6 +682,7 @@
         "confirmPassword": "Confirm new password",
         "defaultUTC": "Default (UTC)",
         "newPassword": "New password",
+        "currentPassword": "Current password",
         "newPassLabelTextInfo": "Password must be between %{min} - %{max} characters",
         "passwordsDoNotMatch": "Passwords do not match",
         "profileInfoTitle": "Profile information",
@@ -689,7 +691,8 @@
         "timezoneDisplayDesc": "Select how time is displayed throughout the application",
         "username": "Username",
         "toast": {
-            "successUpdatingTimeZone": "Timezone updated successfully."
+            "successUpdatingTimeZone": "Timezone updated successfully.",
+            "wrongCredentials": "Wrong credentials"
         }
     },
     "pageNetwork": {

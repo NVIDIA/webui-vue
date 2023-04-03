@@ -180,7 +180,8 @@
             "disconnectMessage": "Вы уверены что хотите отключить %{count} сессию? Действие не может быть отменено. | Вы уверены что хотите отключить все %{count} сессии? Действие не может быть отменено."
         },
         "table": {
-            "clientID": "Идентификатор клиента",
+            "sessionID": "идентификатор сессии",
+            "context": "контекст",
             "username": "Имя пользователя",
             "ipAddress": "IP адрес",
             "searchSessions": "Поиск сессий"
@@ -711,6 +712,9 @@
         "speed": "Скорость (Мбит/с)",
         "staticDns": "Статический DNS",
         "modal": {
+            "confirmDisableDhcp": "Вы уверены, что хотите выключить DHCP?",
+            "confirmEnableDhcp": "Когда DHCP будет включён, статические IP адреса станут недоступны.",
+            "dhcpConfirmTitle": "%{dhcpState} DHCP",
             "editHostnameTitle": "Редактировать имя хоста",
             "editMacAddressTitle": "Редактировать MAC адрес",
             "gateway": "Шлюз",
@@ -732,7 +736,7 @@
         },
         "toast": {
             "errorSaveNetworkSettings": "Ошибка обновления %{setting} настроек.",
-            "successSaveNetworkSettings": "Успешно обновлено %{setting} настроек."
+            "successSaveNetworkSettings": "Успешное обновление %{setting} настроек."
         }
     },
     "pagePageNotFound": {

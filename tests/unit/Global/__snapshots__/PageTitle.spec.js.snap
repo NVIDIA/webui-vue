@@ -5,7 +5,7 @@ exports[`PageTitle.vue should render correctly 1`] = `
   class="page-title"
 >
   <h1>
-    appPageTitle.undefined
+    Page Title
   </h1>
    
   <p>

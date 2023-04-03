@@ -329,6 +329,16 @@ export default {
           }
         });
     },
+    exportAllLogsString() {
+      {
+        return this.$store.getters['postCodeLogs/allPostCodes'].map(
+          (postCodes) => {
+            const allLogsString = JSON.stringify(postCodes);
+            return allLogsString;
+          }
+        );
+      }
+    },
     exportAllLogs() {
       return this.$store.getters['postCodeLogs/allPostCodes'];
     },
