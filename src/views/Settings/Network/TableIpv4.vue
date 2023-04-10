@@ -159,7 +159,11 @@ export default {
   methods: {
     getIpv4TableItems() {
       const index = this.tabIndex;
-      const addresses = this.ethernetData[index].IPv4Addresses || [];
+      const addresses =
+        this.ethernetData[index].IPv4Addresses.filter(
+          (ipv4) =>
+            ipv4.AddressOrigin === 'Static' || ipv4.AddressOrigin === 'DHCP'
+        ) || [];
       this.form.ipv4TableItems = addresses.map((ipv4) => {
         return {
           Address: ipv4.Address,
@@ -181,6 +185,7 @@ export default {
       }
     },
     deleteIpv4TableRow(index) {
+      const AddressOrigin = this.form.ipv4TableItems[index].AddressOrigin;
       this.form.ipv4TableItems.splice(index, 1);
       const newIpv4Array = this.form.ipv4TableItems.map((ipv4) => {
         const { Address, SubnetMask, Gateway } = ipv4;
@@ -190,6 +195,12 @@ export default {
           Gateway,
         };
       });
+      if (newIpv4Array.length == 0 && AddressOrigin === 'Static') {
+        this.$store
+          .dispatch('network/saveDhcpEnabledState', true)
+          .then((message) => this.successToast(message))
+          .catch(({ message }) => this.errorToast(message));
+      }
       this.$store
         .dispatch('network/editIpv4Address', newIpv4Array)
         .then((message) => this.successToast(message))
