@@ -53,7 +53,7 @@
             </b-form-checkbox>
           </b-col>
         </b-row>
-        <b-row class="setting-section">
+        <!-- <b-row class="setting-section">
           <b-col class="d-flex align-items-center justify-content-between">
             <dl class="mt-3 mr-3 w-75">
               <dt>{{ $t('pagePolicies.vtpm') }}</dt>
@@ -102,7 +102,7 @@
               <span v-else>{{ $t('global.status.disabled') }}</span>
             </b-form-checkbox>
           </b-col>
-        </b-row>
+        </b-row> -->
         <b-row class="setting-section">
           <b-col class="d-flex align-items-center justify-content-between">
             <dl class="mt-3 mr-3 w-75">
