@@ -500,7 +500,7 @@ export default {
         });
     },
     exportAllLogs() {
-      {
+      if (this.allLogs.length > 0) {
         return this.$store.getters['eventLog/allEvents'].map((eventLogs) => {
           return eventLogs;
         });
