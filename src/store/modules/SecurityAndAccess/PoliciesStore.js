@@ -161,24 +161,19 @@ const PoliciesStore = {
           }
         });
     },
-    async saveSessionTimeoutValue({ commit }, sessionTimeoutNewValue) {
-      commit('setSessionTimeoutValue', sessionTimeoutNewValue);
+    async saveSessionTimeoutValue({ dispatch }, sessionTimeoutNewValue) {
       const sessionValue = {
         SessionTimeout: sessionTimeoutNewValue,
       };
       return await api
         .patch('/redfish/v1/SessionService', sessionValue)
+        .then(() => dispatch('getSessionTimeout'))
         .then(() => {
-          if (sessionTimeoutNewValue) {
-            return i18n.t('pagePolicies.toast.successSessionTimeout');
-          }
+          return i18n.t('pagePolicies.toast.successSessionTimeout');
         })
         .catch((error) => {
           console.log(error);
-          commit('setSessionTimeoutValue', sessionTimeoutNewValue);
-          if (sessionTimeoutNewValue) {
-            throw new Error(i18n.t('pagePolicies.toast.errorSessionTimeout'));
-          }
+          throw new Error(i18n.t('pagePolicies.toast.errorSessionTimeout'));
         });
     },
   },
