@@ -127,6 +127,30 @@
             </b-form-select>
           </b-col>
         </b-row>
+        <b-row class="setting-section">
+          <b-col class="d-flex align-items-center justify-content-between">
+            <dl class="mt-3 mr-3 w-75">
+              <dt>{{ $t('pagePolicies.webSessionTimeOut') }}</dt>
+              <dd>
+                {{ $t('pagePolicies.webSessionTimeOutDescription') }}
+              </dd>
+            </dl>
+          </b-col>
+          <b-col lg="3" class="session-timeout">
+            <b-form-select
+              id="session-timeout-options"
+              v-model="sessionTimeoutState"
+              :options="sessionTimeOutOptions"
+              @change="saveSessionTimeoutValue"
+            >
+              <template #first>
+                <b-form-select-option :value="null" disabled>
+                  {{ $t('global.form.selectAnOption') }}
+                </b-form-select-option>
+              </template>
+            </b-form-select>
+          </b-col>
+        </b-row>
       </b-col>
     </b-row>
   </b-container>

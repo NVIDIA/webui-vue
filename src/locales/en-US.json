@@ -402,6 +402,7 @@
             "description": "Description",
             "efficiencyPercent": "Efficiency",
             "enabled": "Enabled",
+            "errorCorrection": "Error correction",
             "fanSpeed": "Fan speed",
             "firmwareVersion": "Firmware version",
             "graphicalConsole": "Graphical console",
@@ -431,6 +432,7 @@
             "processorArchitecture": "Processor architecture",
             "processorSummary": "Processor summary",
             "processorType": "Processor type",
+            "rankCount": "Rank count",
             "serialConsole": "Serial console",
             "serialNumber": "Serial number",
             "serviceEnabled": "Service enabled",
@@ -500,6 +502,7 @@
             "ldapSettings": "LDAP settings"
         },
         "form": {
+            "activeDirectory": "Active Directory",
             "baseDn": "Base DN",
             "bindDn": "Bind DN",
             "bindPassword": "Bind password",
@@ -508,6 +511,7 @@
             "ldapAuthentication": "LDAP authentication",
             "ldapCertificateValidUntil": "LDAP Certificate valid until",
             "manageSslCertificates": "Manage SSL certificates",
+            "openLDAP": "OpenLDAP",
             "secureLdapHelper": "A CA certificate and an LDAP certificate are required to enable secure LDAP",
             "secureLdapUsingSsl": "Secure LDAP using SSL",
             "serverUri": "Server URI",
