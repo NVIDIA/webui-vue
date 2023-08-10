@@ -4,8 +4,8 @@ import Axios from 'axios';
 //dotenv customizations.
 import store from '../store';
 
-Axios.defaults.headers.common['Accept'] = 'application/json';
-Axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
+//Axios.defaults.headers.common['Accept'] = 'application/json';
+//Axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
 
 const api = Axios.create({
   withCredentials: true,
