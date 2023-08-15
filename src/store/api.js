@@ -16,8 +16,8 @@ api.interceptors.response.use(undefined, (error) => {
 
   // TODO: Provide user with a notification and way to keep system active
   if (response.status == 401) {
-    if (response.config.url != '/login') {
-      window.location = '/login';
+    if (response.config.url != '/') {
+      window.location = '/';
       // Commit logout to remove XSRF-TOKEN cookie
       store.commit('authentication/logout');
     }
