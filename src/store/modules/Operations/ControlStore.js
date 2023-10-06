@@ -12,10 +12,9 @@ import i18n from '@/i18n';
 const checkForServerStatus = function (serverStatus) {
   return new Promise((resolve) => {
     const timer = setTimeout(() => {
-      this.dispatch('global/getSystemInfo');
       resolve();
       unwatch();
-    }, 30000 /*30 secs*/);
+    }, 300000 /*5mins*/);
     const unwatch = this.watch(
       (state) => state.global.serverStatus,
       (value) => {
