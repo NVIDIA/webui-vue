@@ -93,7 +93,7 @@ export default {
   methods: {
     openTerminal() {
       const token = this.$store.getters['authentication/token'];
-      this.ws = new WebSocket(`wss://${window.location.host}/console/default`, [
+      this.ws = new WebSocket(`wss://${window.location.host}/console0`, [
         token,
       ]);
 
@@ -128,11 +128,11 @@ export default {
 
       try {
         this.ws.onopen = function () {
-          console.log('websocket console/default opened');
+          console.log('websocket console0/ opened');
         };
         this.ws.onclose = function (event) {
           console.log(
-            'websocket console/default closed. code: ' +
+            'websocket console0/ closed. code: ' +
               event.code +
               ' reason: ' +
               event.reason
