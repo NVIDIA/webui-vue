@@ -22,7 +22,7 @@
     </ul>
 
     <!-- Warning message -->
-    <template v-if="!isServerOff">
+    <template v-if="!isServerOff && showWarning">
       <p class="d-flex mb-2">
         <status-icon status="danger" />
         <span id="reset-to-default-warning" class="ml-1">
@@ -79,6 +79,7 @@ export default {
   data() {
     return {
       confirm: false,
+      showWarning: process.env.VUE_APP_ENV_NAME !== 'nvidia-bluefield',
     };
   },
   computed: {
@@ -99,7 +100,7 @@ export default {
   methods: {
     handleConfirm() {
       this.$v.$touch();
-      if (this.$v.$invalid) return;
+      if (this.$v.$invalid && this.showWarning) return;
       this.$emit('okConfirm');
       this.$nextTick(() => this.$refs.modal.hide());
       this.resetConfirm();
