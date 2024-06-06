@@ -44,6 +44,30 @@
         </dl>
       </b-col>
     </b-row>
+    <b-row v-if="showIPv6">
+      <b-col>
+        <dl>
+          <dt>{{ $t('pageOverview.ipv6StaticAddress') }}</dt>
+          <dd>
+            {{ dataFormatter(network.staticAddressV6) }}
+          </dd>
+        </dl>
+      </b-col>
+      <b-col>
+        <dl>
+          <dt>{{ $t('pageOverview.dhcp6') }}</dt>
+          <dd>
+            {{
+              dataFormatter(
+                network.dhcpAddressV6.length !== 0
+                  ? network.dhcpAddressV6[0].Address
+                  : null
+              )
+            }}
+          </dd>
+        </dl>
+      </b-col>
+    </b-row>
   </overview-card>
 </template>
 
@@ -57,6 +81,11 @@ export default {
     OverviewCard,
   },
   mixins: [DataFormatterMixin],
+  data() {
+    return {
+      showIPv6: process.env.VUE_APP_ENV_NAME === 'nvidia-bluefield',
+    };
+  },
   computed: {
     network() {
       return this.$store.getters['network/globalNetworkSettings'][0];

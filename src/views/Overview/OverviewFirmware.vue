@@ -8,8 +8,8 @@
         <dl>
           <dt>{{ $t('pageOverview.runningVersion') }}</dt>
           <dd>{{ dataFormatter(runningVersion) }}</dd>
-          <dt>{{ $t('pageOverview.backupVersion') }}</dt>
-          <dd>{{ dataFormatter(backupVersion) }}</dd>
+          <dt v-if="showBackup">{{ $t('pageOverview.backupVersion') }}</dt>
+          <dd v-if="showBackup">{{ dataFormatter(backupVersion) }}</dd>
         </dl>
       </b-col>
       <b-col sm="6">
@@ -33,6 +33,11 @@ export default {
     OverviewCard,
   },
   mixins: [DataFormatterMixin],
+  data() {
+    return {
+      showBackup: process.env.VUE_APP_ENV_NAME !== 'nvidia-bluefield',
+    };
+  },
   computed: {
     ...mapState({
       server: (state) => state.system.systems[0],

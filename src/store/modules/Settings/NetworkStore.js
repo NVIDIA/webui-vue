@@ -32,6 +32,8 @@ const NetworkStore = {
           HostName,
           IPv4Addresses,
           IPv4StaticAddresses,
+          IPv6Addresses,
+          IPv6StaticAddresses,
           LinkStatus,
           MACAddress,
         } = data;
@@ -40,11 +42,16 @@ const NetworkStore = {
           dhcpAddress: IPv4Addresses.filter(
             (ipv4) => ipv4.AddressOrigin === 'DHCP'
           ),
+          dhcpAddressV6: IPv6Addresses.filter(
+            (ipv6) =>
+              ipv6.AddressOrigin === 'SLAAC' || ipv6.AddressOrigin === 'DHCPv6'
+          ),
           dhcpEnabled: DHCPv4.DHCPEnabled,
           hostname: HostName,
           macAddress: MACAddress,
           linkStatus: LinkStatus,
           staticAddress: IPv4StaticAddresses[0]?.Address, // Display first static address on overview page
+          staticAddressV6: IPv6StaticAddresses[0]?.Address, // Display first static address on overview page
           useDnsEnabled: DHCPv4.UseDNSServers,
           useDomainNameEnabled: DHCPv4.UseDomainName,
           useNtpEnabled: DHCPv4.UseNTPServers,

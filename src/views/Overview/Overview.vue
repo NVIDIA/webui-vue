@@ -12,13 +12,13 @@
       </b-card-group>
       <b-card-group deck>
         <overview-network />
-        <overview-power />
+        <overview-power v-if="showPower" />
       </b-card-group>
     </page-section>
     <page-section :section-title="$t('pageOverview.statusInformation')">
       <b-card-group deck>
         <overview-events />
-        <overview-inventory />
+        <overview-inventory v-if="showInventory" />
         <overview-dumps v-if="showDumps" />
       </b-card-group>
     </page-section>
@@ -56,6 +56,8 @@ export default {
   data() {
     return {
       showDumps: process.env.VUE_APP_ENV_NAME === 'ibm',
+      showPower: process.env.VUE_APP_ENV_NAME !== 'nvidia-bluefield',
+      showInventory: process.env.VUE_APP_ENV_NAME !== 'nvidia-bluefield',
     };
   },
   created() {
@@ -88,13 +90,13 @@ export default {
     const promises = [
       eventsPromise,
       firmwarePromise,
-      inventoryPromise,
       networkPromise,
-      powerPromise,
       quicklinksPromise,
       serverPromise,
     ];
     if (this.showDumps) promises.push(dumpsPromise);
+    if (this.showInventory) promises.push(inventoryPromise);
+    if (this.showPower) promises.push(powerPromise);
     Promise.all(promises).finally(() => this.endLoader());
   },
 };

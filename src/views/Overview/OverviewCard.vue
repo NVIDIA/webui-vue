@@ -15,7 +15,9 @@
           <span v-if="exportButton">{{ $t('global.action.exportAll') }}</span>
         </b-button>
         <span v-if="exportButton || downloadButton" class="pl-2 pr-2">|</span>
-        <b-link :to="to">{{ $t('pageOverview.viewMore') }}</b-link>
+        <b-link v-if="toLink" :to="to">{{
+          $t('pageOverview.viewMore')
+        }}</b-link>
       </div>
     </div>
     <slot></slot>
@@ -42,6 +44,10 @@ export default {
     exportButton: {
       type: Boolean,
       default: false,
+    },
+    toLink: {
+      type: Boolean,
+      default: true,
     },
 
     fileName: {
