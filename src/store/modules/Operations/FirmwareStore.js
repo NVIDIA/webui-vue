@@ -83,19 +83,35 @@ const FirmwareStore = {
           const bmcFirmware = [];
           const hostFirmware = [];
           response.forEach(({ data }) => {
-            const firmwareType = data?.RelatedItem?.[0]?.['@odata.id']
-              .split('/')
-              .pop();
-            const item = {
-              version: data?.Version,
-              id: data?.Id,
-              location: data?.['@odata.id'],
-              status: data?.Status?.Health,
-            };
-            if (firmwareType === 'bmc') {
-              bmcFirmware.push(item);
-            } else if (firmwareType === 'Bios') {
-              hostFirmware.push(item);
+            if (process.env.VUE_APP_ENV_NAME === 'nvidia-bluefield') {
+              const firmwareType = data?.Id;
+              const item = {
+                version: data?.Version,
+                id: data?.Id,
+                location: data?.['@odata.id'],
+                status: data?.Status?.Health,
+              };
+              if (firmwareType === 'BMC_Firmware') {
+                bmcFirmware.push(item);
+              } else if (firmwareType === 'DPU_ATF') {
+                hostFirmware.push(item);
+                commit('setActiveHostFirmwareId', firmwareType);
+              }
+            } else {
+              const firmwareType = data?.RelatedItem?.[0]?.['@odata.id']
+                .split('/')
+                .pop();
+              const item = {
+                version: data?.Version,
+                id: data?.Id,
+                location: data?.['@odata.id'],
+                status: data?.Status?.Health,
+              };
+              if (firmwareType === 'bmc') {
+                bmcFirmware.push(item);
+              } else if (firmwareType === 'Bios') {
+                hostFirmware.push(item);
+              }
             }
           });
           commit('setBmcFirmware', bmcFirmware);

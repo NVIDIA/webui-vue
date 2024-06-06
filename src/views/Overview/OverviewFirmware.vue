@@ -50,7 +50,13 @@ export default {
       activeBmcFirmware() {
         return this.$store.getters[`firmware/activeBmcFirmware`];
       },
+      activeHostFirmware() {
+        return this.$store.getters[`firmware/activeHostFirmware`];
+      },
       firmwareVersion() {
+        if (process.env.VUE_APP_ENV_NAME === 'nvidia-bluefield') {
+          return this.activeHostFirmware?.version;
+        }
         return this.server?.firmwareVersion;
       },
       runningVersion() {
