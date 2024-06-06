@@ -38,6 +38,14 @@ const DumpsStore = {
         .then((response) => api.get(response.data.Entries['@odata.id']))
         .catch((error) => console.log(error));
     },
+    async getBmcDumps({ commit, dispatch }) {
+      return await api
+        .all([dispatch('getBmcDumpEntries')])
+        .then((response) => {
+          commit('setAllDumps', response[0].data?.Members);
+        })
+        .catch((error) => console.log(error));
+    },
     async getAllDumps({ commit, dispatch }) {
       return await api
         .all([dispatch('getBmcDumpEntries'), dispatch('getSystemDumpEntries')])
@@ -91,7 +99,7 @@ const DumpsStore = {
       return await api
         .all(promises)
         .then((response) => {
-          dispatch('getAllDumps');
+          dispatch('getBmcDumps');
           return response;
         })
         .then(

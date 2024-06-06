@@ -34,6 +34,7 @@
               <table-filter
                 :filters="tableFilters"
                 @filter-change="onFilterChange"
+                v-if="showTableFilters"
               />
             </b-col>
           </b-row>
@@ -253,6 +254,7 @@ export default {
           ],
         },
       ],
+      showTableFilters: process.env.VUE_APP_ENV_NAME !== 'nvidia-bluefield',
       activeFilters: [],
       currentPage: currentPage,
       filterEndDate: null,
@@ -306,7 +308,7 @@ export default {
   },
   created() {
     this.startLoader();
-    this.$store.dispatch('dumps/getBmcDumpEntries').finally(() => {
+    this.$store.dispatch('dumps/getBmcDumps').finally(() => {
       this.endLoader();
       this.isBusy = false;
     });

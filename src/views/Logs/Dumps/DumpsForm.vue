@@ -45,10 +45,13 @@ export default {
   data() {
     return {
       selectedDumpType: null,
-      dumpTypeOptions: [
-        { value: 'bmc', text: this.$t('pageDumps.form.bmcDump') },
-        { value: 'system', text: this.$t('pageDumps.form.systemDump') },
-      ],
+      dumpTypeOptions:
+        process.env.VUE_APP_ENV_NAME === 'nvidia-bluefield'
+          ? [{ value: 'bmc', text: this.$t('pageDumps.form.bmcDump') }]
+          : [
+              { value: 'bmc', text: this.$t('pageDumps.form.bmcDump') },
+              { value: 'system', text: this.$t('pageDumps.form.systemDump') },
+            ],
     };
   },
   validations() {
