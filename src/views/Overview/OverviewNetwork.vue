@@ -49,7 +49,7 @@
         <dl>
           <dt>{{ $t('pageOverview.ipv6StaticAddress') }}</dt>
           <dd>
-            {{ dataFormatter(network.staticAddressV6) }}
+            {{ dataFormatter(network.ipv6StaticAddress) }}
           </dd>
         </dl>
       </b-col>
@@ -59,9 +59,9 @@
           <dd>
             {{
               dataFormatter(
-                network.dhcpAddressV6.length !== 0
-                  ? network.dhcpAddressV6[0].Address
-                  : null,
+                network.dhcpv6Address.length !== 0
+                  ? network.dhcpv6Address[0].Address
+                  : null
               )
             }}
           </dd>
