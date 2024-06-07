@@ -881,6 +881,7 @@
         "operationInProgress": "There are no options to display while a power operation is in progress. When complete, power operations will be displayed here.",
         "operations": "Operations",
         "orderlyReboot": "Orderly – operating system shuts down, then server reboots",
+        "powerCycle": "Power Cycle - Operating system force shuts down, then server reboots (Trigger async firmware update tasks)",
         "orderlyShutdown": "Orderly - operating system shuts down, then server shuts down",
         "powerOn": "Power on",
         "reboot": "Reboot",

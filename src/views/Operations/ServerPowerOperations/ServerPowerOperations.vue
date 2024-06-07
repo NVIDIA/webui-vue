@@ -105,6 +105,15 @@
                 >
                   {{ $t('pageServerPowerOperations.immediateReboot') }}
                 </b-form-radio>
+                <b-form-radio
+                  v-if="showPowerCycle"
+                  v-model="form.rebootOption"
+                  name="reboot-option"
+                  data-test-id="serverPowerOperations-radio-powerCycle"
+                  value="cycle"
+                >
+                  {{ $t('pageServerPowerOperations.powerCycle') }}
+                </b-form-radio>
               </b-form-group>
               <b-button
                 variant="primary"
@@ -128,6 +137,7 @@
                   {{ $t('pageServerPowerOperations.orderlyShutdown') }}
                 </b-form-radio>
                 <b-form-radio
+                  v-if="showForceOff"
                   v-model="form.shutdownOption"
                   name="shutdown-option"
                   data-test-id="serverPowerOperations-radio-shutdownImmediate"
@@ -173,6 +183,8 @@ export default {
         rebootOption: 'orderly',
         shutdownOption: 'orderly',
       },
+      showPowerCycle: process.env.VUE_APP_ENV_NAME === 'nvidia-bluefield',
+      showForceOff: process.env.VUE_APP_ENV_NAME !== 'nvidia-bluefield',
     };
   },
   computed: {
@@ -234,6 +246,12 @@ export default {
           .msgBoxConfirm(modalMessage, modalOptions)
           .then((confirmed) => {
             if (confirmed) this.$store.dispatch('controls/serverHardReboot');
+          });
+      } else if (this.form.rebootOption === 'cycle') {
+        this.$bvModal
+          .msgBoxConfirm(modalMessage, modalOptions)
+          .then((confirmed) => {
+            if (confirmed) this.$store.dispatch('controls/serverPowerCycle');
           });
       }
     },

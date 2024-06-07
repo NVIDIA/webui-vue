@@ -109,6 +109,13 @@ const ControlStore = {
       commit('setOperationInProgress', false);
       dispatch('getLastPowerOperationTime');
     },
+    async serverPowerCycle({ dispatch, commit }) {
+      const data = { ResetType: 'PowerCycle' };
+      dispatch('serverPowerChange', data);
+      await checkForServerStatus.bind(this, 'on')();
+      commit('setOperationInProgress', false);
+      dispatch('getLastPowerOperationTime');
+    },
     async serverSoftPowerOff({ dispatch, commit }) {
       const data = { ResetType: 'GracefulShutdown' };
       dispatch('serverPowerChange', data);

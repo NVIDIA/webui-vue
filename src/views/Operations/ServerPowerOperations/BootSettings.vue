@@ -26,6 +26,7 @@
         {{ $t('pageServerPowerOperations.bootSettings.enableOneTimeBoot') }}
       </b-form-checkbox>
       <b-form-group
+        v-if="showTpm"
         :label="$t('pageServerPowerOperations.bootSettings.tpmRequiredPolicy')"
       >
         <b-form-text id="tpm-required-policy-help-block">
@@ -64,6 +65,7 @@ export default {
         oneTimeBoot: this.$store.getters['serverBootSettings/overrideEnabled'],
         tpmPolicyOn: this.$store.getters['serverBootSettings/tpmEnabled'],
       },
+      showTpm: process.env.VUE_APP_ENV_NAME !== 'nvidia-bluefield',
     };
   },
   computed: {
