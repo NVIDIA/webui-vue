@@ -3,7 +3,7 @@
     <b-row class="mb-4">
       <b-col lg="2" md="6">
         <dl>
-          <dt>{{ $t('pageNetwork.dhcp') }}</dt>
+          <dt>{{ $t('pageNetwork.dhcp6') }}</dt>
           <dd>
             <b-form-checkbox
               id="dhcp6Switch"

@@ -55,7 +55,7 @@ const NetworkStore = {
           macAddress: MACAddress,
           linkStatus: LinkStatus,
           staticAddress: IPv4StaticAddresses[0]?.Address, // Display first static address on overview page
-          ipv6StaticAddress: IPv6StaticAddresses[0]?.Address, // Display first static address on overview page
+          ipv6StaticAddress: IPv6StaticAddresses[0]?.Address,
           useDnsEnabled: DHCPv4.UseDNSServers,
           useDomainNameEnabled: DHCPv4.UseDomainName,
           useNtpEnabled: DHCPv4.UseNTPServers,
@@ -140,9 +140,7 @@ const NetworkStore = {
       };
       return api
         .patch(
-          `${await this.dispatch('global/getBmcPath')}/EthernetInterfaces/${
-            state.selectedInterfaceId
-          }`,
+          `${await this.dispatch('global/getBmcPath')}/EthernetInterfaces/${state.selectedInterfaceId}`,
           data,
         )
         .then(dispatch('getEthernetData'))
@@ -332,9 +330,7 @@ const NetworkStore = {
       const newAddress = [ipv6Form];
       return api
         .patch(
-          `${await this.dispatch('global/getBmcPath')}/EthernetInterfaces/${
-            state.selectedInterfaceId
-          }`,
+          `${await this.dispatch('global/getBmcPath')}/EthernetInterfaces/${state.selectedInterfaceId}`,
           { IPv6StaticAddresses: originalAddresses.concat(newAddress) },
         )
         .then(dispatch('getEthernetData'))
@@ -376,9 +372,7 @@ const NetworkStore = {
     async editIpv6Address({ dispatch, state }, ipv6TableData) {
       return api
         .patch(
-          `${await this.dispatch('global/getBmcPath')}/EthernetInterfaces/${
-            state.selectedInterfaceId
-          }`,
+          `${await this.dispatch('global/getBmcPath')}/EthernetInterfaces/${state.selectedInterfaceId}`,
           { IPv6StaticAddresses: ipv6TableData },
         )
         .then(dispatch('getEthernetData'))
