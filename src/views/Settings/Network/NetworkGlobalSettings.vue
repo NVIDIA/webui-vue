@@ -8,14 +8,19 @@
         <dl>
           <dt>
             {{ $t('pageNetwork.hostname') }}
-            <b-button variant="link" class="p-1" @click="initSettingsModal()">
+            <b-button
+              v-if="hostnameEditable"
+              variant="link"
+              class="p-1"
+              @click="initSettingsModal()"
+            >
               <icon-edit :title="$t('pageNetwork.modal.editHostnameTitle')" />
             </b-button>
           </dt>
           <dd>{{ dataFormatter(firstInterface.hostname) }}</dd>
         </dl>
       </b-col>
-      <b-col md="3">
+      <b-col v-if="showDomainState" md="3">
         <dl>
           <dt>{{ $t('pageNetwork.useDomainName') }}</dt>
           <dd>
@@ -91,6 +96,8 @@ export default {
   data() {
     return {
       hostname: '',
+      showDomainState: process.env.VUE_APP_ENV_NAME !== 'nvidia-bluefield',
+      hostnameEditable: process.env.VUE_APP_ENV_NAME !== 'nvidia-bluefield',
     };
   },
   computed: {

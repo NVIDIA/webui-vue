@@ -37,6 +37,7 @@
             <dt>
               {{ $t('pageNetwork.macAddress') }}
               <b-button
+                v-if="macAddressEditable"
                 variant="link"
                 class="p-1"
                 @click="initMacAddressModal()"
@@ -83,6 +84,7 @@ export default {
       linkSpeed: '',
       fqdn: '',
       macAddress: '',
+      macAddressEditable: process.env.VUE_APP_ENV_NAME !== 'nvidia-bluefield',
     };
   },
   computed: {
