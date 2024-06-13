@@ -31,7 +31,7 @@
               switch
               @change="changeDomainNameState"
             >
-              <span v-if="useDomainNameState">
+              <span v-if="domainState">
                 {{ $t('global.status.enabled') }}
               </span>
               <span v-else>{{ $t('global.status.disabled') }}</span>
@@ -50,7 +50,7 @@
               switch
               @change="changeDnsState"
             >
-              <span v-if="useDnsState">
+              <span v-if="dnsState">
                 {{ $t('global.status.enabled') }}
               </span>
               <span v-else>{{ $t('global.status.disabled') }}</span>
@@ -69,7 +69,7 @@
               switch
               @change="changeNtpState"
             >
-              <span v-if="useNtpState">
+              <span v-if="ntpState">
                 {{ $t('global.status.enabled') }}
               </span>
               <span v-else>{{ $t('global.status.disabled') }}</span>
@@ -98,6 +98,9 @@ export default {
       hostname: '',
       showDomainState: process.env.VUE_APP_ENV_NAME !== 'nvidia-bluefield',
       hostnameEditable: process.env.VUE_APP_ENV_NAME !== 'nvidia-bluefield',
+      dnsState: '',
+      ntpState: '',
+      domainState: '',
     };
   },
   computed: {
@@ -137,6 +140,12 @@ export default {
     this.$store.dispatch('network/getEthernetData').finally(() => {
       // Emit initial data fetch complete to parent component
       this.$root.$emit('network-global-settings-complete');
+      const networkSettings = this.$store.getters[
+        'network/globalNetworkSettings'
+      ][0];
+      this.dnsState = networkSettings.useDnsEnabled;
+      this.domainState = networkSettings.useDomainNameEnabled;
+      this.ntpState = networkSettings.useNtpEnabled;
     });
   },
   methods: {
@@ -144,6 +153,7 @@ export default {
       this.$store
         .dispatch('network/saveDomainNameState', state)
         .then((success) => {
+          this.domainState = state;
           this.successToast(success);
         })
         .catch(({ message }) => this.errorToast(message));
@@ -151,13 +161,19 @@ export default {
     changeDnsState(state) {
       this.$store
         .dispatch('network/saveDnsState', state)
-        .then((message) => this.successToast(message))
+        .then((message) => {
+          this.dnsState = state;
+          this.successToast(message);
+        })
         .catch(({ message }) => this.errorToast(message));
     },
     changeNtpState(state) {
       this.$store
         .dispatch('network/saveNtpState', state)
-        .then((message) => this.successToast(message))
+        .then((message) => {
+          this.ntpState = state;
+          this.successToast(message);
+        })
         .catch(({ message }) => this.errorToast(message));
     },
     initSettingsModal() {
