@@ -34,7 +34,7 @@ const PoliciesStore = {
     },
     async getNetworkProtocolStatus({ commit }) {
       return await api
-        .get('/redfish/v1/Managers/bmc/NetworkProtocol')
+        .get(`${await this.dispatch('global/getBmcPath')}/NetworkProtocol`)
         .then((response) => {
           const sshProtocol = response.data.SSH.ProtocolEnabled;
           const ipmiProtocol = response.data.IPMI.ProtocolEnabled;
@@ -45,7 +45,7 @@ const PoliciesStore = {
     },
     async getBiosStatus({ commit }) {
       return await api
-        .get('/redfish/v1/Systems/system/Bios')
+        .get(`${await this.dispatch('global/getSystemPath')}/Bios`)
         .then((response) => {
           commit('setRtadEnabled', response.data.Attributes.pvm_rtad);
           commit('setVtpmEnabled', response.data.Attributes.pvm_vtpm);
@@ -69,7 +69,10 @@ const PoliciesStore = {
         },
       };
       return await api
-        .patch('/redfish/v1/Managers/bmc/NetworkProtocol', ipmi)
+        .patch(
+          `${await this.dispatch('global/getBmcPath')}/NetworkProtocol`,
+          ipmi
+        )
         .then(() => {
           if (protocolEnabled) {
             return i18n.t('pagePolicies.toast.successIpmiEnabled');
@@ -95,7 +98,10 @@ const PoliciesStore = {
         },
       };
       return await api
-        .patch('/redfish/v1/Managers/bmc/NetworkProtocol', ssh)
+        .patch(
+          `${await this.dispatch('global/getBmcPath')}/NetworkProtocol`,
+          ssh
+        )
         .then(() => {
           if (protocolEnabled) {
             return i18n.t('pagePolicies.toast.successSshEnabled');
@@ -116,7 +122,7 @@ const PoliciesStore = {
     async saveRtadState({ commit }, updatedRtad) {
       commit('setRtadEnabled', updatedRtad);
       return await api
-        .patch('/redfish/v1/Systems/system/Bios/Settings', {
+        .patch(`${await this.dispatch('global/getSystemPath')}/Bios/Settings`, {
           Attributes: {
             pvm_rtad: updatedRtad,
           },
@@ -140,7 +146,7 @@ const PoliciesStore = {
     async saveVtpmState({ commit }, updatedVtpm) {
       commit('setVtpmEnabled', updatedVtpm);
       return await api
-        .patch('/redfish/v1/Systems/system/Bios/Settings', {
+        .patch(`${await this.dispatch('global/getSystemPath')}/Bios/Settings`, {
           Attributes: {
             pvm_vtpm: updatedVtpm,
           },

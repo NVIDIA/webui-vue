@@ -382,7 +382,6 @@ import IconCheckmark from '@carbon/icons-vue/es/checkmark/20';
 import { required, requiredIf } from 'vuelidate/lib/validators';
 
 import { COUNTRY_LIST } from './CsrCountryCodes';
-import { CERTIFICATE_TYPES } from '@/store/modules/SecurityAndAccess/CertificatesStore';
 import BVToastMixin from '@/components/Mixins/BVToastMixin';
 import VuelidateMixin from '@/components/Mixins/VuelidateMixin.js';
 
@@ -408,14 +407,6 @@ export default {
         keyCurveId: null,
         keyBitLength: null,
       },
-      certificateOptions: CERTIFICATE_TYPES.reduce((arr, cert) => {
-        if (cert.type === 'TrustStore Certificate') return arr;
-        arr.push({
-          text: cert.label,
-          value: cert.type,
-        });
-        return arr;
-      }, []),
       countryOptions: COUNTRY_LIST.map((country) => ({
         text: country.label,
         value: country.code,
@@ -426,6 +417,21 @@ export default {
       csrString: '',
       csrStringCopied: false,
     };
+  },
+  computed: {
+    certificateTypes() {
+      return this.$store.getters['certificates/certificateTypes'];
+    },
+    certificateOptions() {
+      return this.certificateTypes.reduce((arr, cert) => {
+        if (cert.type === 'TrustStore Certificate') return arr;
+        arr.push({
+          text: cert.label,
+          value: cert.type,
+        });
+        return arr;
+      }, []);
+    },
   },
   validations: {
     form: {

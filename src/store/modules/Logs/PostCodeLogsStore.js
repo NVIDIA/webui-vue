@@ -16,7 +16,11 @@ const PostCodeLogsStore = {
   actions: {
     async getPostCodesLogData({ commit }) {
       return await api
-        .get('/redfish/v1/Systems/system/LogServices/PostCodes/Entries')
+        .get(
+          `${await this.dispatch(
+            'global/getSystemPath'
+          )}/LogServices/PostCodes/Entries`
+        )
         .then(({ data: { Members = [] } = {} }) => {
           const postCodeLogs = Members.map((log) => {
             const { Created, MessageArgs, AdditionalDataURI } = log;
@@ -37,7 +41,9 @@ const PostCodeLogsStore = {
     async deleteAllPostCodeLogs({ dispatch }, data) {
       return await api
         .post(
-          '/redfish/v1/Systems/system/LogServices/PostCodes/Actions/LogService.ClearLog'
+          `${await this.dispatch(
+            'global/getSystemPath'
+          )}/LogServices/PostCodes/Actions/LogService.ClearLog`
         )
         .then(() => dispatch('getPostCodesLogData'))
         .then(() =>
