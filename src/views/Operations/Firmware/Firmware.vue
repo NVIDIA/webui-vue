@@ -22,6 +22,7 @@
 
     <!-- Update firmware-->
     <page-section
+      v-if="isUpdateSupported"
       :section-title="$t('pageFirmware.sectionTitleUpdateFirmware')"
     >
       <b-row>
@@ -67,6 +68,7 @@ export default {
       loading,
       isServerPowerOffRequired:
         process.env.VUE_APP_SERVER_OFF_REQUIRED === 'true',
+      isUpdateSupported: process.env.VUE_APP_ENV_NAME !== 'nvidia-bluefield',
     };
   },
   computed: {
