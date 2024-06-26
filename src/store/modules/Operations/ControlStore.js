@@ -81,7 +81,6 @@ const ControlStore = {
           `${await this.dispatch('global/getBmcPath')}/Actions/Manager.Reset`,
           data,
         )
-        .then(() => this.dispatch('getLastBmcRebootTime'))
         .then(() => i18n.t('pageRebootBmc.toast.successRebootStart'))
         .catch((error) => {
           console.log(error);
