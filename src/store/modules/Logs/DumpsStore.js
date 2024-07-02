@@ -60,13 +60,19 @@ const DumpsStore = {
     async createBmcDump() {
       return await api
         .post(
+<<<<<<< HEAD
           `${await this.dispatch(
             'global/getBmcPath'
           )}/LogServices/Dump/Actions/LogService.CollectDiagnosticData`,
+||||||| 6236b11
+          '/redfish/v1/Managers/bmc/LogServices/Dump/Actions/LogService.CollectDiagnosticData',
+=======
+          `${await this.dispatch('global/getBmcPath')}/LogServices/Dump/Actions/LogService.CollectDiagnosticData`,
+>>>>>>> origin/master
           {
             DiagnosticDataType: 'Manager',
             OEMDiagnosticDataType: '',
-          }
+          },
         )
         .catch((error) => {
           console.log(error);
@@ -76,13 +82,19 @@ const DumpsStore = {
     async createSystemDump() {
       return await api
         .post(
+<<<<<<< HEAD
           `${await this.dispatch(
             'global/getSystemPath'
           )}/LogServices/Dump/Actions/LogService.CollectDiagnosticData`,
+||||||| 6236b11
+          '/redfish/v1/Systems/system/LogServices/Dump/Actions/LogService.CollectDiagnosticData',
+=======
+          `${await this.dispatch('global/getSystemPath')}/LogServices/Dump/Actions/LogService.CollectDiagnosticData`,
+>>>>>>> origin/master
           {
             DiagnosticDataType: 'OEM',
             OEMDiagnosticDataType: 'System',
-          }
+          },
         )
         .catch((error) => {
           console.log(error);
@@ -94,7 +106,7 @@ const DumpsStore = {
         api.delete(location).catch((error) => {
           console.log(error);
           return error;
-        })
+        }),
       );
       return await api
         .all(promises)
@@ -110,7 +122,7 @@ const DumpsStore = {
             if (successCount) {
               const message = i18n.tc(
                 'pageDumps.toast.successDeleteDump',
-                successCount
+                successCount,
               );
               toastMessages.push({ type: 'success', message });
             }
@@ -118,22 +130,28 @@ const DumpsStore = {
             if (errorCount) {
               const message = i18n.tc(
                 'pageDumps.toast.errorDeleteDump',
-                errorCount
+                errorCount,
               );
               toastMessages.push({ type: 'error', message });
             }
 
             return toastMessages;
-          })
+          }),
         );
     },
     async deleteAllDumps({ commit, state }) {
       const totalDumpCount = state.allDumps.length;
       return await api
         .post(
+<<<<<<< HEAD
           `${await this.dispatch(
             'global/getBmcPath'
           )}/LogServices/Dump/Actions/LogService.ClearLog`
+||||||| 6236b11
+          '/redfish/v1/Managers/bmc/LogServices/Dump/Actions/LogService.ClearLog'
+=======
+          `${await this.dispatch('global/getBmcPath')}/LogServices/Dump/Actions/LogService.ClearLog`,
+>>>>>>> origin/master
         )
         .then(() => {
           commit('setAllDumps', []);
@@ -142,7 +160,7 @@ const DumpsStore = {
         .catch((error) => {
           console.log(error);
           throw new Error(
-            i18n.tc('pageDumps.toast.errorDeleteDump', totalDumpCount)
+            i18n.tc('pageDumps.toast.errorDeleteDump', totalDumpCount),
           );
         });
     },

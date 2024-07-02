@@ -76,7 +76,7 @@ export default {
             this.infoToast(this.$t('pageDumps.toast.successStartBmcDump'), {
               title: this.$t('pageDumps.toast.successStartBmcDumpTitle'),
               timestamp: true,
-            })
+            }),
           )
           .catch(({ message }) => this.errorToast(message));
       }
@@ -91,7 +91,7 @@ export default {
           this.infoToast(this.$t('pageDumps.toast.successStartSystemDump'), {
             title: this.$t('pageDumps.toast.successStartSystemDumpTitle'),
             timestamp: true,
-          })
+          }),
         )
         .catch(({ message }) => this.errorToast(message));
     },

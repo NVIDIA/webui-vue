@@ -1,4 +1,6 @@
 const CompressionPlugin = require('compression-webpack-plugin');
+const webpack = require('webpack');
+const LimitChunkCountPlugin = webpack.optimize.LimitChunkCountPlugin;
 
 module.exports = {
   css: {
@@ -41,9 +43,6 @@ module.exports = {
     proxy: {
       '/': {
         target: process.env.BASE_URL,
-        headers: {
-          Connection: 'keep-alive',
-        },
         onProxyRes: (proxyRes) => {
           // This header is ignored in the browser so removing
           // it so we don't see warnings in the browser console
@@ -54,7 +53,38 @@ module.exports = {
     port: 8000,
   },
   productionSourceMap: false,
+  chainWebpack: (config) => {
+    config.module
+      .rule('vue')
+      .use('vue-svg-inline-loader')
+      .loader('vue-svg-inline-loader');
+    config.module
+      .rule('ico')
+      .test(/\.ico$/)
+      .use('file-loader')
+      .loader('file-loader')
+      .options({
+        name: '[name].[contenthash:8].[ext]',
+      });
+    config.plugins.delete('preload');
+    if (process.env.NODE_ENV === 'production') {
+      config.plugin('html').tap((options) => {
+        options[0].filename = 'index.[hash:8].html';
+        return options;
+      });
+    }
+  },
   configureWebpack: (config) => {
+    config.plugins.push(
+      new LimitChunkCountPlugin({
+        maxChunks: 1,
+      }),
+    );
+    config.optimization.splitChunks = {
+      cacheGroups: {
+        default: false,
+      },
+    };
     const crypto = require('crypto');
     const crypto_orig_createHash = crypto.createHash;
     crypto.createHash = (algorithm) =>
@@ -79,9 +109,8 @@ module.exports = {
       }
       if (hasCustomAppNav) {
         // If env has custom AppNavigation, resolve AppNavigationMixin module in src/components/AppNavigation/AppNavigation.vue
-        config.resolve.alias[
-          './AppNavigationMixin$'
-        ] = `@/env/components/AppNavigation/${envName}.js`;
+        config.resolve.alias['./AppNavigationMixin$'] =
+          `@/env/components/AppNavigation/${envName}.js`;
       }
     }
 
@@ -89,9 +118,17 @@ module.exports = {
       config.plugins.push(
         new CompressionPlugin({
           deleteOriginalAssets: true,
-        })
+        }),
       );
     }
+
+    config.performance = {
+      hints: 'warning',
+      maxEntrypointSize: 512000,
+      maxAssetSize: 512000,
+    };
+
+    config.optimization.runtimeChunk = false;
   },
   pluginOptions: {
     i18n: {

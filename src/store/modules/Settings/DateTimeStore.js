@@ -40,10 +40,19 @@ const DateTimeStore = {
         ntpData.NTP.NTPServers = dateTimeForm.ntpServersArray;
       }
       return await api
+<<<<<<< HEAD
         .patch(
           `${await this.dispatch('global/getBmcPath')}/NetworkProtocol`,
           ntpData
         )
+||||||| 6236b11
+        .patch(`/redfish/v1/Managers/bmc/NetworkProtocol`, ntpData)
+=======
+        .patch(
+          `${await this.dispatch('global/getBmcPath')}/NetworkProtocol`,
+          ntpData,
+        )
+>>>>>>> origin/master
         .then(async () => {
           if (!dateTimeForm.ntpProtocolEnabled) {
             const dateTimeData = {
@@ -63,10 +72,19 @@ const DateTimeStore = {
             return await new Promise((resolve, reject) => {
               setTimeout(async () => {
                 return api
+<<<<<<< HEAD
                   .patch(
                     `${await this.dispatch('global/getBmcPath')}`,
                     dateTimeData
                   )
+||||||| 6236b11
+                  .patch(`/redfish/v1/Managers/bmc`, dateTimeData)
+=======
+                  .patch(
+                    `${await this.dispatch('global/getBmcPath')}`,
+                    dateTimeData,
+                  )
+>>>>>>> origin/master
                   .then(() => resolve())
                   .catch(() => reject());
               }, timeoutVal);

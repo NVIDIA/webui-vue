@@ -51,7 +51,9 @@ const VirtualMediaStore = {
       return await api
         .get(`${await this.dispatch('global/getBmcPath')}/VirtualMedia`)
         .then((response) =>
-          response.data.Members.map((virtualMedia) => virtualMedia['@odata.id'])
+          response.data.Members.map(
+            (virtualMedia) => virtualMedia['@odata.id'],
+          ),
         )
         .then((devices) => api.all(devices.map((device) => api.get(device))))
         .then((devices) => {
@@ -93,10 +95,18 @@ const VirtualMediaStore = {
     async mountImage(_, { id, data }) {
       return await api
         .post(
+<<<<<<< HEAD
           `${await this.dispatch(
             'global/getBmcPath'
           )}/VirtualMedia/${id}/Actions/VirtualMedia.InsertMedia`,
           data
+||||||| 6236b11
+          `/redfish/v1/Managers/bmc/VirtualMedia/${id}/Actions/VirtualMedia.InsertMedia`,
+          data
+=======
+          `${await this.dispatch('global/getBmcPath')}/VirtualMedia/${id}/Actions/VirtualMedia.InsertMedia`,
+          data,
+>>>>>>> origin/master
         )
         .catch((error) => {
           console.log('Mount image:', error);
@@ -106,7 +116,7 @@ const VirtualMediaStore = {
     async unmountImage(_, id) {
       return await api
         .post(
-          `/redfish/v1/Managers/bmc/VirtualMedia/${id}/Actions/VirtualMedia.EjectMedia`
+          `${await this.dispatch('global/getBmcPath')}/VirtualMedia/${id}/Actions/VirtualMedia.EjectMedia`,
         )
         .catch((error) => {
           console.log('Unmount image:', error);

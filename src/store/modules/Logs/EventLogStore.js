@@ -42,11 +42,19 @@ const EventLogStore = {
   actions: {
     async getEventLogData({ commit }) {
       return await api
+<<<<<<< HEAD
         .get(
           `${await this.dispatch(
             'global/getSystemPath'
           )}/LogServices/EventLog/Entries`
         )
+||||||| 6236b11
+        .get('/redfish/v1/Systems/system/LogServices/EventLog/Entries')
+=======
+        .get(
+          `${await this.dispatch('global/getSystemPath')}/LogServices/EventLog/Entries`,
+        )
+>>>>>>> origin/master
         .then(({ data: { Members = [] } = {} }) => {
           const eventLogs = Members.map((log) => {
             const {
@@ -83,16 +91,22 @@ const EventLogStore = {
     async deleteAllEventLogs({ dispatch }, data) {
       return await api
         .post(
+<<<<<<< HEAD
           `${await this.dispatch(
             'global/getSystemPath'
           )}/LogServices/EventLog/Actions/LogService.ClearLog`
+||||||| 6236b11
+          '/redfish/v1/Systems/system/LogServices/EventLog/Actions/LogService.ClearLog'
+=======
+          `${await this.dispatch('global/getSystemPath')}/LogServices/EventLog/Actions/LogService.ClearLog`,
+>>>>>>> origin/master
         )
         .then(() => dispatch('getEventLogData'))
         .then(() => i18n.tc('pageEventLogs.toast.successDelete', data.length))
         .catch((error) => {
           console.log(error);
           throw new Error(
-            i18n.tc('pageEventLogs.toast.errorDelete', data.length)
+            i18n.tc('pageEventLogs.toast.errorDelete', data.length),
           );
         });
     },
@@ -101,7 +115,7 @@ const EventLogStore = {
         api.delete(uri).catch((error) => {
           console.log(error);
           return error;
-        })
+        }),
       );
       return await api
         .all(promises)
@@ -117,7 +131,7 @@ const EventLogStore = {
             if (successCount) {
               const message = i18n.tc(
                 'pageEventLogs.toast.successDelete',
-                successCount
+                successCount,
               );
               toastMessages.push({ type: 'success', message });
             }
@@ -125,13 +139,13 @@ const EventLogStore = {
             if (errorCount) {
               const message = i18n.tc(
                 'pageEventLogs.toast.errorDelete',
-                errorCount
+                errorCount,
               );
               toastMessages.push({ type: 'error', message });
             }
 
             return toastMessages;
-          })
+          }),
         );
     },
     async resolveEventLogs({ dispatch }, logs) {
@@ -139,7 +153,7 @@ const EventLogStore = {
         api.patch(log.uri, { Resolved: true }).catch((error) => {
           console.log(error);
           return error;
-        })
+        }),
       );
       return await api
         .all(promises)
@@ -154,19 +168,19 @@ const EventLogStore = {
             if (successCount) {
               const message = i18n.tc(
                 'pageEventLogs.toast.successResolveLogs',
-                successCount
+                successCount,
               );
               toastMessages.push({ type: 'success', message });
             }
             if (errorCount) {
               const message = i18n.tc(
                 'pageEventLogs.toast.errorResolveLogs',
-                errorCount
+                errorCount,
               );
               toastMessages.push({ type: 'error', message });
             }
             return toastMessages;
-          })
+          }),
         );
     },
     async unresolveEventLogs({ dispatch }, logs) {
@@ -174,7 +188,7 @@ const EventLogStore = {
         api.patch(log.uri, { Resolved: false }).catch((error) => {
           console.log(error);
           return error;
-        })
+        }),
       );
       return await api
         .all(promises)
@@ -189,19 +203,19 @@ const EventLogStore = {
             if (successCount) {
               const message = i18n.tc(
                 'pageEventLogs.toast.successUnresolveLogs',
-                successCount
+                successCount,
               );
               toastMessages.push({ type: 'success', message });
             }
             if (errorCount) {
               const message = i18n.tc(
                 'pageEventLogs.toast.errorUnresolveLogs',
-                errorCount
+                errorCount,
               );
               toastMessages.push({ type: 'error', message });
             }
             return toastMessages;
-          })
+          }),
         );
     },
     // Single log entry

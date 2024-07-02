@@ -1,6 +1,7 @@
 import api from '@/store/api';
 import Cookies from 'js-cookie';
 import router from '@/router';
+import { roles } from '@/router/routes';
 
 const AuthenticationStore = {
   namespaced: true,
@@ -61,11 +62,23 @@ const AuthenticationStore = {
         .then(() => router.push('/login'))
         .catch((error) => console.log(error));
     },
-    getUserInfo(_, username) {
+    getUserInfo({ commit }, username) {
       return api
         .get(`/redfish/v1/AccountService/Accounts/${username}`)
-        .then(({ data }) => data)
-        .catch((error) => console.log(error));
+        .then(({ data }) => {
+          commit('global/setPrivilege', data.RoleId, { root: true });
+          return data;
+        })
+        .catch((error) => {
+          if (error.response?.status === 404) {
+            // We have valid credentials but user isn't known, assume remote
+            // authentication (e.g. LDAP) and do not restrict the routing
+            commit('global/setPrivilege', roles.administrator, { root: true });
+            return {};
+          } else {
+            console.log(error);
+          }
+        });
     },
     resetStoreState({ state }) {
       state.authError = false;

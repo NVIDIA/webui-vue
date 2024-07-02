@@ -6,6 +6,7 @@ const FactoryResetStore = {
   actions: {
     async resetToDefaults() {
       return await api
+<<<<<<< HEAD
         .post(
           `${await this.dispatch(
             'global/getBmcPath'
@@ -20,10 +21,24 @@ const FactoryResetStore = {
             this.dispatch('controls/rebootBmc');
           }
         })
+||||||| 6236b11
+        .post('/redfish/v1/Managers/bmc/Actions/Manager.ResetToDefaults', {
+          ResetToDefaultsType: 'ResetAll',
+        })
+        .then(() => i18n.t('pageFactoryReset.toast.resetToDefaultsSuccess'))
+=======
+        .post(
+          `${await this.dispatch('global/getBmcPath')}/Actions/Manager.ResetToDefaults`,
+          {
+            ResetType: 'ResetAll',
+          },
+        )
+        .then(() => i18n.t('pageFactoryReset.toast.resetToDefaultsSuccess'))
+>>>>>>> origin/master
         .catch((error) => {
           console.log('Factory Reset: ', error);
           throw new Error(
-            i18n.t('pageFactoryReset.toast.resetToDefaultsError')
+            i18n.t('pageFactoryReset.toast.resetToDefaultsError'),
           );
         });
     },
@@ -48,11 +63,19 @@ const FactoryResetStore = {
           });
       }
       return await api
+<<<<<<< HEAD
         .post(
           `${await this.dispatch(
             'global/getSystemPath'
           )}/Bios/Actions/Bios.ResetBios`
         )
+||||||| 6236b11
+        .post('/redfish/v1/Systems/system/Bios/Actions/Bios.ResetBios')
+=======
+        .post(
+          `${await this.dispatch('global/getSystemPath')}/Bios/Actions/Bios.ResetBios`,
+        )
+>>>>>>> origin/master
         .then(() => i18n.t('pageFactoryReset.toast.resetBiosSuccess'))
         .catch((error) => {
           console.log('Factory Reset: ', error);

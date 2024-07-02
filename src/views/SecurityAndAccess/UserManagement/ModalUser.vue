@@ -71,7 +71,7 @@
                 <br />
                 {{
                   $t(
-                    'pageUserManagement.modal.noSpecialCharactersExceptUnderscore'
+                    'pageUserManagement.modal.noSpecialCharactersExceptUnderscore',
                   )
                 }}
               </b-form-text>
@@ -109,6 +109,7 @@
                 :options="privilegeTypes"
                 data-test-id="userManagement-select-privilege"
                 :state="getValidationState($v.form.privilege)"
+                :disabled="!newUser && originalUsername === 'root'"
                 @input="$v.form.privilege.$touch()"
               >
                 <template #first>

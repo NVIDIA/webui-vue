@@ -69,10 +69,19 @@ const PoliciesStore = {
         },
       };
       return await api
+<<<<<<< HEAD
         .patch(
           `${await this.dispatch('global/getBmcPath')}/NetworkProtocol`,
           ipmi
         )
+||||||| 6236b11
+        .patch('/redfish/v1/Managers/bmc/NetworkProtocol', ipmi)
+=======
+        .patch(
+          `${await this.dispatch('global/getBmcPath')}/NetworkProtocol`,
+          ipmi,
+        )
+>>>>>>> origin/master
         .then(() => {
           if (protocolEnabled) {
             return i18n.t('pagePolicies.toast.successIpmiEnabled');
@@ -98,10 +107,19 @@ const PoliciesStore = {
         },
       };
       return await api
+<<<<<<< HEAD
         .patch(
           `${await this.dispatch('global/getBmcPath')}/NetworkProtocol`,
           ssh
         )
+||||||| 6236b11
+        .patch('/redfish/v1/Managers/bmc/NetworkProtocol', ssh)
+=======
+        .patch(
+          `${await this.dispatch('global/getBmcPath')}/NetworkProtocol`,
+          ssh,
+        )
+>>>>>>> origin/master
         .then(() => {
           if (protocolEnabled) {
             return i18n.t('pagePolicies.toast.successSshEnabled');

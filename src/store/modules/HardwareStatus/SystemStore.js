@@ -46,16 +46,23 @@ const SystemStore = {
         .patch(`${await this.dispatch('global/getSystemPath')}`, {
           LocationIndicatorActive: ledState,
         })
+        .then(() => {
+          if (ledState) {
+            return i18n.t('pageInventory.toast.successEnableIdentifyLed');
+          } else {
+            return i18n.t('pageInventory.toast.successDisableIdentifyLed');
+          }
+        })
         .catch((error) => {
           commit('setSystemInfo', this.state.system.systems[0]);
           console.log('error', error);
           if (ledState) {
             throw new Error(
-              i18n.t('pageInventory.toast.errorEnableIdentifyLed')
+              i18n.t('pageInventory.toast.errorEnableIdentifyLed'),
             );
           } else {
             throw new Error(
-              i18n.t('pageInventory.toast.errorDisableIdentifyLed')
+              i18n.t('pageInventory.toast.errorDisableIdentifyLed'),
             );
           }
         });

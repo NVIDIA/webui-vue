@@ -39,7 +39,7 @@ const BootSettingsStore = {
         .then(({ data: { Boot } }) => {
           commit(
             'setBootSourceOptions',
-            Boot['BootSourceOverrideTarget@Redfish.AllowableValues']
+            Boot['BootSourceOverrideTarget@Redfish.AllowableValues'],
           );
           commit('setOverrideEnabled', Boot.BootSourceOverrideEnabled);
           commit('setBootSource', Boot.BootSourceOverrideTarget);
@@ -72,10 +72,19 @@ const BootSettingsStore = {
         })
         .catch((error) => console.log(error));
     },
+<<<<<<< HEAD
     async saveBootSettings(
       { commit, dispatch, getters },
       { bootSource, overrideEnabled, bootOption }
     ) {
+||||||| 6236b11
+    saveBootSettings({ commit, dispatch }, { bootSource, overrideEnabled }) {
+=======
+    async saveBootSettings(
+      { commit, dispatch },
+      { bootSource, overrideEnabled },
+    ) {
+>>>>>>> origin/master
       const data = { Boot: {} };
       data.Boot.BootSourceOverrideTarget = bootSource;
 
@@ -94,8 +103,16 @@ const BootSettingsStore = {
         data.Boot.BootNext = bootOption;
       }
 
+<<<<<<< HEAD
       return await api
         .patch(`${await this.dispatch('global/getSystemPath')}`, data)
+||||||| 6236b11
+      return api
+        .patch('/redfish/v1/Systems/system', data)
+=======
+      return api
+        .patch(`${await this.dispatch('global/getSystemPath')}`, data)
+>>>>>>> origin/master
         .then((response) => {
           // If request success, commit the values
           commit('setBootSource', data.Boot.BootSourceOverrideTarget);
@@ -113,8 +130,12 @@ const BootSettingsStore = {
       // TODO: switch to Redfish when available
       return await api
         .get('/xyz/openbmc_project/control/host0/TPMEnable')
-        .then(({ data: { data: { TPMEnable } } }) =>
-          commit('setTpmPolicy', TPMEnable)
+        .then(
+          ({
+            data: {
+              data: { TPMEnable },
+            },
+          }) => commit('setTpmPolicy', TPMEnable),
         )
         .catch((error) => console.log(error));
     },
@@ -124,7 +145,7 @@ const BootSettingsStore = {
       return api
         .put(
           '/xyz/openbmc_project/control/host0/TPMEnable/attr/TPMEnable',
-          data
+          data,
         )
         .then((response) => {
           // If request success, commit the values
@@ -140,17 +161,29 @@ const BootSettingsStore = {
     },
     async saveSettings(
       { dispatch },
+<<<<<<< HEAD
       { bootSource, overrideEnabled, tpmEnabled, bootOption }
+||||||| 6236b11
+      { bootSource, overrideEnabled, tpmEnabled }
+=======
+      { bootSource, overrideEnabled, tpmEnabled },
+>>>>>>> origin/master
     ) {
       const promises = [];
 
       if (bootSource !== null || overrideEnabled !== null) {
         promises.push(
+<<<<<<< HEAD
           dispatch('saveBootSettings', {
             bootSource,
             overrideEnabled,
             bootOption,
           })
+||||||| 6236b11
+          dispatch('saveBootSettings', { bootSource, overrideEnabled })
+=======
+          dispatch('saveBootSettings', { bootSource, overrideEnabled }),
+>>>>>>> origin/master
         );
       }
       if (tpmEnabled !== null) {
@@ -160,17 +193,17 @@ const BootSettingsStore = {
       return await api.all(promises).then(
         api.spread((...responses) => {
           let message = i18n.t(
-            'pageServerPowerOperations.toast.successSaveSettings'
+            'pageServerPowerOperations.toast.successSaveSettings',
           );
           responses.forEach((response) => {
             if (response instanceof Error) {
               throw new Error(
-                i18n.t('pageServerPowerOperations.toast.errorSaveSettings')
+                i18n.t('pageServerPowerOperations.toast.errorSaveSettings'),
               );
             }
           });
           return message;
-        })
+        }),
       );
     },
   },

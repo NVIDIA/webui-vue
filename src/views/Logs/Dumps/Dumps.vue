@@ -61,7 +61,7 @@
             :empty-filtered-text="$t('global.table.emptySearchMessage')"
             :filter="searchFilter"
             :busy="isBusy"
-            @filtered="onChangeSearchFilter"
+            @filtered="onFiltered"
             @row-selected="onRowSelected($event, filteredTableItems.length)"
           >
             <!-- Checkbox column -->
@@ -296,13 +296,13 @@ export default {
         this.allDumps,
         this.filterStartDate,
         this.filterEndDate,
-        'dateTime'
+        'dateTime',
       );
     },
     filteredDumps() {
       return this.getFilteredTableData(
         this.filteredDumpsByDate,
-        this.activeFilters
+        this.activeFilters,
       );
     },
   },
@@ -334,6 +334,7 @@ export default {
             title: this.$tc('pageDumps.modal.deleteDump'),
             okTitle: this.$tc('pageDumps.modal.deleteDump'),
             cancelTitle: this.$t('global.action.cancel'),
+            autoFocusButton: 'ok',
           })
           .then((deleteConfrimed) => {
             if (deleteConfrimed) {
@@ -358,19 +359,20 @@ export default {
           .msgBoxConfirm(
             this.$tc(
               'pageDumps.modal.deleteDumpConfirmation',
-              this.selectedRows.length
+              this.selectedRows.length,
             ),
             {
               title: this.$tc(
                 'pageDumps.modal.deleteDump',
-                this.selectedRows.length
+                this.selectedRows.length,
               ),
               okTitle: this.$tc(
                 'pageDumps.modal.deleteDump',
-                this.selectedRows.length
+                this.selectedRows.length,
               ),
               cancelTitle: this.$t('global.action.cancel'),
-            }
+              autoFocusButton: 'ok',
+            },
           )
           .then((deleteConfrimed) => {
             if (deleteConfrimed) {

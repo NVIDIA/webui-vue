@@ -284,7 +284,7 @@ export default {
               },
             ],
           };
-        }
+        },
       );
     },
     batchExportData() {
@@ -294,13 +294,13 @@ export default {
       return this.getFilteredTableDataByDate(
         this.allLogs,
         this.filterStartDate,
-        this.filterEndDate
+        this.filterEndDate,
       );
     },
     filteredLogs() {
       return this.getFilteredTableData(
         this.filteredLogsByDate,
-        this.activeFilters
+        this.activeFilters,
       );
     },
   },
@@ -319,6 +319,7 @@ export default {
           okTitle: this.$t('global.action.delete'),
           okVariant: 'danger',
           cancelTitle: this.$t('global.action.cancel'),
+          autoFocusButton: 'cancel',
         })
         .then((deleteConfirmed) => {
           if (deleteConfirmed) {
@@ -335,7 +336,7 @@ export default {
           (postCodes) => {
             const allLogsString = JSON.stringify(postCodes);
             return allLogsString;
-          }
+          },
         );
       }
     },

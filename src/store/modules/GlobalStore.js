@@ -131,7 +131,7 @@ const GlobalStore = {
             } else {
               commit('setServerStatus', PowerState);
             }
-          }
+          },
         )
         .catch((error) => console.log(error));
     },

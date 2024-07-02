@@ -48,6 +48,11 @@
         <status-icon :status="statusIcon(value)" />
         {{ value }}
       </template>
+      <!-- StatusState -->
+      <template #cell(statusState)="{ value }">
+        <status-icon :status="statusStateIcon(value)" />
+        {{ value }}
+      </template>
 
       <!-- Toggle identify LED -->
       <template #cell(identifyLed)="row">
@@ -201,6 +206,13 @@ export default {
           tdClass: 'text-nowrap',
         },
         {
+          key: 'statusState',
+          label: this.$t('pageInventory.table.state'),
+          formatter: this.dataFormatter,
+          sortable: true,
+          tdClass: 'text-nowrap',
+        },
+        {
           key: 'locationNumber',
           label: this.$t('pageInventory.table.locationNumber'),
           formatter: this.dataFormatter,
@@ -245,12 +257,23 @@ export default {
           uri: row.uri,
           identifyLed: row.identifyLed,
         })
+        .then((message) => this.successToast(message))
         .catch(({ message }) => this.errorToast(message));
     },
     // TO DO: remove hasIdentifyLed when the following is merged:
     // https://gerrit.openbmc-project.xyz/c/openbmc/bmcweb/+/37045
     hasIdentifyLed(identifyLed) {
       return typeof identifyLed === 'boolean';
+    },
+    statusStateIcon(status) {
+      switch (status) {
+        case 'Enabled':
+          return 'success';
+        case 'Absent':
+          return 'warning';
+        default:
+          return '';
+      }
     },
   },
 };
