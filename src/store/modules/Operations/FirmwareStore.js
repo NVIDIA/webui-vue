@@ -8,6 +8,8 @@ const FirmwareStore = {
     hostFirmware: [],
     bmcActiveFirmwareId: null,
     hostActiveFirmwareId: null,
+    bmcSoftwareImageIds: [],
+    hostSoftwareImageIds: [],
     applyTime: null,
     httpPushUri: null,
     tftpAvailable: false,
@@ -41,6 +43,8 @@ const FirmwareStore = {
     setActiveHostFirmwareId: (state, id) => (state.hostActiveFirmwareId = id),
     setBmcFirmware: (state, firmware) => (state.bmcFirmware = firmware),
     setHostFirmware: (state, firmware) => (state.hostFirmware = firmware),
+    setBmcSoftwareImageIds: (state, ids) => (state.bmcSoftwareImageIds = ids),
+    setHostSoftwareImageIds: (state, ids) => (state.hostSoftwareImageIds = ids),
     setApplyTime: (state, applyTime) => (state.applyTime = applyTime),
     setHttpPushUri: (state, httpPushUri) => (state.httpPushUri = httpPushUri),
     setTftpUploadAvailable: (state, tftpAvailable) =>
@@ -48,16 +52,20 @@ const FirmwareStore = {
   },
   actions: {
     async getFirmwareInformation({ dispatch }) {
-      dispatch('getActiveHostFirmware');
-      dispatch('getActiveBmcFirmware');
+      await dispatch('getActiveHostFirmware');
+      await dispatch('getActiveBmcFirmware');
       return await dispatch('getFirmwareInventory');
     },
     async getActiveBmcFirmware({ commit }) {
       return api
         .get(`${await this.dispatch('global/getBmcPath')}`)
         .then(({ data: { Links } }) => {
-          const id = Links?.ActiveSoftwareImage['@odata.id'].split('/').pop();
-          commit('setActiveBmcFirmwareId', id);
+          const activeImageId = Links?.ActiveSoftwareImage?.['@odata.id'];
+          const softwareImageIds =
+            Links?.SoftwareImages?.map((image) => image['@odata.id']) || [];
+
+          commit('setActiveBmcFirmwareId', activeImageId);
+          commit('setBmcSoftwareImageIds', softwareImageIds);
         })
         .catch((error) => console.log(error));
     },
@@ -65,12 +73,15 @@ const FirmwareStore = {
       return api
         .get(`${await this.dispatch('global/getSystemPath')}/Bios`)
         .then(({ data: { Links } }) => {
-          const id = Links?.ActiveSoftwareImage['@odata.id'].split('/').pop();
-          commit('setActiveHostFirmwareId', id);
+          const activeImageId = Links?.ActiveSoftwareImage['@odata.id'];
+          const softwareImageIds =
+            Links?.SoftwareImages?.map((image) => image['@odata.id']) || [];
+          commit('setActiveHostFirmwareId', activeImageId);
+          commit('setHostSoftwareImageIds', softwareImageIds);
         })
         .catch((error) => console.log(error));
     },
-    async getFirmwareInventory({ commit }) {
+    async getFirmwareInventory({ state, commit }) {
       const inventoryList = await api
         .get('/redfish/v1/UpdateService/FirmwareInventory')
         .then(({ data: { Members = [] } = {} }) =>
@@ -83,33 +94,25 @@ const FirmwareStore = {
           const bmcFirmware = [];
           const hostFirmware = [];
           response.forEach(({ data }) => {
+            const item = {
+              version: data?.Version,
+              id: data?.['@odata.id'],
+              location: data?.['@odata.id'],
+              status: data?.Status?.Health,
+              isActive: data?.['@odata.id'] === state.bmcActiveFirmwareId,
+            };
             if (process.env.VUE_APP_ENV_NAME === 'nvidia-bluefield') {
               const firmwareType = data?.Id;
-              const item = {
-                version: data?.Version,
-                id: data?.Id,
-                location: data?.['@odata.id'],
-                status: data?.Status?.Health,
-              };
               if (firmwareType === 'BMC_Firmware') {
-                bmcFirmware.push(item);
+                bmcFirmware.push({ ...item, id: firmwareType });
               } else if (firmwareType === 'DPU_ATF') {
-                hostFirmware.push(item);
+                hostFirmware.push({ ...item, id: firmwareType });
                 commit('setActiveHostFirmwareId', firmwareType);
               }
             } else {
-              const firmwareType = data?.RelatedItem?.[0]?.['@odata.id']
-                .split('/')
-                .pop();
-              const item = {
-                version: data?.Version,
-                id: data?.Id,
-                location: data?.['@odata.id'],
-                status: data?.Status?.Health,
-              };
-              if (firmwareType === 'bmc') {
+              if (state.bmcSoftwareImageIds.includes(item.id)) {
                 bmcFirmware.push(item);
-              } else if (firmwareType === 'Bios') {
+              } else if (state.hostSoftwareImageIds.includes(item.id)) {
                 hostFirmware.push(item);
               }
             }
