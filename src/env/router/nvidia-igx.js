@@ -17,8 +17,6 @@ import LoginLayout from '@/layouts/LoginLayout';
 import Network from '@/views/Settings/Network';
 import Overview from '@/views/Overview';
 import PageNotFound from '@/views/PageNotFound';
-import PostCodeLogs from '@/views/Logs/PostCodeLogs';
-import PowerRestorePolicy from '@/views/Settings/PowerRestorePolicy';
 import ProfileSettings from '@/views/ProfileSettings';
 import RebootBmc from '@/views/Operations/RebootBmc';
 import Policies from '@/views/SecurityAndAccess/Policies';
@@ -28,7 +26,6 @@ import SerialOverLanConsole from '@/views/Operations/SerialOverLan/SerialOverLan
 import ServerPowerOperations from '@/views/Operations/ServerPowerOperations';
 import Certificates from '@/views/SecurityAndAccess/Certificates';
 import VirtualMedia from '@/views/Operations/VirtualMedia';
-import Power from '@/views/ResourceManagement/Power';
 import SnmpAlerts from '@/views/Settings/SnmpAlerts';
 import i18n from '@/i18n';
 
@@ -117,14 +114,6 @@ const routes = [
         component: EventLogs,
         meta: {
           title: i18n.t('appPageTitle.eventLogs'),
-        },
-      },
-      {
-        path: '/logs/post-code-logs',
-        name: 'post-code-logs',
-        component: PostCodeLogs,
-        meta: {
-          title: i18n.t('appPageTitle.postCodeLogs'),
         },
       },
       {
@@ -237,22 +226,6 @@ const routes = [
         component: Network,
         meta: {
           title: i18n.t('appPageTitle.network'),
-        },
-      },
-      {
-        path: '/settings/power-restore-policy',
-        name: 'power-restore-policy',
-        component: PowerRestorePolicy,
-        meta: {
-          title: i18n.t('appPageTitle.powerRestorePolicy'),
-        },
-      },
-      {
-        path: '/resource-management/power',
-        name: 'power',
-        component: Power,
-        meta: {
-          title: i18n.t('appPageTitle.power'),
         },
       },
       {

@@ -56,8 +56,12 @@ export default {
   data() {
     return {
       showDumps: process.env.VUE_APP_ENV_NAME === 'ibm',
-      showPower: process.env.VUE_APP_ENV_NAME !== 'nvidia-bluefield',
-      showInventory: process.env.VUE_APP_ENV_NAME !== 'nvidia-bluefield',
+      showPower: !['nvidia-bluefield', 'nvidia-igx'].includes(
+        process.env.VUE_APP_ENV_NAME
+      ),
+      showInventory: !['nvidia-bluefield', 'nvidia-igx'].includes(
+        process.env.VUE_APP_ENV_NAME
+      ),
     };
   },
   created() {

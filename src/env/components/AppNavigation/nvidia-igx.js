@@ -44,11 +44,6 @@ const AppNavigationMixin = {
               route: '/logs/event-logs',
             },
             {
-              id: 'post-code-logs',
-              label: this.$t('appNavigation.postCodeLogs'),
-              route: '/logs/post-code-logs',
-            },
-            {
               id: 'dumps',
               label: this.$t('appNavigation.dumps'),
               route: '/logs/dumps',
@@ -132,11 +127,6 @@ const AppNavigationMixin = {
               route: '/settings/network',
             },
             {
-              id: 'power-restore-policy',
-              label: this.$t('appNavigation.powerRestorePolicy'),
-              route: '/settings/power-restore-policy',
-            },
-            {
               id: 'snmp-alerts',
               label: this.$t('appNavigation.snmpAlerts'),
               route: '/settings/snmp-alerts',
@@ -172,18 +162,6 @@ const AppNavigationMixin = {
               id: 'certificates',
               label: this.$t('appNavigation.certificates'),
               route: '/security-and-access/certificates',
-            },
-          ],
-        },
-        {
-          id: 'resource-management',
-          label: this.$t('appNavigation.resourceManagement'),
-          icon: 'iconResourceManagement',
-          children: [
-            {
-              id: 'power',
-              label: this.$t('appNavigation.power'),
-              route: '/resource-management/power',
             },
           ],
         },
