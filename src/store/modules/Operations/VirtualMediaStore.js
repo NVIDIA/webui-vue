@@ -95,18 +95,8 @@ const VirtualMediaStore = {
     async mountImage(_, { id, data }) {
       return await api
         .post(
-<<<<<<< HEAD
-          `${await this.dispatch(
-            'global/getBmcPath'
-          )}/VirtualMedia/${id}/Actions/VirtualMedia.InsertMedia`,
-          data
-||||||| 6236b11
-          `/redfish/v1/Managers/bmc/VirtualMedia/${id}/Actions/VirtualMedia.InsertMedia`,
-          data
-=======
           `${await this.dispatch('global/getBmcPath')}/VirtualMedia/${id}/Actions/VirtualMedia.InsertMedia`,
           data,
->>>>>>> origin/master
         )
         .catch((error) => {
           console.log('Mount image:', error);

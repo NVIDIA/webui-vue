@@ -140,9 +140,8 @@ export default {
     this.$store.dispatch('network/getEthernetData').finally(() => {
       // Emit initial data fetch complete to parent component
       this.$root.$emit('network-global-settings-complete');
-      const networkSettings = this.$store.getters[
-        'network/globalNetworkSettings'
-      ][0];
+      const networkSettings =
+        this.$store.getters['network/globalNetworkSettings'][0];
       this.dnsState = networkSettings.useDnsEnabled;
       this.domainState = networkSettings.useDomainNameEnabled;
       this.ntpState = networkSettings.useNtpEnabled;

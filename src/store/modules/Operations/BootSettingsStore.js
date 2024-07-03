@@ -72,19 +72,10 @@ const BootSettingsStore = {
         })
         .catch((error) => console.log(error));
     },
-<<<<<<< HEAD
     async saveBootSettings(
       { commit, dispatch, getters },
-      { bootSource, overrideEnabled, bootOption }
+      { bootSource, overrideEnabled, bootOption },
     ) {
-||||||| 6236b11
-    saveBootSettings({ commit, dispatch }, { bootSource, overrideEnabled }) {
-=======
-    async saveBootSettings(
-      { commit, dispatch },
-      { bootSource, overrideEnabled },
-    ) {
->>>>>>> origin/master
       const data = { Boot: {} };
       data.Boot.BootSourceOverrideTarget = bootSource;
 
@@ -97,22 +88,14 @@ const BootSettingsStore = {
       }
       if (bootSource === 'UefiTarget') {
         data.Boot.UefiTargetBootSourceOverride = getters['bootOptions'].find(
-          (obj) => obj.id === bootOption
+          (obj) => obj.id === bootOption,
         ).uefiDevicePath;
       } else if (bootSource === 'UefiBootNext') {
         data.Boot.BootNext = bootOption;
       }
 
-<<<<<<< HEAD
-      return await api
-        .patch(`${await this.dispatch('global/getSystemPath')}`, data)
-||||||| 6236b11
-      return api
-        .patch('/redfish/v1/Systems/system', data)
-=======
       return api
         .patch(`${await this.dispatch('global/getSystemPath')}`, data)
->>>>>>> origin/master
         .then((response) => {
           // If request success, commit the values
           commit('setBootSource', data.Boot.BootSourceOverrideTarget);
@@ -161,29 +144,17 @@ const BootSettingsStore = {
     },
     async saveSettings(
       { dispatch },
-<<<<<<< HEAD
-      { bootSource, overrideEnabled, tpmEnabled, bootOption }
-||||||| 6236b11
-      { bootSource, overrideEnabled, tpmEnabled }
-=======
-      { bootSource, overrideEnabled, tpmEnabled },
->>>>>>> origin/master
+      { bootSource, overrideEnabled, tpmEnabled, bootOption },
     ) {
       const promises = [];
 
       if (bootSource !== null || overrideEnabled !== null) {
         promises.push(
-<<<<<<< HEAD
           dispatch('saveBootSettings', {
             bootSource,
             overrideEnabled,
             bootOption,
-          })
-||||||| 6236b11
-          dispatch('saveBootSettings', { bootSource, overrideEnabled })
-=======
-          dispatch('saveBootSettings', { bootSource, overrideEnabled }),
->>>>>>> origin/master
+          }),
         );
       }
       if (tpmEnabled !== null) {

@@ -64,19 +64,9 @@ const ControlStore = {
         })
         .catch((error) => console.log(error));
     },
-<<<<<<< HEAD
-    async getLastBmcRebootTime({ commit }) {
-      return await api
-        .get(`${await this.dispatch('global/getBmcPath')}`)
-||||||| 6236b11
-    getLastBmcRebootTime({ commit }) {
-      return api
-        .get('/redfish/v1/Managers/bmc')
-=======
     async getLastBmcRebootTime({ commit }) {
       return api
         .get(`${await this.dispatch('global/getBmcPath')}`)
->>>>>>> origin/master
         .then((response) => {
           const lastBmcReset = response.data.LastResetTime;
           const lastBmcRebootTime = new Date(lastBmcReset);
@@ -87,21 +77,11 @@ const ControlStore = {
     async rebootBmc() {
       const data = { ResetType: 'GracefulRestart' };
       return await api
-<<<<<<< HEAD
-        .post(
-          `${await this.dispatch('global/getBmcPath')}/Actions/Manager.Reset`,
-          data
-        )
-||||||| 6236b11
-        .post('/redfish/v1/Managers/bmc/Actions/Manager.Reset', data)
-        .then(() => dispatch('getLastBmcRebootTime'))
-=======
         .post(
           `${await this.dispatch('global/getBmcPath')}/Actions/Manager.Reset`,
           data,
         )
-        .then(() => dispatch('getLastBmcRebootTime'))
->>>>>>> origin/master
+        .then(() => this.dispatch('getLastBmcRebootTime'))
         .then(() => i18n.t('pageRebootBmc.toast.successRebootStart'))
         .catch((error) => {
           console.log(error);
@@ -153,21 +133,10 @@ const ControlStore = {
     async serverPowerChange({ commit }, data) {
       commit('setOperationInProgress', true);
       api
-<<<<<<< HEAD
-        .post(
-          `${await this.dispatch(
-            'global/getSystemPath'
-          )}/Actions/ComputerSystem.Reset`,
-          data
-        )
-||||||| 6236b11
-        .post('/redfish/v1/Systems/system/Actions/ComputerSystem.Reset', data)
-=======
         .post(
           `${await this.dispatch('global/getSystemPath')}/Actions/ComputerSystem.Reset`,
           data,
         )
->>>>>>> origin/master
         .catch((error) => {
           console.log(error);
           commit('setOperationInProgress', false);

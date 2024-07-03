@@ -42,19 +42,9 @@ const EventLogStore = {
   actions: {
     async getEventLogData({ commit }) {
       return await api
-<<<<<<< HEAD
-        .get(
-          `${await this.dispatch(
-            'global/getSystemPath'
-          )}/LogServices/EventLog/Entries`
-        )
-||||||| 6236b11
-        .get('/redfish/v1/Systems/system/LogServices/EventLog/Entries')
-=======
         .get(
           `${await this.dispatch('global/getSystemPath')}/LogServices/EventLog/Entries`,
         )
->>>>>>> origin/master
         .then(({ data: { Members = [] } = {} }) => {
           const eventLogs = Members.map((log) => {
             const {
@@ -91,15 +81,7 @@ const EventLogStore = {
     async deleteAllEventLogs({ dispatch }, data) {
       return await api
         .post(
-<<<<<<< HEAD
-          `${await this.dispatch(
-            'global/getSystemPath'
-          )}/LogServices/EventLog/Actions/LogService.ClearLog`
-||||||| 6236b11
-          '/redfish/v1/Systems/system/LogServices/EventLog/Actions/LogService.ClearLog'
-=======
           `${await this.dispatch('global/getSystemPath')}/LogServices/EventLog/Actions/LogService.ClearLog`,
->>>>>>> origin/master
         )
         .then(() => dispatch('getEventLogData'))
         .then(() => i18n.tc('pageEventLogs.toast.successDelete', data.length))

@@ -483,7 +483,7 @@ export default {
       TextLogHandler().exportDataFromJSON(
         this.exportAllLogs(),
         this.exportFileNameByDate(null),
-        null
+        null,
       );
     },
     deleteAllLogs() {

@@ -6,27 +6,6 @@ const FactoryResetStore = {
   actions: {
     async resetToDefaults() {
       return await api
-<<<<<<< HEAD
-        .post(
-          `${await this.dispatch(
-            'global/getBmcPath'
-          )}/Actions/Manager.ResetToDefaults`,
-          {
-            ResetToDefaultsType: 'ResetAll',
-          }
-        )
-        .then(() => {
-          i18n.t('pageFactoryReset.toast.resetToDefaultsSuccess');
-          if (process.env.VUE_APP_ENV_NAME === 'nvidia-bluefield') {
-            this.dispatch('controls/rebootBmc');
-          }
-        })
-||||||| 6236b11
-        .post('/redfish/v1/Managers/bmc/Actions/Manager.ResetToDefaults', {
-          ResetToDefaultsType: 'ResetAll',
-        })
-        .then(() => i18n.t('pageFactoryReset.toast.resetToDefaultsSuccess'))
-=======
         .post(
           `${await this.dispatch('global/getBmcPath')}/Actions/Manager.ResetToDefaults`,
           {
@@ -34,7 +13,6 @@ const FactoryResetStore = {
           },
         )
         .then(() => i18n.t('pageFactoryReset.toast.resetToDefaultsSuccess'))
->>>>>>> origin/master
         .catch((error) => {
           console.log('Factory Reset: ', error);
           throw new Error(
@@ -51,7 +29,7 @@ const FactoryResetStore = {
               Attributes: {
                 ResetEfiVars: true,
               },
-            }
+            },
           )
           .then(() => {
             i18n.t('pageFactoryReset.toast.resetBiosSuccessAndReboot');
@@ -63,19 +41,9 @@ const FactoryResetStore = {
           });
       }
       return await api
-<<<<<<< HEAD
-        .post(
-          `${await this.dispatch(
-            'global/getSystemPath'
-          )}/Bios/Actions/Bios.ResetBios`
-        )
-||||||| 6236b11
-        .post('/redfish/v1/Systems/system/Bios/Actions/Bios.ResetBios')
-=======
         .post(
           `${await this.dispatch('global/getSystemPath')}/Bios/Actions/Bios.ResetBios`,
         )
->>>>>>> origin/master
         .then(() => i18n.t('pageFactoryReset.toast.resetBiosSuccess'))
         .catch((error) => {
           console.log('Factory Reset: ', error);

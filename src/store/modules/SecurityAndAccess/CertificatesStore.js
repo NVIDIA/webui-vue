@@ -1,40 +1,9 @@
 import api from '@/store/api';
 import i18n from '@/i18n';
 
-<<<<<<< HEAD
-const getCertificateProp = (certificateTypes, type, prop) => {
-  const certificate = certificateTypes.find(
-    (certificate) => certificate.type === type
-||||||| 6236b11
-export const CERTIFICATE_TYPES = [
-  {
-    type: 'HTTPS Certificate',
-    location: '/redfish/v1/Managers/bmc/NetworkProtocol/HTTPS/Certificates/',
-    label: i18n.t('pageCertificates.httpsCertificate'),
-  },
-  {
-    type: 'LDAP Certificate',
-    location: '/redfish/v1/AccountService/LDAP/Certificates/',
-    label: i18n.t('pageCertificates.ldapCertificate'),
-  },
-  {
-    type: 'TrustStore Certificate',
-    location: '/redfish/v1/Managers/bmc/Truststore/Certificates/',
-    // Web UI will show 'CA Certificate' instead of
-    // 'TrustStore Certificate' after user testing revealed
-    // the term 'TrustStore Certificate' wasn't recognized/was unfamilar
-    label: i18n.t('pageCertificates.caCertificate'),
-  },
-];
-
-const getCertificateProp = (type, prop) => {
-  const certificate = CERTIFICATE_TYPES.find(
-    (certificate) => certificate.type === type
-=======
 const getCertificateProp = (certificateTypes, type, prop) => {
   const certificate = certificateTypes.find(
     (certificate) => certificate.type === type,
->>>>>>> origin/master
   );
   return certificate ? certificate[prop] : null;
 };
@@ -63,39 +32,6 @@ const CertificatesStore = {
     },
   },
   actions: {
-<<<<<<< HEAD
-    async getCertificateTypes({ commit }) {
-      const certificateTypes = [
-        {
-          type: 'HTTPS Certificate',
-          location: `${await this.dispatch(
-            'global/getBmcPath'
-          )}/NetworkProtocol/HTTPS/Certificates/`,
-          label: i18n.t('pageCertificates.httpsCertificate'),
-        },
-        {
-          type: 'LDAP Certificate',
-          location: '/redfish/v1/AccountService/LDAP/Certificates/',
-          label: i18n.t('pageCertificates.ldapCertificate'),
-        },
-        {
-          type: 'TrustStore Certificate',
-          location: `${await this.dispatch(
-            'global/getBmcPath'
-          )}/Truststore/Certificates/`,
-          // Web UI will show 'CA Certificate' instead of
-          // 'TrustStore Certificate' after user testing revealed
-          // the term 'TrustStore Certificate' wasn't recognized/was unfamilar
-          label: i18n.t('pageCertificates.caCertificate'),
-        },
-      ];
-      await commit('setCertificateTypes', certificateTypes);
-    },
-    async getCertificates({ dispatch, getters, commit }) {
-      await dispatch('getCertificateTypes');
-||||||| 6236b11
-    async getCertificates({ commit }) {
-=======
     async getCertificateTypes({ commit }) {
       const certificateTypes = [
         {
@@ -125,7 +61,6 @@ const CertificatesStore = {
     },
     async getCertificates({ dispatch, getters, commit }) {
       await dispatch('getCertificateTypes');
->>>>>>> origin/master
       return await api
         .get('/redfish/v1/CertificateService/CertificateLocations')
         .then(
@@ -152,21 +87,11 @@ const CertificatesStore = {
                 return {
                   type: Name,
                   location: data['@odata.id'],
-<<<<<<< HEAD
-                  certificate: getCertificateProp(
-                    getters['certificateTypes'],
-                    Name,
-                    'label'
-                  ),
-||||||| 6236b11
-                  certificate: getCertificateProp(Name, 'label'),
-=======
                   certificate: getCertificateProp(
                     getters['certificateTypes'],
                     Name,
                     'label',
                   ),
->>>>>>> origin/master
                   issuedBy: Issuer.CommonName,
                   issuedTo: Subject.CommonName,
                   validFrom: new Date(ValidNotBefore),
@@ -188,19 +113,6 @@ const CertificatesStore = {
     },
     async addNewCertificate({ dispatch, getters }, { file, type }) {
       return await api
-<<<<<<< HEAD
-        .post(
-          getCertificateProp(getters['certificateTypes'], type, 'location'),
-          file,
-          {
-            headers: { 'Content-Type': 'application/x-pem-file' },
-          }
-        )
-||||||| 6236b11
-        .post(getCertificateProp(type, 'location'), file, {
-          headers: { 'Content-Type': 'application/x-pem-file' },
-        })
-=======
         .post(
           getCertificateProp(getters['certificateTypes'], type, 'location'),
           file,
@@ -208,28 +120,15 @@ const CertificatesStore = {
             headers: { 'Content-Type': 'application/x-pem-file' },
           },
         )
->>>>>>> origin/master
         .then(() => dispatch('getCertificates'))
         .then(() =>
           i18n.t('pageCertificates.toast.successAddCertificate', {
-<<<<<<< HEAD
-            certificate: getCertificateProp(
-              getters['certificateTypes'],
-              type,
-              'label'
-            ),
-          })
-||||||| 6236b11
-            certificate: getCertificateProp(type, 'label'),
-          })
-=======
             certificate: getCertificateProp(
               getters['certificateTypes'],
               type,
               'label',
             ),
           }),
->>>>>>> origin/master
         )
         .catch((error) => {
           console.log(error);
@@ -237,16 +136,8 @@ const CertificatesStore = {
         });
     },
     async replaceCertificate(
-<<<<<<< HEAD
-      { dispatch, getters },
-      { certificateString, location, type }
-||||||| 6236b11
-      { dispatch },
-      { certificateString, location, type }
-=======
       { dispatch, getters },
       { certificateString, location, type },
->>>>>>> origin/master
     ) {
       const data = {};
       data.CertificateString = certificateString;
@@ -261,24 +152,12 @@ const CertificatesStore = {
         .then(() => dispatch('getCertificates'))
         .then(() =>
           i18n.t('pageCertificates.toast.successReplaceCertificate', {
-<<<<<<< HEAD
-            certificate: getCertificateProp(
-              getters['certificateTypes'],
-              type,
-              'label'
-            ),
-          })
-||||||| 6236b11
-            certificate: getCertificateProp(type, 'label'),
-          })
-=======
             certificate: getCertificateProp(
               getters['certificateTypes'],
               type,
               'label',
             ),
           }),
->>>>>>> origin/master
         )
         .catch((error) => {
           console.log(error);
@@ -293,24 +172,12 @@ const CertificatesStore = {
         .then(() => dispatch('getCertificates'))
         .then(() =>
           i18n.t('pageCertificates.toast.successDeleteCertificate', {
-<<<<<<< HEAD
-            certificate: getCertificateProp(
-              getters['certificateTypes'],
-              type,
-              'label'
-            ),
-          })
-||||||| 6236b11
-            certificate: getCertificateProp(type, 'label'),
-          })
-=======
             certificate: getCertificateProp(
               getters['certificateTypes'],
               type,
               'label',
             ),
           }),
->>>>>>> origin/master
         )
         .catch((error) => {
           console.log(error);

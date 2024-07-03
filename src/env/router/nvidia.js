@@ -1,35 +1,37 @@
 import AppLayout from '@/layouts/AppLayout.vue';
 import ChangePassword from '@/views/ChangePassword';
 import ConsoleLayout from '@/layouts/ConsoleLayout.vue';
-import DateTimeSettings from '@/views/Configuration/DateTimeSettings';
-import EventLogs from '@/views/Health/EventLogs';
-import FactoryReset from '@/views/Control/FactoryReset';
-import Firmware from '@/views/Configuration/Firmware';
-import HardwareStatus from '@/views/Health/HardwareStatus';
-import Kvm from '@/views/Control/Kvm';
-import KvmConsole from '@/views/Control/Kvm/KvmConsole';
-import ClientSessions from '@/views/AccessControl/ClientSessions';
-import Ldap from '@/views/AccessControl/Ldap';
-import LocalUserManagement from '@/views/AccessControl/LocalUserManagement';
+import DateTime from '@/views/Settings/DateTime';
+import EventLogs from '@/views/Logs/EventLogs';
+import FactoryReset from '@/views/Operations/FactoryReset';
+import Firmware from '@/views/Operations/Firmware';
+import Inventory from '@/views/HardwareStatus/Inventory';
+import Kvm from '@/views/Operations/Kvm';
+import KvmConsole from '@/views/Operations/Kvm/KvmConsole';
+import Sessions from '@/views/SecurityAndAccess/Sessions';
+import Ldap from '@/views/SecurityAndAccess/Ldap';
+import UserManagement from '@/views/SecurityAndAccess/UserManagement';
 import Login from '@/views/Login';
 import LoginLayout from '@/layouts/LoginLayout';
-import ManagePowerUsage from '@/views/Control/ManagePowerUsage';
-import NetworkSettings from '@/views/Configuration/NetworkSettings';
+import Network from '@/views/Settings/Network';
 import Overview from '@/views/Overview';
 import PageNotFound from '@/views/PageNotFound';
-import PowerRestorePolicy from '@/views/Control/PowerRestorePolicy';
+import PostCodeLogs from '@/views/Logs/PostCodeLogs';
+import PowerRestorePolicy from '@/views/Settings/PowerRestorePolicy';
 import ProfileSettings from '@/views/ProfileSettings';
-import RebootBmc from '@/views/Control/RebootBmc';
-import SecuritySettings from '@/views/Configuration/SecuritySettings';
-import Sensors from '@/views/Health/Sensors';
-import SerialOverLan from '@/views/Control/SerialOverLan';
-import SerialOverLanConsole from '@/views/Control/SerialOverLan/SerialOverLanConsole';
-import ServerLed from '@/views/Control/ServerLed';
-import ServerPowerOperations from '@/views/Control/ServerPowerOperations';
-import SslCertificates from '@/views/AccessControl/SslCertificates';
-import VirtualMedia from '@/views/Control/VirtualMedia';
+import RebootBmc from '@/views/Operations/RebootBmc';
+import Policies from '@/views/SecurityAndAccess/Policies';
+import KeyClear from '@/views/Operations/KeyClear';
+import Sensors from '@/views/HardwareStatus/Sensors';
+import SerialOverLan from '@/views/Operations/SerialOverLan';
+import SerialOverLanConsole from '@/views/Operations/SerialOverLan/SerialOverLanConsole';
+import ServerPowerOperations from '@/views/Operations/ServerPowerOperations';
+import Certificates from '@/views/SecurityAndAccess/Certificates';
+import VirtualMedia from '@/views/Operations/VirtualMedia';
+import Power from '@/views/ResourceManagement/Power';
 import i18n from '@/i18n';
-
+// Custom components
+import Dumps from '@/views/Logs/Dumps';
 const routes = [
   {
     path: '/login',
@@ -103,7 +105,15 @@ const routes = [
         },
       },
       {
-        path: '/health/event-logs',
+        path: '/logs/dumps',
+        name: 'dumps',
+        component: Dumps,
+        meta: {
+          title: i18n.t('appPageTitle.dumps'),
+        },
+      },
+      {
+        path: '/logs/event-logs',
         name: 'event-logs',
         component: EventLogs,
         meta: {
@@ -111,15 +121,23 @@ const routes = [
         },
       },
       {
-        path: '/health/hardware-status',
-        name: 'hardware-status',
-        component: HardwareStatus,
+        path: '/logs/post-code-logs',
+        name: 'post-code-logs',
+        component: PostCodeLogs,
         meta: {
-          title: i18n.t('appPageTitle.hardwareStatus'),
+          title: i18n.t('appPageTitle.postCodeLogs'),
         },
       },
       {
-        path: '/health/sensors',
+        path: '/hardware-status/inventory',
+        name: 'inventory',
+        component: Inventory,
+        meta: {
+          title: i18n.t('appPageTitle.inventory'),
+        },
+      },
+      {
+        path: '/hardware-status/sensors',
         name: 'sensors',
         component: Sensors,
         meta: {
@@ -127,15 +145,15 @@ const routes = [
         },
       },
       {
-        path: '/access-control/client-sessions',
-        name: 'client-sessions',
-        component: ClientSessions,
+        path: '/security-and-access/sessions',
+        name: 'sessions',
+        component: Sessions,
         meta: {
-          title: i18n.t('appPageTitle.clientSessions'),
+          title: i18n.t('appPageTitle.sessions'),
         },
       },
       {
-        path: '/access-control/ldap',
+        path: '/security-and-access/ldap',
         name: 'ldap',
         component: Ldap,
         meta: {
@@ -143,31 +161,39 @@ const routes = [
         },
       },
       {
-        path: '/access-control/local-user-management',
-        name: 'local-users',
-        component: LocalUserManagement,
+        path: '/security-and-access/user-management',
+        name: 'user-management',
+        component: UserManagement,
         meta: {
-          title: i18n.t('appPageTitle.localUserManagement'),
+          title: i18n.t('appPageTitle.userManagement'),
         },
       },
       {
-        path: '/access-control/ssl-certificates',
-        name: 'ssl-certificates',
-        component: SslCertificates,
+        path: '/security-and-access/policies',
+        name: 'policies',
+        component: Policies,
         meta: {
-          title: i18n.t('appPageTitle.sslCertificates'),
+          title: i18n.t('appPageTitle.policies'),
         },
       },
       {
-        path: '/configuration/date-time-settings',
-        name: 'date-time-settings',
-        component: DateTimeSettings,
+        path: '/security-and-access/certificates',
+        name: 'certificates',
+        component: Certificates,
         meta: {
-          title: i18n.t('appPageTitle.dateTimeSettings'),
+          title: i18n.t('appPageTitle.certificates'),
         },
       },
       {
-        path: '/configuration/firmware',
+        path: '/settings/date-time',
+        name: 'date-time',
+        component: DateTime,
+        meta: {
+          title: i18n.t('appPageTitle.dateTime'),
+        },
+      },
+      {
+        path: '/operations/firmware',
         name: 'firmware',
         component: Firmware,
         meta: {
@@ -175,39 +201,15 @@ const routes = [
         },
       },
       {
-        path: '/configuration/security-settings',
-        name: 'security-settings',
-        component: SecuritySettings,
+        path: '/settings/network',
+        name: 'network',
+        component: Network,
         meta: {
-          title: i18n.t('appPageTitle.securitySettings'),
+          title: i18n.t('appPageTitle.network'),
         },
       },
       {
-        path: '/control/factory-reset',
-        name: 'factory-reset',
-        component: FactoryReset,
-        meta: {
-          title: i18n.t('appPageTitle.factoryReset'),
-        },
-      },
-      {
-        path: '/control/kvm',
-        name: 'kvm',
-        component: Kvm,
-        meta: {
-          title: i18n.t('appPageTitle.kvm'),
-        },
-      },
-      {
-        path: '/control/manage-power-usage',
-        name: 'manage-power-usage',
-        component: ManagePowerUsage,
-        meta: {
-          title: i18n.t('appPageTitle.managePowerUsage'),
-        },
-      },
-      {
-        path: '/control/power-restore-policy',
+        path: '/settings/power-restore-policy',
         name: 'power-restore-policy',
         component: PowerRestorePolicy,
         meta: {
@@ -215,15 +217,31 @@ const routes = [
         },
       },
       {
-        path: '/configuration/network-settings',
-        name: 'network-settings',
-        component: NetworkSettings,
+        path: '/resource-management/power',
+        name: 'power',
+        component: Power,
         meta: {
-          title: i18n.t('appPageTitle.networkSettings'),
+          title: i18n.t('appPageTitle.power'),
         },
       },
       {
-        path: '/control/reboot-bmc',
+        path: '/operations/factory-reset',
+        name: 'factory-reset',
+        component: FactoryReset,
+        meta: {
+          title: i18n.t('appPageTitle.factoryReset'),
+        },
+      },
+      {
+        path: '/operations/key-clear',
+        name: 'key-clear',
+        component: KeyClear,
+        meta: {
+          title: i18n.t('appPageTitle.keyClear'),
+        },
+      },
+      {
+        path: '/operations/reboot-bmc',
         name: 'reboot-bmc',
         component: RebootBmc,
         meta: {
@@ -231,15 +249,15 @@ const routes = [
         },
       },
       {
-        path: '/control/server-led',
-        name: 'server-led',
-        component: ServerLed,
+        path: '/operations/kvm',
+        name: 'kvm',
+        component: Kvm,
         meta: {
-          title: i18n.t('appPageTitle.serverLed'),
+          title: i18n.t('appPageTitle.kvm'),
         },
       },
       {
-        path: '/control/serial-over-lan',
+        path: '/operations/serial-over-lan',
         name: 'serial-over-lan',
         component: SerialOverLan,
         meta: {
@@ -247,19 +265,19 @@ const routes = [
         },
       },
       {
-        path: '/control/server-power-operations',
-        name: 'server-power-operations',
-        component: ServerPowerOperations,
-        meta: {
-          title: i18n.t('appPageTitle.serverPowerOperations'),
-        },
-      },
-      {
-        path: '/control/virtual-media',
+        path: '/operations/virtual-media',
         name: 'virtual-media',
         component: VirtualMedia,
         meta: {
           title: i18n.t('appPageTitle.virtualMedia'),
+        },
+      },
+      {
+        path: '/operations/server-power-operations',
+        name: 'server-power-operations',
+        component: ServerPowerOperations,
+        meta: {
+          title: i18n.t('appPageTitle.serverPowerOperations'),
         },
       },
       {

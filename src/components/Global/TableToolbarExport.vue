@@ -22,7 +22,7 @@ export default {
       var exportData = TextLogHandler().exportDataFromJSON(
         this.data,
         this.fileName,
-        null
+        null,
       );
       return `data:text/json;charset=utf-8,${exportData}`;
     },

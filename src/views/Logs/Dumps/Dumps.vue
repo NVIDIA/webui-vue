@@ -32,9 +32,9 @@
           <b-row>
             <b-col class="text-right">
               <table-filter
+                v-if="showTableFilters"
                 :filters="tableFilters"
                 @filter-change="onFilterChange"
-                v-if="showTableFilters"
               />
             </b-col>
           </b-row>

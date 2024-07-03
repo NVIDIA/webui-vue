@@ -110,7 +110,7 @@ export default {
       var data = TextLogHandler().exportDataFromJSON(
         omit(this.rowData, 'actions'),
         this.exportName,
-        null
+        null,
       );
       return `data:text/plain;charset=utf-8,${data}`;
     },

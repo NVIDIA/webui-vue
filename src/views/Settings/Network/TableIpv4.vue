@@ -171,7 +171,7 @@ export default {
       const addresses =
         this.ethernetData[index].IPv4Addresses.filter(
           (ipv4) =>
-            ipv4.AddressOrigin === 'Static' || ipv4.AddressOrigin === 'DHCP'
+            ipv4.AddressOrigin === 'Static' || ipv4.AddressOrigin === 'DHCP',
         ) || [];
       this.form.ipv4TableItems = addresses.map((ipv4) => {
         return {

@@ -52,38 +52,18 @@ const FirmwareStore = {
       dispatch('getActiveBmcFirmware');
       return await dispatch('getFirmwareInventory');
     },
-<<<<<<< HEAD
-    async getActiveBmcFirmware({ commit }) {
-      return await api
-        .get(`${await this.dispatch('global/getBmcPath')}`)
-||||||| 6236b11
-    getActiveBmcFirmware({ commit }) {
-      return api
-        .get('/redfish/v1/Managers/bmc')
-=======
     async getActiveBmcFirmware({ commit }) {
       return api
         .get(`${await this.dispatch('global/getBmcPath')}`)
->>>>>>> origin/master
         .then(({ data: { Links } }) => {
           const id = Links?.ActiveSoftwareImage['@odata.id'].split('/').pop();
           commit('setActiveBmcFirmwareId', id);
         })
         .catch((error) => console.log(error));
     },
-<<<<<<< HEAD
-    async getActiveHostFirmware({ commit }) {
-      return await api
-        .get(`${await this.dispatch('global/getSystemPath')}/Bios`)
-||||||| 6236b11
-    getActiveHostFirmware({ commit }) {
-      return api
-        .get('/redfish/v1/Systems/system/Bios')
-=======
     async getActiveHostFirmware({ commit }) {
       return api
         .get(`${await this.dispatch('global/getSystemPath')}/Bios`)
->>>>>>> origin/master
         .then(({ data: { Links } }) => {
           const id = Links?.ActiveSoftwareImage['@odata.id'].split('/').pop();
           commit('setActiveHostFirmwareId', id);

@@ -1,7 +1,7 @@
 // TODO - put nvidia specific api calls/store stuff here
 
 import store from '@/store';
-import DumpsStore from '@/store/modules/Health/DumpsStore';
+import DumpsStore from '@/store/modules/Logs/DumpsStore';
 
 // example how we can get rid of an api call / store
 //store.unregisterModule('virtualMedia');

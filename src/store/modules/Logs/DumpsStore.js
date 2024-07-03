@@ -60,15 +60,7 @@ const DumpsStore = {
     async createBmcDump() {
       return await api
         .post(
-<<<<<<< HEAD
-          `${await this.dispatch(
-            'global/getBmcPath'
-          )}/LogServices/Dump/Actions/LogService.CollectDiagnosticData`,
-||||||| 6236b11
-          '/redfish/v1/Managers/bmc/LogServices/Dump/Actions/LogService.CollectDiagnosticData',
-=======
           `${await this.dispatch('global/getBmcPath')}/LogServices/Dump/Actions/LogService.CollectDiagnosticData`,
->>>>>>> origin/master
           {
             DiagnosticDataType: 'Manager',
             OEMDiagnosticDataType: '',
@@ -82,15 +74,7 @@ const DumpsStore = {
     async createSystemDump() {
       return await api
         .post(
-<<<<<<< HEAD
-          `${await this.dispatch(
-            'global/getSystemPath'
-          )}/LogServices/Dump/Actions/LogService.CollectDiagnosticData`,
-||||||| 6236b11
-          '/redfish/v1/Systems/system/LogServices/Dump/Actions/LogService.CollectDiagnosticData',
-=======
           `${await this.dispatch('global/getSystemPath')}/LogServices/Dump/Actions/LogService.CollectDiagnosticData`,
->>>>>>> origin/master
           {
             DiagnosticDataType: 'OEM',
             OEMDiagnosticDataType: 'System',
@@ -143,15 +127,7 @@ const DumpsStore = {
       const totalDumpCount = state.allDumps.length;
       return await api
         .post(
-<<<<<<< HEAD
-          `${await this.dispatch(
-            'global/getBmcPath'
-          )}/LogServices/Dump/Actions/LogService.ClearLog`
-||||||| 6236b11
-          '/redfish/v1/Managers/bmc/LogServices/Dump/Actions/LogService.ClearLog'
-=======
           `${await this.dispatch('global/getBmcPath')}/LogServices/Dump/Actions/LogService.ClearLog`,
->>>>>>> origin/master
         )
         .then(() => {
           commit('setAllDumps', []);

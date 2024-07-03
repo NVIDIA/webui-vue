@@ -61,7 +61,7 @@
               dataFormatter(
                 network.dhcpAddressV6.length !== 0
                   ? network.dhcpAddressV6[0].Address
-                  : null
+                  : null,
               )
             }}
           </dd>
