@@ -57,10 +57,10 @@ export default {
     return {
       showDumps: process.env.VUE_APP_ENV_NAME === 'ibm',
       showPower: !['nvidia-bluefield', 'nvidia-igx'].includes(
-        process.env.VUE_APP_ENV_NAME
+        process.env.VUE_APP_ENV_NAME,
       ),
       showInventory: !['nvidia-bluefield', 'nvidia-igx'].includes(
-        process.env.VUE_APP_ENV_NAME
+        process.env.VUE_APP_ENV_NAME,
       ),
     };
   },
