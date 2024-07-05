@@ -52,6 +52,9 @@
                 <!-- Serial number -->
                 <dt>{{ $t('pageInventory.table.serialNumber') }}:</dt>
                 <dd>{{ dataFormatter(item.serialNumber) }}</dd>
+                <!-- Part number -->
+                <dt>{{ $t('pageInventory.table.partNumber') }}:</dt>
+                <dd>{{ dataFormatter(item.partNumber) }}</dd>
                 <!-- Model -->
                 <dt>{{ $t('pageInventory.table.model') }}:</dt>
                 <dd>{{ dataFormatter(item.model) }}</dd>
