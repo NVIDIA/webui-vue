@@ -202,7 +202,7 @@ export default {
             ipv6.AddressOrigin === 'LinkLocal' ||
             ipv6.AddressOrigin === 'Static' ||
             ipv6.AddressOrigin === 'SLAAC' ||
-            ipv6.AddressOrigin === 'DHCPv6'
+            ipv6.AddressOrigin === 'DHCPv6',
         ) || [];
       this.form.ipv6TableItems = addresses.map((ipv6) => {
         return {
@@ -267,7 +267,7 @@ export default {
               : this.$t('global.action.disable'),
             okVariant: 'danger',
             cancelTitle: this.$t('global.action.cancel'),
-          }
+          },
         )
         .then((dhcpEnableConfirmed) => {
           if (dhcpEnableConfirmed) {

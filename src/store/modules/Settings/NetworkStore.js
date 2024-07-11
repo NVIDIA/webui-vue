@@ -143,7 +143,7 @@ const NetworkStore = {
           `${await this.dispatch('global/getBmcPath')}/EthernetInterfaces/${
             state.selectedInterfaceId
           }`,
-          data
+          data,
         )
         .then(dispatch('getEthernetData'))
         .then(() => {
@@ -156,7 +156,7 @@ const NetworkStore = {
           throw new Error(
             i18n.t('pageNetwork.toast.errorSaveNetworkSettings', {
               setting: i18n.t('pageNetwork.dhcp6'),
-            })
+            }),
           );
         });
     },
@@ -335,7 +335,7 @@ const NetworkStore = {
           `${await this.dispatch('global/getBmcPath')}/EthernetInterfaces/${
             state.selectedInterfaceId
           }`,
-          { IPv6StaticAddresses: originalAddresses.concat(newAddress) }
+          { IPv6StaticAddresses: originalAddresses.concat(newAddress) },
         )
         .then(dispatch('getEthernetData'))
         .then(() => {
@@ -348,7 +348,7 @@ const NetworkStore = {
           throw new Error(
             i18n.t('pageNetwork.toast.errorSaveNetworkSettings', {
               setting: i18n.t('pageNetwork.ipv6'),
-            })
+            }),
           );
         });
     },
@@ -379,7 +379,7 @@ const NetworkStore = {
           `${await this.dispatch('global/getBmcPath')}/EthernetInterfaces/${
             state.selectedInterfaceId
           }`,
-          { IPv6StaticAddresses: ipv6TableData }
+          { IPv6StaticAddresses: ipv6TableData },
         )
         .then(dispatch('getEthernetData'))
         .then(() => {
@@ -392,7 +392,7 @@ const NetworkStore = {
           throw new Error(
             i18n.t('pageNetwork.toast.errorSaveNetworkSettings', {
               setting: i18n.t('pageNetwork.ipv6'),
-            })
+            }),
           );
         });
     },
