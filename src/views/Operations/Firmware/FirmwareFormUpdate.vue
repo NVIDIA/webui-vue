@@ -3,20 +3,32 @@
     <div class="form-background p-3">
       <b-form @submit.prevent="onSubmitUpload">
         <b-form-group
-          v-if="isTftpUploadAvailable"
+          v-if="isFileAddressUploadAvailable"
           :label="$t('pageFirmware.form.updateFirmware.fileSource')"
           :disabled="isPageDisabled"
         >
-          <b-form-radio v-model="isWorkstationSelected" :value="true">
+          <b-form-radio
+            id="upload-file-source-local"
+            v-model="fileSource"
+            name="upload-file-source"
+            value="LOCAL"
+          >
             {{ $t('pageFirmware.form.updateFirmware.workstation') }}
           </b-form-radio>
-          <b-form-radio v-model="isWorkstationSelected" :value="false">
-            {{ $t('pageFirmware.form.updateFirmware.tftpServer') }}
+          <b-form-radio
+            v-for="action in allowableActions"
+            :id="'upload-file-source-' + action.toLowerCase()"
+            :key="action"
+            v-model="fileSource"
+            name="upload-file-source"
+            :value="action"
+          >
+            {{ action }} {{ $t('pageFirmware.form.updateFirmware.server') }}
           </b-form-radio>
         </b-form-group>
 
-        <!-- Workstation Upload -->
-        <template v-if="isWorkstationSelected">
+        <!-- Local File Upload -->
+        <template v-if="isLocalSelected">
           <b-form-group
             :label="$t('pageFirmware.form.updateFirmware.imageFile')"
             label-for="image-file"
@@ -37,19 +49,36 @@
           </b-form-group>
         </template>
 
-        <!-- TFTP Server Upload -->
+        <!-- TFTP/SCP/HTTP/HTTPS Server File Upload -->
         <template v-else>
           <b-form-group
             :label="$t('pageFirmware.form.updateFirmware.fileAddress')"
-            label-for="tftp-address"
+            label-for="file-address"
           >
             <b-form-input
-              id="tftp-address"
-              v-model="tftpFileAddress"
+              id="file-address"
+              v-model="fileAddress"
               type="text"
-              :state="getValidationState($v.tftpFileAddress)"
+              :state="getValidationState($v.fileAddress)"
               :disabled="isPageDisabled"
-              @input="$v.tftpFileAddress.$touch()"
+              @input="$v.fileAddress.$touch()"
+            />
+            <b-form-invalid-feedback role="alert">
+              {{ $t('global.form.fieldRequired') }}
+            </b-form-invalid-feedback>
+          </b-form-group>
+          <b-form-group
+            v-if="isUsernameNeeded"
+            :label="$t('pageFirmware.form.updateFirmware.username')"
+            label-for="username"
+          >
+            <b-form-input
+              id="username"
+              v-model="username"
+              type="text"
+              :state="getValidationState($v.username)"
+              :disabled="isPageDisabled"
+              @input="$v.username.$touch()"
             />
             <b-form-invalid-feedback role="alert">
               {{ $t('global.form.fieldRequired') }}
@@ -99,35 +128,51 @@ export default {
   data() {
     return {
       loading,
-      isWorkstationSelected: true,
+      fileSource: 'LOCAL',
       file: null,
-      tftpFileAddress: null,
+      fileAddress: null,
+      username: null,
       isServerPowerOffRequired:
         process.env.VUE_APP_SERVER_OFF_REQUIRED === 'true',
     };
   },
   computed: {
-    isTftpUploadAvailable() {
-      return this.$store.getters['firmware/isTftpUploadAvailable'];
+    allowableActions() {
+      return this.$store.getters['firmware/allowableActions'];
+    },
+    isFileAddressUploadAvailable() {
+      return this.allowableActions.length > 0;
+    },
+    isLocalSelected() {
+      return this.fileSource === 'LOCAL';
+    },
+    isUsernameNeeded() {
+      return this.fileSource === 'SCP';
     },
   },
   watch: {
-    isWorkstationSelected: function () {
+    fileSource: function () {
       this.$v.$reset();
       this.file = null;
-      this.tftpFileAddress = null;
+      this.fileAddress = null;
+      this.username = null;
     },
   },
   validations() {
     return {
       file: {
         required: requiredIf(function () {
-          return this.isWorkstationSelected;
+          return this.isLocalSelected;
         }),
       },
-      tftpFileAddress: {
+      fileAddress: {
         required: requiredIf(function () {
-          return !this.isWorkstationSelected;
+          return !this.isLocalSelected;
+        }),
+      },
+      username: {
+        required: requiredIf(function () {
+          return this.isUsernameNeeded;
         }),
       },
     };
@@ -149,13 +194,13 @@ export default {
         title: this.$t('pageFirmware.toast.updateStarted'),
         timestamp: true,
       });
-      if (this.isWorkstationSelected) {
-        this.dispatchWorkstationUpload(timerId);
+      if (this.fileSource === 'LOCAL') {
+        this.dispatchLocalFileUpload(timerId);
       } else {
-        this.dispatchTftpUpload(timerId);
+        this.dispatchFileAddressUpload(timerId);
       }
     },
-    dispatchWorkstationUpload(timerId) {
+    dispatchLocalFileUpload(timerId) {
       this.$store
         .dispatch('firmware/uploadFirmware', {
           image: this.file,
@@ -166,9 +211,13 @@ export default {
           clearTimeout(timerId);
         });
     },
-    dispatchTftpUpload(timerId) {
+    dispatchFileAddressUpload(timerId) {
       this.$store
-        .dispatch('firmware/uploadFirmwareTFTP', this.tftpFileAddress)
+        .dispatch('firmware/uploadFirmwareSimpleUpdate', {
+          protocol: this.fileSource,
+          fileAddress: this.fileAddress,
+          username: this.username,
+        })
         .catch(({ message }) => {
           this.endLoader();
           this.errorToast(message);

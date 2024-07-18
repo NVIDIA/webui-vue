@@ -14,10 +14,10 @@ const FirmwareStore = {
     applyTime: null,
     multipartHttpPushUri: null,
     httpPushUri: null,
-    tftpAvailable: false,
+    allowableActions: [],
   },
   getters: {
-    isTftpUploadAvailable: (state) => state.tftpAvailable,
+    allowableActions: (state) => state.allowableActions,
     isSingleFileUploadEnabled: (state) => state.hostFirmware.length === 0,
     activeBmcFirmware: (state) => {
       return state.bmcFirmware.find(
@@ -55,8 +55,8 @@ const FirmwareStore = {
     setHttpPushUri: (state, httpPushUri) => (state.httpPushUri = httpPushUri),
     setMultipartHttpPushUri: (state, multipartHttpPushUri) =>
       (state.multipartHttpPushUri = multipartHttpPushUri),
-    setTftpUploadAvailable: (state, tftpAvailable) =>
-      (state.tftpAvailable = tftpAvailable),
+    setAllowableActions: (state, allowableActions) =>
+      (state.allowableActions = allowableActions),
   },
   actions: {
     async getFirmwareInformation({ dispatch }) {
@@ -142,9 +142,7 @@ const FirmwareStore = {
           commit('setHttpPushUri', httpPushUri);
           const multipartHttpPushUri = data.MultipartHttpPushUri;
           commit('setMultipartHttpPushUri', multipartHttpPushUri);
-          if (allowableActions?.includes('TFTP')) {
-            commit('setTftpUploadAvailable', true);
-          }
+          commit('setAllowableActions', allowableActions);
         })
         .catch((error) => console.log(error));
     },
@@ -182,11 +180,17 @@ const FirmwareStore = {
           throw new Error(i18n.t('pageFirmware.toast.errorUpdateFirmware'));
         });
     },
-    async uploadFirmwareTFTP(fileAddress) {
+    async uploadFirmwareSimpleUpdate(
+      // eslint-disable-next-line no-unused-vars
+      { state },
+      { protocol, fileAddress, targets, username },
+    ) {
       const data = {
-        TransferProtocol: 'TFTP',
+        TransferProtocol: protocol,
         ImageURI: fileAddress,
       };
+      if (targets != null && targets.length > 0) data.Targets = targets;
+      if (username != null) data.Username = username;
       return await api
         .post(
           '/redfish/v1/UpdateService/Actions/UpdateService.SimpleUpdate',
