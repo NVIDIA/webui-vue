@@ -6,6 +6,7 @@ const FirmwareStore = {
   state: {
     bmcFirmware: [],
     hostFirmware: [],
+    firmwareInventory: [],
     bmcActiveFirmwareId: null,
     hostActiveFirmwareId: null,
     bmcSoftwareImageIds: [],
@@ -37,6 +38,7 @@ const FirmwareStore = {
         (firmware) => firmware.id !== state.hostActiveFirmwareId,
       );
     },
+    firmwareInventory: (state) => state.firmwareInventory,
   },
   mutations: {
     setActiveBmcFirmwareId: (state, id) => (state.bmcActiveFirmwareId = id),
@@ -45,6 +47,9 @@ const FirmwareStore = {
     setHostFirmware: (state, firmware) => (state.hostFirmware = firmware),
     setBmcSoftwareImageIds: (state, ids) => (state.bmcSoftwareImageIds = ids),
     setHostSoftwareImageIds: (state, ids) => (state.hostSoftwareImageIds = ids),
+    setFirmwareInventory(state, firmwareInventory) {
+      state.firmwareInventory = firmwareInventory;
+    },
     setApplyTime: (state, applyTime) => (state.applyTime = applyTime),
     setHttpPushUri: (state, httpPushUri) => (state.httpPushUri = httpPushUri),
     setTftpUploadAvailable: (state, tftpAvailable) =>
@@ -93,30 +98,25 @@ const FirmwareStore = {
         .then((response) => {
           const bmcFirmware = [];
           const hostFirmware = [];
+          const firmwareInventory = [];
           response.forEach(({ data }) => {
             const item = {
               version: data?.Version,
               id: data?.['@odata.id'],
+              name: data?.Id,
               location: data?.['@odata.id'],
               status: data?.Status?.Health,
-              isActive: data?.['@odata.id'] === state.bmcActiveFirmwareId,
+              updateable: data?.Updateable,
             };
-            if (process.env.VUE_APP_ENV_NAME === 'nvidia-bluefield') {
-              const firmwareType = data?.Id;
-              if (firmwareType === 'BMC_Firmware') {
-                bmcFirmware.push({ ...item, id: firmwareType });
-              } else if (firmwareType === 'DPU_ATF') {
-                hostFirmware.push({ ...item, id: firmwareType });
-                commit('setActiveHostFirmwareId', firmwareType);
-              }
-            } else {
-              if (state.bmcSoftwareImageIds.includes(item.id)) {
-                bmcFirmware.push(item);
-              } else if (state.hostSoftwareImageIds.includes(item.id)) {
-                hostFirmware.push(item);
-              }
+            firmwareInventory.push(item);
+
+            if (state.bmcSoftwareImageIds.includes(item.id)) {
+              bmcFirmware.push(item);
+            } else if (state.hostSoftwareImageIds.includes(item.id)) {
+              hostFirmware.push(item);
             }
           });
+          commit('setFirmwareInventory', firmwareInventory);
           commit('setBmcFirmware', bmcFirmware);
           commit('setHostFirmware', hostFirmware);
         })

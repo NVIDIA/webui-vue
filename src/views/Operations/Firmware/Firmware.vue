@@ -20,6 +20,13 @@
       </b-col>
     </b-row>
 
+    <!-- Firmware Inventory -->
+    <b-row>
+      <b-col xl="10">
+        <firmware-inventory />
+      </b-col>
+    </b-row>
+
     <!-- Update firmware-->
     <page-section
       v-if="isUpdateSupported"
@@ -40,6 +47,7 @@
 
 <script>
 import AlertsServerPower from './FirmwareAlertServerPower';
+import FirmwareInventory from './FirmwareInventory';
 import BmcCards from './FirmwareCardsBmc';
 import FormUpdate from './FirmwareFormUpdate';
 import HostCards from './FirmwareCardsHost';
@@ -53,6 +61,7 @@ export default {
   components: {
     AlertsServerPower,
     BmcCards,
+    FirmwareInventory,
     FormUpdate,
     HostCards,
     PageSection,

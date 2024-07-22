@@ -336,6 +336,10 @@
         "sectionTitleBmcCardsCombined": "BMC and server",
         "sectionTitleHostCards": "Host",
         "sectionTitleUpdateFirmware": "Update firmware",
+	"sectionTitleFirmwareInventory": "Firmware Inventory",
+	"tableHeaderHealthStatus": "Health Status",
+	"tableHeaderFirmware": "Firmware",
+	"tableHeaderVersion": "Version",
         "alert": {
             "operationInProgress": "Server power operation in progress.",
             "serverMustBePoweredOffTo": "Server must be powered off to:",
