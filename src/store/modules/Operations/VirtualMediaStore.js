@@ -33,20 +33,20 @@ const VirtualMediaStore = {
   actions: {
     async getData({ commit }) {
       const virtualMediaListEnabled =
-        process.env.VUE_APP_VIRTUAL_MEDIA_LIST_ENABLED === 'true'
-          ? true
-          : false;
-      if (!virtualMediaListEnabled) {
-        const device = {
-          id: i18n.t('pageVirtualMedia.defaultDeviceName'),
-          websocket: '/vm/0/0',
-          file: null,
-          transferProtocolType: transferProtocolType.OEM,
-          isActive: false,
-        };
-        commit('setProxyDevicesData', [device]);
-        return;
-      }
+        process.env.VUE_APP_VIRTUAL_MEDIA_LIST_ENABLED === 'false'
+          ? false
+          : true;
+
+      const device = {
+        id: i18n.t('pageVirtualMedia.defaultDeviceName'),
+        websocket: '/vm/0/0',
+        file: null,
+        transferProtocolType: transferProtocolType.OEM,
+        isActive: false,
+      };
+      commit('setProxyDevicesData', [device]);
+
+      if (!virtualMediaListEnabled) return; // Legacy Virtual Media disabled.
 
       return await api
         .get(`${await this.dispatch('global/getBmcPath')}/VirtualMedia`)
@@ -61,19 +61,12 @@ const VirtualMediaStore = {
             const isActive = device.data?.Inserted === true ? true : false;
             return {
               id: device.data?.Id,
+              image: device.data?.Image,
               transferProtocolType: device.data?.TransferProtocolType,
               websocket: device.data?.Oem?.OpenBMC?.WebSocketEndpoint,
               isActive: isActive,
             };
           });
-          const proxyDevices = deviceData
-            .filter((d) => d.transferProtocolType === transferProtocolType.OEM)
-            .map((device) => {
-              return {
-                ...device,
-                file: null,
-              };
-            });
           const legacyDevices = deviceData
             .filter((d) => d.transferProtocolType !== transferProtocolType.OEM)
             .map((device) => {
@@ -85,8 +78,7 @@ const VirtualMediaStore = {
                 isRW: false,
               };
             });
-          commit('setProxyDevicesData', proxyDevices);
-          commit('setLegacyDevicesData', legacyDevices);
+          commit('setLegacyDevicesData', legacyDevices.reverse());
         })
         .catch((error) => {
           console.log('Virtual Media:', error);
@@ -98,9 +90,17 @@ const VirtualMediaStore = {
           `${await this.dispatch('global/getBmcPath')}/VirtualMedia/${id}/Actions/VirtualMedia.InsertMedia`,
           data,
         )
-        .catch((error) => {
-          console.log('Mount image:', error);
-          throw new Error();
+        .catch((e) => {
+          let message = i18n.t('pageVirtualMedia.toast.errorMounting');
+          if (
+            e.response &&
+            e.response.data &&
+            e.response.data.error &&
+            e.response.data.error.message
+          ) {
+            message = e.response.data.error.message;
+          }
+          throw new Error(message);
         });
     },
     async unmountImage(_, id) {
@@ -108,9 +108,17 @@ const VirtualMediaStore = {
         .post(
           `${await this.dispatch('global/getBmcPath')}/VirtualMedia/${id}/Actions/VirtualMedia.EjectMedia`,
         )
-        .catch((error) => {
-          console.log('Unmount image:', error);
-          throw new Error();
+        .catch((e) => {
+          let message = i18n.t('pageVirtualMedia.toast.errorUnmounting');
+          if (
+            e.response &&
+            e.response.data &&
+            e.response.data.error &&
+            e.response.data.error.message
+          ) {
+            message = e.response.data.error.message;
+          }
+          throw new Error(message);
         });
     },
   },

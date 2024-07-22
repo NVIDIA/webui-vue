@@ -1010,13 +1010,15 @@
         "defaultDeviceName": "Virtual media device",
         "start": "Start",
         "stop": "Stop",
+        "inserted": "Inserted",
         "virtualMediaSubTitleFirst": "Load image from web browser",
         "virtualMediaSubTitleSecond": "Load image from external server",
         "modal": {
-            "password": "Password",
-            "serverUri": "External server URI",
-            "title": "Legacy mode configuration",
-            "username": "Username"
+            "title": "Configure Remote Media",
+            "serverUri": "Image URI (HTTPS or CIFS)",
+            "username": "Optional Username",
+            "password": "Optional Password",
+            "rw": "Read and Write (Default Read Only)"
         },
         "toast": {
             "errorMounting": "Error mounting",

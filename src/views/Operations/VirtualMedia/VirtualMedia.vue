@@ -8,7 +8,12 @@
         >
           <b-row>
             <b-col v-for="(dev, $index) in proxyDevices" :key="$index" md="6">
-              <b-form-group :label="dev.id" label-class="bold">
+              <b-form-group
+                class="mb-4"
+                :label="dev.id"
+                :label-for="dev.id"
+                label-class="bold mt-2 mb-4"
+              >
                 <form-file
                   v-if="!dev.isActive"
                   :id="concatId(dev.id)"
@@ -51,39 +56,49 @@
             <b-col
               v-for="(device, $index) in legacyDevices"
               :key="$index"
-              md="6"
+              md="5"
+              class="mr-5"
             >
               <b-form-group
-                :label="device.id"
+                class="mb-4"
+                :label="
+                  device.isActive
+                    ? `${device.id}: ${$t('pageVirtualMedia.inserted')}`
+                    : `${device.id}: ${$t('pageVirtualMedia.defaultDeviceName')}`
+                "
                 :label-for="device.id"
-                label-class="bold"
+                label-class="bold mt-2 mb-4"
               >
                 <b-button
-                  variant="primary"
+                  v-if="!device.isActive"
+                  variant="secondary"
                   :disabled="device.isActive"
                   @click="configureConnection(device)"
                 >
                   {{ $t('pageVirtualMedia.configureConnection') }}
                 </b-button>
-
-                <b-button
-                  v-if="!device.isActive"
-                  variant="primary"
-                  class="float-right"
-                  :disabled="!device.serverUri"
-                  @click="startLegacy(device)"
-                >
-                  {{ $t('pageVirtualMedia.start') }}
-                </b-button>
-                <b-button
-                  v-if="device.isActive"
-                  variant="primary"
-                  class="float-right"
-                  @click="stopLegacy(device)"
-                >
-                  {{ $t('pageVirtualMedia.stop') }}
-                </b-button>
               </b-form-group>
+              <div
+                v-if="device.isActive"
+                class="remote-file px-3 py-3 mt-2 mb-4"
+              >
+                {{ device.image ? device.image : device.serverUri }}
+              </div>
+              <b-button
+                v-if="!device.isActive"
+                variant="primary"
+                :disabled="!device.serverUri"
+                @click="startLegacy(device)"
+              >
+                {{ $t('pageVirtualMedia.start') }}
+              </b-button>
+              <b-button
+                v-if="device.isActive"
+                variant="primary"
+                @click="stopLegacy(device)"
+              >
+                {{ $t('pageVirtualMedia.stop') }}
+              </b-button>
             </b-col>
           </b-row>
         </page-section>
@@ -112,10 +127,6 @@ export default {
   data() {
     return {
       modalConfigureConnection: null,
-      loadImageFromExternalServer:
-        process.env.VUE_APP_VIRTUAL_MEDIA_LIST_ENABLED === 'true'
-          ? true
-          : false,
     };
   },
   computed: {
@@ -124,6 +135,9 @@ export default {
     },
     legacyDevices() {
       return this.$store.getters['virtualMedia/legacyDevices'];
+    },
+    loadImageFromExternalServer() {
+      return this.legacyDevices.length > 0;
     },
   },
   created() {
@@ -184,8 +198,10 @@ export default {
           );
           connectionData.isActive = true;
         })
-        .catch(() => {
-          this.errorToast(this.$t('pageVirtualMedia.toast.errorMounting'));
+        .catch(({ message }) => {
+          this.errorToast(message, {
+            title: this.$t('pageVirtualMedia.toast.errorMounting'),
+          });
           this.isActive = false;
         })
         .finally(() => this.endLoader());
@@ -199,9 +215,11 @@ export default {
           );
           connectionData.isActive = false;
         })
-        .catch(() =>
-          this.errorToast(this.$t('pageVirtualMedia.toast.errorUnmounting')),
-        )
+        .catch(({ message }) => {
+          this.errorToast(message, {
+            title: this.$t('pageVirtualMedia.toast.errorUnmounting'),
+          });
+        })
         .finally(() => this.endLoader());
     },
     saveConnection(connectionData) {
@@ -220,3 +238,11 @@ export default {
   },
 };
 </script>
+
+<style lang="scss" scoped>
+.remote-file {
+  display: flex;
+  align-items: center;
+  background-color: theme-color('light');
+}
+</style>

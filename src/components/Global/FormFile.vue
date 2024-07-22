@@ -23,7 +23,7 @@
       </span>
       <slot name="invalid"></slot>
     </label>
-    <div v-if="file" class="clear-selected-file px-3 py-2 mt-2">
+    <div v-if="file" class="clear-selected-file px-3 py-2 mt-2 mb-2">
       {{ file ? file.name : '' }}
       <b-button
         variant="light"

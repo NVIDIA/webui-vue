@@ -56,7 +56,7 @@
           data-test-id="configureConnection-input-isRW"
           name="check-button"
         >
-          RW
+          {{ $t('pageVirtualMedia.modal.rw') }}
         </b-form-checkbox>
       </b-form-group>
     </b-form>
