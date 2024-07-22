@@ -1,5 +1,5 @@
 <template>
-  <page-section :section-title="$t('pageInventory.fans')">
+  <page-section v-if="fans.length" :section-title="$t('pageInventory.fans')">
     <b-row class="align-items-end">
       <b-col sm="6" md="5" xl="4">
         <search

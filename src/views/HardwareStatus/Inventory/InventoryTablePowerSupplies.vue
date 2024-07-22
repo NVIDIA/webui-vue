@@ -1,5 +1,8 @@
 <template>
-  <page-section :section-title="$t('pageInventory.powerSupplies')">
+  <page-section
+    v-if="powerSupplies.length"
+    :section-title="$t('pageInventory.powerSupplies')"
+  >
     <b-row class="align-items-end">
       <b-col sm="6" md="5" xl="4">
         <search

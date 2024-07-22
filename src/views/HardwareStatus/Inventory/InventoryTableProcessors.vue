@@ -1,5 +1,8 @@
 <template>
-  <page-section :section-title="$t('pageInventory.processors')">
+  <page-section
+    v-if="processors.length"
+    :section-title="$t('pageInventory.processors')"
+  >
     <!-- Search -->
     <b-row class="align-items-end">
       <b-col sm="6" md="5" xl="4">

@@ -1,5 +1,6 @@
 <template>
   <page-section
+    v-if="!isLocationIndicatorUndefined"
     :section-title="$t('pageInventory.systemIndicator.sectionTitle')"
   >
     <div class="form-background pl-4 pt-4 pb-1">
@@ -57,6 +58,9 @@ export default {
         return `global.status.off`;
       }
       return `global.status.${this.serverStatus}`;
+    },
+    isLocationIndicatorUndefined() {
+      return typeof this.systems.locationIndicatorActive === 'undefined';
     },
   },
   created() {
