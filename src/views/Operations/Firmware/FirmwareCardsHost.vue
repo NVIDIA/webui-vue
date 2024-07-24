@@ -15,7 +15,7 @@
       </b-card>
 
       <!-- Backup image -->
-      <b-card>
+      <b-card v-if="backup">
         <template #header>
           <p class="font-weight-bold m-0">
             {{ $t('pageFirmware.cardTitleBackup') }}

@@ -16,7 +16,7 @@
         </b-card>
 
         <!-- Backup image -->
-        <b-card>
+        <b-card v-if="backup">
           <template #header>
             <p class="font-weight-bold m-0">
               {{ $t('pageFirmware.cardTitleBackup') }}
@@ -33,7 +33,7 @@
             </dd>
           </dl>
           <b-btn
-            v-if="!switchToBackupImageDisabled"
+            v-if="!switchToBackupImageDisabled && isBackupUpdateable"
             v-b-modal.modal-switch-to-running
             data-test-id="firmware-button-switchToRunning"
             variant="link"
@@ -105,6 +105,12 @@ export default {
     },
     backupStatus() {
       return this.backup?.status || null;
+    },
+    isBackupUpdateable() {
+      return (
+        typeof this.backup?.updateable === 'undefined' ||
+        this.backup?.updateable === true
+      );
     },
     showBackupImageStatus() {
       return (
