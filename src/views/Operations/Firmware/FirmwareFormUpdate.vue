@@ -134,6 +134,7 @@ export default {
       username: null,
       isServerPowerOffRequired:
         process.env.VUE_APP_SERVER_OFF_REQUIRED === 'true',
+      firmwareInventory: [],
     };
   },
   computed: {
@@ -179,6 +180,10 @@ export default {
   },
   created() {
     this.$store.dispatch('firmware/getUpdateServiceSettings');
+    this.$store.dispatch('firmware/getFirmwareInventory').then(() => {
+      this.firmwareInventory =
+        this.$store.getters['firmware/firmwareInventory'];
+    });
   },
   methods: {
     updateFirmware() {
@@ -204,6 +209,7 @@ export default {
       this.$store
         .dispatch('firmware/uploadFirmware', {
           image: this.file,
+          targets: this.$store.state.firmware.checkedItems,
         })
         .catch(({ message }) => {
           this.endLoader();
@@ -217,6 +223,7 @@ export default {
           protocol: this.fileSource,
           fileAddress: this.fileAddress,
           username: this.username,
+          targets: this.$store.state.firmware.checkedItems,
         })
         .catch(({ message }) => {
           this.endLoader();

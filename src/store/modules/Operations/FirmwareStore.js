@@ -11,6 +11,7 @@ const FirmwareStore = {
     hostActiveFirmwareId: null,
     bmcSoftwareImageIds: [],
     hostSoftwareImageIds: [],
+    checkedItems: [],
     applyTime: null,
     multipartHttpPushUri: null,
     httpPushUri: null,
@@ -48,6 +49,7 @@ const FirmwareStore = {
     setHostFirmware: (state, firmware) => (state.hostFirmware = firmware),
     setBmcSoftwareImageIds: (state, ids) => (state.bmcSoftwareImageIds = ids),
     setHostSoftwareImageIds: (state, ids) => (state.hostSoftwareImageIds = ids),
+    setCheckedItems: (state, items) => (state.checkedItems = items),
     setFirmwareInventory(state, firmwareInventory) {
       state.firmwareInventory = firmwareInventory;
     },
@@ -110,6 +112,7 @@ const FirmwareStore = {
               location: data?.['@odata.id'],
               status: data?.Status?.Health,
               updateable: data?.Updateable,
+              checked: false,
             };
             firmwareInventory.push(item);
 

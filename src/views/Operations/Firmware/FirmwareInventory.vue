@@ -10,7 +10,7 @@
       >
         <template #cell(select)="data">
           <b-form-checkbox
-            :checked="data.item.updateable"
+            v-model="data.item.checked"
             :disabled="data.item.updateable === false"
             @change="handleCheckboxChange(data.item)"
             v-b-tooltip.hover.top="
@@ -78,8 +78,15 @@ export default {
     },
     handleCheckboxChange(item) {
       if (item.updateable === true) {
+        this.updateCheckedItems();
         return; // Add logic here for checkbox changes
       }
+    },
+    updateCheckedItems() {
+      const checkedItems = this.firmwareInventory
+        .filter((item) => item.checked && item.id)
+        .map((item) => item.id);
+      this.$store.commit('firmware/setCheckedItems', checkedItems);
     },
   },
   created() {
