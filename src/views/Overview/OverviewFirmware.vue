@@ -4,18 +4,20 @@
     :to="`/operations/firmware`"
   >
     <b-row class="mt-3">
-      <b-col sm="6">
+      <b-col sm="12">
         <dl>
-          <dt>{{ $t('pageOverview.runningVersion') }}</dt>
+          <dt>{{ $t('pageOverview.bmcFirmwareVersion') }}</dt>
           <dd>{{ dataFormatter(runningVersion) }}</dd>
+        </dl>
+        <dl v-if="showBackup">
           <dt v-if="showBackup">{{ $t('pageOverview.backupVersion') }}</dt>
           <dd v-if="showBackup">{{ dataFormatter(backupVersion) }}</dd>
         </dl>
-      </b-col>
-      <b-col sm="6">
-        <dl>
-          <dt>{{ $t('pageOverview.firmwareVersion') }}</dt>
-          <dd>{{ dataFormatter(firmwareVersion) }}</dd>
+        <dl v-if="showBios">
+          <dt v-if="showBios">
+            {{ $t('pageOverview.hostBiosFirmwareVersion') }}
+          </dt>
+          <dd v-if="showBios">{{ dataFormatter(firmwareVersion) }}</dd>
         </dl>
       </b-col>
     </b-row>
@@ -35,7 +37,10 @@ export default {
   mixins: [DataFormatterMixin],
   data() {
     return {
-      showBackup: process.env.VUE_APP_ENV_NAME !== 'nvidia-bluefield',
+      showBackup:
+        process.env.VUE_APP_ENV_NAME !== 'nvidia-bluefield' &&
+        this.backupVersion,
+      showBios: this.firmwareVersion,
     };
   },
   computed: {
@@ -57,7 +62,7 @@ export default {
         if (process.env.VUE_APP_ENV_NAME === 'nvidia-bluefield') {
           return this.activeHostFirmware?.version;
         }
-        return this.server?.firmwareVersion;
+        return this.activeHostFirmware?.version;
       },
       runningVersion() {
         return this.activeBmcFirmware?.version;
