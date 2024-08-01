@@ -209,7 +209,10 @@ export default {
       this.$store
         .dispatch('firmware/uploadFirmware', {
           image: this.file,
-          targets: this.$store.state.firmware.checkedItems,
+          targets:
+            process.env.VUE_APP_ENV_NAME === 'nvidia-bluefield'
+              ? []
+              : this.$store.state.firmware.checkedItems,
         })
         .catch(({ message }) => {
           this.endLoader();
@@ -223,7 +226,10 @@ export default {
           protocol: this.fileSource,
           fileAddress: this.fileAddress,
           username: this.username,
-          targets: this.$store.state.firmware.checkedItems,
+          targets:
+            process.env.VUE_APP_ENV_NAME === 'nvidia-bluefield'
+              ? ['redfish/v1/UpdateService/FirmwareInventory/DPU_OS']
+              : this.$store.state.firmware.checkedItems,
         })
         .catch(({ message }) => {
           this.endLoader();

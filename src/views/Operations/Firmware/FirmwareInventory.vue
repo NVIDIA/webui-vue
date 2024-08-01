@@ -8,7 +8,7 @@
         :fields="fields"
         responsive="sm"
       >
-        <template #cell(select)="data">
+        <template v-if="hasFirmwareInventoryCheckbox" #cell(select)="data">
           <b-form-checkbox
             v-model="data.item.checked"
             :disabled="data.item.updateable === false"
@@ -63,6 +63,8 @@ export default {
         },
       ],
       firmwareInventory: [],
+      hasFirmwareInventoryCheckbox:
+        process.env.VUE_APP_HIDE_FIRMWARE_INVENTORY_CHECKBOX !== 'true',
     };
   },
   computed: {
