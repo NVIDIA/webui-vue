@@ -18,6 +18,7 @@ import Sensors from '@/views/HardwareStatus/Sensors';
 import SerialOverLan from '@/views/Operations/SerialOverLan';
 import SerialOverLanConsole from '@/views/Operations/SerialOverLan/SerialOverLanConsole';
 import ServerPowerOperations from '@/views/Operations/ServerPowerOperations';
+import Inventory from '@/views/HardwareStatus/Inventory';
 import i18n from '@/i18n';
 
 const roles = {
@@ -113,6 +114,14 @@ const routes = [
         component: Dumps,
         meta: {
           title: i18n.t('appPageTitle.dumps'),
+        },
+      },
+      {
+        path: '/hardware-status/inventory',
+        name: 'inventory',
+        component: Inventory,
+        meta: {
+          title: i18n.t('appPageTitle.inventory'),
         },
       },
       {

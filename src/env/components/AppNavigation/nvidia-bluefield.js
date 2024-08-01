@@ -56,6 +56,11 @@ const AppNavigationMixin = {
           icon: 'iconHealth',
           children: [
             {
+              id: 'inventory',
+              label: this.$t('appNavigation.inventory'),
+              route: '/hardware-status/inventory',
+            },
+            {
               id: 'sensors',
               label: this.$t('appNavigation.sensors'),
               route: '/hardware-status/sensors',

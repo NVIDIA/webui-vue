@@ -44,7 +44,7 @@
 
       <template #row-details="{ item }">
         <b-container fluid>
-          <b-row>
+          <b-row v-if="!oemEnabled">
             <b-col class="mt-2" sm="6" xl="6">
               <!-- Nmae -->
               <dt>{{ $t('pageInventory.table.name') }}:</dt>
@@ -60,6 +60,57 @@
               <!-- Spare Part Number -->
               <dt>Spare Part Number</dt>
               <dd>{{ dataFormatter(item.sparePartNumber) }}</dd>
+            </b-col>
+          </b-row>
+          <b-row v-if="oemEnabled">
+            <b-col class="mt-2" sm="6" xl="6">
+              <!-- Board Manufacture Date -->
+              <dt>{{ $t('pageInventory.table.boardManufatureDate') }}:</dt>
+              <dd>
+                {{ item.boardManufatureDate | formatDate }}
+                {{ item.boardManufatureDate | formatTime }}
+              </dd>
+              <!-- Board Manufacturer -->
+              <dt>{{ $t('pageInventory.table.boardManufacturer') }}:</dt>
+              <dd>{{ dataFormatter(item.boardManufacturer) }}</dd>
+              <!-- Board Product -->
+              <dt>{{ $t('pageInventory.table.boardProductName') }}:</dt>
+              <dd>{{ dataFormatter(item.boardProductName) }}</dd>
+              <!-- Board Part Number -->
+              <dt>{{ $t('pageInventory.table.boardPartNumber') }}:</dt>
+              <dd>{{ dataFormatter(item.boardPartNumber) }}</dd>
+              <!-- Board Serial Number -->
+              <dt>{{ $t('pageInventory.table.boardSerialNumber') }}:</dt>
+              <dd>{{ dataFormatter(item.boardSerialNumber) }}</dd>
+              <!-- Board FRU File ID -->
+              <dt>{{ $t('pageInventory.table.boardFruFileId') }}:</dt>
+              <dd>{{ dataFormatter(item.boardFruFileId) }}</dd>
+              <!-- Board Extra -->
+              <dt>{{ $t('pageInventory.table.boardExtra') }}:</dt>
+              <dd>{{ dataFormatter(item.boardExtra) }}</dd>
+            </b-col>
+            <b-col class="mt-2" sm="6" xl="6">
+              <!-- Product Manufacturer -->
+              <dt>{{ $t('pageInventory.table.productManufacturer') }}:</dt>
+              <dd>{{ dataFormatter(item.productManufacturer) }}</dd>
+              <!-- Product Name -->
+              <dt>{{ $t('pageInventory.table.productProductName') }}:</dt>
+              <dd>{{ dataFormatter(item.productProductName) }}</dd>
+              <!-- Product Part Number -->
+              <dt>{{ $t('pageInventory.table.productPartNumber') }}:</dt>
+              <dd>{{ dataFormatter(item.productPartNumber) }}</dd>
+              <!-- Product Version -->
+              <dt>{{ $t('pageInventory.table.productVersion') }}:</dt>
+              <dd>{{ dataFormatter(item.productVersion) }}</dd>
+              <!-- Product Serial Number -->
+              <dt>{{ $t('pageInventory.table.productSerialNumber') }}:</dt>
+              <dd>{{ dataFormatter(item.productSerialNumber) }}</dd>
+              <!-- Product Asset Tag -->
+              <dt>{{ $t('pageInventory.table.productAssetTag') }}:</dt>
+              <dd>{{ dataFormatter(item.productAssetTag) }}</dd>
+              <!-- Product Extra -->
+              <dt>{{ $t('pageInventory.table.productExtra') }}:</dt>
+              <dd>{{ dataFormatter(item.productExtra) }}</dd>
             </b-col>
           </b-row>
         </b-container>
@@ -83,7 +134,61 @@ export default {
   data() {
     return {
       isBusy: true,
-      fields: [
+      expandRowLabel: expandRowLabel,
+    };
+  },
+  computed: {
+    assemblies() {
+      return this.$store.getters['assemblies/assemblies'];
+    },
+    items() {
+      if (this.assemblies) {
+        return this.assemblies;
+      } else {
+        return [];
+      }
+    },
+    oemEnabled() {
+      if (this.assemblies) {
+        for (const assembly of this.assemblies) {
+          if (assembly.oem) return true;
+        }
+        return false;
+      } else {
+        return false;
+      }
+    },
+    fields() {
+      if (this.oemEnabled) {
+        return [
+          {
+            key: 'expandRow',
+            label: '',
+            tdClass: 'table-row-expand',
+          },
+          {
+            key: 'name',
+            label: this.$t('pageInventory.table.name'),
+            formatter: this.dataFormatter,
+          },
+          {
+            key: 'chassisType',
+            label: this.$t('pageInventory.table.chassisType'),
+            formatter: this.dataFormatter,
+          },
+          {
+            key: 'chassisPartNumber',
+            label: this.$t('pageInventory.table.chassisPartNumber'),
+            formatter: this.dataFormatter,
+          },
+          {
+            key: 'chassisSerialNumber',
+            label: this.$t('pageInventory.table.chassisSerialNumber'),
+            formatter: this.dataFormatter,
+          },
+        ];
+      }
+      return [
         {
           key: 'expandRow',
           label: '',
@@ -112,20 +217,7 @@ export default {
           label: this.$t('pageInventory.table.identifyLed'),
           formatter: this.dataFormatter,
         },
-      ],
-      expandRowLabel: expandRowLabel,
-    };
-  },
-  computed: {
-    assemblies() {
-      return this.$store.getters['assemblies/assemblies'];
-    },
-    items() {
-      if (this.assemblies) {
-        return this.assemblies;
-      } else {
-        return [];
-      }
+      ];
     },
   },
   created() {
