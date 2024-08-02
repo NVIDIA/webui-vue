@@ -89,6 +89,7 @@ export default {
   },
   data() {
     return {
+      validLinks: [],
       links: [
         {
           id: 'system',
@@ -144,8 +145,23 @@ export default {
   computed: {
     quicklinkColumns() {
       // Chunk links array to 3 array's to display 3 items per column
-      return chunk(this.links, 3);
+      return chunk(this.validLinks, 3);
     },
+  },
+  methods: {
+    validateLinks() {
+      this.validLinks = this.links.filter((link) => this.isValid(link.dataRef));
+    },
+    isValid(dataRef) {
+      const ref = this.$refs[dataRef];
+      return ref && ref.$el && ref.$el.nodeType !== Node.COMMENT_NODE;
+    },
+  },
+  mounted() {
+    this.$nextTick(() => {
+      // Validate links once the component is fully mounted
+      this.validateLinks();
+    });
   },
   created() {
     this.startLoader();
