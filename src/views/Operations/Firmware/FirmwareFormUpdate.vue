@@ -142,7 +142,7 @@ export default {
       return this.$store.getters['firmware/allowableActions'];
     },
     isFileAddressUploadAvailable() {
-      return this.allowableActions.length > 0;
+      return this.allowableActions?.length > 0;
     },
     isLocalSelected() {
       return this.fileSource === 'LOCAL';

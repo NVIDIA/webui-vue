@@ -145,7 +145,8 @@ const FirmwareStore = {
           commit('setHttpPushUri', httpPushUri);
           const multipartHttpPushUri = data.MultipartHttpPushUri;
           commit('setMultipartHttpPushUri', multipartHttpPushUri);
-          commit('setAllowableActions', allowableActions);
+          if (allowableActions != null)
+            commit('setAllowableActions', allowableActions);
         })
         .catch((error) => console.log(error));
     },
