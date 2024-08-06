@@ -11,6 +11,8 @@ function envInt(key, defaultValue) {
 const TASK_POLL_INTERVAL = envInt('VUE_APP_FIRMWARE_UPDATE_POLL_INTERVAL', 4);
 const TASK_POLL_TIMEOUT = envInt('VUE_APP_FIRMWARE_UPDATE_POLL_TIMEOUT', 1200);
 const MAX_TASK_POLL_TIME = TASK_POLL_TIMEOUT / TASK_POLL_INTERVAL;
+const WAIT_FOR_READY_INTERVAL = envInt('VUE_APP_WAIT_FOR_READY_INTERVAL', 8);
+const WAIT_FOR_READY_TIME = envInt('VUE_APP_WAIT_FOR_READY_TIME', 40);
 
 const FirmwareStore = {
   namespaced: true,
@@ -30,7 +32,9 @@ const FirmwareStore = {
     allowableActions: [],
     firmwareUpdateInfo: {
       /*  Firmware update states:
-       *  null -> 'TaskStarted' -> 'TaskCompleted'
+       *  null -> 'TaskStarted' -> 'TaskCompleted' -> 'Done'
+       *                                           -> 'ResetFailed'
+       *                                           -> 'WaitReadyFailed'
        *                        -> 'TaskFailed'
        *  TODO: try to use server-side states instead of this new client-side state machine
        */
@@ -69,7 +73,9 @@ const FirmwareStore = {
     firmwareUpdateInfo: (state) => state.firmwareUpdateInfo,
     isFirmwareUpdateInProgress: (state) =>
       state.firmwareUpdateInfo.state !== null &&
-      state.firmwareUpdateInfo.state !== 'TaskCompleted' &&
+      state.firmwareUpdateInfo.state !== 'Done' &&
+      state.firmwareUpdateInfo.state !== 'ResetFailed' &&
+      state.firmwareUpdateInfo.state !== 'WaitReadyFailed' &&
       state.firmwareUpdateInfo.state !== 'TaskFailed',
   },
   mutations: {
@@ -145,7 +151,7 @@ const FirmwareStore = {
           Members.map((item) => api.get(item['@odata.id'])),
         )
         .catch((error) => console.log(error));
-      await api
+      return await api
         .all(inventoryList)
         .then((response) => {
           const bmcFirmware = [];
@@ -172,6 +178,7 @@ const FirmwareStore = {
           commit('setFirmwareInventory', firmwareInventory);
           commit('setBmcFirmware', bmcFirmware);
           commit('setHostFirmware', hostFirmware);
+          return firmwareInventory;
         })
         .catch((error) => {
           console.log(error);
@@ -308,8 +315,120 @@ const FirmwareStore = {
         commit('setFirmwareUpdateInitiator', false);
       } else {
         commit('setFirmwareUpdateState', 'TaskCompleted');
-        commit('setFirmwareUpdateInitiator', false);
+        dispatch('waitToActive', resp);
       }
+    },
+    async waitToActive({ commit, dispatch }, resp) {
+      if ((await dispatch('resetIfRequired', resp)) === false) {
+        commit('setFirmwareUpdateState', 'ResetFailed');
+        commit('setFirmwareUpdateInitiator', false);
+        return;
+      }
+
+      if ((await dispatch('waitForReady', resp)) == false) {
+        commit('setFirmwareUpdateState', 'WaitReadyFailed');
+        commit('setFirmwareUpdateInitiator', false);
+        return;
+      }
+
+      commit('setFirmwareUpdateState', 'Done');
+      commit('setFirmwareUpdateInitiator', false);
+    },
+    async waitForReady({ dispatch }, resp) {
+      for (let i = 0; i < WAIT_FOR_READY_TIME; i++) {
+        await dispatch('sleep', WAIT_FOR_READY_INTERVAL);
+        if (await dispatch('isBluefieldDpuOsUpdate', resp)) {
+          if (await dispatch('isFirmwareInventoryReady')) return true;
+        } else {
+          if (await dispatch('isManagerStateEnabled')) return true;
+        }
+      }
+      return false;
+    },
+    isBluefieldDpuOsUpdate({ state }, resp) {
+      if (process.env.VUE_APP_ENV_NAME === 'nvidia-bluefield') {
+        const targetUri = resp?.data?.Payload?.TargetUri;
+        if (targetUri === state.simpleUpdateUri) return true;
+      }
+      return false;
+    },
+    async isFirmwareInventoryReady({ dispatch }) {
+      const firmwareInventory = await dispatch('getFirmwareInventory');
+      const totalCount = firmwareInventory?.length;
+      if (!(totalCount > 0)) return false;
+
+      let readyCount = 0;
+      firmwareInventory.forEach(({ version }) => {
+        if (version != null && version !== '') readyCount++;
+      });
+      // Define the ratio here, since it is only for bluefiled platform
+      // The function itself is only for bluefield platform
+      const RATIO_FOR_READY = 0.5;
+      if (readyCount / totalCount < RATIO_FOR_READY) return false;
+
+      return true;
+    },
+    async isManagerStateEnabled() {
+      return await api
+        .get(`${await this.dispatch('global/getBmcPath')}`)
+        .then((resp) => resp?.data?.Status?.State === 'Enabled')
+        .catch(() => console.log('No response yet from Manager'));
+    },
+    async resetIfRequired({ state, dispatch }, resp) {
+      if (!state.firmwareUpdateInfo.initiator) return true;
+      const resetRequired = await dispatch('extractResetRequired', resp);
+      if (resetRequired == null) return true;
+      const { resetUri, resetType } = resetRequired;
+
+      let promise = null;
+      if (
+        resetUri ===
+        `${await this.dispatch('global/getBmcPath')}/Actions/Manager.Reset`
+      ) {
+        promise = this.dispatch('controls/rebootBmc');
+      } else {
+        promise = api.post(resetUri, { ResetType: resetType });
+      }
+
+      return await promise
+        .then(() => {
+          return true;
+        })
+        .catch((error) => {
+          console.log(error);
+          return false;
+        });
+    },
+    // eslint-disable-next-line no-unused-vars
+    async extractResetRequired({ state }, resp) {
+      let resolutionMsg = resp?.data?.Messages?.find((e) =>
+        e?.MessageId?.includes('AwaitToActivate'),
+      );
+      if (!resolutionMsg?.Resolution?.includes('power cycle')) return null;
+
+      const resetRequiredMsg = resp?.data?.Messages?.find((e) =>
+        e?.MessageId?.includes('ResetRequired'),
+      );
+      const args = resetRequiredMsg?.MessageArgs;
+      if (args?.length === 2) return { resetUri: args[0], resetType: args[1] };
+
+      // Bluefield bmc does not support resetRequired, use hard code instead
+      if (process.env.VUE_APP_ENV_NAME === 'nvidia-bluefield') {
+        const component = resolutionMsg?.MessageArgs;
+        if (component?.includes('BMC_Firmware'))
+          return {
+            resetUri:
+              '/redfish/v1/Managers/Bluefield_BMC/Actions/Manager.Reset',
+            resetType: 'GracefulRestart',
+          };
+        else if (component?.includes('Bluefield_FW_ERoT'))
+          return {
+            resetUri:
+              '/redfish/v1/Chassis/Bluefield_ERoT/Actions/Chassis.Reset',
+            resetType: 'GracefulRestart',
+          };
+      }
+      return null;
     },
     async findExistingUpdateTask({ state }) {
       const resp = await api
