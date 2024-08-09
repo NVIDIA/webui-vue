@@ -39,6 +39,22 @@
         </b-form-group>
 
         <b-form-group
+          v-else-if="isNvidiaGB"
+          :label="$t('pageFirmware.form.updateFirmware.target')"
+          :disabled="isPageDisabled || isFirmwareUpdateInProgress"
+          class="mb-3"
+        >
+          <div class="d-flex">
+            <b-form-radio v-model="nvidiaGBTarget" value="BMC" class="mr-3">
+              BMC
+            </b-form-radio>
+            <b-form-radio v-model="nvidiaGBTarget" value="HMC">
+              HMC
+            </b-form-radio>
+          </div>
+        </b-form-group>
+
+        <b-form-group
           v-if="isFileAddressUploadAvailable"
           :label="$t('pageFirmware.form.updateFirmware.fileSource')"
           :disabled="isPageDisabled || isFirmwareUpdateInProgress"
@@ -186,6 +202,8 @@ export default {
       isBluefield: process.env.VUE_APP_ENV_NAME === 'nvidia-bluefield',
       bluefieldTarget: 'BMC',
       firmwareInventory: [],
+      isNvidiaGB: process.env.VUE_APP_ENV_NAME === 'nvidia-gb',
+      nvidiaGBTarget: 'BMC',
     };
   },
   computed: {
@@ -228,6 +246,13 @@ export default {
       )
         return false;
       return true;
+    },
+    getTargets() {
+      let targets = [...this.$store.state.firmware.checkedItems];
+      if (this.isNvidiaGB && this.nvidiaGBTarget === 'HMC') {
+        targets.push('/redfish/v1/Chassis/HGX_Chassis_0');
+      }
+      return targets;
     },
   },
   watch: {
@@ -316,7 +341,7 @@ export default {
           targets:
             process.env.VUE_APP_ENV_NAME === 'nvidia-bluefield'
               ? []
-              : this.$store.state.firmware.checkedItems,
+              : this.getTargets,
         });
       } else {
         return this.$store.dispatch('firmware/uploadFirmwareSimpleUpdate', {
@@ -327,7 +352,7 @@ export default {
           targets:
             process.env.VUE_APP_ENV_NAME === 'nvidia-bluefield'
               ? ['redfish/v1/UpdateService/FirmwareInventory/DPU_OS']
-              : this.$store.state.firmware.checkedItems,
+              : this.getTargets,
         });
       }
     },
