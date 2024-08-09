@@ -3,6 +3,42 @@
     <div class="form-background p-3">
       <b-form @submit.prevent="onSubmitUpload">
         <b-form-group
+          v-if="isBluefield"
+          :label="$t('pageFirmware.form.updateFirmware.target')"
+          :disabled="isPageDisabled || isFirmwareUpdateInProgress"
+          class="mb-3"
+        >
+          <div class="d-flex">
+            <b-form-radio
+              id="bluefield-target-bmc"
+              v-model="bluefieldTarget"
+              name="bluefield-target"
+              value="BMC"
+              class="mr-3"
+            >
+              BMC
+            </b-form-radio>
+            <b-form-radio
+              id="bluefield-target-cec"
+              v-model="bluefieldTarget"
+              name="bluefield-target"
+              value="CEC"
+              class="mr-3"
+            >
+              CEC
+            </b-form-radio>
+            <b-form-radio
+              id="bluefield-target-bios"
+              v-model="bluefieldTarget"
+              name="bluefield-target"
+              value="BIOS"
+            >
+              BIOS
+            </b-form-radio>
+          </div>
+        </b-form-group>
+
+        <b-form-group
           v-if="isFileAddressUploadAvailable"
           :label="$t('pageFirmware.form.updateFirmware.fileSource')"
           :disabled="isPageDisabled || isFirmwareUpdateInProgress"
@@ -12,6 +48,7 @@
             v-model="fileSource"
             name="upload-file-source"
             value="LOCAL"
+            :disabled="!isLocalFileUploadEnabled"
           >
             {{ $t('pageFirmware.form.updateFirmware.workstation') }}
           </b-form-radio>
@@ -22,6 +59,7 @@
             v-model="fileSource"
             name="upload-file-source"
             :value="action"
+            :disabled="!isFileAddressUploadEnabled"
           >
             {{ action }} {{ $t('pageFirmware.form.updateFirmware.server') }}
           </b-form-radio>
@@ -145,6 +183,8 @@ export default {
       isUploading: false,
       isServerPowerOffRequired:
         process.env.VUE_APP_SERVER_OFF_REQUIRED === 'true',
+      isBluefield: process.env.VUE_APP_ENV_NAME === 'nvidia-bluefield',
+      bluefieldTarget: 'BMC',
       firmwareInventory: [],
     };
   },
@@ -154,6 +194,15 @@ export default {
     },
     isFileAddressUploadAvailable() {
       return this.allowableActions?.length > 0;
+    },
+    isFileAddressUploadEnabled() {
+      if (this.isBluefield) return this.bluefieldTarget === 'BIOS';
+      return true;
+    },
+    isLocalFileUploadEnabled() {
+      if (this.isBluefield)
+        return this.bluefieldTarget === 'BMC' || this.bluefieldTarget === 'CEC';
+      return true;
     },
     isLocalSelected() {
       return this.fileSource === 'LOCAL';
@@ -194,6 +243,18 @@ export default {
       },
       immdiate: true,
       deep: true,
+    },
+    bluefieldTarget: {
+      handler(newValue) {
+        if (!this.isBluefield) return;
+        if (newValue === 'BMC' || newValue === 'CEC') {
+          this.fileSource = 'LOCAL';
+        } else if (newValue === 'BIOS') {
+          if (this.fileSource === 'LOCAL')
+            this.fileSource = this.allowableActions?.[0];
+        }
+      },
+      immdiate: true,
     },
   },
   validations() {

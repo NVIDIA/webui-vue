@@ -344,6 +344,7 @@
         "form": {
             "updateFirmware": {
                 "username": "Имя пользователя",
+                "target": "Цель",
                 "fileAddress": "Адрес файла",
                 "fileSource": "Источник файла",
                 "imageFile": "Файл образа",

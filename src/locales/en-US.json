@@ -351,6 +351,7 @@
         "form": {
             "updateFirmware": {
                 "username": "Username",
+                "target": "Target",
                 "fileAddress": "File address",
                 "fileSource": "File source",
                 "imageFile": "Image file",
