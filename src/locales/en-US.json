@@ -396,6 +396,7 @@
         "quicklinkTitle": "Quick links to hardware components",
         "system": "System",
         "assemblies": "Assemblies",
+        "networkAdapters": "System Network Adapters",
         "systemIndicator": {
             "powerStatus": "Power status",
             "identifyLed": "System identify LED",
