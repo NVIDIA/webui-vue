@@ -1,5 +1,8 @@
 <template>
-  <page-section :section-title="$t('pageInventory.assemblies')">
+  <page-section
+    v-if="items.length"
+    :section-title="$t('pageInventory.assemblies')"
+  >
     <b-table
       sort-icon-left
       no-sort-reset
