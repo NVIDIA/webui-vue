@@ -38,7 +38,7 @@
         </b-button>
       </b-col>
     </b-row>
-    <div id="terminal" ref="panel"></div>
+    <div id="terminal" ref="panel" :class="terminalClass"></div>
   </div>
 </template>
 
@@ -67,6 +67,7 @@ export default {
   data() {
     return {
       resizeConsoleWindow: null,
+      terminalClass: this.isFullWindow ? 'full-window' : '',
     };
   },
   computed: {
@@ -165,6 +166,11 @@ export default {
 
 #terminal {
   overflow: auto;
+  height: calc(100vh - 300px);
+  min-height: 500px;
+  &.full-window {
+    height: calc(100vh - 80px);
+  }
 }
 
 .full-window-container {
