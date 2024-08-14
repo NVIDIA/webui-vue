@@ -10,7 +10,7 @@
       <p>
         {{ $t('pageFirmware.modal.updateFirmwareInfo') }}
       </p>
-      <p>
+      <p v-if="showBackupMessage">
         {{
           $t('pageFirmware.modal.updateFirmwareInfo2', {
             running: runningBmcVersion,
@@ -29,6 +29,12 @@
 
 <script>
 export default {
+  props: {
+    targets: {
+      type: Array,
+      required: true,
+    },
+  },
   computed: {
     runningBmc() {
       return this.$store.getters['firmware/activeBmcFirmware'];
@@ -38,6 +44,31 @@ export default {
     },
     isSingleFileUploadEnabled() {
       return this.$store.getters['firmware/isSingleFileUploadEnabled'];
+    },
+    activeBmcFirmware() {
+      return this.$store.getters['firmware/activeBmcFirmware'];
+    },
+    backupBmcFirmware() {
+      return this.$store.getters['firmware/backupBmcFirmware'];
+    },
+    activeHostFirmware() {
+      return this.$store.getters['firmware/activeHostFirmware'];
+    },
+    backupHostFirmware() {
+      return this.$store.getters['firmware/backupHostFirmware'];
+    },
+    showBackupMessage() {
+      // Only show the backup message when BMC/BIOS(which has backup) is in targets
+      if (
+        (this.targets?.includes(this.activeBmcFirmware?.id) &&
+          this.backupBmcFirmware != null &&
+          this.backupBmcFirmware?.length > 0) ||
+        (this.targets?.includes(this.activeHostFirmware?.id) &&
+          this.backupHostFirmware != null &&
+          this.backupHostFirmware?.length > 0)
+      )
+        return true;
+      else return false;
     },
   },
 };

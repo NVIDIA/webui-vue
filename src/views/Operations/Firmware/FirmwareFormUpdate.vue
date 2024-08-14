@@ -160,7 +160,7 @@
     </div>
 
     <!-- Modals -->
-    <modal-update-firmware @ok="updateFirmware" />
+    <modal-update-firmware :targets="targets" @ok="updateFirmware" />
   </div>
 </template>
 
@@ -247,12 +247,16 @@ export default {
         return false;
       return true;
     },
-    getTargets() {
-      let targets = [...this.$store.state.firmware.checkedItems];
-      if (this.isNvidiaGB && this.nvidiaGBTarget === 'HMC') {
+    targets() {
+      if (this.isBluefield) {
+        if (this.fileSource === 'LOCAL') return [];
+        else return ['redfish/v1/UpdateService/FirmwareInventory/DPU_OS'];
+      } else if (this.isNvidiaGB && this.nvidiaGBTarget === 'HMC') {
+        let targets = [...this.$store.state.firmware.checkedItems];
         targets.push('/redfish/v1/Chassis/HGX_Chassis_0');
+        return targets;
       }
-      return targets;
+      return this.$store.state.firmware.checkedItems;
     },
   },
   watch: {
@@ -338,10 +342,7 @@ export default {
         return this.$store.dispatch('firmware/uploadFirmware', {
           image: this.file,
           forceUpdate: this.forceUpdate,
-          targets:
-            process.env.VUE_APP_ENV_NAME === 'nvidia-bluefield'
-              ? []
-              : this.getTargets,
+          targets: this.targets,
         });
       } else {
         return this.$store.dispatch('firmware/uploadFirmwareSimpleUpdate', {
@@ -349,10 +350,7 @@ export default {
           fileAddress: this.fileAddress,
           forceUpdate: this.forceUpdate,
           username: this.username,
-          targets:
-            process.env.VUE_APP_ENV_NAME === 'nvidia-bluefield'
-              ? ['redfish/v1/UpdateService/FirmwareInventory/DPU_OS']
-              : this.getTargets,
+          targets: this.targets,
         });
       }
     },
