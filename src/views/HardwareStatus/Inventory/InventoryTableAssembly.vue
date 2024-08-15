@@ -47,7 +47,7 @@
 
       <template #row-details="{ item }">
         <b-container fluid>
-          <b-row v-if="!oemEnabled">
+          <b-row v-if="!showFru">
             <b-col class="mt-2" sm="6" xl="6">
               <!-- Nmae -->
               <dt>{{ $t('pageInventory.table.name') }}:</dt>
@@ -65,26 +65,27 @@
               <dd>{{ dataFormatter(item.sparePartNumber) }}</dd>
             </b-col>
           </b-row>
-          <b-row v-if="oemEnabled">
+          <b-row v-else>
             <b-col class="mt-2" sm="6" xl="6">
               <!-- Board Manufacture Date -->
               <dt>{{ $t('pageInventory.table.boardManufatureDate') }}:</dt>
-              <dd>
+              <dd v-if="item.boardManufatureDate">
                 {{ item.boardManufatureDate | formatDate }}
                 {{ item.boardManufatureDate | formatTime }}
               </dd>
+              <dd v-else>{{ dataFormatter(item.boardManufatureDate) }}</dd>
               <!-- Board Manufacturer -->
               <dt>{{ $t('pageInventory.table.boardManufacturer') }}:</dt>
               <dd>{{ dataFormatter(item.boardManufacturer) }}</dd>
               <!-- Board Product -->
               <dt>{{ $t('pageInventory.table.boardProductName') }}:</dt>
-              <dd>{{ dataFormatter(item.boardProductName) }}</dd>
+              <dd>{{ dataFormatter(item.model) }}</dd>
               <!-- Board Part Number -->
               <dt>{{ $t('pageInventory.table.boardPartNumber') }}:</dt>
-              <dd>{{ dataFormatter(item.boardPartNumber) }}</dd>
+              <dd>{{ dataFormatter(item.partNumber) }}</dd>
               <!-- Board Serial Number -->
               <dt>{{ $t('pageInventory.table.boardSerialNumber') }}:</dt>
-              <dd>{{ dataFormatter(item.boardSerialNumber) }}</dd>
+              <dd>{{ dataFormatter(item.serialNumber) }}</dd>
               <!-- Board FRU File ID -->
               <dt>{{ $t('pageInventory.table.boardFruFileId') }}:</dt>
               <dd>{{ dataFormatter(item.boardFruFileId) }}</dd>
@@ -138,6 +139,7 @@ export default {
     return {
       isBusy: true,
       expandRowLabel: expandRowLabel,
+      showFru: process.env.VUE_APP_SHOW_FRU === 'true',
     };
   },
   computed: {
@@ -151,18 +153,8 @@ export default {
         return [];
       }
     },
-    oemEnabled() {
-      if (this.assemblies) {
-        for (const assembly of this.assemblies) {
-          if (assembly.oem) return true;
-        }
-        return false;
-      } else {
-        return false;
-      }
-    },
     fields() {
-      if (this.oemEnabled) {
+      if (this.showFru) {
         return [
           {
             key: 'expandRow',
