@@ -79,13 +79,13 @@
               <dd>{{ dataFormatter(item.boardManufacturer) }}</dd>
               <!-- Board Product -->
               <dt>{{ $t('pageInventory.table.boardProductName') }}:</dt>
-              <dd>{{ dataFormatter(item.model) }}</dd>
+              <dd>{{ dataFormatter(item.boardProductName) }}</dd>
               <!-- Board Part Number -->
               <dt>{{ $t('pageInventory.table.boardPartNumber') }}:</dt>
-              <dd>{{ dataFormatter(item.partNumber) }}</dd>
+              <dd>{{ dataFormatter(item.boardPartNumber) }}</dd>
               <!-- Board Serial Number -->
               <dt>{{ $t('pageInventory.table.boardSerialNumber') }}:</dt>
-              <dd>{{ dataFormatter(item.serialNumber) }}</dd>
+              <dd>{{ dataFormatter(item.boardSerialNumber) }}</dd>
               <!-- Board FRU File ID -->
               <dt>{{ $t('pageInventory.table.boardFruFileId') }}:</dt>
               <dd>{{ dataFormatter(item.boardFruFileId) }}</dd>
@@ -216,11 +216,19 @@ export default {
     },
   },
   created() {
-    this.$store.dispatch('assemblies/getAssemblyInfo').finally(() => {
-      // Emit initial data fetch complete to parent component
-      this.$root.$emit('hardware-status-assembly-complete');
-      this.isBusy = false;
-    });
+    if (this.showFru) {
+      this.$store.dispatch('assemblies/getFruInfo').finally(() => {
+        // Emit initial data fetch complete to parent component
+        this.$root.$emit('hardware-status-assembly-complete');
+        this.isBusy = false;
+      });
+    } else {
+      this.$store.dispatch('assemblies/getAssemblyInfo').finally(() => {
+        // Emit initial data fetch complete to parent component
+        this.$root.$emit('hardware-status-assembly-complete');
+        this.isBusy = false;
+      });
+    }
   },
   methods: {
     toggleIdentifyLedValue(row) {

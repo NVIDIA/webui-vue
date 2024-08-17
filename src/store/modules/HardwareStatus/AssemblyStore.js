@@ -1,5 +1,6 @@
 import api from '@/store/api';
 import i18n from '@/i18n';
+import { uniqBy } from 'lodash';
 
 const IPMI_FRU_CHASSIS_TYPE = {
   0: 'Unspecified',
@@ -37,7 +38,7 @@ const IPMI_FRU_CHASSIS_TYPE = {
 const AssemblyStore = {
   namespaced: true,
   state: {
-    assemblies: null,
+    assemblies: [],
   },
   getters: {
     assemblies: (state) => state.assemblies,
@@ -54,13 +55,7 @@ const AssemblyStore = {
           Name,
           Location,
           LocationIndicatorActive,
-          ProductionDate,
-          Vendor,
-          Version,
-          Oem,
         } = assembly;
-        const keys = Oem ? Object.keys(Oem) : null;
-        const properties = keys ? Oem[keys?.[0]] : null;
         return {
           id: MemberId,
           partNumber: PartNumber,
@@ -71,27 +66,11 @@ const AssemblyStore = {
           locationNumber: Location?.PartLocation?.ServiceLabel,
           identifyLed: LocationIndicatorActive,
           uri: assembly['@odata.id'],
-          oem: Oem ? true : false,
-          chassisType: properties?.ChassisType
-            ? IPMI_FRU_CHASSIS_TYPE[properties?.ChassisType]
-            : '',
-          chassisPartNumber: PartNumber,
-          chassisSerialNumber: SerialNumber,
-          chassisExtra: properties?.ChassisExtra?.join(';'),
-          boardManufatureDate: ProductionDate ? new Date(ProductionDate) : null,
-          boardManufacturer: Vendor,
-          boardFruFileId: properties?.BoardFruFileId,
-          boardExtra: properties?.BoardExtra?.join(';'),
-          productProductName: Model,
-          productManufacturer: Vendor,
-          productPartNumber: PartNumber,
-          productVersion: Version,
-          productSerialNumber: SerialNumber,
-          productAssetTag: properties?.ProductAssetTag,
-          productFruFileId: properties?.ProductFruFileId,
-          productExtra: properties?.ProductExtra?.join(';'),
         };
       });
+    },
+    addAssemblyInfo: (state, data) => {
+      state.assemblies = uniqBy([...data, ...state.assemblies], 'name');
     },
   },
   actions: {
@@ -127,6 +106,87 @@ const AssemblyStore = {
         })
         .catch((error) => console.log(error));
     },
+    async getFruInfo({ commit, dispatch }) {
+      const collection = await dispatch('getChassisCollection');
+      if (!collection) return;
+      collection.forEach(async (chassis) => {
+        const chassisInfo = await api.get(chassis).then((response) => {
+          return response;
+        });
+        const assemblyList = await api
+          .get(`${chassis}/Assembly`)
+          .then((response) => {
+            return response?.data?.Assemblies;
+          });
+        if (!assemblyList.length) return;
+        const oem = assemblyList?.[0]?.Oem;
+        const keys = oem ? Object.keys(oem) : null;
+        const oemPproperties = keys ? oem[keys?.[0]] : null;
+        const assemblyData = [];
+        let boardData = {};
+        let productData = {};
+        let chassisData = {};
+        assemblyList.forEach((assembly) => {
+          if (assembly.PhysicalContext === 'Board') {
+            boardData = {
+              boardProductName: assembly.Model,
+              boardPartNumber: assembly.PartNumber,
+              boardSerialNumber: assembly.SerialNumber,
+              boardManufatureDate: assembly.ProductionDate
+                ? new Date(assembly.ProductionDate)
+                : null,
+              boardManufacturer: assembly.Vendor,
+              boardFruFileId: assembly.Version,
+              boardExtra: oemPproperties?.VendorData?.join(';'),
+            };
+          } else if (assembly.PhysicalContext === 'SystemBoard') {
+            productData = {
+              productProductName: assembly.Model,
+              productPartNumber: assembly.PartNumber,
+              productSerialNumber: assembly.SerialNumber,
+              productManufacturer: assembly.Vendor,
+              productVersion: assembly.Version,
+              productAssetTag: chassisInfo?.data?.AssetTag,
+              productExtra: oemPproperties?.VendorData?.join(';'),
+            };
+          } else if (assembly.PhysicalContext === 'Chassis') {
+            chassisData = {
+              chassisType: assembly.Model
+                ? IPMI_FRU_CHASSIS_TYPE[assembly.Model]
+                : '',
+              chassisPartNumber: assembly.PartNumber,
+              chassisSerialNumber: assembly.SerialNumber,
+              chassisExtra: oemPproperties?.VendorData?.join(';'),
+            };
+          }
+        });
+        assemblyData.push({
+          name: boardData?.boardProductName,
+          boardProductName: boardData?.boardProductName,
+          boardPartNumber: boardData?.boardPartNumber,
+          boardSerialNumber: boardData?.boardSerialNumber,
+          boardManufatureDate: boardData?.boardManufatureDate
+            ? new Date(boardData?.boardManufatureDate)
+            : null,
+          boardManufacturer: boardData?.boardManufacturer,
+          boardFruFileId: boardData?.boardFruFileId,
+          boardExtra: boardData?.boardExtra,
+          productProductName: productData?.productProductName,
+          productPartNumber: productData?.productPartNumber,
+          productSerialNumber: productData?.productSerialNumber,
+          productManufacturer: productData?.productManufacturer,
+          productVersion: productData?.productVersion,
+          productAssetTag: productData?.productAssetTag,
+          productExtra: productData?.productExtra,
+          chassisType: chassisData?.chassisType,
+          chassisPartNumber: chassisData?.chassisPartNumber,
+          chassisSerialNumber: chassisData?.chassisSerialNumber,
+          chassisExtra: chassisData?.chassisExtra,
+        });
+        commit('addAssemblyInfo', assemblyData);
+      });
+    },
+
     async updateIdentifyLedValue({ dispatch }, led) {
       const uri = led.uri;
       const updatedIdentifyLedValue = {
