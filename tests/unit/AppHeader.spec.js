@@ -11,7 +11,7 @@ localVue.use(Vuex);
 describe('AppHeader.vue', () => {
   const actions = {
     'global/getServerStatus': jest.fn(),
-    'eventLog/getEventLogData': jest.fn(),
+    'eventLog/getLogData': jest.fn(),
     'authentication/resetStoreState': jest.fn(),
     'global/getSystemInfo': jest.fn(),
   };
@@ -79,7 +79,7 @@ describe('AppHeader.vue', () => {
       expect(store.dispatch).toHaveBeenCalledTimes(1);
     });
 
-    it('getEvents should dispatch eventLog/getEventLogData', () => {
+    it('getEvents should dispatch eventLog/getLogData', () => {
       wrapper.vm.getEvents();
       expect(store.dispatch).toHaveBeenCalledTimes(1);
     });

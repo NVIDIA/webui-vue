@@ -226,7 +226,7 @@ export default {
       this.$store.dispatch('global/getSystemInfo');
     },
     getEvents() {
-      this.$store.dispatch('eventLog/getEventLogData');
+      this.$store.dispatch('eventLog/getLogData');
     },
     refresh() {
       this.$emit('refresh');

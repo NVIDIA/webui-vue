@@ -4,6 +4,7 @@ import ConsoleLayout from '@/layouts/ConsoleLayout.vue';
 import DateTime from '@/views/Settings/DateTime';
 import Dumps from '@/views/Logs/Dumps';
 import EventLogs from '@/views/Logs/EventLogs';
+import SelLogs from '@/views/Logs/SelLogs';
 import FactoryReset from '@/views/Operations/FactoryReset';
 import Firmware from '@/views/Operations/Firmware';
 import Inventory from '@/views/HardwareStatus/Inventory';
@@ -112,6 +113,14 @@ const routes = [
         path: '/logs/event-logs',
         name: 'event-logs',
         component: EventLogs,
+        meta: {
+          title: i18n.t('appPageTitle.eventLogs'),
+        },
+      },
+      {
+        path: '/logs/sel-logs',
+        name: 'sel-logs',
+        component: SelLogs,
         meta: {
           title: i18n.t('appPageTitle.eventLogs'),
         },

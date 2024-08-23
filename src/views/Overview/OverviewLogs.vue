@@ -4,8 +4,8 @@
     :disabled="eventLogData.length === 0"
     :export-button="true"
     :file-name="exportFileNameByDate()"
-    :title="$t('pageOverview.eventLogs')"
-    :to="`/logs/event-logs`"
+    :title="title"
+    :to="to"
   >
     <b-row class="mt-3">
       <b-col sm="6">
@@ -39,34 +39,50 @@ export default {
   name: 'Events',
   components: { OverviewCard, StatusIcon },
   mixins: [DataFormatterMixin],
+  props: {
+    title: {
+      type: String,
+      required: true,
+    },
+    to: {
+      type: String,
+      required: true,
+    },
+    logStore: {
+      type: String,
+      required: true,
+    },
+    omitEvent: {
+      type: String,
+      required: true,
+    },
+    exportFileName: {
+      type: String,
+      required: true,
+    },
+  },
   computed: {
     eventLogData() {
-      return this.$store.getters['eventLog/allEvents'];
+      return this.$store.getters[this.logStore + '/allEvents'];
     },
     criticalEvents() {
       return this.eventLogData
-        .filter(
-          (log) =>
-            log.severity === 'Critical' && log.filterByStatus === 'Unresolved',
-        )
+        .filter((log) => log.Severity === 'Critical' && !log.Resolved)
         .map((log) => {
           return log;
         });
     },
     warningEvents() {
       return this.eventLogData
-        .filter(
-          (log) =>
-            log.severity === 'Warning' && log.filterByStatus === 'Unresolved',
-        )
+        .filter((log) => log.Severity === 'Warning' && !log.Resolved)
         .map((log) => {
           return log;
         });
     },
   },
   created() {
-    this.$store.dispatch('eventLog/getEventLogData').finally(() => {
-      this.$root.$emit('overview-events-complete');
+    this.$store.dispatch(this.logStore + '/getLogData').finally(() => {
+      this.$root.$emit(this.omitEvent);
     });
   },
   methods: {
@@ -77,8 +93,7 @@ export default {
         date.toISOString().slice(0, 10) +
         '_' +
         date.toString().split(':').join('-').split(' ')[4];
-      let fileName = 'all_event_logs_';
-      return fileName + date;
+      return this.exportFileName + '_' + date;
     },
   },
 };

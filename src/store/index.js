@@ -14,6 +14,7 @@ import PowerControlStore from './modules/ResourceManagement/PowerControlStore';
 import PowerPolicyStore from './modules/Settings/PowerPolicyStore';
 import NetworkStore from './modules/Settings/NetworkStore';
 import EventLogStore from './modules/Logs/EventLogStore';
+import SelLogStore from './modules/Logs/SelLogStore';
 import DumpsStore from './modules/Logs/DumpsStore';
 import SensorsStore from './modules/HardwareStatus/SensorsStore';
 import ServerLedStore from './modules/HardwareStatus/ServerLedStore';
@@ -56,6 +57,7 @@ export default new Vuex.Store({
     powerSupply: PowerSupplyStore,
     network: NetworkStore,
     eventLog: EventLogStore,
+    selLog: SelLogStore,
     dumps: DumpsStore,
     sensors: SensorsStore,
     serverLed: ServerLedStore,

@@ -17,7 +17,21 @@
     </page-section>
     <page-section :section-title="$t('pageOverview.statusInformation')">
       <b-card-group deck>
-        <overview-events />
+        <overview-logs
+          :title="$t('pageOverview.eventLogs')"
+          :to="`/logs/event-logs`"
+          :log-store="`eventLog`"
+          :omit-event="`overview-events-complete`"
+          :export-file-name="`all_event_logs`"
+        />
+        <overview-logs
+          v-if="showSelLog"
+          :title="$t('pageOverview.selLogs')"
+          :to="`/logs/sel-logs`"
+          :log-store="`selLog`"
+          :omit-event="`overview-sel-complete`"
+          :export-file-name="`all_sel_logs`"
+        />
         <overview-inventory v-if="showInventory" />
         <overview-dumps v-if="showDumps" />
       </b-card-group>
@@ -28,7 +42,7 @@
 <script>
 import LoadingBarMixin from '@/components/Mixins/LoadingBarMixin';
 import OverviewDumps from './OverviewDumps.vue';
-import OverviewEvents from './OverviewEvents.vue';
+import OverviewLogs from './OverviewLogs.vue';
 import OverviewFirmware from './OverviewFirmware.vue';
 import OverviewInventory from './OverviewInventory.vue';
 import OverviewNetwork from './OverviewNetwork';
@@ -42,7 +56,7 @@ export default {
   name: 'Overview',
   components: {
     OverviewDumps,
-    OverviewEvents,
+    OverviewLogs,
     OverviewFirmware,
     OverviewInventory,
     OverviewNetwork,
@@ -62,6 +76,9 @@ export default {
       showInventory: !['nvidia-bluefield', 'nvidia-igx'].includes(
         process.env.VUE_APP_ENV_NAME,
       ),
+      showSelLog: ['nvidia-bluefield', 'nvidia-igx', 'nvidia-gb'].includes(
+        process.env.VUE_APP_ENV_NAME,
+      ),
     };
   },
   created() {
@@ -71,6 +88,9 @@ export default {
     });
     const eventsPromise = new Promise((resolve) => {
       this.$root.$on('overview-events-complete', () => resolve());
+    });
+    const selPromise = new Promise((resolve) => {
+      this.$root.$on('overview-sel-complete', () => resolve());
     });
     const firmwarePromise = new Promise((resolve) => {
       this.$root.$on('overview-firmware-complete', () => resolve());
@@ -101,6 +121,7 @@ export default {
     if (this.showDumps) promises.push(dumpsPromise);
     if (this.showInventory) promises.push(inventoryPromise);
     if (this.showPower) promises.push(powerPromise);
+    if (this.showSelLog) promises.push(selPromise);
     Promise.all(promises).finally(() => this.endLoader());
   },
 };

@@ -1,11 +1,11 @@
 import CommonLogStore from './CommonLogStore';
 
-const EventLogStore = {
+const SelLogStore = {
   ...CommonLogStore,
   state: {
     ...CommonLogStore.state,
-    logType: 'EventLog',
+    logType: 'SEL',
   },
 };
 
-export default EventLogStore;
+export default SelLogStore;
