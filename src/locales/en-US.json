@@ -340,6 +340,8 @@
 	"tableHeaderHealthStatus": "Health Status",
 	"tableHeaderFirmware": "Firmware",
 	"tableHeaderVersion": "Version",
+        "viewMore": "View More",
+        "viewLess": "View Less",
         "alert": {
             "operationInProgress": "Server power operation in progress.",
             "serverMustBePoweredOffTo": "Server must be powered off to:",

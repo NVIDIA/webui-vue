@@ -31,11 +31,15 @@
       </b-table>
       <b-button
         variant="link"
-        :title="isExpanded ? 'View Less' : 'View More'"
+        :title="
+          isExpanded ? $t('pageFirmware.viewLess') : $t('pageFirmware.viewMore')
+        "
         class="btn-icon-only p-0"
         @click="toggleExpand"
       >
-        {{ isExpanded ? 'View Less' : 'View More' }}
+        {{
+          isExpanded ? $t('pageFirmware.viewLess') : $t('pageFirmware.viewMore')
+        }}
       </b-button>
     </page-section>
   </div>
