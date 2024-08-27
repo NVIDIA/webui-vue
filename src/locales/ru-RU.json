@@ -332,6 +332,7 @@
         "sectionTitleBmcCards": "BMC",
         "sectionTitleBmcCardsCombined": "BMC и сервер",
         "sectionTitleHostCards": "Хост",
+        "sectionTitleConfirmIdentify": "Подтвердите личность",
         "sectionTitleUpdateFirmware": "Обновить встроенное ПО",
         "sectionTitleFirmwareInventory": "Инвентаризация прошивки",
 	"tableHeaderHealthStatus": "Состояние здоровья",
@@ -353,6 +354,7 @@
                 "target": "Цель",
                 "fileAddress": "Адрес файла",
                 "fileSource": "Источник файла",
+                "confirmIdentity": "Подтвердите личность",
                 "imageFile": "Файл образа",
                 "forceUpdate": "Принудительное обновление",
                 "startUpdate": "Начать обновление",
@@ -361,6 +363,11 @@
             }
         },
         "modal": {
+            "exchangeKey": "Обмен ключа",
+            "confirmIdentityInfo": "Подтвердите идентичность удаленного сервера (хоста, на котором хранится файл образа прошивки) и BMC.",
+            "remoteServerIp": "IP-адрес удаленного сервера",
+            "remoteServerKey": "Открытый ключ SSH удаленного сервера (получить с помощью ssh-keyscan)",
+            "bmcKeyInfo": "Добавьте следующий открытый ключ в ~/.ssh/authorized_keys на удаленном сервере.",
             "switchImages": "Сменить образы",
             "switchRunningImage": "Сменить рабочий образ",
             "switchRunningImageInfo": "Для запуска резервного образа требуется перезагрузка BMC. Страница может не реагировать на запросы в течение этого времени.",

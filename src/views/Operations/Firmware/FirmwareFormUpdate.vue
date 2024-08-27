@@ -114,10 +114,19 @@
 
         <!-- TFTP/SCP/HTTP/HTTPS Server File Upload -->
         <template v-else>
-          <b-form-group
-            :label="$t('pageFirmware.form.updateFirmware.fileAddress')"
-            label-for="file-address"
-          >
+          <b-form-group label-for="file-address">
+            <template #label>
+              <div class="d-flex justify-content-between">
+                {{ $t('pageFirmware.form.updateFirmware.fileAddress') }}
+                <b-link
+                  v-if="showConfirmIdentifyLink"
+                  :disabled="isPageDisabled || isFirmwareUpdateInProgress"
+                  @click="onConfirmIdentity"
+                >
+                  {{ $t('pageFirmware.form.updateFirmware.confirmIdentity') }}
+                </b-link>
+              </div>
+            </template>
             <b-form-input
               id="file-address"
               v-model="fileAddress"
@@ -161,6 +170,7 @@
 
     <!-- Modals -->
     <modal-update-firmware :targets="targets" @ok="updateFirmware" />
+    <modal-confirm-identity :default-remote-server-ip="remoteServerIp" />
   </div>
 </template>
 
@@ -173,9 +183,10 @@ import VuelidateMixin from '@/components/Mixins/VuelidateMixin.js';
 
 import FormFile from '@/components/Global/FormFile';
 import ModalUpdateFirmware from './FirmwareModalUpdateFirmware';
+import ModalConfirmIdentity from './FirmwareModalConfirmIdentity';
 
 export default {
-  components: { FormFile, ModalUpdateFirmware },
+  components: { FormFile, ModalUpdateFirmware, ModalConfirmIdentity },
   mixins: [BVToastMixin, LoadingBarMixin, VuelidateMixin],
   props: {
     isPageDisabled: {
@@ -257,6 +268,18 @@ export default {
         return targets;
       }
       return this.$store.state.firmware.checkedItems;
+    },
+    sshAuthenticationMethods() {
+      return this.$store.getters['firmware/sshAuthenticationMethods'];
+    },
+    showConfirmIdentifyLink() {
+      return (
+        this.fileSource === 'SCP' &&
+        this.sshAuthenticationMethods?.includes('PublicKey')
+      );
+    },
+    remoteServerIp() {
+      return this.fileAddress?.split('/')?.[0];
     },
   },
   watch: {
@@ -386,6 +409,9 @@ export default {
         this.endLoader();
         if (oldInitiator) this.errorToast(errMsg);
       }
+    },
+    onConfirmIdentity() {
+      this.$bvModal.show('modal-confirm-identity');
     },
     onSubmitUpload() {
       this.$v.$touch();
