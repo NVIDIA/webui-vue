@@ -46,12 +46,13 @@ const BootSettingsStore = {
           return api.get(Boot.BootOptions['@odata.id']);
         })
         .then(async (response) => {
-          const promises = response.data.Members.map((bootOption) => {
-            return api.get(bootOption['@odata.id']).catch((error) => {
-              console.log(error);
-              return error;
-            });
-          });
+          const promises =
+            response.data.Members?.map((bootOption) => {
+              return api.get(bootOption['@odata.id']).catch((error) => {
+                console.log(error);
+                return error;
+              });
+            }) || [];
           await api.all(promises).then((responses) => {
             const bootOptions = [];
             responses.forEach((response) => {
