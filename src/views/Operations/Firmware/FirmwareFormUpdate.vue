@@ -227,12 +227,14 @@ export default {
         process.env.VUE_APP_SERVER_OFF_REQUIRED === 'true',
       isBluefield: process.env.VUE_APP_ENV_NAME === 'nvidia-bluefield',
       bluefieldTarget: 'BMC',
-      firmwareInventory: [],
       isNvidiaGB: process.env.VUE_APP_ENV_NAME === 'nvidia-gb',
       nvidiaGBTarget: 'BMC',
     };
   },
   computed: {
+    firmwareInventory() {
+      return this.$store.getters['firmware/firmwareInventory'];
+    },
     allowableActions() {
       return this.$store.getters['firmware/allowableActions'];
     },
@@ -348,10 +350,6 @@ export default {
   },
   created() {
     this.$store.dispatch('firmware/getUpdateServiceSettings');
-    this.$store.dispatch('firmware/getFirmwareInventory').then(() => {
-      this.firmwareInventory =
-        this.$store.getters['firmware/firmwareInventory'];
-    });
     this.$store.dispatch('firmware/attachExistingUpdateTask');
   },
   methods: {

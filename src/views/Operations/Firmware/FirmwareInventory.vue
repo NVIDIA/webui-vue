@@ -66,7 +66,6 @@ export default {
           label: this.$t('pageFirmware.tableHeaderHealthStatus'),
         },
       ],
-      firmwareInventory: [],
       hasFirmwareInventoryCheckbox:
         process.env.VUE_APP_HIDE_FIRMWARE_INVENTORY_CHECKBOX !== 'true',
     };
@@ -76,6 +75,9 @@ export default {
       return this.isExpanded
         ? this.firmwareInventory
         : this.firmwareInventory.slice(0, 5);
+    },
+    firmwareInventory() {
+      return this.$store.getters['firmware/firmwareInventory'];
     },
   },
   methods: {
@@ -94,12 +96,6 @@ export default {
         .map((item) => item.id);
       this.$store.commit('firmware/setCheckedItems', checkedItems);
     },
-  },
-  created() {
-    this.$store.dispatch('firmware/getFirmwareInventory').then(() => {
-      this.firmwareInventory =
-        this.$store.getters['firmware/firmwareInventory'];
-    });
   },
 };
 </script>
