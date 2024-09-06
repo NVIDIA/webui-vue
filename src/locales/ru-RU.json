@@ -347,6 +347,7 @@
         "alert": {
             "operationInProgress": "Выполняется операция управления питанием сервера.",
             "serverMustBePoweredOffTo": "Сервер должен быть выключен, чтобы:",
+            "serverMustBePoweredOnTo": "Сервер должен быть включен, чтобы:",
             "serverMustBePoweredOffToUpdateFirmware": "Сервер должен быть выключен, чтобы обновить встроенное ПО",
             "switchRunningAndBackupImages": "Переключение между рабочим и резервным образом",
             "updateFirmware": "Обновление встроенного ПО",

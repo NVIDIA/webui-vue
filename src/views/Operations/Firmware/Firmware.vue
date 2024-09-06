@@ -2,7 +2,7 @@
   <b-container fluid="xl">
     <page-title />
     <alerts-server-power
-      v-if="isServerPowerOffRequired"
+      v-if="isServerPowerOffRequired || isServerPowerOnRequired"
       :is-server-off="isServerOff"
     />
 
@@ -76,6 +76,8 @@ export default {
       loading,
       isServerPowerOffRequired:
         process.env.VUE_APP_SERVER_OFF_REQUIRED === 'true',
+      isServerPowerOnRequired:
+        process.env.VUE_APP_SERVER_ON_REQUIRED === 'true',
     };
   },
   computed: {

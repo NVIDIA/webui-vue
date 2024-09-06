@@ -350,6 +350,7 @@
         "alert": {
             "operationInProgress": "Server power operation in progress.",
             "serverMustBePoweredOffTo": "Server must be powered off to:",
+            "serverMustBePoweredOnTo": "Server must be powered on to:",
             "serverMustBePoweredOffToUpdateFirmware": "Server must be powered off to update firmware",
             "switchRunningAndBackupImages": "Switch running and backup images",
             "updateFirmware": "Update firmware",

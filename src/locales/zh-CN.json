@@ -350,6 +350,7 @@
         "alert": {
             "operationInProgress": "服务器电源操作正在进行中。",
             "serverMustBePoweredOffTo": "服务器必须关闭以进行：",
+            "serverMustBePoweredOnTo": "服务器必须开启以进行：",
             "serverMustBePoweredOffToUpdateFirmware": "服务器必须关闭以更新固件",
             "switchRunningAndBackupImages": "切换运行和备份映像",
             "updateFirmware": "更新固件",

@@ -7,13 +7,24 @@
           {{ $t('pageFirmware.alert.operationInProgress') }}
         </p>
       </alert>
-      <!-- Power off server warning alert -->
-      <alert v-else-if="!isServerOff" variant="warning" class="mb-5">
+      <!-- Power on/off server warning alert -->
+      <alert
+        v-else-if="
+          (isServerPowerOffRequired && !isServerOff) ||
+          (isServerPowerOnRequired && isServerOff)
+        "
+        variant="warning"
+        class="mb-5"
+      >
         <p class="mb-0">
-          {{ $t('pageFirmware.alert.serverMustBePoweredOffTo') }}
+          {{
+            isServerPowerOffRequired && !isServerOff
+              ? $t('pageFirmware.alert.serverMustBePoweredOffTo')
+              : $t('pageFirmware.alert.serverMustBePoweredOnTo')
+          }}
         </p>
         <ul class="m-0">
-          <li>
+          <li v-if="supportsBackupImages">
             {{ $t('pageFirmware.alert.switchRunningAndBackupImages') }}
           </li>
           <li>
@@ -42,9 +53,21 @@ export default {
       default: true,
     },
   },
+  data() {
+    return {
+      isServerPowerOffRequired:
+        process.env.VUE_APP_SERVER_OFF_REQUIRED === 'true',
+      isServerPowerOnRequired:
+        process.env.VUE_APP_SERVER_ON_REQUIRED === 'true',
+    };
+  },
   computed: {
     isOperationInProgress() {
       return this.$store.getters['controls/isOperationInProgress'];
+    },
+    supportsBackupImages() {
+      const backupFirmwares = this.$store.getters['firmware/backupBmcFirmware'];
+      return backupFirmwares?.length > 0;
     },
   },
 };
