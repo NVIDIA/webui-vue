@@ -168,9 +168,9 @@
             {{ value }}
           </template>
           <!-- Date column -->
-          <template #cell(Created)="{ value }">
-            <p class="mb-0">{{ new Date(value) | formatDate }}</p>
-            <p class="mb-0">{{ new Date(value) | formatTime }}</p>
+          <template #cell(date)="{ value }">
+            <p class="mb-0">{{ value | formatDate }}</p>
+            <p class="mb-0">{{ value | formatTime }}</p>
           </template>
 
           <!-- Status column -->
@@ -359,7 +359,7 @@ export default {
           tdClass: 'text-nowrap',
         },
         {
-          key: 'Created',
+          key: 'date',
           label: this.$t('pageEventLogs.table.date'),
           sortable: true,
           tdClass: 'text-nowrap',
@@ -457,6 +457,7 @@ export default {
       return this.$store.getters[this.logStore + '/allEvents'].map((event) => {
         return {
           ...event,
+          date: new Date(event.Created),
           sensor:
             event.SensorType != null && event.SensorNumber != null
               ? event.SensorType +
