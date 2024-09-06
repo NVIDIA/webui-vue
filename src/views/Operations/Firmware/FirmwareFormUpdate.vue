@@ -157,6 +157,16 @@
             </b-form-invalid-feedback>
           </b-form-group>
         </template>
+        <b-progress
+          v-if="isUploading"
+          :value="uploadProgress"
+          :max="100"
+          show-progress
+          animated
+          class="mt-2 mb-2"
+        >
+        </b-progress>
+
         <b-btn
           data-test-id="firmware-button-startUpdate"
           type="submit"
@@ -281,6 +291,9 @@ export default {
     remoteServerIp() {
       return this.fileAddress?.split('/')?.[0];
     },
+    uploadProgress() {
+      return this.$store.getters['firmware/getFirmwareUploadProgress'];
+    },
   },
   watch: {
     fileSource: function () {
@@ -339,6 +352,7 @@ export default {
   methods: {
     updateFirmware() {
       this.isUploading = true;
+      this.$store.commit('firmware/setFirmwareUploadProgress', 0);
       this.startLoader();
       this.infoToast(this.$t('pageFirmware.toast.updateStartedMessage'), {
         title: this.$t('pageFirmware.toast.updateStarted'),
@@ -357,6 +371,7 @@ export default {
         })
         .finally(() => {
           this.isUploading = false;
+          this.$store.commit('firmware/setFirmwareUploadProgress', 0);
           this.endLoader();
         });
     },

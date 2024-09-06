@@ -45,6 +45,7 @@ const FirmwareStore = {
       taskPercent: 0,
       errMsg: null,
       touch: false,
+      uploadProgress: 0,
     },
   },
   getters: {
@@ -84,6 +85,8 @@ const FirmwareStore = {
       state.firmwareUpdateInfo.state !== 'ResetFailed' &&
       state.firmwareUpdateInfo.state !== 'WaitReadyFailed' &&
       state.firmwareUpdateInfo.state !== 'TaskFailed',
+    getFirmwareUploadProgress: (state) =>
+      state.firmwareUpdateInfo.uploadProgress,
   },
   mutations: {
     setActiveBmcFirmwareId: (state, id) => (state.bmcActiveFirmwareId = id),
@@ -121,6 +124,8 @@ const FirmwareStore = {
       (state.firmwareUpdateInfo.taskPercent = percent),
     setFirmwareUpdateTouch: (state) =>
       (state.firmwareUpdateInfo.touch = !state.firmwareUpdateInfo.touch),
+    setFirmwareUploadProgress: (state, progress) =>
+      (state.firmwareUpdateInfo.uploadProgress = progress),
   },
   actions: {
     async getFirmwareInformation({ dispatch }) {
@@ -253,9 +258,10 @@ const FirmwareStore = {
         });
     },
     async uploadFirmwareMultipartHttpPush(
-      { state, dispatch },
+      { state, commit, dispatch },
       { image, targets, forceUpdate },
     ) {
+      commit('setFirmwareUploadProgress', 0);
       const formData = new FormData();
       formData.append('UpdateFile', image);
       const params = {};
@@ -265,6 +271,12 @@ const FirmwareStore = {
       return await api
         .post(state.multipartHttpPushUri, formData, {
           headers: { 'Content-Type': 'multipart/form-data' },
+          onUploadProgress: (progressEvent) => {
+            const percentCompleted = Math.round(
+              (progressEvent.loaded * 100) / progressEvent.total,
+            );
+            commit('setFirmwareUploadProgress', percentCompleted);
+          },
         })
         .catch(async (error) => {
           console.log(error);
