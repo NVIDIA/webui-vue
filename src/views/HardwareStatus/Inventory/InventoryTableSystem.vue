@@ -29,7 +29,10 @@
         {{ value }}
       </template>
 
-      <template #cell(locationIndicatorActive)="{ item }">
+      <template
+        v-if="typeof locationIndicatorActive !== 'undefined'"
+        #cell(locationIndicatorActive)="{ item }"
+      >
         <b-form-checkbox
           id="identifyLedSwitchSystem"
           v-model="item.locationIndicatorActive"
