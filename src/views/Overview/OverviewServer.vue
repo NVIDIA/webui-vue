@@ -2,7 +2,6 @@
   <overview-card
     :title="$t('pageOverview.serverInformation')"
     :to="`/hardware-status/inventory`"
-    :to-link="showToLink"
   >
     <b-row class="mt-3">
       <b-col sm="6">
@@ -34,12 +33,6 @@ export default {
     OverviewCard,
   },
   mixins: [DataFormatterMixin],
-  props: {
-    showToLink: {
-      type: Boolean,
-      default: process.env.VUE_APP_ENV_NAME !== 'nvidia-bluefield',
-    },
-  },
   computed: {
     ...mapState({
       server: (state) => state.system.systems[0],
