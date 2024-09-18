@@ -94,8 +94,10 @@ export default {
     running() {
       return this.$store.getters['firmware/activeBmcFirmware'];
     },
+    // TODO: Update the template to show an array of bmc images
     backup() {
-      return this.$store.getters['firmware/backupBmcFirmware'];
+      const backupFirmwares = this.$store.getters['firmware/backupBmcFirmware'];
+      return backupFirmwares?.[0] ?? null;
     },
     runningVersion() {
       return this.running?.version || '--';
@@ -119,6 +121,7 @@ export default {
     },
   },
   methods: {
+    // TODO: Modify to accept a specific backup location as a parameter
     switchToRunning() {
       this.startLoader();
       const timerId = setTimeout(() => {
@@ -129,8 +132,16 @@ export default {
         });
       }, 60000);
 
+      const backupFirmwares = this.$store.getters['firmware/backupBmcFirmware'];
+      if (backupFirmwares?.length === 0) {
+        this.errorToast(this.$t('pageFirmware.toast.errorNoBackupImage'));
+        clearTimeout(timerId);
+        this.endLoader();
+        return;
+      }
+      const backupLocation = backupFirmwares[0].location;
       this.$store
-        .dispatch('firmware/switchBmcFirmwareAndReboot')
+        .dispatch('firmware/switchBmcFirmwareAndReboot', backupLocation)
         .then(() =>
           this.infoToast(this.$t('pageFirmware.toast.rebootStartedMessage'), {
             title: this.$t('pageFirmware.toast.rebootStarted'),

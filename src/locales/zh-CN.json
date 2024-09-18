@@ -388,6 +388,7 @@
             "errorSwitchImages": "切换运行和备份映像时出错。",
             "errorUpdateFirmware": "启动固件更新时出错。",
             "errorCompleteUpdateFirmware": "完成固件更新时出错。",
+            "errorNoBackupImage": "没有备份映像。",
             "resetFailedMessage": "所需的重置失败。新固件未生效。",
             "waitReadyFailedMessage": "等待就绪超时",
             "rebootStarted": "重启已启动",

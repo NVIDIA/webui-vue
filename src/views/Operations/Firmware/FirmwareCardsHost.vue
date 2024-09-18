@@ -45,8 +45,10 @@ export default {
     running() {
       return this.$store.getters['firmware/activeHostFirmware'];
     },
+    // TODO: Update the template to show an array of bmc images
     backup() {
-      return this.$store.getters['firmware/backupHostFirmware'];
+      const hostFirmwares = this.$store.getters['firmware/backupHostFirmware'];
+      return hostFirmwares?.[0] ?? null;
     },
     runningVersion() {
       return this.running?.version || '--';

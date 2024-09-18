@@ -67,12 +67,12 @@ const FirmwareStore = {
       );
     },
     backupBmcFirmware: (state) => {
-      return state.bmcFirmware.find(
+      return state.bmcFirmware.filter(
         (firmware) => firmware.id !== state.bmcActiveFirmwareId,
       );
     },
     backupHostFirmware: (state) => {
-      return state.hostFirmware.find(
+      return state.hostFirmware.filter(
         (firmware) => firmware.id !== state.hostActiveFirmwareId,
       );
     },
@@ -536,8 +536,7 @@ const FirmwareStore = {
     sleep({ state }, seconds) {
       return new Promise((resolve) => setTimeout(resolve, seconds * 1000));
     },
-    async switchBmcFirmwareAndReboot({ getters }) {
-      const backupLocation = getters.backupBmcFirmware.location;
+    async switchBmcFirmwareAndReboot(_, backupLocation) {
       const data = {
         Links: {
           ActiveSoftwareImage: {

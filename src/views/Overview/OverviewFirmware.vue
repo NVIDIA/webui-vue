@@ -46,8 +46,11 @@ export default {
   computed: {
     ...mapState({
       server: (state) => state.system.systems[0],
+      // TODO: Update the template to show an array of bmc images
       backupBmcFirmware() {
-        return this.$store.getters['firmware/backupBmcFirmware'];
+        const backupFirmwares =
+          this.$store.getters['firmware/backupBmcFirmware'];
+        return backupFirmwares?.[0] ?? null;
       },
       backupVersion() {
         return this.backupBmcFirmware?.version;
