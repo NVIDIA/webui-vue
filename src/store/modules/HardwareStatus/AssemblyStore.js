@@ -119,14 +119,14 @@ const AssemblyStore = {
             return response?.data?.Assemblies;
           });
         if (!assemblyList.length) return;
-        const oem = assemblyList?.[0]?.Oem;
-        const keys = oem ? Object.keys(oem) : null;
-        const oemPproperties = keys ? oem[keys?.[0]] : null;
         const assemblyData = [];
         let boardData = {};
         let productData = {};
         let chassisData = {};
         assemblyList.forEach((assembly) => {
+          const oem = assembly.Oem;
+          const keys = oem ? Object.keys(oem) : null;
+          const oemPproperties = keys ? oem[keys?.[0]] : null;
           if (assembly.PhysicalContext === 'Board') {
             boardData = {
               boardProductName: assembly.Model,
