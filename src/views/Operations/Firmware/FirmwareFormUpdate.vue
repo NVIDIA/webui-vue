@@ -157,16 +157,21 @@
             </b-form-invalid-feedback>
           </b-form-group>
         </template>
-        <b-progress
-          v-if="isUploading"
-          :value="uploadProgress"
-          :max="100"
-          show-progress
-          animated
-          class="mt-2 mb-2"
-        >
-        </b-progress>
-
+        <div class="progress-wrapper">
+          <b-progress
+            v-if="isUploading"
+            :value="uploadProgress"
+            :max="100"
+            animated
+            class="mt-2 mb-2"
+          >
+            <b-progress-bar :value="uploadProgress" :max="100">
+              <span class="progress-label">
+                {{ uploadProgress }}%
+              </span>
+            </b-progress-bar>
+          </b-progress>
+        </div>
         <b-btn
           data-test-id="firmware-button-startUpdate"
           type="submit"
@@ -440,3 +445,20 @@ export default {
   },
 };
 </script>
+
+<style scoped>
+.progress-wrapper {
+  position: relative;
+}
+.progress-label {
+  position: absolute;
+  width: 100%;
+  color: #000;
+  font-weight: bold;
+  text-align: center;
+  line-height: 1rem;
+  top: 50%;
+  left: 0;
+  transform: translateY(-50%);
+}
+</style>
