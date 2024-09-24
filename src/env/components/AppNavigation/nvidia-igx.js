@@ -138,38 +138,6 @@ const AppNavigationMixin = {
             },
           ],
         },
-        {
-          id: 'security-and-access',
-          label: this.$t('appNavigation.securityAndAccess'),
-          icon: 'iconSecurityAndAccess',
-          children: [
-            {
-              id: 'sessions',
-              label: this.$t('appNavigation.sessions'),
-              route: '/security-and-access/sessions',
-            },
-            {
-              id: 'ldap',
-              label: this.$t('appNavigation.ldap'),
-              route: '/security-and-access/ldap',
-            },
-            {
-              id: 'user-management',
-              label: this.$t('appNavigation.userManagement'),
-              route: '/security-and-access/user-management',
-            },
-            {
-              id: 'policies',
-              label: this.$t('appNavigation.policies'),
-              route: '/security-and-access/policies',
-            },
-            {
-              id: 'certificates',
-              label: this.$t('appNavigation.certificates'),
-              route: '/security-and-access/certificates',
-            },
-          ],
-        },
       ],
     };
   },

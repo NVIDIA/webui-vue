@@ -10,9 +10,6 @@ import Firmware from '@/views/Operations/Firmware';
 import Inventory from '@/views/HardwareStatus/Inventory';
 import Kvm from '@/views/Operations/Kvm';
 import KvmConsole from '@/views/Operations/Kvm/KvmConsole';
-import Sessions from '@/views/SecurityAndAccess/Sessions';
-import Ldap from '@/views/SecurityAndAccess/Ldap';
-import UserManagement from '@/views/SecurityAndAccess/UserManagement';
 import Login from '@/views/Login';
 import LoginLayout from '@/layouts/LoginLayout';
 import Network from '@/views/Settings/Network';
@@ -20,12 +17,10 @@ import Overview from '@/views/Overview';
 import PageNotFound from '@/views/PageNotFound';
 import ProfileSettings from '@/views/ProfileSettings';
 import RebootBmc from '@/views/Operations/RebootBmc';
-import Policies from '@/views/SecurityAndAccess/Policies';
 import Sensors from '@/views/HardwareStatus/Sensors';
 import SerialOverLan from '@/views/Operations/SerialOverLan';
 import SerialOverLanConsole from '@/views/Operations/SerialOverLan/SerialOverLanConsole';
 import ServerPowerOperations from '@/views/Operations/ServerPowerOperations';
-import Certificates from '@/views/SecurityAndAccess/Certificates';
 import VirtualMedia from '@/views/Operations/VirtualMedia';
 import SnmpAlerts from '@/views/Settings/SnmpAlerts';
 import i18n from '@/i18n';
@@ -147,46 +142,6 @@ const routes = [
         component: Sensors,
         meta: {
           title: i18n.t('appPageTitle.sensors'),
-        },
-      },
-      {
-        path: '/security-and-access/sessions',
-        name: 'sessions',
-        component: Sessions,
-        meta: {
-          title: i18n.t('appPageTitle.sessions'),
-        },
-      },
-      {
-        path: '/security-and-access/ldap',
-        name: 'ldap',
-        component: Ldap,
-        meta: {
-          title: i18n.t('appPageTitle.ldap'),
-        },
-      },
-      {
-        path: '/security-and-access/user-management',
-        name: 'user-management',
-        component: UserManagement,
-        meta: {
-          title: i18n.t('appPageTitle.userManagement'),
-        },
-      },
-      {
-        path: '/security-and-access/policies',
-        name: 'policies',
-        component: Policies,
-        meta: {
-          title: i18n.t('appPageTitle.policies'),
-        },
-      },
-      {
-        path: '/security-and-access/certificates',
-        name: 'certificates',
-        component: Certificates,
-        meta: {
-          title: i18n.t('appPageTitle.certificates'),
         },
       },
       {
