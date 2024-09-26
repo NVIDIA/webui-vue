@@ -230,7 +230,11 @@ const CommonLogStore = {
     },
     async downloadEntry(_, uri) {
       return await api
-        .get(uri)
+        .get(uri, {
+          headers: {
+            Accept: 'application/octet-stream',
+          },
+        })
         .then((response) => {
           const blob = new Blob([response.data], {
             type: response.headers['content-type'],
