@@ -385,10 +385,10 @@
             "switchRunningImage": "切换运行映像",
             "switchRunningImageInfo": "需要重启 BMC 才能运行备份映像。在此期间，应用程序可能会无响应。",
             "switchRunningImageInfo2": "您确定要切换到备份映像 (%{backup}) 吗？",
-            "updateFirmwareInfo": "在更新过程中，BMC 可能会重启。更新完成之前，主机无法开机。",
-            "updateFirmwareInfo2": "运行映像 (%{running}) 将被复制到备份。备份映像将被删除。",
-            "updateFirmwareInfo3": "您确定要继续更新吗？",
-            "updateFirmwareInfoDefault": "新映像将被上传并激活。之后，BMC 或主机将自动重启以从新映像运行。"
+            "updateFirmwareInfoDefault1": "根据固件类型，在更新过程中，BMC 可能会重新启动，或者主机电源可能会重新启动。在更新完成之前，请勿打开/关闭设备电源。",
+            "updateFirmwareInfoTargetBackup": "正在运行的映像 (%{running}) 将被复制到备份。备份映像将被删除。",
+            "updateFirmwareInfoBackup": "如果此镜像有备份，则运行镜像将被复制到备份并替换当前备份镜像。",
+            "updateFirmwareInfoDefault2": "您确定要继续更新吗？"
         },
         "toast": {
             "errorSwitchImages": "切换运行和备份映像时出错。",

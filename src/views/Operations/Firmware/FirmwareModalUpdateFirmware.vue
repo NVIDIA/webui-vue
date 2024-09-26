@@ -6,23 +6,30 @@
     :cancel-title="$t('global.action.cancel')"
     @ok="$emit('ok')"
   >
-    <template v-if="isSingleFileUploadEnabled">
+    <template>
       <p>
-        {{ $t('pageFirmware.modal.updateFirmwareInfo') }}
+        {{ $t('pageFirmware.modal.updateFirmwareInfoDefault1') }}
       </p>
-      <p v-if="showBackupMessage">
+      <p v-if="showBackupBmcMessage">
         {{
-          $t('pageFirmware.modal.updateFirmwareInfo2', {
+          $t('pageFirmware.modal.updateFirmwareInfoTargetBackup', {
             running: runningBmcVersion,
           })
         }}
       </p>
-      <p class="m-0">
-        {{ $t('pageFirmware.modal.updateFirmwareInfo3') }}
+      <p v-if="showBackupHostMessage">
+        {{
+          $t('pageFirmware.modal.updateFirmwareInfoTargetBackup', {
+            running: runningHostVersion,
+          })
+        }}
       </p>
-    </template>
-    <template v-else>
-      {{ $t('pageFirmware.modal.updateFirmwareInfoDefault') }}
+      <p v-if="showBackup">
+        {{ $t('pageFirmware.modal.updateFirmwareInfoBackup') }}
+      </p>
+      <p>
+      {{ $t('pageFirmware.modal.updateFirmwareInfoDefault2') }}
+      </p>
     </template>
   </b-modal>
 </template>
@@ -36,12 +43,6 @@ export default {
     },
   },
   computed: {
-    runningBmc() {
-      return this.$store.getters['firmware/activeBmcFirmware'];
-    },
-    runningBmcVersion() {
-      return this.runningBmc?.version || '--';
-    },
     isSingleFileUploadEnabled() {
       return this.$store.getters['firmware/isSingleFileUploadEnabled'];
     },
@@ -57,15 +58,36 @@ export default {
     backupHostFirmware() {
       return this.$store.getters['firmware/backupHostFirmware'];
     },
-    showBackupMessage() {
-      // Only show the backup message when BMC/BIOS(which has backup) is in targets
+    runningBmcVersion() {
+      return this.activeBmcFirmware?.version || '--';
+    },
+    runningHostVersion() {
+      return this.activeHostFirmware?.version || '--';
+    },
+    showBackup() {
       if (
-        (this.targets?.includes(this.activeBmcFirmware?.id) &&
+        this.backupBmcFirmware?.length > 0 ||
+          this.backupHostFirmware?.length > 0
+      )
+        return true;
+      else return false;
+    },
+    showBackupBmcMessage() {
+      // Only show the backup message when BMC(which has backup) is in targets
+      if (
+        this.targets?.includes(this.activeBmcFirmware?.id) &&
           this.backupBmcFirmware != null &&
-          this.backupBmcFirmware?.length > 0) ||
-        (this.targets?.includes(this.activeHostFirmware?.id) &&
+          this.backupBmcFirmware?.length > 0
+      )
+        return true;
+      else return false;
+    },
+    showBackupHostMessage() {
+      // Only show the backup message when BIOS(which has backup) is in targets
+      if (
+        this.targets?.includes(this.activeHostFirmware?.id) &&
           this.backupHostFirmware != null &&
-          this.backupHostFirmware?.length > 0)
+          this.backupHostFirmware?.length > 0
       )
         return true;
       else return false;

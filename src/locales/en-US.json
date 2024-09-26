@@ -385,10 +385,10 @@
             "switchRunningImage": "Switch running image",
             "switchRunningImageInfo": "A BMC reboot is required to run the backup image. The application might be unresponsive during this time.",
             "switchRunningImageInfo2": "Are you sure you want to switch to the backup image (%{backup})?",
-            "updateFirmwareInfo": "The BMC may reboot during the update process. The host cannot be powered on until the update is finished.",
-            "updateFirmwareInfo2": "The running image (%{running}) will be copied to backup. The backup image will be deleted.",
-            "updateFirmwareInfo3": "Are you sure you want to proceed with the update?",
-            "updateFirmwareInfoDefault": "The new image will be uploaded and activated. After that, the BMC or host will reboot automatically to run from the new image."
+            "updateFirmwareInfoDefault1": "Depending on firmware type, the BMC may reboot, or host power may be cycled, during the update process. Do not Power ON/OFF the device until the update is finished.",
+            "updateFirmwareInfoTargetBackup": "The running image (%{running}) will be copied to backup. The backup image will be deleted.",
+            "updateFirmwareInfoBackup": "If this image has a backup, the running image will be copied to backup and replace the current backup image.",
+            "updateFirmwareInfoDefault2": "Are you sure you want to proceed with the update?"
         },
         "toast": {
             "errorSwitchImages": "Error switching running and backup images.",
