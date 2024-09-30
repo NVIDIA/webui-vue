@@ -39,26 +39,35 @@ const AssemblyStore = {
   namespaced: true,
   state: {
     assemblies: [],
+    redfish_assemblies: [],
   },
   getters: {
     assemblies: (state) => state.assemblies,
+    redfish_assemblies: (state) => state.redfish_assemblies,
+    chassis: (state, rootGetters) => {
+      return rootGetters['chassis/redfish_chassis'];
+    },
   },
   mutations: {
     setAssemblyInfo: (state, data) => {
+      state.redfish_assemblies = data;
       state.assemblies = data.map((assembly) => {
         const {
           MemberId,
           PartNumber,
+          PhysicalContext,
           SerialNumber,
           SparePartNumber,
           Model,
           Name,
           Location,
           LocationIndicatorActive,
+          Vendor,
         } = assembly;
         return {
           id: MemberId,
           partNumber: PartNumber,
+          physicalContext: PhysicalContext,
           serialNumber: SerialNumber,
           sparePartNumber: SparePartNumber,
           model: Model,
@@ -66,6 +75,7 @@ const AssemblyStore = {
           locationNumber: Location?.PartLocation?.ServiceLabel,
           identifyLed: LocationIndicatorActive,
           uri: assembly['@odata.id'],
+          vendor: Vendor,
         };
       });
     },
@@ -74,51 +84,47 @@ const AssemblyStore = {
     },
   },
   actions: {
-    async getChassisCollection() {
-      return await api
-        .get('/redfish/v1/Chassis')
-        .then(({ data: { Members } }) =>
-          Members.map((member) => member['@odata.id']),
-        )
-        .catch((error) => console.log(error));
+    async getChassisCollection({ dispatch, rootGetters }) {
+      return await dispatch('chassis/getChassisInfo', null, {
+        root: true,
+      }).then(() => rootGetters['chassis/redfish_chassis']);
     },
-    async getChassisAssembly(_, id) {
-      return await api
-        .get(`${id}/Assembly`)
-        .then((response) => {
-          return response?.data?.Assemblies;
-        })
-        .catch((error) => console.log(error));
-    },
-    async getAssemblyInfo({ commit, dispatch }) {
-      const collection = await dispatch('getChassisCollection');
-      if (!collection) return;
+    async getAssemblyInfo({ dispatch, commit, getters }) {
+      let collection = getters.chassis;
+      if (!collection || !collection.length)
+        collection = await dispatch('getChassisCollection');
+      if (!collection || !collection.length) return;
       return await api
         .all(
           collection.map((chassis) => dispatch('getChassisAssembly', chassis)),
         )
-        .then((assemliesList) => {
-          let assemblies = [];
-          assemliesList.forEach((assemblyList) => {
-            assemblies = [...assemblies, ...assemblyList];
-          });
-          commit('setAssemblyInfo', assemblies);
+        .then((assemblies) =>
+          commit(
+            'setAssemblyInfo',
+            assemblies.flat().filter(function (element) {
+              return !!element;
+            }),
+          ),
+        )
+        .catch((error) => console.log(error));
+    },
+    async getChassisAssembly(_, chassis) {
+      if (!chassis.Assembly) return;
+      return await api
+        .get(chassis.Assembly['@odata.id'])
+        .then(({ data }) => {
+          return data.Assemblies;
         })
         .catch((error) => console.log(error));
     },
-    async getFruInfo({ commit, dispatch }) {
-      const collection = await dispatch('getChassisCollection');
-      if (!collection) return;
+    async getFruInfo({ commit, dispatch, getters }) {
+      let collection = getters.chassis;
+      if (!collection || !collection.length)
+        collection = await dispatch('getChassisCollection');
+      if (!collection || !collection.length) return;
       collection.forEach(async (chassis) => {
-        const chassisInfo = await api.get(chassis).then((response) => {
-          return response;
-        });
-        const assemblyList = await api
-          .get(`${chassis}/Assembly`)
-          .then((response) => {
-            return response?.data?.Assemblies;
-          });
-        if (!assemblyList.length) return;
+        const assemblyList = await dispatch('getChassisAssembly', chassis);
+        if (typeof(assemblyList) == "undefined" || !assemblyList.length) return;
         const assemblyData = [];
         let boardData = {};
         let productData = {};
@@ -126,18 +132,18 @@ const AssemblyStore = {
         assemblyList.forEach((assembly) => {
           const oem = assembly.Oem;
           const keys = oem ? Object.keys(oem) : null;
-          const oemPproperties = keys ? oem[keys?.[0]] : null;
+          const oemProperties = keys ? oem[keys?.[0]] : null;
           if (assembly.PhysicalContext === 'Board') {
             boardData = {
               boardProductName: assembly.Model,
               boardPartNumber: assembly.PartNumber,
               boardSerialNumber: assembly.SerialNumber,
-              boardManufatureDate: assembly.ProductionDate
+              boardManufactureDate: assembly.ProductionDate
                 ? new Date(assembly.ProductionDate)
                 : null,
               boardManufacturer: assembly.Vendor,
               boardFruFileId: assembly.Version,
-              boardExtra: oemPproperties?.VendorData?.join(';'),
+              boardExtra: oemProperties?.VendorData?.join(';'),
             };
           } else if (assembly.PhysicalContext === 'SystemBoard') {
             productData = {
@@ -146,8 +152,8 @@ const AssemblyStore = {
               productSerialNumber: assembly.SerialNumber,
               productManufacturer: assembly.Vendor,
               productVersion: assembly.Version,
-              productAssetTag: chassisInfo?.data?.AssetTag,
-              productExtra: oemPproperties?.VendorData?.join(';'),
+              productAssetTag: chassis?.data?.AssetTag,
+              productExtra: oemProperties?.VendorData?.join(';'),
             };
           } else if (assembly.PhysicalContext === 'Chassis') {
             chassisData = {
@@ -156,7 +162,7 @@ const AssemblyStore = {
                 : '',
               chassisPartNumber: assembly.PartNumber,
               chassisSerialNumber: assembly.SerialNumber,
-              chassisExtra: oemPproperties?.VendorData?.join(';'),
+              chassisExtra: oemProperties?.VendorData?.join(';'),
             };
           }
         });
@@ -165,8 +171,8 @@ const AssemblyStore = {
           boardProductName: boardData?.boardProductName,
           boardPartNumber: boardData?.boardPartNumber,
           boardSerialNumber: boardData?.boardSerialNumber,
-          boardManufatureDate: boardData?.boardManufatureDate
-            ? new Date(boardData?.boardManufatureDate)
+          boardManufactureDate: boardData?.boardManufactureDate
+            ? new Date(boardData?.boardManufactureDate)
             : null,
           boardManufacturer: boardData?.boardManufacturer,
           boardFruFileId: boardData?.boardFruFileId,

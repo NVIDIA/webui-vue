@@ -29,7 +29,7 @@
       </template>
 
       <!-- Toggle identify LED -->
-      <template #cell(identifyLed)="row">
+      <template v-if="showLeds" #cell(identifyLed)="row">
         <b-form-checkbox
           v-if="hasIdentifyLed(row.item.identifyLed)"
           v-model="row.item.identifyLed"
@@ -52,11 +52,15 @@
               <!-- Nmae -->
               <dt>{{ $t('pageInventory.table.name') }}:</dt>
               <dd>{{ dataFormatter(item.name) }}</dd>
+              <dt>{{ $t('pageInventory.table.physicalContext') }}:</dt>
+              <dd>{{ dataFormatter(item.physicalContext) }}</dd>
               <!-- Serial number -->
               <dt>{{ $t('pageInventory.table.serialNumber') }}:</dt>
               <dd>{{ dataFormatter(item.serialNumber) }}</dd>
             </b-col>
             <b-col class="mt-2" sm="6" xl="6">
+              <dt>{{ $t('pageInventory.table.vendor') }}:</dt>
+              <dd>{{ dataFormatter(item.vendor) }}</dd>
               <!-- Model-->
               <dt>Model</dt>
               <dd>{{ dataFormatter(item.model) }}</dd>
@@ -68,12 +72,12 @@
           <b-row v-else>
             <b-col class="mt-2" sm="6" xl="6">
               <!-- Board Manufacture Date -->
-              <dt>{{ $t('pageInventory.table.boardManufatureDate') }}:</dt>
-              <dd v-if="item.boardManufatureDate">
-                {{ item.boardManufatureDate | formatDate }}
-                {{ item.boardManufatureDate | formatTime }}
+              <dt>{{ $t('pageInventory.table.boardManufactureDate') }}:</dt>
+              <dd v-if="item.boardManufactureDate">
+                {{ item.boardManufactureDate | formatDate }}
+                {{ item.boardManufactureDate | formatTime }}
               </dd>
-              <dd v-else>{{ dataFormatter(item.boardManufatureDate) }}</dd>
+              <dd v-else>{{ dataFormatter(item.boardManufactureDate) }}</dd>
               <!-- Board Manufacturer -->
               <dt>{{ $t('pageInventory.table.boardManufacturer') }}:</dt>
               <dd>{{ dataFormatter(item.boardManufacturer) }}</dd>
@@ -135,6 +139,7 @@ import DataFormatterMixin from '@/components/Mixins/DataFormatterMixin';
 export default {
   components: { IconChevron, PageSection },
   mixins: [BVToastMixin, TableRowExpandMixin, DataFormatterMixin],
+  props: ['showLeds'],
   data() {
     return {
       isBusy: true,
@@ -207,11 +212,11 @@ export default {
           formatter: this.dataFormatter,
           sortable: true,
         },
-        {
+        this.showLeds ? {
           key: 'identifyLed',
           label: this.$t('pageInventory.table.identifyLed'),
           formatter: this.dataFormatter,
-        },
+        }:{},
       ];
     },
   },

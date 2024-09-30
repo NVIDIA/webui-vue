@@ -8,6 +8,9 @@ const SensorsStore = {
   },
   getters: {
     sensors: (state) => state.sensors,
+    chassis: (state, rootGetters) => {
+      return rootGetters['chassis/redfish_chassis'];
+    },
   },
   mutations: {
     setSensors: (state, sensors) => {
@@ -18,32 +21,32 @@ const SensorsStore = {
     },
   },
   actions: {
-    async getAllSensors({ dispatch }) {
-      const collection = await dispatch('getChassisCollection');
-      if (!collection) return;
+    async getAllSensors({ dispatch, getters }) {
+      let collection = getters.chassis;
+      if (!collection || collection.length === 0)
+        collection = await dispatch('getChassisCollection');
+      if (!collection || collection.length === 0) return;
       dispatch('resetSensors');
-      const promises = collection.reduce((acc, id) => {
-        acc.push(dispatch('getSensors', id));
-        acc.push(dispatch('getThermalSensors', id));
-        acc.push(dispatch('getPowerSensors', id));
+      const promises = collection.reduce((acc, chassis) => {
+        acc.push(dispatch('getSensors', chassis));
+        acc.push(dispatch('getThermalSensors', chassis));
+        acc.push(dispatch('getPowerSensors', chassis));
         return acc;
       }, []);
       return await api.all(promises);
     },
-    async getChassisCollection() {
-      return await api
-        .get('/redfish/v1/Chassis')
-        .then(({ data: { Members } }) =>
-          Members.map((member) => member['@odata.id']),
-        )
-        .catch((error) => console.log(error));
+    async getChassisCollection({ dispatch, rootGetters }) {
+      return await dispatch('chassis/getChassisInfo', null, {
+        root: true,
+      }).then(() => rootGetters['chassis/redfish_chassis']);
     },
     async resetSensors({ commit }) {
       commit('setSensorsDefault');
     },
-    async getSensors({ commit }, id) {
+    async getSensors({ commit }, chassis) {
+      if (!(chassis['Sensors'] && chassis['Sensors']['@odata.id'])) return;
       const sensors = await api
-        .get(`${id}/Sensors`)
+        .get(chassis['Sensors']['@odata.id'])
         .then((response) => response.data.Members)
         .catch((error) => console.log(error));
       if (!sensors) return;
@@ -72,9 +75,10 @@ const SensorsStore = {
         commit('setSensors', sensorData);
       });
     },
-    async getThermalSensors({ commit }, id) {
+    async getThermalSensors({ commit }, chassis) {
+      if (!(chassis['Thermal'] && chassis['Thermal']['@odata.id'])) return;
       return await api
-        .get(`${id}/Thermal`)
+        .get(chassis['Thermal']['@odata.id'])
         .then(({ data: { Fans = [], Temperatures = [] } }) => {
           const sensorData = [];
           Fans.forEach((sensor) => {
@@ -105,9 +109,10 @@ const SensorsStore = {
         })
         .catch((error) => console.log(error));
     },
-    async getPowerSensors({ commit }, id) {
+    async getPowerSensors({ commit }, chassis) {
+      if (!(chassis['Power'] && chassis['Power']['@odata.id'])) return;
       return await api
-        .get(`${id}/Power`)
+        .get(chassis['Power']['@odata.id'])
         .then(({ data: { Voltages = [] } }) => {
           const sensorData = Voltages.map((sensor) => {
             return {

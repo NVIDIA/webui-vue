@@ -1,6 +1,6 @@
 <template>
   <overview-card
-    :title="$t('pageOverview.inventory')"
+    :title="showLeds ? $t('pageOverview.inventory') : $t('pageOverview.inventoryNoLeds')"
     :to="`/hardware-status/inventory`"
   >
     <b-row class="mt-3">
@@ -37,6 +37,12 @@ export default {
     OverviewCard,
   },
   mixins: [BVToastMixin],
+  data() {
+    return {
+      showLeds:
+        process.env.VUE_APP_HIDE_INVENTORY_LED !== 'true',
+    }
+  },
   computed: {
     systems() {
       let systemData = this.$store.getters['system/systems'][0];

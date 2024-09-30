@@ -198,7 +198,8 @@ export default {
   },
   watch: {
     consoleWindow() {
-      if (this.consoleWindow === false) this.$eventBus.$consoleWindow.close();
+      if (this.consoleWindow === false)
+        this?.$eventBus?.$consoleWindow?.close();
     },
     isAuthorized(value) {
       if (value === false) {

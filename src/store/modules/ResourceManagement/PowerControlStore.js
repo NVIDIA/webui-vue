@@ -7,11 +7,13 @@ const PowerControlStore = {
     powerCapValue: null,
     powerCapUri: '',
     powerConsumptionValue: null,
+    hasPowerControl: true,
   },
   getters: {
     powerCapValue: (state) => state.powerCapValue,
     powerCapUri: (state) => state.powerCapUri,
     powerConsumptionValue: (state) => state.powerConsumptionValue,
+    hasPowerControl: (state) => state.hasPowerControl,
   },
   mutations: {
     setPowerCapValue: (state, powerCapValue) =>
@@ -19,6 +21,8 @@ const PowerControlStore = {
     setPowerCapUri: (state, powerCapUri) => (state.powerCapUri = powerCapUri),
     setPowerConsumptionValue: (state, powerConsumptionValue) =>
       (state.powerConsumptionValue = powerConsumptionValue),
+    setHasPowerControl: (state, hasPowerControl) =>
+      (state.hasPowerControl = hasPowerControl),
   },
   actions: {
     setPowerCapUpdatedValue({ commit }, value) {
@@ -37,8 +41,14 @@ const PowerControlStore = {
       const collection = await dispatch('getChassisCollection');
       if (!collection || collection.length === 0) return;
       return await api
-        .get(`${collection[0]}`)
-        .then((response) => api.get(response.data.Power['@odata.id']))
+        .get(`${collection[0]}`) //FIXME:  What is this?? It's the BMC Chassis in my case, a terible assumption.
+        .then((response) => {
+          if (typeof response.data.Power === 'undefined') {
+            commit('setHasPowerControl', false);
+            throw new Error('noPower');
+          }
+          return api.get(response.data.Power['@odata.id']);
+        })
         .then((response) => {
           const powerControl = response.data.PowerControl;
           if (!powerControl || powerControl.length === 0) return;
@@ -51,7 +61,9 @@ const PowerControlStore = {
           commit('setPowerConsumptionValue', powerConsumption);
         })
         .catch((error) => {
-          console.log('Power control', error);
+          if (error.message === 'noPower')
+            console.log('Chassis PowerControl n/a');
+          else console.log('Power control', error);
         });
     },
     async setPowerControl({ state }, powerCapValue) {

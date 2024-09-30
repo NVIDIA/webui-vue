@@ -99,6 +99,12 @@ export default {
       return this.$store.getters['firmware/firmwareInventory'];
     },
   },
+  created() {
+    this.$store.dispatch('firmware/getFirmwareInventory').then(() => {
+      this.firmwareInventory =
+        this.$store.getters['firmware/firmwareInventory'];
+    });
+  },
   methods: {
     toggleExpand() {
       this.isExpanded = !this.isExpanded;

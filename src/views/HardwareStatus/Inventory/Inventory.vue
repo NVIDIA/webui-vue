@@ -1,6 +1,7 @@
 <template>
   <b-container fluid="xl">
-    <page-title />
+    <page-title style="display: none;" />
+    <div class="page-title"><h1>{{showLeds ? $t('appPageTitle.inventory') : $t('appPageTitle.inventoryNoLeds') }}</h1></div>
 
     <!-- Service indicators -->
     <service-indicator />
@@ -23,31 +24,31 @@
     </page-section>
 
     <!-- System table -->
-    <table-system ref="system" />
+    <table-system ref="system" v-bind:show-leds="showLeds" />
 
     <!-- BMC manager table -->
-    <table-bmc-manager ref="bmc" />
+    <table-bmc-manager ref="bmc" v-bind:show-leds="showLeds" />
 
     <!-- Chassis table -->
-    <table-chassis ref="chassis" />
+    <table-chassis ref="chassis" v-bind:show-leds="showLeds" />
 
     <!-- DIMM slot table -->
-    <table-dimm-slot ref="dimms" />
+    <table-dimm-slot ref="dimms" v-bind:show-leds="showLeds" />
 
     <!-- Fans table -->
-    <table-fans ref="fans" />
+    <table-fans ref="fans" v-bind:show-leds="showLeds" />
 
     <!-- Power supplies table -->
-    <table-power-supplies ref="powerSupply" />
+    <table-power-supplies ref="powerSupply" v-bind:show-leds="showLeds" />
 
     <!-- Processors table -->
-    <table-processors ref="processors" />
+    <table-processors ref="processors" v-bind:show-leds="showLeds" />
 
     <!-- Assembly table -->
-    <table-assembly ref="assembly" />
+    <table-assembly ref="assembly" v-bind:show-leds="showLeds" />
 
     <!-- NetworkAdapter table -->
-    <table-network-adapter ref="networkAdapter" />
+    <table-network-adapter ref="networkAdapter" v-bind:show-leds="showLeds" />
   </b-container>
 </template>
 
@@ -86,7 +87,7 @@ export default {
     JumpLink: JumpLink16,
   },
   mixins: [LoadingBarMixin, JumpLinkMixin],
-  beforeRouteLeave(to, from, next) {
+  beforeRouteLeave(_to, _from, next) {
     // Hide loader if user navigates away from page
     // before requests complete
     this.hideLoader();
@@ -94,6 +95,9 @@ export default {
   },
   data() {
     return {
+      showLeds:
+        process.env.VUE_APP_HIDE_INVENTORY_LED !== 'true',
+      observer: null,
       validLinks: [],
       links: [
         {
@@ -159,23 +163,35 @@ export default {
       return chunk(this.validLinks, 3);
     },
   },
-  methods: {
-    validateLinks() {
-      this.validLinks = this.links.filter((link) => this.isValid(link.dataRef));
-    },
-    isValid(dataRef) {
-      const ref = this.$refs[dataRef];
-      return ref && ref.$el && ref.$el.nodeType !== Node.COMMENT_NODE;
-    },
-  },
   mounted() {
+    // Use observer to make the rendering of tables reactive, allow us to update the Quick Links
+    this.observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation) {
+          this.validateLinks();
+        }
+      });
+    });
+    this.observer.observe(this.$el, {
+      attributes: true,
+      childList: true,
+      subtree: true,
+    });
     this.$nextTick(() => {
       // Validate links once the component is fully mounted
       this.validateLinks();
     });
   },
+  beforeCreate() {
+    let init = async () => {
+      await this.$store.dispatch('system/getSystem');
+    };
+
+    init();
+  },
   created() {
     this.startLoader();
+
     const bmcManagerTablePromise = new Promise((resolve) => {
       this.$root.$on('hardware-status-bmc-manager-complete', () => resolve());
     });
@@ -227,6 +243,22 @@ export default {
       this.endLoader();
       this.validateLinks();
     });
+  },
+  beforeDestroy() {
+    this.observer.disconnect();
+  },
+  methods: {
+    validateLinks() {
+      this.validLinks = this.links.filter((link) => this.isValid(link.dataRef));
+    },
+    isValid(dataRef) {
+      const ref = this.$refs[dataRef];
+      return (
+        typeof ref !== 'undefined' &&
+        ref.$el &&
+        ref.$el.nodeType !== Node.COMMENT_NODE
+      );
+    },
   },
 };
 </script>

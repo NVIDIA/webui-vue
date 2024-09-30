@@ -22,7 +22,7 @@ const DataFormatterMixin = {
       }
     },
     dataFormatterArray(value) {
-      return value.join(', ');
+      return value ? value.join(', ') : value;
     },
   },
 };

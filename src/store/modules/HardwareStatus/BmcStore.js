@@ -1,10 +1,11 @@
 import api from '@/store/api';
 import i18n from '@/i18n';
+import Vue from 'vue';
 
 const BmcStore = {
   namespaced: true,
   state: {
-    bmc: null,
+    bmc: [],
   },
   getters: {
     bmc: (state) => state.bmc,
@@ -16,10 +17,10 @@ const BmcStore = {
       bmc.description = data.Description;
       bmc.firmwareVersion = data.FirmwareVersion;
       bmc.graphicalConsoleConnectTypes =
-        data.GraphicalConsole.ConnectTypesSupported;
-      bmc.graphicalConsoleEnabled = data.GraphicalConsole.ServiceEnabled;
+        data?.GraphicalConsole?.ConnectTypesSupported;
+      bmc.graphicalConsoleEnabled = data?.GraphicalConsole?.ServiceEnabled;
       bmc.graphicalConsoleMaxSessions =
-        data.GraphicalConsole.MaxConcurrentSessions;
+        data?.GraphicalConsole?.MaxConcurrentSessions;
       bmc.health = data.Status.Health;
       bmc.healthRollup = data.Status.HealthRollup;
       bmc.id = data.Id;
@@ -41,14 +42,22 @@ const BmcStore = {
       bmc.statusState = data.Status.State;
       bmc.uuid = data.UUID;
       bmc.uri = data['@odata.id'];
-      state.bmc = bmc;
+      Vue.set(state.bmc, data.index, bmc);
     },
   },
   actions: {
     async getBmcInfo({ commit }) {
       return await api
-        .get(`${await this.dispatch('global/getBmcPath')}`)
-        .then(({ data }) => commit('setBmcInfo', data))
+        .get('/redfish/v1/Managers')
+        .then(({ data: { Members = [] } }) =>
+          Members.map((member, idx) =>
+            api
+              .get(member['@odata.id'])
+              .then(({ data }) =>
+                commit('setBmcInfo', { ...data, index: idx }),
+              ),
+          ),
+        )
         .catch((error) => console.log(error));
     },
     async updateIdentifyLedValue({ dispatch }, led) {

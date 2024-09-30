@@ -47,8 +47,8 @@ export default {
     this.$root.$on('refresh-application', () => this.refresh());
     setInterval(() => {
       if (!localStorage.getItem('storedUsername')) {
-        this.$eventBus.$consoleWindow.close();
-        this.refresh();
+        this?.$eventBus?.$consoleWindow?.close();
+        if (this?.$eventBus?.$consoleWindow) this.refresh();
       }
     }, 10000);
   },

@@ -1,27 +1,27 @@
 import IconAnalytics from '@carbon/icons-vue/es/analytics/16';
 //import IconDashboard from '@carbon/icons-vue/es/dashboard/16';
-//import IconTextLinkAnalysis from '@carbon/icons-vue/es/text-link--analysis/16';
+import IconTextLinkAnalysis from '@carbon/icons-vue/es/text-link--analysis/16';
 import IconDataCheck from '@carbon/icons-vue/es/data--check/16';
 import IconSettingsAdjust from '@carbon/icons-vue/es/settings--adjust/16';
 import IconSettings from '@carbon/icons-vue/es/settings/16';
-//import IconSecurity from '@carbon/icons-vue/es/security/16';
+import IconSecurity from '@carbon/icons-vue/es/security/16';
 import IconPassword from '@carbon/icons-vue/es/password/16';
 import IconChevronUp from '@carbon/icons-vue/es/chevron--up/16';
-//import IconDataBase from '@carbon/icons-vue/es/data--base--alt/16';
+import IconDataBase from '@carbon/icons-vue/es/data--base--alt/16';
 
 const AppNavigationMixin = {
   components: {
     iconOverview: IconAnalytics,
     //iconOverview: IconDashboard,
-    //iconLogs: IconTextLinkAnalysis,
+    iconLogs: IconTextLinkAnalysis,
     iconHealth: IconDataCheck,
     iconControl: IconSettingsAdjust,
-    //iconSettings: IconSettings,
-    //iconSecurityAndAccess: IconSecurity,
+    iconSettings: IconSettings,
+    iconSecurityAndAccess: IconSecurity,
     iconConfiguration: IconSettings,
     iconAccessControl: IconPassword,
     iconExpand: IconChevronUp,
-    //iconResourceManagement: IconDataBase,
+    iconResourceManagement: IconDataBase,
   },
   data() {
     return {

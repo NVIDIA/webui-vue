@@ -7,6 +7,9 @@ const FanStore = {
   },
   getters: {
     fans: (state) => state.fans,
+    chassis: (rootGetters) => {
+      return rootGetters['chassis/redfish_chassis'];
+    },
   },
   mutations: {
     setFanInfo: (state, data) => {
@@ -33,30 +36,34 @@ const FanStore = {
     },
   },
   actions: {
-    async getChassisCollection() {
+    async getChassisCollection({ dispatch, rootGetters }) {
+      return await dispatch('chassis/getChassisInfo', null, {
+        root: true,
+      }).then(() => rootGetters['chassis/redfish_chassis']);
+    },
+    async getFanInfo({ dispatch, commit, getters }) {
+      let collection = getters.chassis;
+      if (!collection || collection.length === 0)
+        collection = await dispatch('getChassisCollection');
+      if (!collection || !collection.length) return;
       return await api
-        .get('/redfish/v1/Chassis')
-        .then(({ data: { Members } }) =>
-          api.all(
-            Members.map((member) =>
-              api.get(member['@odata.id']).then((response) => response.data),
-            ),
+        .all(collection.map((chassis) => dispatch('getChassisFans', chassis)))
+        .then((fansFromChassis) =>
+          commit(
+            'setFanInfo',
+            fansFromChassis.flat().filter(function (element) {
+              return !!element;
+            }),
           ),
         )
         .catch((error) => console.log(error));
     },
-    async getFanInfo({ dispatch, commit }) {
-      const collection = await dispatch('getChassisCollection');
-      if (!collection || collection.length === 0) return;
-      return await api
-        .all(collection.map((chassis) => dispatch('getChassisFans', chassis)))
-        .then((fansFromChassis) => commit('setFanInfo', fansFromChassis.flat()))
-        .catch((error) => console.log(error));
-    },
     async getChassisFans(_, chassis) {
+      if (!chassis.ThermalSubsystem) return;
       return await api
         .get(chassis.ThermalSubsystem['@odata.id'])
         .then((response) => {
+          if (!response?.data?.Fans) throw new Error('skip');
           return api.get(`${response.data.Fans['@odata.id']}`);
         })
         .then(({ data: { Members } }) => {
@@ -69,7 +76,9 @@ const FanStore = {
           const data = response.map(({ data }) => data);
           return data;
         })
-        .catch((error) => console.log(error));
+        .catch((error) => {
+          if (error.message !== 'skip') console.log(error);
+        });
     },
   },
 };

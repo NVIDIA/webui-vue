@@ -5,7 +5,10 @@
   >
     <b-row class="mt-3">
       <b-col sm="6">
-        <dl>
+        <dl v-if="hasPowerControl === false">
+          {{ $t('global.status.notAvailable') }}
+        </dl>
+        <dl v-else>
           <dt>{{ $t('pageOverview.powerConsumption') }}</dt>
           <dd v-if="powerConsumptionValue == null">
             {{ $t('global.status.notAvailable') }}
@@ -37,6 +40,7 @@ export default {
     ...mapGetters({
       powerCapValue: 'powerControl/powerCapValue',
       powerConsumptionValue: 'powerControl/powerConsumptionValue',
+      hasPowerControl: 'powerControl/hasPowerControl',
     }),
   },
   created() {

@@ -1,15 +1,23 @@
 import api from '@/store/api';
 import i18n from '@/i18n';
+import Vue from 'vue';
 
 const SystemStore = {
   namespaced: true,
   state: {
     systems: [],
+    redfish_systems: [],
+    isLoaded: false,
   },
   getters: {
     systems: (state) => state.systems,
+    redfish_systems: (state) => state.redfish_systems,
+    isLoaded: (state) => state.isLoaded,
   },
   mutations: {
+    updateIsLoaded(state, bool) {
+      Vue.set(state, 'isLoaded', bool);
+    },
     setSystemInfo: (state, data) => {
       const system = {};
       system.assetTag = data.AssetTag;
@@ -32,14 +40,64 @@ const SystemStore = {
       system.subModel = data.SubModel;
       system.statusState = data.Status?.State;
       system.systemType = data.SystemType;
-      state.systems = [system];
+      state.systems[data.index] = system;
+      Vue.set(state.systems, data.index, system);
     },
   },
   actions: {
-    async getSystem({ commit }) {
+    async getSystem({ state, commit }) {
       return await api
-        .get(`${await this.dispatch('global/getSystemPath')}`)
-        .then(({ data }) => commit('setSystemInfo', data))
+        .get('/redfish/v1/Systems')
+        .then(({ data: { Members = [] } }) =>
+          Members.map((member, idx) =>
+            api.get(member['@odata.id']).then(({ data }) => {
+              commit('setSystemInfo', { ...data, index: idx });
+              state.redfish_systems.splice(idx, 1, data);
+              return data;
+            }),
+          ),
+        )
+        .then((promises) => api.allSettled(promises))
+        .then(() => {
+          commit('updateIsLoaded', true);
+          return state.redfish_systems;
+        })
+        .catch((error) => console.log(error));
+    },
+    async getSytemsResources({ getters, dispatch }, { name, callback }) {
+      if (!getters.isLoaded) await dispatch('getSystem');
+      let Systems = getters.redfish_systems;
+      let promises = Systems.flatMap(async (system) => {
+        if (!(system[name] && system[name]['@odata.id'])) return;
+        return await api
+          .get(system[name]['@odata.id'])
+          .then(async ({ data: { Members = [] } }) => {
+            if (Members) {
+              const gets = Members.map((member) =>
+                api
+                  .get(member['@odata.id'])
+                  .then((data) => {
+                    if (callback) callback(data.data);
+                    return data.data;
+                  })
+                  .catch(() => {}),
+              );
+              return await api.allSettled(gets);
+            }
+          });
+      });
+      return await api
+        .allSettled(promises.flat())
+        .then((response) => {
+          // resolved/fulfilled Promises' values
+          var results = response
+            .filter((result) => result.status === 'fulfilled' && result.value)
+            .map((result) => result.value)
+            .flat()
+            .filter((result) => result.status === 'fulfilled' && result.value)
+            .map((result) => result.value);
+          return results;
+        })
         .catch((error) => console.log(error));
     },
     async changeIdentifyLedState({ commit }, ledState) {

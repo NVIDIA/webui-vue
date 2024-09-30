@@ -7,6 +7,9 @@ const PowerSupplyStore = {
   },
   getters: {
     powerSupplies: (state) => state.powerSupplies,
+    chassis: (state, rootGetters) => {
+      return rootGetters['chassis/redfish_chassis'];
+    },
   },
   mutations: {
     setPowerSupply: (state, data) => {
@@ -46,31 +49,37 @@ const PowerSupplyStore = {
     },
   },
   actions: {
-    async getChassisCollection() {
-      return await api
-        .get('/redfish/v1/Chassis')
-        .then(({ data: { Members } }) =>
-          Members.map((member) => member['@odata.id']),
-        )
-        .catch((error) => console.log(error));
+    async getChassisCollection({ dispatch, rootGetters }) {
+      return await dispatch('chassis/getChassisInfo', null, {
+        root: true,
+      }).then(() => rootGetters['chassis/redfish_chassis']);
     },
-    async getAllPowerSupplies({ dispatch, commit }) {
-      const collection = await dispatch('getChassisCollection');
-      if (!collection) return;
+    async getAllPowerSupplies({ getters, dispatch, commit }) {
+      let collection = getters.chassis;
+      if (!collection || collection.length === 0)
+        collection = await dispatch('getChassisCollection');
+      if (!collection || collection.length === 0) return;
       return await api
-        .all(collection.map((chassis) => dispatch('getChassisPower', chassis)))
+        .all(
+          collection.flatMap((chassis) => dispatch('getChassisPower', chassis)),
+        )
         .then((supplies) => {
-          let suppliesList = [];
-          supplies.forEach(
-            (supply) => (suppliesList = [...suppliesList, ...supply]),
+          if (!supplies || !supplies.length) return [];
+          commit(
+            'setPowerSupply',
+            // remove empty arrays and undefined items in supplies array
+            supplies.flatMap((x) => (!x ? [] : x)),
           );
-          commit('setPowerSupply', suppliesList);
         })
         .catch((error) => console.log(error));
     },
-    async getChassisPower(_, id) {
+    async getChassisPower(_, chassis) {
+      if (
+        !(chassis['PowerSubsystem'] && chassis['PowerSubsystem']['@odata.id'])
+      )
+        return;
       return await api
-        .get(`${id}/PowerSubsystem`)
+        .get(chassis['PowerSubsystem']['@odata.id'])
         .then((response) => {
           return api.get(`${response.data.PowerSupplies['@odata.id']}`);
         })

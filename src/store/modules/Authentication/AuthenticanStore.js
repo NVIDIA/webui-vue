@@ -55,12 +55,17 @@ const AuthenticationStore = {
     logout({ commit }) {
       api
         .post('/logout', { data: [] })
-        .then(() => {
+        .catch((error) => {
+          console.log(error);
+        })
+        .finally(() => {
           commit('setConsoleWindow', false);
           commit('logout');
         })
-        .then(() => router.push('/login'))
-        .catch((error) => console.log(error));
+        .finally(() => router.push('/login'))
+        .catch((error) => {
+           console.log(error);
+        });
     },
     getUserInfo({ commit }, username) {
       return api

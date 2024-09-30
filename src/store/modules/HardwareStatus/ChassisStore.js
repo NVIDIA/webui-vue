@@ -5,12 +5,15 @@ const ChassisStore = {
   namespaced: true,
   state: {
     chassis: [],
+    redfish_chassis: [],
   },
   getters: {
     chassis: (state) => state.chassis,
+    redfish_chassis: (state) => state.redfish_chassis,
   },
   mutations: {
     setChassisInfo: (state, data) => {
+      state.redfish_chassis = data;
       state.chassis = data.map((chassis) => {
         const {
           Id,
@@ -58,10 +61,13 @@ const ChassisStore = {
         .then(({ data: { Members = [] } }) =>
           Members.map((member) => api.get(member['@odata.id'])),
         )
-        .then((promises) => api.all(promises))
+        .then((promises) => api.allSettled(promises))
         .then((response) => {
-          const data = response.map(({ data }) => data);
-          commit('setChassisInfo', data);
+          // resolved/fulfilled Promises' values
+          const fulfilled = response
+            .filter((result) => result.status === 'fulfilled')
+            .map((result) => result?.value?.data);
+          commit('setChassisInfo', fulfilled);
         })
         .catch((error) => console.log(error));
     },

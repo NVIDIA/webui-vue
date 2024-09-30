@@ -30,6 +30,7 @@ const GlobalStore = {
   namespaced: true,
   state: {
     assetTag: null,
+    bmcPath: null,
     bmcTime: null,
     modelType: null,
     serialNumber: null,
@@ -41,18 +42,23 @@ const GlobalStore = {
     username: localStorage.getItem('storedUsername'),
     isAuthorized: true,
     userPrivilege: null,
+    serviceRoot: null,
+    systemPath: null,
   },
   getters: {
     assetTag: (state) => state.assetTag,
     modelType: (state) => state.modelType,
     serialNumber: (state) => state.serialNumber,
     serverStatus: (state) => state.serverStatus,
+    bmcPath: (state) => state.bmcPath,
     bmcTime: (state) => state.bmcTime,
     languagePreference: (state) => state.languagePreference,
     isUtcDisplay: (state) => state.isUtcDisplay,
     username: (state) => state.username,
     isAuthorized: (state) => state.isAuthorized,
     userPrivilege: (state) => state.userPrivilege,
+    serviceRoot: (state) => state.serviceRoot,
+    systemPath: (state) => state.systemPath,
   },
   mutations: {
     setAssetTag: (state, assetTag) => (state.assetTag = assetTag),
@@ -62,6 +68,10 @@ const GlobalStore = {
     setBmcTime: (state, bmcTime) => (state.bmcTime = bmcTime),
     setServerStatus: (state, serverState) =>
       (state.serverStatus = serverStateMapper(serverState)),
+    setServiceRoot: (state, serviceRoot) => {
+      state.serviceRoot = serviceRoot.data;
+      state.bmcPath = serviceRoot.data?.ManagerProvidingService?.['@odata.id'];
+    },
     setLanguagePreference: (state, language) =>
       (state.languagePreference = language),
     setUsername: (state, username) => (state.username = username),
@@ -75,26 +85,33 @@ const GlobalStore = {
     setPrivilege: (state, privilege) => {
       state.userPrivilege = privilege;
     },
+    setSystemPath: (state, systemPath) => (state.systemPath = systemPath),
   },
   actions: {
-    async getBmcPath() {
-      const serviceRoot = await api
-        .get('/redfish/v1')
-        .catch((error) => console.log(error));
-      let bmcPath = serviceRoot?.data?.ManagerProvidingService?.['@odata.id'];
-      if (!bmcPath) {
+    async fetchServiceRoot({ commit }) {
+      try {
+        commit('setServiceRoot', await api.get('/redfish/v1'));
+      } catch (error) {
+        console.log(error);
+      }
+    },
+    async getBmcPath({ dispatch, state }) {
+      if (!state.serviceRoot) dispatch('fetchServiceRoot');
+      if (!state.bmcPath) {
         const managers = await api
           .get('/redfish/v1/Managers')
           .catch((error) => console.log(error));
-        bmcPath = managers?.data?.Members?.[0]?.['@odata.id'];
+        state.bmcPath = managers.data?.Members?.[0]?.['@odata.id'];
       }
-      return bmcPath;
+      return state.bmcPath;
     },
-    async getSystemPath() {
+    async getSystemPath({ state, commit }) {
+      if (state.systemPath) return state.systemPath;
       const systems = await api
         .get('/redfish/v1/Systems')
         .catch((error) => console.log(error));
       let systemPath = systems.data?.Members?.[0]?.['@odata.id'];
+      commit('setSystemPath', systemPath);
       return systemPath;
     },
     async getBmcTime({ commit }) {

@@ -62,7 +62,7 @@ const AppNavigationMixin = {
           children: [
             {
               id: 'inventory',
-              label: this.$t('appNavigation.inventory'),
+              label: this.$t('appNavigation.inventoryNoLeds'),
               route: '/hardware-status/inventory',
             },
             {

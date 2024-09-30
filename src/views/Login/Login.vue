@@ -16,6 +16,7 @@
     <b-form-group label-for="username" :label="$t('pageLogin.username')">
       <b-form-input
         id="username"
+        autocomplete="on"
         v-model="userInfo.username"
         aria-describedby="login-error-alert username-required"
         :state="getValidationState($v.userInfo.username)"
@@ -40,6 +41,7 @@
           aria-describedby="login-error-alert password-required"
           :state="getValidationState($v.userInfo.password)"
           type="password"
+          autocomplete="current-password" 
           data-test-id="login-input-password"
           class="form-control-with-button"
           @input="$v.userInfo.password.$touch()"

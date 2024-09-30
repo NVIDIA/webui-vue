@@ -27,6 +27,12 @@ const api = setupCache(axiosInstance, {
 
 api.interceptors.response.use(undefined, (error) => {
   let response = error.response;
+  if (error.code === 'ECONNABORTED' && error.message.includes('timeout')) {
+    console.log('Request timed out');
+    return Promise.reject(error);
+  }
+
+  if (!response?.status) return Promise.reject(error);
 
   // TODO: Provide user with a notification and way to keep system active
   if (response.status == 401) {
@@ -44,6 +50,15 @@ api.interceptors.response.use(undefined, (error) => {
     } else {
       // Toast error message will appear on screen.
       store.commit('global/setUnauthorized');
+    }
+  } else if (response.status == 500) {
+    // what HTTP status code should we expect if the BMC aggregated a response from other BMCs, but at least one was non-responsive?
+    // 206 Partial seems appropriate, but unfortunately 206 isn't in the Redfish spec explicitly, and 206 should be in response to the "Content-Range" header on the request
+    // For now, handle the 500->206 if it has a valid data payload, (a 500 does put a nasty line on the JavaScript console for each call)
+    if (response.data) {
+      //console.log('500 -> 206 Partial: ', error);
+      response.status = 206;
+      return Promise.resolve(response);
     }
   }
 
@@ -68,6 +83,9 @@ export default {
   },
   all(promises) {
     return Axios.all(promises);
+  },
+  allSettled(promises) {
+    return Promise.allSettled(promises);
   },
   spread(callback) {
     return Axios.spread(callback);

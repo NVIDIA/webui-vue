@@ -146,6 +146,7 @@ export default {
     TableSortMixin,
     SearchFilterMixin,
   ],
+  props: ['showLeds'],
   data() {
     return {
       isBusy: true,
@@ -175,11 +176,11 @@ export default {
           formatter: this.dataFormatter,
           sortable: true,
         },
-        {
+        this.showLeds ? {
           key: 'identifyLed',
           label: this.$t('pageInventory.table.identifyLed'),
           formatter: this.dataFormatter,
-        },
+        }:{},
       ],
       searchFilter: searchFilter,
       searchTotalFilteredRows: 0,

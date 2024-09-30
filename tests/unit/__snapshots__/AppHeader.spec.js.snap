@@ -56,7 +56,7 @@ exports[`AppHeader.vue should render correctly 1`] = `
           <img
             alt="Built on OpenBMC"
             class="header-logo"
-            src="@/assets/images/logo-header.svg"
+            src="@/assets/images/nvidia-logo.svg"
             svg-inline=""
           />
         </b-navbar-brand>

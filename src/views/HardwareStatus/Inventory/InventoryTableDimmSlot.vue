@@ -61,7 +61,7 @@
       </template>
 
       <!-- Toggle identify LED -->
-      <template #cell(identifyLed)="row">
+      <template v-if="showLeds" #cell(identifyLed)="row">
         <b-form-checkbox
           v-if="hasIdentifyLed(row.item.identifyLed)"
           v-model="row.item.identifyLed"
@@ -216,6 +216,7 @@ export default {
     TableSortMixin,
     SearchFilterMixin,
   ],
+  props: ['showLeds'],
   data() {
     return {
       isBusy: true,
@@ -247,11 +248,11 @@ export default {
           label: this.$t('pageInventory.table.locationNumber'),
           formatter: this.dataFormatter,
         },
-        {
+        this.showLeds ? {
           key: 'identifyLed',
           label: this.$t('pageInventory.table.identifyLed'),
           formatter: this.dataFormatter,
-        },
+        }:{},
       ],
       searchFilter: searchFilter,
       searchTotalFilteredRows: 0,

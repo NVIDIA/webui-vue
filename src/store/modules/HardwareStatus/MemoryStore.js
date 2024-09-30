@@ -11,7 +11,7 @@ const MemoryStore = {
   },
   mutations: {
     setMemoryInfo: (state, data) => {
-      state.dimms = data.map(({ data }) => {
+      state.dimms = data.map((dimm) => {
         const {
           Id,
           Status = {},
@@ -31,7 +31,7 @@ const MemoryStore = {
           MemoryType,
           LocationIndicatorActive,
           Location,
-        } = data;
+        } = dimm;
         return {
           id: Id,
           health: Status.Health,
@@ -59,14 +59,9 @@ const MemoryStore = {
   },
   actions: {
     async getDimms({ commit }) {
-      return await api
-        .get(`${await this.dispatch('global/getSystemPath')}/Memory`)
-        .then(({ data: { Members } }) => {
-          const promises = Members.map((item) => api.get(item['@odata.id']));
-          return api.all(promises);
-        })
-        .then((response) => commit('setMemoryInfo', response))
-        .catch((error) => console.log(error));
+      this.dispatch('system/getSytemsResources', {
+        name: 'Memory',
+      }).then((results) => commit('setMemoryInfo', results));
     },
     async updateIdentifyLedValue({ dispatch }, led) {
       const uri = led.uri;

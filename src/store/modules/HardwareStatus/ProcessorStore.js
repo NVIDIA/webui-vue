@@ -62,17 +62,9 @@ const ProcessorStore = {
   },
   actions: {
     async getProcessorsInfo({ commit }) {
-      return await api
-        .get(`${await this.dispatch('global/getSystemPath')}/Processors`)
-        .then(({ data: { Members = [] } }) =>
-          Members.map((member) => api.get(member['@odata.id'])),
-        )
-        .then((promises) => api.all(promises))
-        .then((response) => {
-          const data = response.map(({ data }) => data);
-          commit('setProcessorsInfo', data);
-        })
-        .catch((error) => console.log(error));
+      await this.dispatch('system/getSytemsResources', {
+        name: 'Processors',
+      }).then((results) => commit('setProcessorsInfo', results));
     },
     // Waiting for the following to be merged to test the Identify Led:
     // https://gerrit.openbmc-project.xyz/c/openbmc/bmcweb/+/37045

@@ -30,7 +30,7 @@
       </template>
 
       <!-- Toggle identify LED -->
-      <template #cell(identifyLed)="row">
+      <template v-if="showLeds" #cell(identifyLed)="row">
         <b-form-checkbox
           v-if="hasIdentifyLed(row.item.identifyLed)"
           v-model="row.item.identifyLed"
@@ -174,6 +174,7 @@ import DataFormatterMixin from '@/components/Mixins/DataFormatterMixin';
 export default {
   components: { IconChevron, PageSection, StatusIcon },
   mixins: [BVToastMixin, TableRowExpandMixin, DataFormatterMixin],
+  props: ['showLeds'],
   data() {
     return {
       isBusy: true,
@@ -198,11 +199,11 @@ export default {
           label: this.$t('pageInventory.table.locationNumber'),
           formatter: this.dataFormatter,
         },
-        {
+        this.showLeds ? {
           key: 'identifyLed',
           label: this.$t('pageInventory.table.identifyLed'),
           formatter: this.dataFormatter,
-        },
+        }:{},
       ],
       expandRowLabel: expandRowLabel,
     };
@@ -213,7 +214,7 @@ export default {
     },
     items() {
       if (this.bmc) {
-        return [this.bmc];
+        return this.bmc;
       } else {
         return [];
       }

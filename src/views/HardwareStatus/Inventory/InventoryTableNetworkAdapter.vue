@@ -31,6 +31,7 @@ import DataFormatterMixin from '@/components/Mixins/DataFormatterMixin';
 export default {
   components: { PageSection },
   mixins: [BVToastMixin, DataFormatterMixin],
+  props: ['showLeds'],
   data() {
     return {
       isBusy: true,
@@ -54,7 +55,7 @@ export default {
     },
   },
   created() {
-    this.$store.dispatch('networkAdapters/getNetworkAdapter').finally(() => {
+    this.$store.dispatch('networkAdapters/getNetworkAdapters').finally(() => {
       // Emit initial data fetch complete to parent component
       this.$root.$emit('hardware-status-network-adapter-complete');
       this.isBusy = false;

@@ -122,6 +122,7 @@ export default {
     TableSortMixin,
     SearchFilterMixin,
   ],
+  props: ['showLeds'],
   data() {
     return {
       isBusy: true,

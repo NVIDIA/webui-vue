@@ -1,6 +1,6 @@
 <template>
   <page-section
-    v-if="!isLocationIndicatorUndefined"
+    v-if="showLeds && !isLocationIndicatorUndefined"
     :section-title="$t('pageInventory.systemIndicator.sectionTitle')"
   >
     <div class="form-background pl-4 pt-4 pb-1">
@@ -45,6 +45,7 @@ import BVToastMixin from '@/components/Mixins/BVToastMixin';
 export default {
   components: { PageSection },
   mixins: [BVToastMixin],
+  props: ['showLeds'],
   computed: {
     systems() {
       let systemData = this.$store.getters['system/systems'][0];

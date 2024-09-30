@@ -29,22 +29,23 @@
         {{ value }}
       </template>
 
-      <template
-        v-if="typeof locationIndicatorActive !== 'undefined'"
-        #cell(locationIndicatorActive)="{ item }"
-      >
-        <b-form-checkbox
-          id="identifyLedSwitchSystem"
-          v-model="item.locationIndicatorActive"
-          data-test-id="inventorySystem-toggle-identifyLed"
-          switch
-          @change="toggleIdentifyLedSwitch"
-        >
-          <span v-if="item.locationIndicatorActive">
-            {{ $t('global.status.on') }}
-          </span>
-          <span v-else>{{ $t('global.status.off') }}</span>
-        </b-form-checkbox>
+      <!-- Toggle identify LED -->
+      <template v-if="showLeds" #cell(locationIndicatorActive)="{ item }">
+        <template v-if="typeof item.locationIndicatorActive !== 'undefined'">
+          <b-form-checkbox
+            id="identifyLedSwitchSystem"
+            v-model="item.locationIndicatorActive"
+            data-test-id="inventorySystem-toggle-identifyLed"
+            switch
+            @change="toggleIdentifyLedSwitch"
+          >
+            <span v-if="item.locationIndicatorActive">
+              {{ $t('global.status.on') }}
+            </span>
+            <span v-else>{{ $t('global.status.off') }}</span>
+          </b-form-checkbox>
+        </template>
+        <span v-else>--</span>
       </template>
 
       <template #row-details="{ item }">
@@ -152,6 +153,7 @@ import DataFormatterMixin from '@/components/Mixins/DataFormatterMixin';
 export default {
   components: { IconChevron, PageSection, StatusIcon },
   mixins: [BVToastMixin, TableRowExpandMixin, DataFormatterMixin],
+  props: ['showLeds'],
   data() {
     return {
       isBusy: true,
@@ -183,11 +185,11 @@ export default {
           label: this.$t('pageInventory.table.locationNumber'),
           formatter: this.dataFormatter,
         },
-        {
+        this.showLeds ? {
           key: 'locationIndicatorActive',
           label: this.$t('pageInventory.table.identifyLed'),
           formatter: this.dataFormatter,
-        },
+        }: {},
       ],
       expandRowLabel: expandRowLabel,
     };
