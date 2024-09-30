@@ -878,6 +878,8 @@
     "pageSensors": {
         "exportFilePrefix": "sensors_",
         "searchForSensors": "Поиск датчиков",
+        "showLess": "Свернуть",
+        "showMore": "Показать больше",
         "table": {
             "currentValue": "Текущее значение",
             "lowerWarning": "Мин. значение",

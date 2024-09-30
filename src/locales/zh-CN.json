@@ -915,6 +915,8 @@
     "pageSensors": {
         "exportFilePrefix": "传感器_",
         "searchForSensors": "搜索传感器",
+        "showLess": "显示更少",
+        "showMore": "显示更多",
         "table": {
             "currentValue": "当前值",
             "lowerWarning": "下限告警",

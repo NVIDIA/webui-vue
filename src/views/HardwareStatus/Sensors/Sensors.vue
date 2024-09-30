@@ -18,6 +18,12 @@
       </b-col>
       <b-col sm="3" md="4" xl="6" class="text-right">
         <table-filter :filters="tableFilters" @filter-change="onFilterChange" />
+        <b-button v-if="supportMore" variant="link" @click="toggleShowMore">
+          <span v-if="showMore">
+            {{ $t('pageSensors.showLess') }}
+          </span>
+          <span v-else> {{ $t('pageSensors.showMore') }} </span>
+        </b-button>
       </b-col>
     </b-row>
     <b-row>
@@ -94,6 +100,12 @@
           <template #cell(upperCritical)="data">
             {{ data.value }} {{ data.item.units }}
           </template>
+          <template #cell(lowerFatal)="data">
+            {{ data.value }} {{ data.item.units }}
+          </template>
+          <template #cell(upperFatal)="data">
+            {{ data.value }} {{ data.item.units }}
+          </template>
         </b-table>
       </b-col>
     </b-row>
@@ -148,50 +160,8 @@ export default {
   data() {
     return {
       isBusy: true,
-      fields: [
-        {
-          key: 'checkbox',
-          sortable: false,
-          label: '',
-        },
-        {
-          key: 'name',
-          sortable: true,
-          label: this.$t('pageSensors.table.name'),
-        },
-        {
-          key: 'status',
-          sortable: true,
-          label: this.$t('pageSensors.table.status'),
-          tdClass: 'text-nowrap',
-        },
-        {
-          key: 'lowerCritical',
-          formatter: this.dataFormatter,
-          label: this.$t('pageSensors.table.lowerCritical'),
-        },
-        {
-          key: 'lowerCaution',
-          formatter: this.dataFormatter,
-          label: this.$t('pageSensors.table.lowerWarning'),
-        },
-
-        {
-          key: 'currentValue',
-          formatter: this.dataFormatter,
-          label: this.$t('pageSensors.table.currentValue'),
-        },
-        {
-          key: 'upperCaution',
-          formatter: this.dataFormatter,
-          label: this.$t('pageSensors.table.upperWarning'),
-        },
-        {
-          key: 'upperCritical',
-          formatter: this.dataFormatter,
-          label: this.$t('pageSensors.table.upperCritical'),
-        },
-      ],
+      supportMore: process.env.VUE_APP_SHOW_MORE_SENSOR_INFO === 'true',
+      showMore: false,
       tableFilters: [
         {
           key: 'status',
@@ -212,6 +182,114 @@ export default {
     };
   },
   computed: {
+    fields() {
+      if (this.showMore) {
+        return [
+          {
+            key: 'checkbox',
+            sortable: false,
+            label: '',
+          },
+          {
+            key: 'id',
+            sortable: true,
+            label: this.$t('pageSensors.table.id'),
+          },
+          {
+            key: 'name',
+            sortable: true,
+            label: this.$t('pageSensors.table.name'),
+          },
+          {
+            key: 'status',
+            sortable: true,
+            label: this.$t('pageSensors.table.status'),
+            tdClass: 'text-nowrap',
+          },
+          {
+            key: 'lowerFatal',
+            formatter: this.dataFormatter,
+            label: this.$t('pageSensors.table.lowerFatal'),
+          },
+          {
+            key: 'lowerCritical',
+            formatter: this.dataFormatter,
+            label: this.$t('pageSensors.table.lowerCritical'),
+          },
+          {
+            key: 'lowerCaution',
+            formatter: this.dataFormatter,
+            label: this.$t('pageSensors.table.lowerWarning'),
+          },
+
+          {
+            key: 'currentValue',
+            formatter: this.dataFormatter,
+            label: this.$t('pageSensors.table.currentValue'),
+          },
+          {
+            key: 'upperCaution',
+            formatter: this.dataFormatter,
+            label: this.$t('pageSensors.table.upperWarning'),
+          },
+          {
+            key: 'upperCritical',
+            formatter: this.dataFormatter,
+            label: this.$t('pageSensors.table.upperCritical'),
+          },
+          {
+            key: 'upperFatal',
+            formatter: this.dataFormatter,
+            label: this.$t('pageSensors.table.upperFatal'),
+          },
+        ];
+      } else {
+        return [
+          {
+            key: 'checkbox',
+            sortable: false,
+            label: '',
+          },
+          {
+            key: 'name',
+            sortable: true,
+            label: this.$t('pageSensors.table.name'),
+          },
+          {
+            key: 'status',
+            sortable: true,
+            label: this.$t('pageSensors.table.status'),
+            tdClass: 'text-nowrap',
+          },
+          {
+            key: 'lowerCritical',
+            formatter: this.dataFormatter,
+            label: this.$t('pageSensors.table.lowerCritical'),
+          },
+          {
+            key: 'lowerCaution',
+            formatter: this.dataFormatter,
+            label: this.$t('pageSensors.table.lowerWarning'),
+          },
+
+          {
+            key: 'currentValue',
+            formatter: this.dataFormatter,
+            label: this.$t('pageSensors.table.currentValue'),
+          },
+          {
+            key: 'upperCaution',
+            formatter: this.dataFormatter,
+            label: this.$t('pageSensors.table.upperWarning'),
+          },
+          {
+            key: 'upperCritical',
+            formatter: this.dataFormatter,
+            label: this.$t('pageSensors.table.upperCritical'),
+          },
+        ];
+      }
+    },
     allSensors() {
       return this.$store.getters['sensors/sensors'];
     },
@@ -254,6 +332,9 @@ export default {
         '_' +
         date.toString().split(':').join('-').split(' ')[4];
       return this.$t('pageSensors.exportFilePrefix') + date;
+    },
+    toggleShowMore() {
+      this.showMore = !this.showMore;
     },
   },
 };

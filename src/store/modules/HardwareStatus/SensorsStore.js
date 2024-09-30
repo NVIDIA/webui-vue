@@ -61,6 +61,7 @@ const SensorsStore = {
         responses.forEach((response) => {
           if (response.data) {
             sensorData.push({
+              id: response.data.Id,
               name: response.data.Name,
               status: response.data.Status?.Health,
               currentValue: response.data.Reading,
@@ -68,6 +69,8 @@ const SensorsStore = {
               upperCaution: response.data.Thresholds?.UpperCaution?.Reading,
               lowerCritical: response.data.Thresholds?.LowerCritical?.Reading,
               upperCritical: response.data.Thresholds?.UpperCritical?.Reading,
+              lowerFatal: response.data.Thresholds?.lowerFatal?.Reading,
+              upperFatal: response.data.Thresholds?.UpperFatal?.Reading,
               units: response.data.ReadingUnits,
             });
           }
@@ -83,6 +86,7 @@ const SensorsStore = {
           const sensorData = [];
           Fans.forEach((sensor) => {
             sensorData.push({
+              id: sensor.Id,
               name: sensor.Name,
               status: sensor.Status.Health,
               currentValue: sensor.Reading,
@@ -90,11 +94,14 @@ const SensorsStore = {
               upperCaution: sensor.UpperThresholdNonCritical,
               lowerCritical: sensor.LowerThresholdCritical,
               upperCritical: sensor.UpperThresholdCritical,
+              lowerFatal: sensor.LowerThresholdFatal,
+              upperFatal: sensor.UpperThresholdFatal,
               units: sensor.ReadingUnits,
             });
           });
           Temperatures.forEach((sensor) => {
             sensorData.push({
+              id: sensor.Id,
               name: sensor.Name,
               status: sensor.Status.Health,
               currentValue: sensor.ReadingCelsius,
@@ -102,6 +109,8 @@ const SensorsStore = {
               upperCaution: sensor.UpperThresholdNonCritical,
               lowerCritical: sensor.LowerThresholdCritical,
               upperCritical: sensor.UpperThresholdCritical,
+              lowerFatal: sensor.LowerThresholdFatal,
+              upperFatal: sensor.UpperThresholdFatal,
               units: '℃',
             });
           });
@@ -116,6 +125,7 @@ const SensorsStore = {
         .then(({ data: { Voltages = [] } }) => {
           const sensorData = Voltages.map((sensor) => {
             return {
+              id: sensor.Id,
               name: sensor.Name,
               status: sensor.Status.Health,
               currentValue: sensor.ReadingVolts,
@@ -123,6 +133,8 @@ const SensorsStore = {
               upperCaution: sensor.UpperThresholdNonCritical,
               lowerCritical: sensor.LowerThresholdCritical,
               upperCritical: sensor.UpperThresholdCritical,
+              lowerFatal: sensor.LowerThresholdFatal,
+              upperFatal: sensor.UpperThresholdFatal,
               units: 'V',
             };
           });
