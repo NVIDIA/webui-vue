@@ -3,44 +3,60 @@
     <page-section
       :section-title="$t('pageFirmware.sectionTitleFirmwareInventory')"
     >
-      <b-table
-        :items="displayedFirmwareInventory"
-        :fields="fields"
-        responsive="sm"
-      >
-        <template v-if="hasFirmwareInventoryCheckbox" #cell(select)="data">
-          <b-form-checkbox
-            v-model="data.item.checked"
-            :disabled="data.item.updateable === false"
-            @change="handleCheckboxChange(data.item)"
-            v-b-tooltip.hover.top="
-              data.item.updateable === false ? 'Not updateable' : ''
-            "
-          ></b-form-checkbox>
-        </template>
-        <template #cell(name)="data">
-          {{ data.item.name }}
-        </template>
-        <template #cell(version)="data">
-          {{ data.item.version }}
-        </template>
-        <template #cell(health)="data">
-          <status-icon :status="statusIcon(data.item.status)" />
-          {{ data.item.status }}
-        </template>
-      </b-table>
       <b-button
+        v-if="hideFirmwareTargets"
         variant="link"
-        :title="
-          isExpanded ? $t('pageFirmware.viewLess') : $t('pageFirmware.viewMore')
-        "
-        class="btn-icon-only p-0"
-        @click="toggleExpand"
+        @click="toggleAdvanced"
       >
         {{
-          isExpanded ? $t('pageFirmware.viewLess') : $t('pageFirmware.viewMore')
+          showAdvanced
+            ? $t('pageFirmware.hideAdvanced')
+            : $t('pageFirmware.showAdvanced')
         }}
       </b-button>
+      <div class="firmware-table-container">
+        <b-table
+          :items="displayedFirmwareInventory"
+          :fields="fields"
+          responsive="sm"
+        >
+          <template
+            v-if="hasFirmwareInventoryCheckbox && (!hideFirmwareTargets || showAdvanced)"
+            #cell(select)="data"
+          >
+            <b-form-checkbox
+              v-model="data.item.checked"
+              :disabled="data.item.updateable === false"
+              @change="handleCheckboxChange(data.item)"
+              v-b-tooltip.hover.top="
+                data.item.updateable === false ? 'Not updateable' : ''
+              "
+            ></b-form-checkbox>
+          </template>
+          <template #cell(name)="data">
+            {{ data.item.name }}
+          </template>
+          <template #cell(version)="data">
+            {{ data.item.version }}
+          </template>
+          <template #cell(health)="data">
+            <status-icon :status="statusIcon(data.item.status)" />
+            {{ data.item.status }}
+          </template>
+        </b-table>
+        <b-button
+          variant="link"
+          :title="
+            isExpanded ? $t('pageFirmware.viewLess') : $t('pageFirmware.viewMore')
+          "
+          class="btn-icon-only p-0"
+          @click="toggleExpand"
+        >
+          {{
+            isExpanded ? $t('pageFirmware.viewLess') : $t('pageFirmware.viewMore')
+          }}
+        </b-button>
+      </div>
     </page-section>
   </div>
 </template>
@@ -68,6 +84,9 @@ export default {
       ],
       hasFirmwareInventoryCheckbox:
         process.env.VUE_APP_HIDE_FIRMWARE_INVENTORY_CHECKBOX !== 'true',
+      hideFirmwareTargets:
+        process.env.VUE_APP_HIDE_FIRMWARE_TARGETS === 'true',
+      showAdvanced: false,
     };
   },
   computed: {
@@ -96,6 +115,20 @@ export default {
         .map((item) => item.id);
       this.$store.commit('firmware/setCheckedItems', checkedItems);
     },
+    toggleAdvanced() {
+      this.showAdvanced = !this.showAdvanced;
+    },
   },
 };
 </script>
+
+<style lang="scss" scoped>
+.firmware-table-container {
+  max-height: 300px;
+  overflow-y: auto;
+  border: 1px solid #d8d8d8;
+  border-radius: 4px;
+  padding: 0 1rem;
+  margin-bottom: 1rem;
+}
+</style>

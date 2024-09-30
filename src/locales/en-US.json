@@ -347,6 +347,8 @@
 	"tableHeaderVersion": "Version",
         "viewMore": "View More",
         "viewLess": "View Less",
+        "showAdvanced": "Show advanced",
+        "hideAdvanced": "Hide advanced",
         "alert": {
             "operationInProgress": "Server power operation in progress.",
             "serverMustBePoweredOffTo": "Server must be powered off to:",
@@ -367,7 +369,8 @@
                 "forceUpdate": "Force Update",
                 "startUpdate": "Start update",
                 "server": "server",
-                "workstation": "Local file"
+                "workstation": "Local file",
+                "confirmCheckedMessage": "Specifying targets is normally not required. By default all firmware included in a bundle will be flashed. Continue to update only the selected Target(s)?"
             }
         },
         "modal": {

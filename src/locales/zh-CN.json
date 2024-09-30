@@ -347,6 +347,8 @@
         "tableHeaderVersion": "版本",
         "viewMore": "查看更多",
         "viewLess": "查看更少",
+        "showAdvanced": "显示高级选项",
+        "hideAdvanced": "隐藏高级选项",
         "alert": {
             "operationInProgress": "服务器电源操作正在进行中。",
             "serverMustBePoweredOffTo": "服务器必须关闭以进行：",
@@ -367,7 +369,8 @@
                 "forceUpdate": "强制更新",
                 "startUpdate": "开始更新",
                 "server": "服务器",
-                "workstation": "本地文件"
+                "workstation": "本地文件",
+                "confirmCheckedMessage": "通常不需要指定目标。预设情况下，将刷新所有韧体。继续仅更新选定的目标吗？"
             }
         },
         "modal": {

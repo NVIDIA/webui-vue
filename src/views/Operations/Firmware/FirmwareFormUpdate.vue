@@ -229,6 +229,8 @@ export default {
       bluefieldTarget: 'BMC',
       isNvidiaGB: process.env.VUE_APP_ENV_NAME === 'nvidia-gb',
       nvidiaGBTarget: 'BMC',
+      hideFirmwareTargets:
+        process.env.VUE_APP_HIDE_FIRMWARE_TARGETS === 'true',
     };
   },
   computed: {
@@ -285,6 +287,9 @@ export default {
         return targets;
       }
       return this.$store.state.firmware.checkedItems;
+    },
+    hasCheckedTargets() {
+      return this.$store.state.firmware.checkedItems.length > 0;
     },
     sshAuthenticationMethods() {
       return this.$store.getters['firmware/sshAuthenticationMethods'];
@@ -434,7 +439,24 @@ export default {
     onSubmitUpload() {
       this.$v.$touch();
       if (this.$v.$invalid) return;
-      this.$bvModal.show('modal-update-firmware');
+      if (this.hideFirmwareTargets && this.hasCheckedTargets) {
+        this.$bvModal.msgBoxConfirm(
+          this.$t('pageFirmware.form.updateFirmware.confirmCheckedMessage'),
+          {
+            buttonSize: 'sm',
+            okVariant: 'danger',
+            okTitle: this.$t('global.action.confirm'),
+            cancelTitle: this.$t('global.action.cancel'),
+            cancelVariant: 'secondary',
+          },
+        ).then(confirmed => {
+          if (confirmed) {
+            this.$bvModal.show('modal-update-firmware');
+          }
+        });
+      } else {
+        this.$bvModal.show('modal-update-firmware');
+      }
     },
     onFileUpload(file) {
       this.file = file;
