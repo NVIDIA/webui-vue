@@ -100,6 +100,11 @@ const SystemStore = {
         })
         .catch((error) => console.log(error));
     },
+    async getSystemsWithProp({ getters, dispatch }, { prop }) {
+      if (!getters.isLoaded) await dispatch('getSystem');
+      let Systems = getters.redfish_systems;
+      return Systems.filter(system => system.hasOwnProperty(prop));
+    },
     async changeIdentifyLedState({ commit }, ledState) {
       return await api
         .patch(`${await this.dispatch('global/getSystemPath')}`, {
