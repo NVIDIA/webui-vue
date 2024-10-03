@@ -62,7 +62,7 @@
             to="/operations/server-power-operations"
             data-test-id="appHeader-container-power"
           >
-            <status-icon :status="serverStatusIcon" />
+            <power-icon :status="powerStateIcon" />
             {{ $t('appHeader.power') }}
           </b-nav-item>
           <!-- Using LI elements instead of b-nav-item to support semantic button elements -->
@@ -115,6 +115,7 @@ import IconClose from '@carbon/icons-vue/es/close/20';
 import IconMenu from '@carbon/icons-vue/es/menu/20';
 import IconRenew from '@carbon/icons-vue/es/renew/20';
 import StatusIcon from '@/components/Global/StatusIcon';
+import PowerIcon from '@/components/Global/PowerIcon';
 import LoadingBar from '@/components/Global/LoadingBar';
 import { mapState } from 'vuex';
 
@@ -126,6 +127,7 @@ export default {
     IconMenu,
     IconRenew,
     StatusIcon,
+    PowerIcon,
     LoadingBar,
   },
   mixins: [BVToastMixin],
@@ -164,10 +166,25 @@ export default {
     serverStatus() {
       return this.$store.getters['global/serverStatus'];
     },
+    powerState() {
+      return this.$store.getters['global/powerState'];
+    },
     healthStatus() {
       return this.$store.getters['eventLog/healthStatus'];
     },
-    serverStatusIcon() {
+    powerStateIcon() {
+      switch (this.powerState) {
+        case 'On':
+        case 'PoweringOff':
+          return 'on';
+        case 'PoweringOn':
+          return 'on blink';
+        case 'Paused':
+          return 'on blink 1Hz';
+        case 'Off':
+        default:
+          return 'off';
+      }
       switch (this.serverStatus) {
         case 'on':
           return 'success';

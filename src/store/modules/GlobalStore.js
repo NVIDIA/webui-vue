@@ -35,6 +35,7 @@ const GlobalStore = {
     modelType: null,
     serialNumber: null,
     serverStatus: 'unreachable',
+    powerState: '',
     languagePreference: localStorage.getItem('storedLanguage') || 'en-US',
     isUtcDisplay: localStorage.getItem('storedUtcDisplay')
       ? JSON.parse(localStorage.getItem('storedUtcDisplay'))
@@ -50,6 +51,7 @@ const GlobalStore = {
     modelType: (state) => state.modelType,
     serialNumber: (state) => state.serialNumber,
     serverStatus: (state) => state.serverStatus,
+    powerState: (state) => state.powerState,
     bmcPath: (state) => state.bmcPath,
     bmcTime: (state) => state.bmcTime,
     languagePreference: (state) => state.languagePreference,
@@ -68,6 +70,7 @@ const GlobalStore = {
     setBmcTime: (state, bmcTime) => (state.bmcTime = bmcTime),
     setServerStatus: (state, serverState) =>
       (state.serverStatus = serverStateMapper(serverState)),
+    setPowerState: (state, powerState) => (state.powerState = powerState),
     setServiceRoot: (state, serviceRoot) => {
       state.serviceRoot = serviceRoot.data;
       state.bmcPath = serviceRoot.data?.ManagerProvidingService?.['@odata.id'];
@@ -141,14 +144,8 @@ const GlobalStore = {
             commit('setAssetTag', AssetTag);
             commit('setSerialNumber', SerialNumber);
             commit('setModelType', Model);
-            if (State === 'Quiesced' || State === 'InTest') {
-              // OpenBMC's host state interface is mapped to 2 Redfish
-              // properties "Status""State" and "PowerState". Look first
-              // at State for certain cases.
-              commit('setServerStatus', State);
-            } else {
-              commit('setServerStatus', PowerState);
-            }
+            commit('setServerStatus', State);
+            commit('setPowerState', PowerState);
           },
         )
         .catch((error) => console.log(error));
