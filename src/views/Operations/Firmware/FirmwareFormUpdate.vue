@@ -283,7 +283,9 @@ export default {
         else return ['redfish/v1/UpdateService/FirmwareInventory/DPU_OS'];
       } else if (this.isNvidiaGB && this.nvidiaGBTarget === 'HMC') {
         let targets = [...this.$store.state.firmware.checkedItems];
-        targets.push('/redfish/v1/Chassis/HGX_Chassis_0');
+        if (!targets.length) {
+          targets.push('/redfish/v1/Chassis/HGX_Chassis_0');
+        }
         return targets;
       }
       return this.$store.state.firmware.checkedItems;
