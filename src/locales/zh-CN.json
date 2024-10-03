@@ -85,7 +85,8 @@
       },
       "toast": {
         "unAuthTitle": "未授权",
-        "unAuthDescription": "尝试的操作无法从当前登录的账户访问。请联系系统管理员以检查您的权限角色。"
+        "unAuthDescription": "尝试的操作无法从当前登录的账户访问。请联系系统管理员以检查您的权限角色。",
+        "bmcIsNotReady": "BMC 仍在初始化中，使用风险请自行承担。"
       }
     },
     "appHeader": {

@@ -1,18 +1,40 @@
 <template>
-  <main id="main-content" class="page-container">
-    <slot />
-  </main>
+  <div>
+    <GlobalBanner
+      :show="!isManagerReady"
+      :message="$t('global.toast.bmcIsNotReady')"
+      variant="warning"
+    />
+    <main id="main-content" class="page-container">
+      <slot />
+    </main>
+  </div>
 </template>
 
 <script>
+import { mapState } from 'vuex';
 import JumpLinkMixin from '@/components/Mixins/JumpLinkMixin';
+import GlobalBanner from '@/components/Global/GlobalBanner';
+import { startManagerStatusCheck } from '@/services/ManagerStatusService';
 export default {
   name: 'PageContainer',
+  components: { GlobalBanner },
   mixins: [JumpLinkMixin],
+  computed: {
+    isManagerReady() {
+      return this.$store.state.bmc.isManagerReady;
+    },
+  },
   created() {
+    this.managerStatusIntervalId = startManagerStatusCheck();
     this.$root.$on('skip-navigation', () => {
       this.setFocus(this.$el);
     });
+  },
+  beforeDestroy() {
+    if (this.managerStatusIntervalId) {
+      clearInterval(this.managerStatusIntervalId);
+    }
   },
 };
 </script>

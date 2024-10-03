@@ -6,9 +6,11 @@ const BmcStore = {
   namespaced: true,
   state: {
     bmc: [],
+    isManagerReady: false,
   },
   getters: {
     bmc: (state) => state.bmc,
+    isManagerReady: (state) => state.isManagerReady,
   },
   mutations: {
     setBmcInfo: (state, data) => {
@@ -44,21 +46,31 @@ const BmcStore = {
       bmc.uri = data['@odata.id'];
       Vue.set(state.bmc, data.index, bmc);
     },
+    setManagerReady: (state, ready) => {
+      state.isManagerReady = ready;
+    },
   },
   actions: {
     async getBmcInfo({ commit }) {
-      return await api
-        .get('/redfish/v1/Managers')
-        .then(({ data: { Members = [] } }) =>
-          Members.map((member, idx) =>
-            api
-              .get(member['@odata.id'])
-              .then(({ data }) =>
-                commit('setBmcInfo', { ...data, index: idx }),
-              ),
-          ),
-        )
-        .catch((error) => console.log(error));
+      try {
+        const { data: { Members = [] } } = await api.get('/redfish/v1/Managers');
+        const bmcPromises = Members.map((member, idx) =>
+          api.get(member['@odata.id']).then(({ data }) => {
+            commit('setBmcInfo', { ...data, index: idx });
+            return data;
+          })
+        );
+
+        const results = await Promise.all(bmcPromises);
+        const allManagersReady = results.every((manager) =>
+          manager?.Status?.State === 'Enabled');
+        commit('setManagerReady', allManagersReady);
+        return results;
+      } catch (error) {
+        console.log(error);
+        commit('setManagerReady', false);
+        throw error;
+      }
     },
     async updateIdentifyLedValue({ dispatch }, led) {
       const uri = led.uri;
@@ -88,6 +100,9 @@ const BmcStore = {
             );
           }
         });
+    },
+    async checkManagerStatus({ dispatch, state }) {
+      await dispatch('getBmcInfo');
     },
   },
 };
