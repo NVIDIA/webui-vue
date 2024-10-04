@@ -84,6 +84,9 @@ export default {
     serverStatus() {
       return this.$store.getters['global/serverStatus'];
     },
+    isOperationInProgress() {
+      return this.$store.getters['controls/isOperationInProgress'];
+    },
     isServerOff() {
       return this.serverStatus === 'off' ? true : false;
     },
@@ -93,6 +96,9 @@ export default {
     isPageDisabled() {
       if (this.isServerPowerOffRequired) {
         return !this.isServerOff || this.loading || this.isOperationInProgress;
+      }
+      if (this.isServerPowerOnRequired) {
+        return this.isServerOff || this.loading || this.isOperationInProgress;
       }
       return this.loading || this.isOperationInProgress;
     },
