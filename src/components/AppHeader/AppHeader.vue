@@ -62,8 +62,26 @@
             to="/operations/server-power-operations"
             data-test-id="appHeader-container-power"
           >
-            <power-icon :status="powerStateIcon" />
-            {{ $t('appHeader.power') }}
+            <span id="tooltip-target-power">
+              <power-icon :status="powerStateIcon" />
+              {{ $t('appHeader.power') }}
+            </span>
+            <b-tooltip target="tooltip-target-power" triggers="hover">
+              <div>
+                {{
+                  $t('pageServerPowerOperations.powerState') +
+                  ' : ' +
+                  powerState
+                }}
+              </div>
+              <div>
+                {{
+                  $t('pageServerPowerOperations.systemStatus') +
+                  ' : ' +
+                  serverStatus
+                }}
+              </div>
+            </b-tooltip>
           </b-nav-item>
           <!-- Using LI elements instead of b-nav-item to support semantic button elements -->
           <li class="nav-item">
@@ -184,17 +202,6 @@ export default {
         case 'Off':
         default:
           return 'off';
-      }
-      switch (this.serverStatus) {
-        case 'on':
-          return 'success';
-        case 'error':
-          return 'danger';
-        case 'diagnosticMode':
-          return 'warning';
-        case 'off':
-        default:
-          return 'secondary';
       }
     },
     healthStatusIcon() {

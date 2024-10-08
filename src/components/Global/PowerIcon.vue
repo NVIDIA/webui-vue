@@ -18,7 +18,7 @@ export default {
   props: {
     status: {
       type: String,
-      default: 'off blink 1Hz',  // "[off] [blink] [1Hz]"
+      default: '',
     },
   },
 };

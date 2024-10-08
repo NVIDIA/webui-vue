@@ -9,27 +9,17 @@
           <b-row>
             <b-col>
               <dl>
-                <dt>{{ $t('pageServerPowerOperations.serverStatus') }}</dt>
-                <dd
-                  v-if="serverStatus === 'on'"
-                  data-test-id="powerServerOps-text-hostStatus"
-                >
-                  {{ $t('global.status.on') }}
+                <dt>{{ $t('pageServerPowerOperations.systemStatus') }}</dt>
+                <dd data-test-id="powerServerOps-text-hostStatus">
+                  {{ serverStatus }}
                 </dd>
-                <dd
-                  v-else-if="serverStatus === 'off'"
-                  data-test-id="powerServerOps-text-hostStatus"
-                >
-                  {{ $t('global.status.off') }}
-                </dd>
-                <dd
-                  v-else-if="serverStatus === 'diagnosticMode'"
-                  data-test-id="powerServerOps-text-hostStatus"
-                >
-                  {{ $t('global.status.diagnosticMode') }}
-                </dd>
-                <dd v-else>
-                  {{ $t('global.status.notAvailable') }}
+              </dl>
+            </b-col>
+            <b-col>
+              <dl>
+                <dt>{{ $t('pageServerPowerOperations.powerState') }}</dt>
+                <dd data-test-id="powerServerOps-text-powerState">
+                  {{ powerState }}
                 </dd>
               </dl>
             </b-col>
@@ -206,6 +196,9 @@ export default {
   computed: {
     serverStatus() {
       return this.$store.getters['global/serverStatus'];
+    },
+    powerState() {
+      return this.$store.getters['global/powerState'];
     },
     isOperationInProgress() {
       return this.$store.getters['controls/isOperationInProgress'];
