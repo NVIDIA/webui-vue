@@ -90,7 +90,7 @@ const GlobalStore = {
   actions: {
     async fetchServiceRoot({ commit }) {
       try {
-        commit('setServiceRoot', await api.get('/redfish/v1'));
+        commit('setServiceRoot', await api.get('/redfish/v1'), {timeout: 60 * 1000});
       } catch (error) {
         console.log(error);
       }
@@ -99,7 +99,7 @@ const GlobalStore = {
       if (!state.serviceRoot) dispatch('fetchServiceRoot');
       if (!state.bmcPath) {
         const managers = await api
-          .get('/redfish/v1/Managers')
+          .get('/redfish/v1/Managers', {timeout: 60 * 1000})
           .catch((error) => console.log(error));
         state.bmcPath = managers.data?.Members?.[0]?.['@odata.id'];
       }
