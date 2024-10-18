@@ -4,7 +4,7 @@
       :section-title="$t('pageFirmware.sectionTitleFirmwareInventory')"
     >
       <b-button
-        v-if="hideFirmwareTargets"
+        v-if="hideFirmwareTargets && hasFirmwareInventoryCheckbox && inventoryLoaded"
         variant="link"
         @click="toggleAdvanced"
       >
@@ -19,6 +19,7 @@
           :items="displayedFirmwareInventory"
           :fields="fields"
           responsive="sm"
+          sticky-header="310px"
         >
           <template
             v-if="hasFirmwareInventoryCheckbox && (!hideFirmwareTargets || showAdvanced)"
@@ -49,7 +50,8 @@
           :title="
             isExpanded ? $t('pageFirmware.viewLess') : $t('pageFirmware.viewMore')
           "
-          class="btn-icon-only p-0"
+          v-show="inventoryLoaded"
+          class="btn-icon-only p-0 ml-3"
           @click="toggleExpand"
         >
           {{
@@ -98,6 +100,9 @@ export default {
     firmwareInventory() {
       return this.$store.getters['firmware/firmwareInventory'];
     },
+    inventoryLoaded() {
+      return this.firmwareInventory.length > 0;
+    }
   },
   created() {
     this.$store.dispatch('firmware/getFirmwareInventory').then(() => {
@@ -130,11 +135,8 @@ export default {
 
 <style lang="scss" scoped>
 .firmware-table-container {
-  max-height: 300px;
-  overflow-y: auto;
   border: 1px solid #d8d8d8;
   border-radius: 4px;
-  padding: 0 1rem;
   margin-bottom: 1rem;
 }
 </style>
