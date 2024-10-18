@@ -441,7 +441,7 @@ export default {
     onSubmitUpload() {
       this.$v.$touch();
       if (this.$v.$invalid) return;
-      if (this.hideFirmwareTargets && this.hasCheckedTargets) {
+      if (this.hasCheckedTargets) {
         this.$bvModal.msgBoxConfirm(
           this.$t('pageFirmware.form.updateFirmware.confirmCheckedMessage'),
           {
