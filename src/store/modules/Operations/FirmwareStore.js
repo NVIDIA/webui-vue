@@ -407,36 +407,9 @@ const FirmwareStore = {
     async waitForReady({ dispatch }, resp) {
       for (let i = 0; i < WAIT_FOR_READY_TIME; i++) {
         await dispatch('sleep', WAIT_FOR_READY_INTERVAL);
-        if (await dispatch('isBluefieldDpuOsUpdate', resp)) {
-          if (await dispatch('isFirmwareInventoryReady')) return true;
-        } else {
-          if (await dispatch('isManagerStateEnabled')) return true;
-        }
+        if (await dispatch('isManagerStateEnabled')) return true;
       }
       return false;
-    },
-    isBluefieldDpuOsUpdate({ state }, resp) {
-      if (process.env.VUE_APP_ENV_NAME === 'nvidia-bluefield') {
-        const targetUri = resp?.data?.Payload?.TargetUri;
-        if (targetUri === state.simpleUpdateUri) return true;
-      }
-      return false;
-    },
-    async isFirmwareInventoryReady({ dispatch }) {
-      const firmwareInventory = await dispatch('getFirmwareInventory');
-      const totalCount = firmwareInventory?.length;
-      if (!(totalCount > 0)) return false;
-
-      let readyCount = 0;
-      firmwareInventory.forEach(({ version }) => {
-        if (version != null && version !== '') readyCount++;
-      });
-      // Define the ratio here, since it is only for bluefiled platform
-      // The function itself is only for bluefield platform
-      const RATIO_FOR_READY = 0.5;
-      if (readyCount / totalCount < RATIO_FOR_READY) return false;
-
-      return true;
     },
     async isManagerStateEnabled() {
       return await api
