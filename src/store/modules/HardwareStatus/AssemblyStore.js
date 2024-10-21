@@ -1,6 +1,5 @@
 import api from '@/store/api';
 import i18n from '@/i18n';
-import { uniqBy } from 'lodash';
 
 const IPMI_FRU_CHASSIS_TYPE = {
   0: 'Unspecified',
@@ -82,7 +81,7 @@ const AssemblyStore = {
     addAssemblyInfo: (state, data) => {
       state.assemblies = [...data, ...state.assemblies];
     },
-    setAssemblyInfoDefault: (state) => {
+    clearAssemblyInfo: (state) => {
       state.assemblies = [];
     },
   },
@@ -121,7 +120,7 @@ const AssemblyStore = {
         .catch((error) => console.log(error));
     },
     async getFruInfo({ commit, dispatch, getters }) {
-      commit('setAssemblyInfoDefault');
+      commit('clearAssemblyInfo');
       let collection = getters.chassis;
       if (!collection || !collection.length)
         collection = await dispatch('getChassisCollection');
