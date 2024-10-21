@@ -80,7 +80,10 @@ const AssemblyStore = {
       });
     },
     addAssemblyInfo: (state, data) => {
-      state.assemblies = uniqBy([...data, ...state.assemblies], 'name');
+      state.assemblies = [...data, ...state.assemblies];
+    },
+    setAssemblyInfoDefault: (state) => {
+      state.assemblies = [];
     },
   },
   actions: {
@@ -118,6 +121,7 @@ const AssemblyStore = {
         .catch((error) => console.log(error));
     },
     async getFruInfo({ commit, dispatch, getters }) {
+      commit('setAssemblyInfoDefault');
       let collection = getters.chassis;
       if (!collection || !collection.length)
         collection = await dispatch('getChassisCollection');
