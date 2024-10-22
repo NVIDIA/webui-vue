@@ -16,7 +16,7 @@
         />
 
         <!-- Host Firmware -->
-        <host-cards v-if="!isSingleFileUploadEnabled" />
+        <host-cards v-if="isHostFirmwareAvailable"/>
       </b-col>
     </b-row>
 
@@ -90,9 +90,6 @@ export default {
     isServerOff() {
       return this.serverStatus === 'off' ? true : false;
     },
-    isSingleFileUploadEnabled() {
-      return this.$store.getters['firmware/isSingleFileUploadEnabled'];
-    },
     isPageDisabled() {
       if (this.isServerPowerOffRequired) {
         return !this.isServerOff || this.loading || this.isOperationInProgress;
@@ -101,6 +98,9 @@ export default {
         return this.isServerOff || this.loading || this.isOperationInProgress;
       }
       return this.loading || this.isOperationInProgress;
+    },
+    isHostFirmwareAvailable() {
+      return this.$store.getters['firmware/isHostFirmwareAvailable'];
     },
   },
   created() {

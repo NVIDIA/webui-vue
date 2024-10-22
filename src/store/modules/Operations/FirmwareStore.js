@@ -56,7 +56,6 @@ const FirmwareStore = {
       if (state.publicKeyExchangeUri != null) methods.push('PublicKey');
       return methods;
     },
-    isSingleFileUploadEnabled: (state) => state.hostFirmware.length === 0,
     activeBmcFirmware: (state) => {
       return state.bmcFirmware.find(
         (firmware) => firmware.id === state.bmcActiveFirmwareId,
@@ -77,6 +76,7 @@ const FirmwareStore = {
         (firmware) => firmware.id !== state.hostActiveFirmwareId,
       );
     },
+    isHostFirmwareAvailable: (state) => state.hostFirmware.length > 0,
     firmwareInventory: (state) => state.firmwareInventory,
     firmwareUpdateInfo: (state) => state.firmwareUpdateInfo,
     isFirmwareUpdateInProgress: (state) =>

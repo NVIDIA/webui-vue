@@ -43,9 +43,6 @@ export default {
     },
   },
   computed: {
-    isSingleFileUploadEnabled() {
-      return this.$store.getters['firmware/isSingleFileUploadEnabled'];
-    },
     activeBmcFirmware() {
       return this.$store.getters['firmware/activeBmcFirmware'];
     },
