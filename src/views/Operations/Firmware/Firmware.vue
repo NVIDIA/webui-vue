@@ -15,8 +15,8 @@
           :is-server-off="isServerOff"
         />
 
-        <!-- Host Firmware -->
-        <host-cards v-if="isHostFirmwareAvailable"/>
+        <!-- Bios Firmware -->
+        <bios-cards v-if="isBiosFirmwareAvailable" />
       </b-col>
     </b-row>
 
@@ -49,7 +49,7 @@ import AlertsServerPower from './FirmwareAlertServerPower';
 import FirmwareInventory from './FirmwareInventory';
 import BmcCards from './FirmwareCardsBmc';
 import FormUpdate from './FirmwareFormUpdate';
-import HostCards from './FirmwareCardsHost';
+import BiosCards from './FirmwareCardsBios';
 import PageSection from '@/components/Global/PageSection';
 import PageTitle from '@/components/Global/PageTitle';
 
@@ -62,7 +62,7 @@ export default {
     BmcCards,
     FirmwareInventory,
     FormUpdate,
-    HostCards,
+    BiosCards,
     PageSection,
     PageTitle,
   },
@@ -99,8 +99,8 @@ export default {
       }
       return this.loading || this.isOperationInProgress;
     },
-    isHostFirmwareAvailable() {
-      return this.$store.getters['firmware/isHostFirmwareAvailable'];
+    isBiosFirmwareAvailable() {
+      return this.$store.getters['firmware/isBiosFirmwareAvailable'];
     },
   },
   created() {

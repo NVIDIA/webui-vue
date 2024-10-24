@@ -18,12 +18,12 @@ const FirmwareStore = {
   namespaced: true,
   state: {
     bmcFirmware: [],
-    hostFirmware: [],
+    biosFirmware: [],
     firmwareInventory: [],
     bmcActiveFirmwareId: null,
-    hostActiveFirmwareId: null,
+    biosActiveFirmwareId: null,
     bmcSoftwareImageIds: [],
-    hostSoftwareImageIds: [],
+    biosSoftwareImageIds: [],
     checkedItems: [],
     applyTime: null,
     multipartHttpPushUri: null,
@@ -61,9 +61,9 @@ const FirmwareStore = {
         (firmware) => firmware.id === state.bmcActiveFirmwareId,
       );
     },
-    activeHostFirmware: (state) => {
-      return state.hostFirmware.find(
-        (firmware) => firmware.id === state.hostActiveFirmwareId,
+    activeBiosFirmware: (state) => {
+      return state.biosFirmware.find(
+        (firmware) => firmware.id === state.biosActiveFirmwareId,
       );
     },
     backupBmcFirmware: (state) => {
@@ -71,12 +71,12 @@ const FirmwareStore = {
         (firmware) => firmware.id !== state.bmcActiveFirmwareId,
       );
     },
-    backupHostFirmware: (state) => {
-      return state.hostFirmware.filter(
-        (firmware) => firmware.id !== state.hostActiveFirmwareId,
+    backupBiosFirmware: (state) => {
+      return state.biosFirmware.filter(
+        (firmware) => firmware.id !== state.biosActiveFirmwareId,
       );
     },
-    isHostFirmwareAvailable: (state) => state.hostFirmware.length > 0,
+    isBiosFirmwareAvailable: (state) => state.biosFirmware.length > 0,
     firmwareInventory: (state) => state.firmwareInventory,
     firmwareUpdateInfo: (state) => state.firmwareUpdateInfo,
     isFirmwareUpdateInProgress: (state) =>
@@ -90,11 +90,11 @@ const FirmwareStore = {
   },
   mutations: {
     setActiveBmcFirmwareId: (state, id) => (state.bmcActiveFirmwareId = id),
-    setActiveHostFirmwareId: (state, id) => (state.hostActiveFirmwareId = id),
+    setActiveBiosFirmwareId: (state, id) => (state.biosActiveFirmwareId = id),
     setBmcFirmware: (state, firmware) => (state.bmcFirmware = firmware),
-    setHostFirmware: (state, firmware) => (state.hostFirmware = firmware),
+    setBiosFirmware: (state, firmware) => (state.biosFirmware = firmware),
     setBmcSoftwareImageIds: (state, ids) => (state.bmcSoftwareImageIds = ids),
-    setHostSoftwareImageIds: (state, ids) => (state.hostSoftwareImageIds = ids),
+    setBiosSoftwareImageIds: (state, ids) => (state.biosSoftwareImageIds = ids),
     setCheckedItems: (state, items) => (state.checkedItems = items),
     setFirmwareInventory(state, firmwareInventory) {
       state.firmwareInventory = firmwareInventory;
@@ -130,7 +130,7 @@ const FirmwareStore = {
   actions: {
     async getFirmwareInformation({ dispatch }) {
       await Promise.all([
-        dispatch('getActiveHostFirmware'),
+        dispatch('getActiveBiosFirmware'),
         dispatch('getActiveBmcFirmware')
       ]);
       return await dispatch('getFirmwareInventory');
@@ -148,15 +148,15 @@ const FirmwareStore = {
         })
         .catch((error) => console.log(error));
     },
-    async getActiveHostFirmware({ commit }) {
+    async getActiveBiosFirmware({ commit }) {
       return api
         .get(`${await this.dispatch('global/getSystemPath')}/Bios`)
         .then(({ data: { Links } }) => {
           const activeImageId = Links?.ActiveSoftwareImage['@odata.id'];
           const softwareImageIds =
             Links?.SoftwareImages?.map((image) => image['@odata.id']) || [];
-          commit('setActiveHostFirmwareId', activeImageId);
-          commit('setHostSoftwareImageIds', softwareImageIds);
+          commit('setActiveBiosFirmwareId', activeImageId);
+          commit('setBiosSoftwareImageIds', softwareImageIds);
         })
         .catch((error) => console.log(error));
     },
@@ -171,7 +171,7 @@ const FirmwareStore = {
         .all(inventoryList)
         .then((response) => {
           const bmcFirmware = [];
-          const hostFirmware = [];
+          const biosFirmware = [];
           const firmwareInventory = [];
           response.forEach(({ data }) => {
             const item = {
@@ -193,13 +193,13 @@ const FirmwareStore = {
 
             if (state.bmcSoftwareImageIds.includes(item.id)) {
               bmcFirmware.push(item);
-            } else if (state.hostSoftwareImageIds.includes(item.id)) {
-              hostFirmware.push(item);
+            } else if (state.biosSoftwareImageIds.includes(item.id)) {
+              biosFirmware.push(item);
             }
           });
           commit('setFirmwareInventory', firmwareInventory);
           commit('setBmcFirmware', bmcFirmware);
-          commit('setHostFirmware', hostFirmware);
+          commit('setBiosFirmware', biosFirmware);
           return firmwareInventory;
         })
         .catch((error) => {

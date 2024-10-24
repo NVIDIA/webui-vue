@@ -17,10 +17,10 @@
           })
         }}
       </p>
-      <p v-if="showBackupHostMessage">
+      <p v-if="showBackupBiosMessage">
         {{
           $t('pageFirmware.modal.updateFirmwareInfoTargetBackup', {
-            running: runningHostVersion,
+            running: runningBiosVersion,
           })
         }}
       </p>
@@ -49,22 +49,22 @@ export default {
     backupBmcFirmware() {
       return this.$store.getters['firmware/backupBmcFirmware'];
     },
-    activeHostFirmware() {
-      return this.$store.getters['firmware/activeHostFirmware'];
+    activeBiosFirmware() {
+      return this.$store.getters['firmware/activeBiosFirmware'];
     },
-    backupHostFirmware() {
-      return this.$store.getters['firmware/backupHostFirmware'];
+    backupBiosFirmware() {
+      return this.$store.getters['firmware/backupBiosFirmware'];
     },
     runningBmcVersion() {
       return this.activeBmcFirmware?.version || '--';
     },
-    runningHostVersion() {
-      return this.activeHostFirmware?.version || '--';
+    runningBiosVersion() {
+      return this.activeBiosFirmware?.version || '--';
     },
     showBackup() {
       if (
         this.backupBmcFirmware?.length > 0 ||
-          this.backupHostFirmware?.length > 0
+          this.backupBiosFirmware?.length > 0
       )
         return true;
       else return false;
@@ -79,12 +79,12 @@ export default {
         return true;
       else return false;
     },
-    showBackupHostMessage() {
+    showBackupBiosMessage() {
       // Only show the backup message when BIOS(which has backup) is in targets
       if (
-        this.targets?.includes(this.activeHostFirmware?.id) &&
-          this.backupHostFirmware != null &&
-          this.backupHostFirmware?.length > 0
+        this.targets?.includes(this.activeBiosFirmware?.id) &&
+          this.backupBiosFirmware != null &&
+          this.backupBiosFirmware?.length > 0
       )
         return true;
       else return false;
