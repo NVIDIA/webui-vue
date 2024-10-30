@@ -130,6 +130,9 @@ export default {
       this.showAdvanced = !this.showAdvanced;
     },
   },
+  beforeDestroy() {
+    this.$store.commit('firmware/setCheckedItems', []);
+  },
 };
 </script>
 
