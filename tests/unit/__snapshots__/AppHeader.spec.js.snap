@@ -104,27 +104,15 @@ exports[`AppHeader.vue should render correctly 1`] = `
           to="/operations/server-power-operations"
         >
           <span
-            class="status-icon secondary"
+            class="status-icon off"
           >
-            <svg
-              aria-hidden="true"
-              fill="currentColor"
-              focusable="false"
-              height="20"
-              preserveAspectRatio="xMidYMid meet"
-              viewBox="0 0 20 20"
-              width="20"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M10,1c-5,0-9,4-9,9s4,9,9,9s9-4,9-9S15,1,10,1z M13.5,14.5l-8-8l1-1l8,8L13.5,14.5z"
-              />
-              <path
-                d="M13.5,14.5l-8-8l1-1l8,8L13.5,14.5z"
-                data-icon-path="inner-path"
-                opacity="0"
-              />
-            </svg>
+            <img
+              class="off"
+              height="24"
+              src="@/assets/images/power.svg"
+              svg-inline=""
+              width="24"
+            />
           </span>
           
           appHeader.power
