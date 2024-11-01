@@ -413,7 +413,7 @@ const FirmwareStore = {
     },
     async isManagerStateEnabled() {
       return await api
-        .get(`${await this.dispatch('global/getBmcPath')}`, {timeout: 5 * 1000})
+        .get(`${await this.dispatch('global/getBmcPath')}`, {timeout: 30 * 1000})
         .then((resp) => resp?.data?.Status?.State === 'Enabled')
         .catch(() => console.log('No response yet from Manager'));
     },
