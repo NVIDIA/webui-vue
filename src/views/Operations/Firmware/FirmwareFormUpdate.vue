@@ -275,6 +275,9 @@ export default {
         this.$store.getters['firmware/multipartHttpPushUri'] == null
       )
         return false;
+
+      // Force update is not supported for SimpleUpdate on Bluefield platform
+      if (this.isBluefield && !this.isLocalSelected ) return false;
       return true;
     },
     targets() {
