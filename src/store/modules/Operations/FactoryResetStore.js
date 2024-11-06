@@ -37,25 +37,6 @@ const FactoryResetStore = {
         });
     },
     async resetBios() {
-      if (process.env.VUE_APP_ENV_NAME === 'nvidia-bluefield') {
-        return await api
-          .patch(
-            `${await this.dispatch('global/getSystemPath')}/Bios/Settings`,
-            {
-              Attributes: {
-                ResetEfiVars: true,
-              },
-            },
-          )
-          .then(() => {
-            i18n.t('pageFactoryReset.toast.resetBiosSuccessAndReboot');
-            this.dispatch('controls/serverSoftReboot');
-          })
-          .catch((error) => {
-            console.log('Factory Reset: ', error);
-            throw new Error(i18n.t('pageFactoryReset.toast.resetBiosError'));
-          });
-      }
       return await api
         .post(
           `${await this.dispatch('global/getSystemPath')}/Bios/Actions/Bios.ResetBios`,
