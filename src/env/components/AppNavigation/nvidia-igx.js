@@ -44,11 +44,6 @@ const AppNavigationMixin = {
               route: '/logs/event-logs',
             },
             {
-              id: 'sel-logs',
-              label: this.$t('appNavigation.selLogs'),
-              route: '/logs/sel-logs',
-            },
-            {
               id: 'dumps',
               label: this.$t('appNavigation.dumps'),
               route: '/logs/dumps',
