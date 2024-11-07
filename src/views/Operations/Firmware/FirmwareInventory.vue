@@ -104,12 +104,6 @@ export default {
       return this.firmwareInventory.length > 0;
     }
   },
-  created() {
-    this.$store.dispatch('firmware/getFirmwareInventory').then(() => {
-      this.firmwareInventory =
-        this.$store.getters['firmware/firmwareInventory'];
-    });
-  },
   methods: {
     toggleExpand() {
       this.isExpanded = !this.isExpanded;

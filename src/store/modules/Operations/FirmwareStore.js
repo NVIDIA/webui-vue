@@ -129,8 +129,10 @@ const FirmwareStore = {
   },
   actions: {
     async getFirmwareInformation({ dispatch }) {
-      await dispatch('getActiveHostFirmware');
-      await dispatch('getActiveBmcFirmware');
+      await Promise.all([
+        dispatch('getActiveHostFirmware'),
+        dispatch('getActiveBmcFirmware')
+      ]);
       return await dispatch('getFirmwareInventory');
     },
     async getActiveBmcFirmware({ commit }) {
