@@ -16,9 +16,13 @@ const FactoryResetStore = {
   },
   actions: {
     async isBiosSupported({ commit }) {
-      this.dispatch('system/getSystemsWithProp', {
-       prop: 'Bios',
-      }).then((results) => commit('setBiosSupported', !!results?.length > 0));
+      const results = await this.dispatch('system/getSystemsWithProp', {
+        prop: 'Bios',
+      });
+      const isBiosActionPresent = results.some(
+        (system) => system?.Bios?.Actions,
+      );
+      commit('setBiosSupported', isBiosActionPresent);
     },
     async resetToDefaults() {
       return await api
