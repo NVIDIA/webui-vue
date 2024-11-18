@@ -683,6 +683,7 @@
         "criticalEvents": "Critical",
         "dhcp": "DHCPv4",
         "dhcp6": "DHCPv6",
+        "slaac": "SLAAC",
         "dumps": "Dumps",
         "eventLogs": "Event logs",
         "selLogs": "SEL logs",

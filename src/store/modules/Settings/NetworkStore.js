@@ -46,8 +46,10 @@ const NetworkStore = {
             (ipv4) => ipv4.AddressOrigin === 'DHCP',
           ),
           dhcpv6Address: IPv6Addresses.filter(
-            (ipv6) =>
-              ipv6.AddressOrigin === 'SLAAC' || ipv6.AddressOrigin === 'DHCPv6',
+            (ipv6) => ipv6.AddressOrigin === 'DHCPv6',
+          ),
+          slaacAddress: IPv6Addresses.filter(
+            (ipv6) => ipv6.AddressOrigin === 'SLAAC',
           ),
           dhcpEnabled: DHCPv4.DHCPEnabled,
           dhcp6Enabled: DHCPv6.OperatingMode,

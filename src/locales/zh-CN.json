@@ -683,6 +683,7 @@
         "criticalEvents": "严重",
         "dhcp": "DHCPv4",
         "dhcp6": "DHCPv6",
+        "slaac": "SLAAC",
         "dumps": "Dumps",
         "eventLogs": "事件日志",
         "selLogs": "SEL日志",
