@@ -50,7 +50,7 @@
           :title="
             isExpanded ? $t('pageFirmware.viewLess') : $t('pageFirmware.viewMore')
           "
-          v-show="inventoryLoaded"
+          v-show="showViewButton"
           class="btn-icon-only p-0 ml-3"
           @click="toggleExpand"
         >
@@ -102,6 +102,9 @@ export default {
     },
     inventoryLoaded() {
       return this.firmwareInventory.length > 0;
+    },
+    showViewButton() {
+      return this.firmwareInventory.length > 5;
     }
   },
   methods: {
