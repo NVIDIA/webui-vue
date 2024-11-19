@@ -81,14 +81,17 @@ export default {
     };
   },
   computed: {
-    serverStatus() {
-      return this.$store.getters['global/serverStatus'];
+    powerState() {
+      return this.$store.getters['global/powerState'];
+    },
+    isPowerOff() {
+      return this.$store.getters['global/isPowerOff'];
     },
     isOperationInProgress() {
       return this.$store.getters['controls/isOperationInProgress'];
     },
     isServerOff() {
-      return this.serverStatus === 'off' ? true : false;
+      return this.isPowerOff;
     },
     isPageDisabled() {
       if (this.isServerPowerOffRequired) {

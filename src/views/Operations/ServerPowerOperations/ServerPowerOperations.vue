@@ -64,7 +64,7 @@
               {{ $t('pageServerPowerOperations.operationInProgress') }}
             </alert>
           </template>
-          <template v-else-if="serverStatus === 'off'">
+          <template v-else-if="isPowerOff">
             <b-button
               variant="primary"
               data-test-id="serverPowerOperations-button-powerOn"
@@ -199,6 +199,9 @@ export default {
     },
     powerState() {
       return this.$store.getters['global/powerState'];
+    },
+    isPowerOff() {
+      return this.$store.getters['global/isPowerOff'];
     },
     isOperationInProgress() {
       return this.$store.getters['controls/isOperationInProgress'];
