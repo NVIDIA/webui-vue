@@ -351,6 +351,8 @@
 	"tableHeaderVersion": "Version",
         "viewMore": "View More",
         "viewLess": "View Less",
+        "expand": "Expand",
+        "collapse": "Collapse",
         "showAdvanced": "Show advanced",
         "hideAdvanced": "Hide advanced",
         "alert": {

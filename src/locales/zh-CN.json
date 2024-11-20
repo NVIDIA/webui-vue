@@ -351,6 +351,8 @@
         "tableHeaderVersion": "版本",
         "viewMore": "查看更多",
         "viewLess": "查看更少",
+        "expand": "展开",
+        "collapse": "收合",
         "showAdvanced": "显示高级选项",
         "hideAdvanced": "隐藏高级选项",
         "alert": {

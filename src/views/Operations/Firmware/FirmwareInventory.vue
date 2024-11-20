@@ -1,8 +1,28 @@
 <template>
   <div>
-    <page-section
-      :section-title="$t('pageFirmware.sectionTitleFirmwareInventory')"
-    >
+    <page-section>
+      <div style="display: flex; align-items: baseline;">
+        <h2 style="margin: 0;">{{ $t('pageFirmware.sectionTitleFirmwareInventory') }}</h2>
+        <b-button
+          variant="link"
+          :title="
+            isExpanded ? $t('pageFirmware.viewLess') : $t('pageFirmware.viewMore')
+          "
+          v-show="showViewButton"
+          class="btn-icon-only p-0 ml-3"
+          style="margin: 0"
+          @click="toggleExpand"
+        >
+          (
+            <u>
+              {{ firmwareInventory.length }}
+              {{
+                isExpanded ? $t('pageFirmware.collapse') : $t('pageFirmware.expand')
+              }}
+            </u>
+          )
+        </b-button>
+      </div>
       <b-button
         v-if="hideFirmwareTargets && hasFirmwareInventoryCheckbox && inventoryLoaded"
         variant="link"
@@ -14,12 +34,12 @@
             : $t('pageFirmware.showAdvanced')
         }}
       </b-button>
-      <div class="firmware-table-container">
+      <div class="mb-3">
         <b-table
           :items="displayedFirmwareInventory"
           :fields="fields"
+          :style="tableStyle"
           responsive="sm"
-          sticky-header="310px"
         >
           <template
             v-if="hasFirmwareInventoryCheckbox && (!hideFirmwareTargets || showAdvanced)"
@@ -45,19 +65,6 @@
             {{ data.item.status }}
           </template>
         </b-table>
-        <b-button
-          variant="link"
-          :title="
-            isExpanded ? $t('pageFirmware.viewLess') : $t('pageFirmware.viewMore')
-          "
-          v-show="showViewButton"
-          class="btn-icon-only p-0 ml-3"
-          @click="toggleExpand"
-        >
-          {{
-            isExpanded ? $t('pageFirmware.viewLess') : $t('pageFirmware.viewMore')
-          }}
-        </b-button>
       </div>
     </page-section>
   </div>
@@ -105,7 +112,14 @@ export default {
     },
     showViewButton() {
       return this.firmwareInventory.length > 5;
-    }
+    },
+    tableStyle() {
+      if (this.isExpanded) {
+        return { display: 'block', overflowY: 'hidden' };
+      } else {
+        return { display: 'block', overflowY: 'scroll' };
+      }
+    },
   },
   methods: {
     toggleExpand() {
@@ -132,11 +146,3 @@ export default {
   },
 };
 </script>
-
-<style lang="scss" scoped>
-.firmware-table-container {
-  border: 1px solid #d8d8d8;
-  border-radius: 4px;
-  margin-bottom: 1rem;
-}
-</style>
