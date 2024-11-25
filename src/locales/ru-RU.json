@@ -212,9 +212,7 @@
                 "timezone": "@:pageDateTime.form.time.label (%{timezone})"
             },
             "ntpServers": {
-                "server1": "Сервер 1",
-                "server2": "Сервер 2",
-                "server3": "Сервер 3"
+                "server1": "Сервер %{index}"
             }
         },
         "toast": {
