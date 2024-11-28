@@ -46,7 +46,7 @@ export default {
     return {
       selectedDumpType: null,
       dumpTypeOptions:
-        process.env.VUE_APP_ENV_NAME === 'nvidia-bluefield'
+        process.env.VUE_APP_HIDE_SYSTEM_DUMP === 'true'
           ? [{ value: 'bmc', text: this.$t('pageDumps.form.bmcDump') }]
           : [
               { value: 'bmc', text: this.$t('pageDumps.form.bmcDump') },
