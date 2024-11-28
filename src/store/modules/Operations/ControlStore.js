@@ -12,23 +12,31 @@ import i18n from '@/i18n';
  * @returns {Promise}
  */
 const checkForServerStatus = function (serverStatus) {
+  let unwatch = null;
+  let timer = null;
+
+  const cleanup = () => {
+    if (unwatch) unwatch();
+    if (timer) clearInterval(timer);
+  };
+
   return new Promise((resolve) => {
-    const timer = setInterval(async () => {
-      this.dispatch('global/getSystemInfo');
-      resolve();
-      unwatch();
-    }, 5000 /*5seconds*/);
-    const unwatch = this.watch(
+    unwatch = this.watch(
       (state) => state.global.serverStatus,
       (value) => {
         if (value === serverStatus) {
+          cleanup();
           resolve();
-          unwatch();
-          clearInterval(timer);
         }
       },
     );
-  });
+
+    timer = setInterval(() => {
+      this.dispatch('global/getSystemInfo');
+    }, 5000);
+
+    this.dispatch('global/getSystemInfo');
+  }).finally(cleanup);
 };
 
 const ControlStore = {
@@ -90,42 +98,42 @@ const ControlStore = {
     async serverPowerOn({ dispatch, commit }) {
       const data = { ResetType: 'On' };
       dispatch('serverPowerChange', data);
-      await checkForServerStatus.bind(this, 'on')();
+      await checkForServerStatus.bind(this, 'Enabled')();
       commit('setOperationInProgress', false);
       dispatch('getLastPowerOperationTime');
     },
     async serverSoftReboot({ dispatch, commit }) {
       const data = { ResetType: 'GracefulRestart' };
       dispatch('serverPowerChange', data);
-      await checkForServerStatus.bind(this, 'on')();
+      await checkForServerStatus.bind(this, 'Enabled')();
       commit('setOperationInProgress', false);
       dispatch('getLastPowerOperationTime');
     },
     async serverHardReboot({ dispatch, commit }) {
       const data = { ResetType: 'ForceRestart' };
       dispatch('serverPowerChange', data);
-      await checkForServerStatus.bind(this, 'on')();
+      await checkForServerStatus.bind(this, 'Enabled')();
       commit('setOperationInProgress', false);
       dispatch('getLastPowerOperationTime');
     },
     async serverPowerCycle({ dispatch, commit }) {
       const data = { ResetType: 'PowerCycle' };
       dispatch('serverPowerChange', data);
-      await checkForServerStatus.bind(this, 'on')();
+      await checkForServerStatus.bind(this, 'Enabled')();
       commit('setOperationInProgress', false);
       dispatch('getLastPowerOperationTime');
     },
     async serverSoftPowerOff({ dispatch, commit }) {
       const data = { ResetType: 'GracefulShutdown' };
       dispatch('serverPowerChange', data);
-      await checkForServerStatus.bind(this, 'off')();
+      await checkForServerStatus.bind(this, 'Disabled')();
       commit('setOperationInProgress', false);
       dispatch('getLastPowerOperationTime');
     },
     async serverHardPowerOff({ dispatch, commit }) {
       const data = { ResetType: 'ForceOff' };
       dispatch('serverPowerChange', data);
-      await checkForServerStatus.bind(this, 'off')();
+      await checkForServerStatus.bind(this, 'Disabled')();
       commit('setOperationInProgress', false);
       dispatch('getLastPowerOperationTime');
     },
