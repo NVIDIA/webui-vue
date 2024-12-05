@@ -377,7 +377,11 @@
                 "startUpdate": "Start update",
                 "server": "server",
                 "workstation": "Local file",
-                "confirmCheckedMessage": "Specifying targets is normally not required. By default all firmware included in a bundle will be flashed. Continue to update only the selected Target(s)?"
+                "confirmCheckedMessage": "Specifying targets is normally not required. By default all firmware included in a bundle will be flashed. Continue to update only the selected Target(s)?",
+                "apiErrorResponse": "API Error Response",
+                "clickToViewApiResponse": "click to view api error response",
+                "invalidFileAddress": "Invalid File Address",
+                "invalidTargetSelection": "Invalid Target Selection"
             }
         },
         "modal": {

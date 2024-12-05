@@ -290,6 +290,7 @@ const FirmwareStore = {
           console.log(error);
           throw new Error(
             await dispatch('extractResolutionForFailedCmd', error),
+            { cause: error },
           );
         });
     },
@@ -311,6 +312,7 @@ const FirmwareStore = {
           console.log(error);
           throw new Error(
             await dispatch('extractResolutionForFailedCmd', error),
+            { cause: error },
           );
         });
     },

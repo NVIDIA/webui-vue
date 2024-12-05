@@ -74,6 +74,11 @@
 .invalid-feedback {
   font-size: $form-label-font-size;
   line-height: $form-line-height;
+
+  a.error {
+    color: theme-color("danger");
+    text-decoration: underline;
+  }
 }
 
 .custom-checkbox .custom-control-input:checked ~ .custom-control-label::after,
