@@ -122,6 +122,28 @@ const AppNavigationMixin = {
             },
           ],
         },
+        {
+          id: 'security-and-access',
+          label: this.$t('appNavigation.securityAndAccess'),
+          icon: 'iconSecurityAndAccess',
+          children: [
+            {
+              id: 'sessions',
+              label: this.$t('appNavigation.sessions'),
+              route: '/security-and-access/sessions',
+            },
+            {
+              id: 'user-management',
+              label: this.$t('appNavigation.userManagement'),
+              route: '/security-and-access/user-management',
+            },
+            {
+              id: 'certificates',
+              label: this.$t('appNavigation.certificates'),
+              route: '/security-and-access/certificates',
+            },
+          ],
+        },
       ],
     };
   },

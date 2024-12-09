@@ -20,6 +20,9 @@ import SerialOverLan from '@/views/Operations/SerialOverLan';
 import SerialOverLanConsole from '@/views/Operations/SerialOverLan/SerialOverLanConsole';
 import ServerPowerOperations from '@/views/Operations/ServerPowerOperations';
 import Inventory from '@/views/HardwareStatus/Inventory';
+import Sessions from '@/views/SecurityAndAccess/Sessions';
+import UserManagement from '@/views/SecurityAndAccess/UserManagement';
+import Certificates from '@/views/SecurityAndAccess/Certificates';
 import i18n from '@/i18n';
 
 const roles = {
@@ -171,6 +174,30 @@ const routes = [
         component: Network,
         meta: {
           title: i18n.t('appPageTitle.network'),
+        },
+      },
+      {
+        path: '/security-and-access/sessions',
+        name: 'sessions',
+        component: Sessions,
+        meta: {
+          title: i18n.t('appPageTitle.sessions'),
+        },
+      },
+      {
+        path: '/security-and-access/user-management',
+        name: 'user-management',
+        component: UserManagement,
+        meta: {
+          title: i18n.t('appPageTitle.userManagement'),
+        },
+      },
+      {
+        path: '/security-and-access/certificates',
+        name: 'certificates',
+        component: Certificates,
+        meta: {
+          title: i18n.t('appPageTitle.certificates'),
         },
       },
       {
