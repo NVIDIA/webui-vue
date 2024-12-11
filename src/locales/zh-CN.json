@@ -371,6 +371,7 @@
                 "fileAddress": "文件地址",
                 "fileSource": "文件来源",
                 "confirmIdentity": "确认身份",
+                "trustCertificate": "信任证书",
                 "imageFile": "映像文件",
                 "forceUpdate": "强制更新",
                 "startUpdate": "开始更新",
