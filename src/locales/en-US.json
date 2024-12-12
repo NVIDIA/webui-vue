@@ -371,6 +371,7 @@
                 "fileAddress": "File address",
                 "fileSource": "File source",
                 "confirmIdentity": "Confirm the identity",
+                "trustCertificate": "Trusted certificates",
                 "imageFile": "Image file",
                 "forceUpdate": "Force Update",
                 "startUpdate": "Start update",

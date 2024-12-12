@@ -368,6 +368,7 @@
                 "fileAddress": "Адрес файла",
                 "fileSource": "Источник файла",
                 "confirmIdentity": "Подтвердите личность",
+                "trustCertificate": "Доверенные сертификаты",
                 "imageFile": "Файл образа",
                 "forceUpdate": "Принудительное обновление",
                 "startUpdate": "Начать обновление",

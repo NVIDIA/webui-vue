@@ -125,6 +125,13 @@
                 >
                   {{ $t('pageFirmware.form.updateFirmware.confirmIdentity') }}
                 </b-link>
+                <b-link
+                  v-if="showTrustCertificateLink"
+                  :disabled="isPageDisabled || isFirmwareUpdateInProgress"
+                  to='/security-and-access/certificates'
+                >
+                  {{ $t('pageFirmware.form.updateFirmware.trustCertificate') }}
+                </b-link>
               </div>
             </template>
             <b-form-input
@@ -304,6 +311,9 @@ export default {
         this.fileSource === 'SCP' &&
         this.sshAuthenticationMethods?.includes('PublicKey')
       );
+    },
+    showTrustCertificateLink() {
+      return this.fileSource === 'HTTPS';
     },
     remoteServerIp() {
       return this.fileAddress?.split('/')?.[0];
