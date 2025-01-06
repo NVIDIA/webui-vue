@@ -21,7 +21,6 @@ import SerialOverLan from '@/views/Operations/SerialOverLan';
 import SerialOverLanConsole from '@/views/Operations/SerialOverLan/SerialOverLanConsole';
 import ServerPowerOperations from '@/views/Operations/ServerPowerOperations';
 import VirtualMedia from '@/views/Operations/VirtualMedia';
-import SnmpAlerts from '@/views/Settings/SnmpAlerts';
 import i18n from '@/i18n';
 
 const roles = {
@@ -141,14 +140,6 @@ const routes = [
         component: DateTime,
         meta: {
           title: i18n.t('appPageTitle.dateTime'),
-        },
-      },
-      {
-        path: '/settings/snmp-alerts',
-        name: 'snmp-alerts',
-        component: SnmpAlerts,
-        meta: {
-          title: i18n.t('appPageTitle.snmpAlerts'),
         },
       },
       {
