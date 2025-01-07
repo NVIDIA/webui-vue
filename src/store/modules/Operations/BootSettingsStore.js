@@ -111,24 +111,22 @@ const BootSettingsStore = {
         });
     },
     async getTpmPolicy({ commit }) {
-      // TODO: switch to Redfish when available
       return await api
-        .get('/xyz/openbmc_project/control/host0/TPMEnable')
+        .get('/redfish/v1/Systems/System_0')
         .then(
           ({
             data: {
-              data: { TPMEnable },
+              Boot: { TrustedModuleRequiredToBoot },
             },
-          }) => commit('setTpmPolicy', TPMEnable),
+          }) => commit('setTpmPolicy', TrustedModuleRequiredToBoot === 'Required' ? true : false),
         )
         .catch((error) => console.log(error));
     },
     saveTpmPolicy({ commit, dispatch }, tpmEnabled) {
-      // TODO: switch to Redfish when available
-      const data = { data: tpmEnabled };
+      const data = {"Boot": {"TrustedModuleRequiredToBoot": tpmEnabled}};
       return api
-        .put(
-          '/xyz/openbmc_project/control/host0/TPMEnable/attr/TPMEnable',
+        .patch(
+          '/redfish/v1/Systems/System_0',
           data,
         )
         .then((response) => {
