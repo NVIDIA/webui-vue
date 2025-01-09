@@ -41,7 +41,7 @@ const PowerControlStore = {
       const collection = await dispatch('getChassisCollection');
       if (!collection || collection.length === 0) return;
       return await api
-        .get(`${collection[0]}`) //FIXME:  What is this?? It's the BMC Chassis in my case, a terible assumption.
+        .get(`${collection[0]}`) //FIXME:  What is this?? It's the BMC Chassis in my case, a terrible assumption.
         .then((response) => {
           if (typeof response.data.Power === 'undefined') {
             commit('setHasPowerControl', false);

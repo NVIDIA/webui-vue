@@ -24,9 +24,16 @@ export const itemsPerPageOptions = [
   },
 ];
 const BVPaginationMixin = {
+  data() {
+    return {
+      currentPage,
+      perPage,
+      itemsPerPageOptions
+    };
+  },
   methods: {
     getTotalRowCount(count) {
-      return this.perPage === 0 ? 0 : count;
+      return this.perPage === 0 ? count : count;
     },
   },
 };

@@ -256,6 +256,12 @@
             "successStartBmcDumpTitle": "BMC dump started",
             "successStartSystemDump": "The dump will take some time to complete. The dump will be offloaded to the operating system.",
             "successStartSystemDumpTitle": "System dump started"
+        },
+        "dumpTypes": {
+            "hmcDump": "HMC dump",
+            "bmcDump": "BMC dump",
+            "systemBmcDump": "System [BMC] dump (disruptive)",
+            "systemHgxDump": "System [HGX] dump (disruptive)"
         }
     },
     "pageEventLogs": {
