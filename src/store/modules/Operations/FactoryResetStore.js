@@ -4,30 +4,33 @@ import i18n from '@/i18n';
 const FactoryResetStore = {
   namespaced: true,
   state: {
-    biosSupported: true,
+    resetBiosUris: [],
   },
   getters: {
-    biosSupported: (state) => state.biosSupported,
+    resetBiosUris: (state) => state.resetBiosUris,
   },
   mutations: {
-    setBiosSupported: (state, value) => {
-      state.biosSupported = value;
+    setResetBiosUris: (state, value) => {
+      state.resetBiosUris = value;
     },
   },
   actions: {
-    async isBiosSupported({ commit }) {
-      const results = await this.dispatch('system/getSystemsWithProp', {
-        prop: 'Bios',
+    async preloadResetBiosTargets({ commit }) {
+      const results = await this.dispatch('system/getSystemsResources', {
+        name: 'Bios',
       });
-      const isBiosActionPresent = results.some(
-        (system) => system?.Bios?.Actions,
+      const resetBiosUris = results.flatMap(
+        (bios) => {
+          const uri = bios.Actions?.["#Bios.ResetBios"]?.['target'];
+          if (uri) return { Id: bios.Id, target: uri }
+        }
       );
-      commit('setBiosSupported', isBiosActionPresent);
+      commit('setResetBiosUris', resetBiosUris);
     },
-    async resetToDefaults() {
+    async resetToDefaults(_context, target) {
       return await api
         .post(
-          `${await this.dispatch('global/getBmcPath')}/Actions/Manager.ResetToDefaults`,
+          target,
           {
             ResetType: 'ResetAll',
           },
@@ -40,11 +43,9 @@ const FactoryResetStore = {
           );
         });
     },
-    async resetBios() {
+    async resetBios(_context, target) {
       return await api
-        .post(
-          `${await this.dispatch('global/getSystemPath')}/Bios/Actions/Bios.ResetBios`,
-        )
+        .post(target)
         .then(() => i18n.t('pageFactoryReset.toast.resetBiosSuccess'))
         .catch((error) => {
           console.log('Factory Reset: ', error);

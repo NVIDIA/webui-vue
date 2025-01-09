@@ -64,16 +64,16 @@ const SystemStore = {
         })
         .catch((error) => console.log(error));
     },
-    async getSytemsResources({ getters, dispatch }, { name, callback }) {
+    async getSystemsResources({ getters, dispatch }, { name, callback }) {
       if (!getters.isLoaded) await dispatch('getSystem');
       let Systems = getters.redfish_systems;
       let promises = Systems.flatMap(async (system) => {
         if (!(system[name] && system[name]['@odata.id'])) return;
         return await api
           .get(system[name]['@odata.id'])
-          .then(async ({ data: { Members = [] } }) => {
-            if (Members) {
-              const gets = Members.map((member) =>
+          .then(async ({data}) => {
+            if (data?.Members?.length) {
+              const gets = data.Members.map((member) =>
                 api
                   .get(member['@odata.id'])
                   .then((data) => {
@@ -83,7 +83,8 @@ const SystemStore = {
                   .catch(() => {}),
               );
               return await api.allSettled(gets);
-            }
+            } 
+            else return api.allSettled([data]);
           });
       });
       return await api

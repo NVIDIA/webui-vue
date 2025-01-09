@@ -104,19 +104,40 @@ exports[`AppHeader.vue should render correctly 1`] = `
           to="/operations/server-power-operations"
         >
           <span
-            class="status-icon off"
+            id="tooltip-target-power"
           >
-            <img
-              class="off"
-              height="24"
-              src="@/assets/images/power.svg"
-              svg-inline=""
-              width="24"
-            />
-          </span>
+            <span
+              class="status-icon off"
+            >
+              <img
+                class="off"
+                height="24"
+                src="@/assets/images/power.svg"
+                svg-inline=""
+                width="24"
+              />
+            </span>
+            
+            appHeader.power
           
-          appHeader.power
-        
+          </span>
+           
+          <b-tooltip
+            target="tooltip-target-power"
+            triggers="hover"
+          >
+            <div>
+              
+              pageServerPowerOperations.powerState : undefined
+            
+            </div>
+             
+            <div>
+              
+              pageServerPowerOperations.systemStatus : undefined
+            
+            </div>
+          </b-tooltip>
         </b-nav-item>
          
         <li

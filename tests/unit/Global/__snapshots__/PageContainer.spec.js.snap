@@ -1,8 +1,24 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`PageContainer.vue should render correctly 1`] = `
-<main
-  class="page-container"
-  id="main-content"
-/>
+<div>
+  <div
+    class="global-banner global-banner--warning"
+  >
+    <b-alert
+      class="text-center mb-0"
+      show=""
+      variant="warning"
+    >
+      
+    global.toast.bmcIsNotReady
+  
+    </b-alert>
+  </div>
+   
+  <main
+    class="page-container"
+    id="main-content"
+  />
+</div>
 `;
