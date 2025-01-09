@@ -302,8 +302,6 @@ const DumpsStore = {
           responseType: 'arraybuffer',
         })
         .then((response) => {
-          // Convert Base64 to Uint8Array using Buffer
-          //const bytes = new Uint8Array(Buffer.from(response.data, 'base64'));
           const blob = new Blob([response.data], {
             contentType: 'application/octet-stream',
           });

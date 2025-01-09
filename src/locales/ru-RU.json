@@ -54,7 +54,8 @@
             "required": "Обязательно",
             "search": "Поиск",
             "selectAnOption": "Выберите опцию",
-            "valueMustBeBetween": "Значение должно быть между %{min} – %{max}"
+            "valueMustBeBetween": "Значение должно быть между %{min} – %{max}",
+            "submitting": "Отправка..."
         },
         "status": {
             "copied": "Скопировано",

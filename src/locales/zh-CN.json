@@ -54,7 +54,8 @@
         "required": "必需",
         "search": "搜索",
         "selectAnOption": "选择一个选项",
-        "valueMustBeBetween": "值必须在 %{min} – %{max} 之间"
+        "valueMustBeBetween": "值必须在 %{min} – %{max} 之间",
+        "submitting": "提交中..."
       },
       "status": {
         "copied": "已复制",

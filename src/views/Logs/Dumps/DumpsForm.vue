@@ -59,7 +59,15 @@
             :label-for="`param-${param.Name}`"
             :aria-describedby="`param-${param.Name}-error param-${param.Name}-description`"
           >
+            <!-- Show static text for single-option parameters -->
+            <div v-if="param.AllowableValues && param.AllowableValues.length === 1">
+              <b-form-text tag="div" :id="`param-${param.Name}`">
+                {{ param.AllowableValues[0] }}
+              </b-form-text>
+            </div>
+            <!-- Show select dropdown for multi-option parameters -->
             <b-form-select
+              v-else
               :id="`param-${param.Name}`"
               v-model="parameterValues[param.Name]"
               :options="param.AllowableValues"
@@ -365,5 +373,8 @@ export default {
   display: block;
   margin-left: auto;
   margin-right: auto;
+}
+#selectDumpType {
+  margin-bottom: 2rem;
 }
 </style>

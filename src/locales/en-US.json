@@ -23,7 +23,8 @@
             "selected": "Selected",
             "ok": "OK",
             "warning": "Warning",
-            "critical": "Critical"
+            "critical": "Critical",
+            "submitting": "Submitting..."
         },
         "ariaLabel": {
             "clearSearch": "Clear search input",
@@ -54,7 +55,8 @@
             "required": "Required",
             "search": "Search",
             "selectAnOption": "Select an option",
-            "valueMustBeBetween": "Value must be between %{min} – %{max}"
+            "valueMustBeBetween": "Value must be between %{min} – %{max}",
+            "submitting": "Submitting..."
         },
         "status": {
             "copied": "Copied",
