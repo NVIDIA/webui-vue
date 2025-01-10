@@ -99,7 +99,7 @@
             <form-file
               id="image-file"
               :disabled="isPageDisabled || isFirmwareUpdateInProgress"
-              :state="getValidationState($v.file)"
+              :state="getValidationState(v$.file)"
               aria-describedby="image-file-help-block"
               @input="onFileUpload($event)"
             >
@@ -195,9 +195,12 @@ import { requiredIf } from 'vuelidate/lib/validators';
 import BVToastMixin from '@/components/Mixins/BVToastMixin';
 import LoadingBarMixin, { loading } from '@/components/Mixins/LoadingBarMixin';
 import VuelidateMixin from '@/components/Mixins/VuelidateMixin.js';
+import { useVuelidate } from '@vuelidate/core';
 
 import FormFile from '@/components/Global/FormFile';
 import ModalUpdateFirmware from './FirmwareModalUpdateFirmware';
+import { useI18n } from 'vue-i18n';
+import i18n from '@/i18n';
 import ModalConfirmIdentity from './FirmwareModalConfirmIdentity';
 
 export default {
@@ -214,8 +217,14 @@ export default {
       type: Boolean,
     },
   },
+  setup() {
+    return {
+      v$: useVuelidate(),
+    };
+  },
   data() {
     return {
+      $t: useI18n().t,
       loading,
       fileSource: 'LOCAL',
       file: null,
@@ -364,8 +373,18 @@ export default {
       this.isUploading = true;
       this.$store.commit('firmware/setFirmwareUploadProgress', 0);
       this.startLoader();
-      this.infoToast(this.$t('pageFirmware.toast.updateStartedMessage'), {
-        title: this.$t('pageFirmware.toast.updateStarted'),
+      const timerId = setTimeout(() => {
+        this.endLoader();
+        this.infoToast(
+          i18n.global.t('pageFirmware.toast.verifyUpdateMessage'),
+          {
+            title: i18n.global.t('pageFirmware.toast.verifyUpdate'),
+            refreshAction: true,
+          },
+        );
+      }, 360000);
+      this.infoToast(i18n.global.t('pageFirmware.toast.updateStartedMessage'), {
+        title: i18n.global.t('pageFirmware.toast.updateStarted'),
         timestamp: true,
       });
       this.dispatchFileUpload()
@@ -417,19 +436,19 @@ export default {
       } else if (state === 'Done' && oldState !== state) {
         this.endLoader();
         if (oldInitiator) {
-          this.infoToast(this.$t('pageFirmware.toast.verifyUpdateMessage'), {
-            title: this.$t('pageFirmware.toast.verifyUpdate'),
+          this.infoToast(i18n.global.t('pageFirmware.toast.verifyUpdateMessage'), {
+            title: i18n.global.t('pageFirmware.toast.verifyUpdate'),
             refreshAction: true,
           });
         }
       } else if (state === 'ResetFailed' && oldState !== state) {
         this.endLoader();
         if (oldInitiator)
-          this.errorToast(this.$t('pageFirmware.toast.resetFailedMessage'));
+          this.errorToast(i18n.global.t('pageFirmware.toast.resetFailedMessage'));
       } else if (state === 'WaitReadyFailed' && state !== state) {
         this.endLoader();
         if (oldInitiator)
-          this.errorToast(this.$t('pageFirmware.toast.waitReadyFailedMessage'));
+          this.errorToast(i18n.global.t('pageFirmware.toast.waitReadyFailedMessage'));
       } else if (state === 'TaskFailed' && oldState !== state) {
         this.endLoader();
         if (oldInitiator) this.errorToast(errMsg);
@@ -439,16 +458,16 @@ export default {
       this.$bvModal.show('modal-confirm-identity');
     },
     onSubmitUpload() {
-      this.$v.$touch();
-      if (this.$v.$invalid) return;
+      this.v$.$touch();
+      if (this.v$.$invalid) return;
       if (this.hasCheckedTargets) {
         this.$bvModal.msgBoxConfirm(
-          this.$t('pageFirmware.form.updateFirmware.confirmCheckedMessage'),
+          i18n.global.t('pageFirmware.form.updateFirmware.confirmCheckedMessage'),
           {
             buttonSize: 'sm',
             okVariant: 'danger',
-            okTitle: this.$t('global.action.confirm'),
-            cancelTitle: this.$t('global.action.cancel'),
+            okTitle: i18n.global.t('global.action.confirm'),
+            cancelTitle: i18n.global.t('global.action.cancel'),
             cancelVariant: 'secondary',
           },
         ).then(confirmed => {
@@ -462,7 +481,7 @@ export default {
     },
     onFileUpload(file) {
       this.file = file;
-      this.$v.file.$touch();
+      this.v$.file.$touch();
     },
   },
 };

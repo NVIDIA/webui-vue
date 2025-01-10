@@ -210,10 +210,6 @@ const FirmwareStore = {
         .then(async ({ data }) => {
           const applyTime =
             data.HttpPushUriOptions.HttpPushUriApplyTime.ApplyTime;
-          const allowableActions =
-            data?.Actions?.['#UpdateService.SimpleUpdate']?.[
-              'TransferProtocol@Redfish.AllowableValues'
-            ];
           commit('setApplyTime', applyTime);
           const httpPushUri = data.HttpPushUri;
           commit('setHttpPushUri', httpPushUri);
@@ -521,7 +517,7 @@ const FirmwareStore = {
       });
 
       if (resolutions.length > 0) return resolutions;
-      else return i18n.t('pageFirmware.toast.errorCompleteUpdateFirmware');
+      else return i18n.global.t('pageFirmware.toast.errorCompleteUpdateFirmware');
     },
     // eslint-disable-next-line no-unused-vars
     sleep({ state }, seconds) {

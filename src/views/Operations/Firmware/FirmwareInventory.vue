@@ -68,20 +68,23 @@ import PageSection from '@/components/Global/PageSection';
 import BVToastMixin from '@/components/Mixins/BVToastMixin';
 import StatusIcon from '@/components/Global/StatusIcon';
 import DataFormatterMixin from '@/components/Mixins/DataFormatterMixin';
+import { useI18n } from 'vue-i18n';
+import i18n from '@/i18n';
 
 export default {
   components: { PageSection, StatusIcon },
   mixins: [BVToastMixin, DataFormatterMixin],
   data() {
     return {
+      $t: useI18n().t,
       isExpanded: false,
       fields: [
         { key: 'select', label: '' },
-        { key: 'name', label: this.$t('pageFirmware.tableHeaderFirmware') },
-        { key: 'version', label: this.$t('pageFirmware.tableHeaderVersion') },
+        { key: 'name', label: i18n.global.t('pageFirmware.tableHeaderFirmware') },
+        { key: 'version', label: i18n.global.t('pageFirmware.tableHeaderVersion') },
         {
           key: 'health',
-          label: this.$t('pageFirmware.tableHeaderHealthStatus'),
+          label: i18n.global.t('pageFirmware.tableHeaderHealthStatus'),
         },
       ],
       hasFirmwareInventoryCheckbox:

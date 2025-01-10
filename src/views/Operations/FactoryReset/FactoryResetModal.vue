@@ -9,15 +9,26 @@
     <p class="mb-2">
       <strong>{{ $t(`pageFactoryReset.modal.${resetType}Header`) }}</strong>
     </p>
-    <ul class="pl-3 mb-4">
-      <li
-        v-for="(item, index) in $t(
-          `pageFactoryReset.modal.${resetType}SettingsList`,
-        )"
-        :key="index"
-        class="mt-1 mb-1"
-      >
-        {{ $t(item) }}
+    <ul v-if="resetType == 'resetBios'" class="pl-3 mb-4">
+      <li class="mt-1 mb-1">
+        {{ $t('pageFactoryReset.modal.resetBiosSettingsList.item1') }}
+      </li>
+      <li class="mt-1 mb-1">
+        {{ $t('pageFactoryReset.modal.resetBiosSettingsList.item2') }}
+      </li>
+    </ul>
+    <ul v-else-if="resetType == 'resetToDefaults'" class="pl-3 mb-4">
+      <li class="mt-1 mb-1">
+        {{ $t('pageFactoryReset.modal.resetToDefaultsSettingsList.item1') }}
+      </li>
+      <li class="mt-1 mb-1">
+        {{ $t('pageFactoryReset.modal.resetToDefaultsSettingsList.item2') }}
+      </li>
+      <li class="mt-1 mb-1">
+        {{ $t('pageFactoryReset.modal.resetToDefaultsSettingsList.item3') }}
+      </li>
+      <li class="mt-1 mb-1">
+        {{ $t('pageFactoryReset.modal.resetToDefaultsSettingsList.item4') }}
       </li>
     </ul>
 
@@ -32,13 +43,13 @@
       <b-form-checkbox
         v-model="confirm"
         aria-describedby="reset-to-default-warning"
-        @input="$v.confirm.$touch()"
+        @input="v$.confirm.$touch()"
       >
         {{ $t(`pageFactoryReset.modal.resetWarningCheckLabel`) }}
       </b-form-checkbox>
       <b-form-invalid-feedback
         role="alert"
-        :state="getValidationState($v.confirm)"
+        :state="getValidationState(v$.confirm)"
       >
         {{ $t('global.form.fieldRequired') }}
       </b-form-invalid-feedback>
@@ -66,6 +77,8 @@
 <script>
 import StatusIcon from '@/components/Global/StatusIcon';
 import VuelidateMixin from '@/components/Mixins/VuelidateMixin';
+import { useVuelidate } from '@vuelidate/core';
+import { useI18n } from 'vue-i18n';
 
 export default {
   components: { StatusIcon },
@@ -76,8 +89,14 @@ export default {
       default: null,
     },
   },
+  setup() {
+    return {
+      v$: useVuelidate(),
+    };
+  },
   data() {
     return {
+      $t: useI18n().t,
       confirm: false,
       showWarning: process.env.VUE_APP_ENV_NAME !== 'nvidia-bluefield',
     };
@@ -99,15 +118,15 @@ export default {
   },
   methods: {
     handleConfirm() {
-      this.$v.$touch();
-      if (this.$v.$invalid && this.showWarning) return;
+      this.v$.$touch();
+      if (this.v$.$invalid && this.showWarning) return;
       this.$emit('okConfirm');
       this.$nextTick(() => this.$refs.modal.hide());
       this.resetConfirm();
     },
     resetConfirm() {
       this.confirm = false;
-      this.$v.$reset();
+      this.v$.$reset();
     },
   },
 };

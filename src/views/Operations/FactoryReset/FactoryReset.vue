@@ -56,7 +56,7 @@
     </b-form>
 
     <!-- Modals -->
-    <modal-reset :reset-type="resetOption" @okConfirm="onOkConfirm" />
+    <modal-reset :reset-type="resetOption" @ok-confirm="onOkConfirm" />
   </b-container>
 </template>
 
@@ -65,6 +65,7 @@ import PageTitle from '@/components/Global/PageTitle';
 import BVToastMixin from '@/components/Mixins/BVToastMixin';
 import LoadingBarMixin from '@/components/Mixins/LoadingBarMixin';
 import ModalReset from './FactoryResetModal';
+import { useI18n } from 'vue-i18n';
 
 export default {
   name: 'FactoryReset',
@@ -72,6 +73,7 @@ export default {
   mixins: [LoadingBarMixin, BVToastMixin],
   data() {
     return {
+      $t: useI18n().t,
       resetOption: 'resetBios',
     };
   },

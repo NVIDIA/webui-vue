@@ -5,7 +5,8 @@
         <dl>
           <dt>{{ $t('pageOverview.bmcTime') }}</dt>
           <dd v-if="bmcTime" data-test-id="overviewQuickLinks-text-bmcTime">
-            {{ bmcTime | formatDate }} {{ bmcTime | formatTime }}
+            {{ $filters.formatDate(bmcTime) }}
+            {{ $filters.formatDate(bmcTime) }}
           </dd>
           <dd v-else>--</dd>
         </dl>
@@ -37,6 +38,7 @@
 <script>
 import ArrowRight16 from '@carbon/icons-vue/es/arrow--right/16';
 import BVToastMixin from '@/components/Mixins/BVToastMixin';
+import { useI18n } from 'vue-i18n';
 
 export default {
   name: 'QuickLinks',
@@ -44,6 +46,11 @@ export default {
     IconArrowRight: ArrowRight16,
   },
   mixins: [BVToastMixin],
+  data() {
+    return {
+      $t: useI18n().t,
+    };
+  },
   computed: {
     bmcTime() {
       return this.$store.getters['global/bmcTime'];
@@ -80,6 +87,9 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+@import '@/assets/styles/bmc/helpers/_index.scss';
+@import '@/assets/styles/bootstrap/_helpers.scss';
+
 dd,
 dl {
   margin: 0;

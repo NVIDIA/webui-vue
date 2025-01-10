@@ -74,6 +74,7 @@
 <script>
 import OverviewCard from './OverviewCard';
 import DataFormatterMixin from '@/components/Mixins/DataFormatterMixin';
+import { useI18n } from 'vue-i18n';
 
 export default {
   name: 'Network',
@@ -83,6 +84,7 @@ export default {
   mixins: [DataFormatterMixin],
   data() {
     return {
+      $t: useI18n().t,
       showIPv6: process.env.VUE_APP_ENV_NAME === 'nvidia-bluefield',
     };
   },

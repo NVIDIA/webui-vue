@@ -14,7 +14,7 @@
         <b-row v-if="!newUser && manualUnlockPolicy && user.Locked">
           <b-col sm="9">
             <alert :show="true" variant="warning" small>
-              <template v-if="!$v.form.manualUnlock.$dirty">
+              <template v-if="!v$.form.manualUnlock.$dirty">
                 {{ $t('pageUserManagement.modal.accountLocked') }}
               </template>
               <template v-else>
@@ -27,13 +27,12 @@
               v-model="form.manualUnlock"
               data-test-id="userManagement-input-manualUnlock"
               type="hidden"
-              value="false"
             />
             <b-button
               variant="primary"
-              :disabled="$v.form.manualUnlock.$dirty"
+              :disabled="v$.form.manualUnlock.$dirty"
               data-test-id="userManagement-button-manualUnlock"
-              @click="$v.form.manualUnlock.$touch()"
+              @click="v$.form.manualUnlock.$touch()"
             >
               {{ $t('pageUserManagement.modal.unlock') }}
             </b-button>
@@ -47,7 +46,7 @@
                 name="user-status"
                 :value="true"
                 data-test-id="userManagement-radioButton-statusEnabled"
-                @input="$v.form.status.$touch()"
+                @input="v$.form.status.$touch()"
               >
                 {{ $t('global.status.enabled') }}
               </b-form-radio>
@@ -57,7 +56,7 @@
                 data-test-id="userManagement-radioButton-statusDisabled"
                 :value="false"
                 :disabled="!newUser && originalUsername === disabled"
-                @input="$v.form.status.$touch()"
+                @input="v$.form.status.$touch()"
               >
                 {{ $t('global.status.disabled') }}
               </b-form-radio>
@@ -81,20 +80,20 @@
                 type="text"
                 aria-describedby="username-help-block"
                 data-test-id="userManagement-input-username"
-                :state="getValidationState($v.form.username)"
+                :state="getValidationState(v$.form.username)"
                 :disabled="!newUser && originalUsername === disabled"
-                @input="$v.form.username.$touch()"
+                @input="v$.form.username.$touch()"
               />
               <b-form-invalid-feedback role="alert">
-                <template v-if="!$v.form.username.required">
+                <template v-if="v$.form.username.required.$invalid">
                   {{ $t('global.form.fieldRequired') }}
                 </template>
-                <template v-else-if="!$v.form.username.maxLength">
+                <template v-else-if="v$.form.username.maxLength.$invalid">
                   {{
                     $t('global.form.lengthMustBeBetween', { min: 1, max: 16 })
                   }}
                 </template>
-                <template v-else-if="!$v.form.username.pattern">
+                <template v-else-if="v$.form.username.pattern.$invalid">
                   {{ $t('global.form.invalidFormat') }}
                 </template>
               </b-form-invalid-feedback>
@@ -108,9 +107,9 @@
                 v-model="form.privilege"
                 :options="privilegeTypes"
                 data-test-id="userManagement-select-privilege"
-                :state="getValidationState($v.form.privilege)"
+                :state="getValidationState(v$.form.privilege)"
                 :disabled="!newUser && originalUsername === 'root'"
-                @input="$v.form.privilege.$touch()"
+                @input="v$.form.privilege.$touch()"
               >
                 <template #first>
                   <b-form-select-option :value="null" disabled>
@@ -119,7 +118,7 @@
                 </template>
               </b-form-select>
               <b-form-invalid-feedback role="alert">
-                <template v-if="!$v.form.privilege.required">
+                <template v-if="v$.form.privilege.required.$invalid">
                   {{ $t('global.form.fieldRequired') }}
                 </template>
               </b-form-invalid-feedback>
@@ -145,17 +144,18 @@
                   type="password"
                   data-test-id="userManagement-input-password"
                   aria-describedby="password-help-block"
-                  :state="getValidationState($v.form.password)"
+                  :state="getValidationState(v$.form.password)"
                   class="form-control-with-button"
-                  @input="$v.form.password.$touch()"
+                  @input="v$.form.password.$touch()"
                 />
                 <b-form-invalid-feedback role="alert">
-                  <template v-if="!$v.form.password.required">
+                  <template v-if="v$.form.password.required.$invalid">
                     {{ $t('global.form.fieldRequired') }}
                   </template>
                   <template
                     v-if="
-                      !$v.form.password.minLength || !$v.form.password.maxLength
+                      v$.form.password.minLength.$invalid ||
+                      v$.form.password.maxLength.$invalid
                     "
                   >
                     {{
@@ -178,16 +178,20 @@
                   v-model="form.passwordConfirmation"
                   data-test-id="userManagement-input-passwordConfirmation"
                   type="password"
-                  :state="getValidationState($v.form.passwordConfirmation)"
+                  :state="getValidationState(v$.form.passwordConfirmation)"
                   class="form-control-with-button"
-                  @input="$v.form.passwordConfirmation.$touch()"
+                  @input="v$.form.passwordConfirmation.$touch()"
                 />
                 <b-form-invalid-feedback role="alert">
-                  <template v-if="!$v.form.passwordConfirmation.required">
+                  <template
+                    v-if="v$.form.passwordConfirmation.required.$invalid"
+                  >
                     {{ $t('global.form.fieldRequired') }}
                   </template>
                   <template
-                    v-else-if="!$v.form.passwordConfirmation.sameAsPassword"
+                    v-else-if="
+                      v$.form.passwordConfirmation.sameAsPassword.$invalid
+                    "
                   >
                     {{ $t('pageUserManagement.modal.passwordsDoNotMatch') }}
                   </template>
@@ -229,13 +233,15 @@ import {
   required,
   maxLength,
   minLength,
-  sameAs,
-  helpers,
   requiredIf,
-} from 'vuelidate/lib/validators';
+} from '@vuelidate/validators';
+import { helpers, sameAs } from 'vuelidate/lib/validators';
 import VuelidateMixin from '@/components/Mixins/VuelidateMixin.js';
+import { useVuelidate } from '@vuelidate/core';
+
 import InputPasswordToggle from '@/components/Global/InputPasswordToggle';
 import Alert from '@/components/Global/Alert';
+import { useI18n } from 'vue-i18n';
 
 export default {
   components: { Alert, InputPasswordToggle },
@@ -250,8 +256,14 @@ export default {
       required: true,
     },
   },
+  setup() {
+    return {
+      v$: useVuelidate(),
+    };
+  },
   data() {
     return {
+      $t: useI18n().t,
       originalUsername: '',
       form: {
         status: true,
@@ -323,28 +335,28 @@ export default {
       let userData = {};
 
       if (this.newUser) {
-        this.$v.$touch();
-        if (this.$v.$invalid) return;
+        this.v$.$touch();
+        if (this.v$.$invalid) return;
         userData.username = this.form.username;
         userData.status = this.form.status;
         userData.privilege = this.form.privilege;
         userData.password = this.form.password;
       } else {
-        if (this.$v.$invalid) return;
+        if (this.v$.$invalid) return;
         userData.originalUsername = this.originalUsername;
-        if (this.$v.form.status.$dirty) {
+        if (this.v$.form.status.$dirty) {
           userData.status = this.form.status;
         }
-        if (this.$v.form.username.$dirty) {
+        if (this.v$.form.username.$dirty) {
           userData.username = this.form.username;
         }
-        if (this.$v.form.privilege.$dirty) {
+        if (this.v$.form.privilege.$dirty) {
           userData.privilege = this.form.privilege;
         }
-        if (this.$v.form.password.$dirty) {
+        if (this.v$.form.password.$dirty) {
           userData.password = this.form.password;
         }
-        if (this.$v.form.manualUnlock.$dirty) {
+        if (this.v$.form.manualUnlock.$dirty) {
           // If form manualUnlock control $dirty then
           // set user Locked property to false
           userData.locked = false;
@@ -370,13 +382,13 @@ export default {
       this.form.privilege = null;
       this.form.password = '';
       this.form.passwordConfirmation = '';
-      this.$v.$reset();
+      this.v$.$reset();
       this.$emit('hidden');
     },
     requirePassword() {
       if (this.newUser) return true;
-      if (this.$v.form.password.$dirty) return true;
-      if (this.$v.form.passwordConfirmation.$dirty) return true;
+      if (this.v$.form.password.$dirty) return true;
+      if (this.v$.form.passwordConfirmation.$dirty) return true;
       return false;
     },
     onOk(bvModalEvt) {

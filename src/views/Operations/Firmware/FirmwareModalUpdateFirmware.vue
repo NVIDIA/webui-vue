@@ -35,12 +35,18 @@
 </template>
 
 <script>
+import { useI18n } from 'vue-i18n';
 export default {
   props: {
     targets: {
       type: Array,
       required: true,
     },
+  },
+  data() {
+    return {
+      $t: useI18n().t,
+    };
   },
   computed: {
     isSingleFileUploadEnabled() {

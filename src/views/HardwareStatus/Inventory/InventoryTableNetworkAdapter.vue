@@ -27,6 +27,8 @@
 import PageSection from '@/components/Global/PageSection';
 import BVToastMixin from '@/components/Mixins/BVToastMixin';
 import DataFormatterMixin from '@/components/Mixins/DataFormatterMixin';
+import { useI18n } from 'vue-i18n';
+import i18n from '@/i18n';
 
 export default {
   components: { PageSection },
@@ -34,11 +36,12 @@ export default {
   props: ['showLeds'],
   data() {
     return {
+      $t: useI18n().t,
       isBusy: true,
       fields: [
         {
           key: 'name',
-          label: this.$t('pageInventory.table.name'),
+          label: i18n.global.t('pageInventory.table.name'),
           formatter: this.dataFormatter,
         },
         {

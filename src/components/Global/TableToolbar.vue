@@ -31,6 +31,7 @@
 </template>
 
 <script>
+import { useI18n } from 'vue-i18n';
 export default {
   name: 'TableToolbar',
   props: {
@@ -53,6 +54,7 @@ export default {
   },
   data() {
     return {
+      $t: useI18n().t,
       isToolbarActive: false,
     };
   },
@@ -69,12 +71,17 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+@import '@/assets/styles/bmc/helpers/_index.scss';
+@import '@/assets/styles/bootstrap/_helpers.scss';
+
+@import 'bootstrap/dist/css/bootstrap.css';
+
 $toolbar-height: 46px;
 
 .toolbar-container {
   width: 100%;
   position: relative;
-  z-index: $zindex-dropdown + 1;
+  //z-index: $zindex-dropdown + 1;
 }
 
 .toolbar-content {

@@ -25,6 +25,7 @@
 </template>
 
 <script>
+import { useI18n } from 'vue-i18n';
 import { TextLogHandler } from '@/store/modules/Logs/TextLogHandler';
 export default {
   name: 'OverviewCard',
@@ -63,6 +64,11 @@ export default {
       default: '/',
     },
   },
+  data() {
+    return {
+      $t: useI18n().t,
+    };
+  },
   computed: {
     dataForExport() {
       return JSON.stringify(this.data);
@@ -85,6 +91,9 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+@import '@/assets/styles/bmc/helpers/_index.scss';
+@import '@/assets/styles/bootstrap/_helpers.scss';
+
 a {
   vertical-align: middle;
   font-size: 14px;

@@ -18,14 +18,14 @@
         <b-col lg="3">
           <dl>
             <dt>{{ $t('pageDateTime.form.date') }}</dt>
-            <dd v-if="bmcTime">{{ bmcTime | formatDate }}</dd>
+            <dd v-if="bmcTime">{{ $filters.formatDate(bmcTime) }}</dd>
             <dd v-else>--</dd>
           </dl>
         </b-col>
         <b-col lg="3">
           <dl>
             <dt>{{ $t('pageDateTime.form.time.label') }}</dt>
-            <dd v-if="bmcTime">{{ bmcTime | formatTime }}</dd>
+            <dd v-if="bmcTime">{{ $filters.formatTime(bmcTime) }}</dd>
             <dd v-else>--</dd>
           </dl>
         </b-col>
@@ -56,17 +56,17 @@
                   <b-form-input
                     id="input-manual-date"
                     v-model="form.manual.date"
-                    :state="getValidationState($v.form.manual.date)"
+                    :state="getValidationState(v$.form.manual.date)"
                     :disabled="ntpOptionSelected"
                     data-test-id="dateTime-input-manualDate"
                     class="form-control-with-button"
-                    @blur="$v.form.manual.date.$touch()"
+                    @blur="v$.form.manual.date.$touch()"
                   />
                   <b-form-invalid-feedback role="alert">
-                    <div v-if="!$v.form.manual.date.pattern">
+                    <div v-if="v$.form.manual.date.pattern.$invalid">
                       {{ $t('global.form.invalidFormat') }}
                     </div>
-                    <div v-if="!$v.form.manual.date.required">
+                    <div v-if="v$.form.manual.date.required.$invalid">
                       {{ $t('global.form.fieldRequired') }}
                     </div>
                   </b-form-invalid-feedback>
@@ -105,16 +105,16 @@
                   <b-form-input
                     id="input-manual-time"
                     v-model="form.manual.time"
-                    :state="getValidationState($v.form.manual.time)"
+                    :state="getValidationState(v$.form.manual.time)"
                     :disabled="ntpOptionSelected"
                     data-test-id="dateTime-input-manualTime"
-                    @blur="$v.form.manual.time.$touch()"
+                    @blur="v$.form.manual.time.$touch()"
                   />
                   <b-form-invalid-feedback role="alert">
-                    <div v-if="!$v.form.manual.time.pattern">
+                    <div v-if="v$.form.manual.time.pattern.$invalid">
                       {{ $t('global.form.invalidFormat') }}
                     </div>
-                    <div v-if="!$v.form.manual.time.required">
+                    <div v-if="v$.form.manual.time.required.$invalid">
                       {{ $t('global.form.fieldRequired') }}
                     </div>
                   </b-form-invalid-feedback>
@@ -139,13 +139,13 @@
                   <b-form-input
                     id="input-ntp-1"
                     v-model="form.ntp.firstAddress"
-                    :state="getValidationState($v.form.ntp.firstAddress)"
+                    :state="getValidationState(v$.form.ntp.firstAddress)"
                     :disabled="manualOptionSelected"
                     data-test-id="dateTime-input-ntpServer1"
-                    @blur="$v.form.ntp.firstAddress.$touch()"
+                    @blur="v$.form.ntp.firstAddress.$touch()"
                   />
                   <b-form-invalid-feedback role="alert">
-                    <div v-if="!$v.form.ntp.firstAddress.required">
+                    <div v-if="v$.form.ntp.firstAddress.required.$invalid">
                       {{ $t('global.form.fieldRequired') }}
                     </div>
                   </b-form-invalid-feedback>
@@ -206,9 +206,12 @@ import BVToastMixin from '@/components/Mixins/BVToastMixin';
 import LoadingBarMixin, { loading } from '@/components/Mixins/LoadingBarMixin';
 import LocalTimezoneLabelMixin from '@/components/Mixins/LocalTimezoneLabelMixin';
 import VuelidateMixin from '@/components/Mixins/VuelidateMixin.js';
+import { useVuelidate } from '@vuelidate/core';
 
 import { mapState } from 'vuex';
-import { requiredIf, helpers } from 'vuelidate/lib/validators';
+import { requiredIf } from '@vuelidate/validators';
+import { helpers } from 'vuelidate/lib/validators';
+import { useI18n } from 'vue-i18n';
 
 const isoDateRegex = /([12]\d{3}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01]))/;
 const isoTimeRegex = /^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]$/;
@@ -226,8 +229,14 @@ export default {
     this.hideLoader();
     next();
   },
+  setup() {
+    return {
+      v$: useVuelidate(),
+    };
+  },
   data() {
     return {
+      $t: useI18n().t,
       locale: this.$store.getters['global/languagePreference'],
       form: {
         configurationSelected: 'manual',
@@ -296,10 +305,10 @@ export default {
       this.emitChange();
     },
     bmcTime() {
-      this.form.manual.date = this.$options.filters.formatDate(
+      this.form.manual.date = this.$filters.formatDate(
         this.$store.getters['global/bmcTime'],
       );
-      this.form.manual.time = this.$options.filters
+      this.form.manual.time = this.$filters
         .formatTime(this.$store.getters['global/bmcTime'])
         .slice(0, 5);
     },
@@ -314,8 +323,8 @@ export default {
   },
   methods: {
     emitChange() {
-      if (this.$v.$invalid) return;
-      this.$v.$reset(); //reset to re-validate on blur
+      if (this.v$.$invalid) return;
+      this.v$.$reset(); //reset to re-validate on blur
       this.$emit('change', {
         manualDate: this.manualDate ? new Date(this.manualDate) : null,
       });
@@ -331,8 +340,8 @@ export default {
       ] = [this.ntpServers[0], this.ntpServers[1], this.ntpServers[2]];
     },
     submitForm() {
-      this.$v.$touch();
-      if (this.$v.$invalid) return;
+      this.v$.$touch();
+      if (this.v$.$invalid) return;
       this.startLoader();
 
       let dateTimeForm = {};
@@ -392,7 +401,7 @@ export default {
         })
         .catch(({ message }) => this.errorToast(message))
         .finally(() => {
-          this.$v.form.$reset();
+          this.v$.form.$reset();
           this.endLoader();
         });
     },

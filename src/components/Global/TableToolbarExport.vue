@@ -5,6 +5,7 @@
 </template>
 
 <script>
+import { useI18n } from 'vue-i18n';
 import { TextLogHandler } from '@/store/modules/Logs/TextLogHandler';
 export default {
   props: {
@@ -16,6 +17,11 @@ export default {
       type: String,
       default: 'data',
     },
+  },
+  data() {
+    return {
+      $t: useI18n().t,
+    };
   },
   methods: {
     href() {

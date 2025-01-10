@@ -44,8 +44,8 @@
                   v-if="lastPowerOperationTime"
                   data-test-id="powerServerOps-text-lastPowerOp"
                 >
-                  {{ lastPowerOperationTime | formatDate }}
-                  {{ lastPowerOperationTime | formatTime }}
+                  {{ $filters.formatDate(lastPowerOperationTime) }}
+                  {{ $filters.formatTime(lastPowerOperationTime) }}
                 </dd>
                 <dd v-else>--</dd>
               </dl>
@@ -150,7 +150,9 @@
                 >
                   {{ $t('pageServerPowerOperations.gracefulShutdown') }}
                   <info-tooltip
-                    :title="$t('pageServerPowerOperations.gracefulShutdownInfo')"
+                    :title="
+                      $t('pageServerPowerOperations.gracefulShutdownInfo')
+                    "
                   />
                 </b-form-radio>
                 <b-form-radio
@@ -189,6 +191,8 @@ import BootSettings from './BootSettings';
 import LoadingBarMixin from '@/components/Mixins/LoadingBarMixin';
 import Alert from '@/components/Global/Alert';
 import InfoTooltip from '@/components/Global/InfoTooltip';
+import { useI18n } from 'vue-i18n';
+import i18n from '@/i18n';
 
 export default {
   name: 'ServerPowerOperations',
@@ -200,6 +204,7 @@ export default {
   },
   data() {
     return {
+      $t: useI18n().t,
       form: {
         rebootOption: 'orderly',
         shutdownOption: 'orderly',
@@ -246,13 +251,15 @@ export default {
       this.$store.dispatch('controls/serverPowerOn');
     },
     rebootServer() {
-      const modalMessage = this.$t(
+      const modalMessage = i18n.global.t(
         'pageServerPowerOperations.modal.confirmRebootMessage',
       );
       const modalOptions = {
-        title: this.$t('pageServerPowerOperations.modal.confirmRebootTitle'),
-        okTitle: this.$t('global.action.confirm'),
-        cancelTitle: this.$t('global.action.cancel'),
+        title: i18n.global.t(
+          'pageServerPowerOperations.modal.confirmRebootTitle',
+        ),
+        okTitle: i18n.global.t('global.action.confirm'),
+        cancelTitle: i18n.global.t('global.action.cancel'),
         autoFocusButton: 'ok',
       };
 
@@ -277,13 +284,15 @@ export default {
       }
     },
     shutdownServer() {
-      const modalMessage = this.$t(
+      const modalMessage = i18n.global.t(
         'pageServerPowerOperations.modal.confirmShutdownMessage',
       );
       const modalOptions = {
-        title: this.$t('pageServerPowerOperations.modal.confirmShutdownTitle'),
-        okTitle: this.$t('global.action.confirm'),
-        cancelTitle: this.$t('global.action.cancel'),
+        title: i18n.global.t(
+          'pageServerPowerOperations.modal.confirmShutdownTitle',
+        ),
+        okTitle: i18n.global.t('global.action.confirm'),
+        cancelTitle: i18n.global.t('global.action.cancel'),
         autoFocusButton: 'ok',
       };
 

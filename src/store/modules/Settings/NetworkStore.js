@@ -119,15 +119,15 @@ const NetworkStore = {
         )
         .then(dispatch('getEthernetData'))
         .then(() => {
-          return i18n.t('pageNetwork.toast.successSaveNetworkSettings', {
-            setting: i18n.t('pageNetwork.dhcp'),
+          return i18n.global.t('pageNetwork.toast.successSaveNetworkSettings', {
+            setting: i18n.global.t('pageNetwork.dhcp'),
           });
         })
         .catch((error) => {
           console.log(error);
           throw new Error(
-            i18n.t('pageNetwork.toast.errorSaveNetworkSettings', {
-              setting: i18n.t('pageNetwork.dhcp'),
+            i18n.global.t('pageNetwork.toast.errorSaveNetworkSettings', {
+              setting: i18n.global.t('pageNetwork.dhcp'),
             }),
           );
         });
@@ -183,8 +183,8 @@ const NetworkStore = {
           data,
         )
         .then(() => {
-          return i18n.t('pageNetwork.toast.successSaveNetworkSettings', {
-            setting: i18n.t('pageNetwork.domainName'),
+          return i18n.global.t('pageNetwork.toast.successSaveNetworkSettings', {
+            setting: i18n.global.t('pageNetwork.domainName'),
           });
         })
         .catch((error) => {
@@ -193,8 +193,8 @@ const NetworkStore = {
           else if (ipVersion === 'IPv6')
             commit('setDomainNameStateIpv6', !domainState);
           throw new Error(
-            i18n.t('pageNetwork.toast.errorSaveNetworkSettings', {
-              setting: i18n.t('pageNetwork.domainName'),
+            i18n.global.t('pageNetwork.toast.errorSaveNetworkSettings', {
+              setting: i18n.global.t('pageNetwork.domainName'),
             }),
           );
         });
@@ -224,8 +224,8 @@ const NetworkStore = {
           data,
         )
         .then(() => {
-          return i18n.t('pageNetwork.toast.successSaveNetworkSettings', {
-            setting: i18n.t('pageNetwork.dns'),
+          return i18n.global.t('pageNetwork.toast.successSaveNetworkSettings', {
+            setting: i18n.global.t('pageNetwork.dns'),
           });
         })
         .catch((error) => {
@@ -233,8 +233,8 @@ const NetworkStore = {
           if (ipVersion === 'IPv4') commit('setDnsState', !dnsState);
           else if (ipVersion === 'IPv6') commit('setDnsStateIpv6', !dnsState);
           throw new Error(
-            i18n.t('pageNetwork.toast.errorSaveNetworkSettings', {
-              setting: i18n.t('pageNetwork.dns'),
+            i18n.global.t('pageNetwork.toast.errorSaveNetworkSettings', {
+              setting: i18n.global.t('pageNetwork.dns'),
             }),
           );
         });
@@ -264,8 +264,8 @@ const NetworkStore = {
           data,
         )
         .then(() => {
-          return i18n.t('pageNetwork.toast.successSaveNetworkSettings', {
-            setting: i18n.t('pageNetwork.ntp'),
+          return i18n.global.t('pageNetwork.toast.successSaveNetworkSettings', {
+            setting: i18n.global.t('pageNetwork.ntp'),
           });
         })
         .catch((error) => {
@@ -273,8 +273,8 @@ const NetworkStore = {
           if (ipVersion === 'IPv4') commit('setNtpState', !ntpState);
           else if (ipVersion === 'IPv6') commit('setNtpStateIpv6', !ntpState);
           throw new Error(
-            i18n.t('pageNetwork.toast.errorSaveNetworkSettings', {
-              setting: i18n.t('pageNetwork.ntp'),
+            i18n.global.t('pageNetwork.toast.errorSaveNetworkSettings', {
+              setting: i18n.global.t('pageNetwork.ntp'),
             }),
           );
         });
@@ -304,15 +304,46 @@ const NetworkStore = {
         )
         .then(dispatch('getEthernetData'))
         .then(() => {
-          return i18n.t('pageNetwork.toast.successSaveNetworkSettings', {
-            setting: i18n.t('pageNetwork.ipv4'),
+          return i18n.global.t('pageNetwork.toast.successSaveNetworkSettings', {
+            setting: i18n.global.t('pageNetwork.ipv4'),
           });
         })
         .catch((error) => {
           console.log(error);
           throw new Error(
-            i18n.t('pageNetwork.toast.errorSaveNetworkSettings', {
-              setting: i18n.t('pageNetwork.ipv4'),
+            i18n.global.t('pageNetwork.toast.errorSaveNetworkSettings', {
+              setting: i18n.global.t('pageNetwork.ipv4'),
+            }),
+          );
+        });
+    },
+    async saveIpv6Address({ dispatch, state }, ipv6Form) {
+      const originalAddresses = state.ethernetData[
+        state.selectedInterfaceIndex
+      ].IPv6StaticAddresses.map((ipv6) => {
+        const { Address, PrefixLength } = ipv6;
+        return {
+          Address,
+          PrefixLength,
+        };
+      });
+      const newAddress = [ipv6Form];
+      return api
+        .patch(
+          `${await this.dispatch('global/getBmcPath')}/EthernetInterfaces/${state.selectedInterfaceId}`,
+          { IPv6StaticAddresses: originalAddresses.concat(newAddress) },
+        )
+        .then(dispatch('getEthernetData'))
+        .then(() => {
+          return i18n.global.t('pageNetwork.toast.successSaveNetworkSettings', {
+            setting: i18n.global.t('pageNetwork.ipv6'),
+          });
+        })
+        .catch((error) => {
+          console.log(error);
+          throw new Error(
+            i18n.global.t('pageNetwork.toast.errorSaveNetworkSettings', {
+              setting: i18n.global.t('pageNetwork.ipv6'),
             }),
           );
         });
@@ -356,15 +387,36 @@ const NetworkStore = {
         )
         .then(dispatch('getEthernetData'))
         .then(() => {
-          return i18n.t('pageNetwork.toast.successSaveNetworkSettings', {
-            setting: i18n.t('pageNetwork.ipv4'),
+          return i18n.global.t('pageNetwork.toast.successSaveNetworkSettings', {
+            setting: i18n.global.t('pageNetwork.ipv4'),
           });
         })
         .catch((error) => {
           console.log(error);
           throw new Error(
-            i18n.t('pageNetwork.toast.errorSaveNetworkSettings', {
-              setting: i18n.t('pageNetwork.ipv4'),
+            i18n.global.t('pageNetwork.toast.errorSaveNetworkSettings', {
+              setting: i18n.global.t('pageNetwork.ipv4'),
+            }),
+          );
+        });
+    },
+    async editIpv6Address({ dispatch, state }, ipv6TableData) {
+      return api
+        .patch(
+          `${await this.dispatch('global/getBmcPath')}/EthernetInterfaces/${state.selectedInterfaceId}`,
+          { IPv6StaticAddresses: ipv6TableData },
+        )
+        .then(dispatch('getEthernetData'))
+        .then(() => {
+          return i18n.global.t('pageNetwork.toast.successSaveNetworkSettings', {
+            setting: i18n.global.t('pageNetwork.ipv6'),
+          });
+        })
+        .catch((error) => {
+          console.log(error);
+          throw new Error(
+            i18n.global.t('pageNetwork.toast.errorSaveNetworkSettings', {
+              setting: i18n.global.t('pageNetwork.ipv6'),
             }),
           );
         });
@@ -398,15 +450,15 @@ const NetworkStore = {
         )
         .then(dispatch('getEthernetData'))
         .then(() => {
-          return i18n.t('pageNetwork.toast.successSaveNetworkSettings', {
-            setting: i18n.t('pageNetwork.network'),
+          return i18n.global.t('pageNetwork.toast.successSaveNetworkSettings', {
+            setting: i18n.global.t('pageNetwork.network'),
           });
         })
         .catch((error) => {
           console.log(error);
           throw new Error(
-            i18n.t('pageNetwork.toast.errorSaveNetworkSettings', {
-              setting: i18n.t('pageNetwork.network'),
+            i18n.global.t('pageNetwork.toast.errorSaveNetworkSettings', {
+              setting: i18n.global.t('pageNetwork.network'),
             }),
           );
         });
@@ -423,15 +475,15 @@ const NetworkStore = {
         )
         .then(dispatch('getEthernetData'))
         .then(() => {
-          return i18n.t('pageNetwork.toast.successSaveNetworkSettings', {
-            setting: i18n.t('pageNetwork.dns'),
+          return i18n.global.t('pageNetwork.toast.successSaveNetworkSettings', {
+            setting: i18n.global.t('pageNetwork.dns'),
           });
         })
         .catch((error) => {
           console.log(error);
           throw new Error(
-            i18n.t('pageNetwork.toast.errorSaveNetworkSettings', {
-              setting: i18n.t('pageNetwork.dns'),
+            i18n.global.t('pageNetwork.toast.errorSaveNetworkSettings', {
+              setting: i18n.global.t('pageNetwork.dns'),
             }),
           );
         });
@@ -444,15 +496,15 @@ const NetworkStore = {
         )
         .then(dispatch('getEthernetData'))
         .then(() => {
-          return i18n.t('pageNetwork.toast.successSaveNetworkSettings', {
-            setting: i18n.t('pageNetwork.dns'),
+          return i18n.global.t('pageNetwork.toast.successSaveNetworkSettings', {
+            setting: i18n.global.t('pageNetwork.dns'),
           });
         })
         .catch((error) => {
           console.log(error);
           throw new Error(
-            i18n.t('pageNetwork.toast.errorSaveNetworkSettings', {
-              setting: i18n.t('pageNetwork.dns'),
+            i18n.global.t('pageNetwork.toast.errorSaveNetworkSettings', {
+              setting: i18n.global.t('pageNetwork.dns'),
             }),
           );
         });

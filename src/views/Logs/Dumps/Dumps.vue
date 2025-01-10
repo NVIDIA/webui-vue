@@ -85,8 +85,8 @@
 
             <!-- Date and Time column -->
             <template #cell(dateTime)="{ value }">
-              <p class="mb-0">{{ value | formatDate }}</p>
-              <p class="mb-0">{{ value | formatTime }}</p>
+              <p class="mb-0">{{ $filters.formatDate(value) }}</p>
+              <p class="mb-0">{{ $filters.formatTime(value) }}</p>
             </template>
 
             <!-- Size column -->
@@ -172,6 +172,8 @@ import SearchFilterMixin, {
 } from '@/components/Mixins/SearchFilterMixin';
 import TableFilter from '@/components/Global/TableFilter';
 import TableFilterMixin from '@/components/Mixins/TableFilterMixin';
+import { useI18n } from 'vue-i18n';
+import i18n from '@/i18n';
 
 export default {
   components: {
@@ -203,6 +205,7 @@ export default {
   },
   data() {
     return {
+      $t: useI18n().t,
       isBusy: true,
       fields: [
         {
@@ -211,22 +214,22 @@ export default {
         },
         {
           key: 'dateTime',
-          label: this.$t('pageDumps.table.dateAndTime'),
+          label: i18n.global.t('pageDumps.table.dateAndTime'),
           sortable: true,
         },
         {
           key: 'dumpType',
-          label: this.$t('pageDumps.table.dumpType'),
+          label: i18n.global.t('pageDumps.table.dumpType'),
           sortable: true,
         },
         {
           key: 'id',
-          label: this.$t('pageDumps.table.id'),
+          label: i18n.global.t('pageDumps.table.id'),
           sortable: true,
         },
         {
           key: 'size',
-          label: this.$t('pageDumps.table.size'),
+          label: i18n.global.t('pageDumps.table.size'),
           sortable: true,
         },
         {
@@ -239,13 +242,13 @@ export default {
       batchActions: [
         {
           value: 'delete',
-          label: this.$t('global.action.delete'),
+          label: i18n.global.t('global.action.delete'),
         },
       ],
       tableFilters: [
         {
           key: 'dumpType',
-          label: this.$t('pageDumps.table.dumpType'),
+          label: i18n.global.t('pageDumps.table.dumpType'),
           values: [
             'BMC Dump Entry',
             'Hostboot Dump Entry',
@@ -281,11 +284,11 @@ export default {
           actions: [
             {
               value: 'download',
-              title: this.$t('global.action.download'),
+              title: i18n.global.t('global.action.download'),
             },
             {
               value: 'delete',
-              title: this.$t('global.action.delete'),
+              title: i18n.global.t('global.action.delete'),
             },
           ],
         };
@@ -330,12 +333,15 @@ export default {
     onTableRowAction(action, dump) {
       if (action === 'delete') {
         this.$bvModal
-          .msgBoxConfirm(this.$tc('pageDumps.modal.deleteDumpConfirmation'), {
-            title: this.$tc('pageDumps.modal.deleteDump'),
-            okTitle: this.$tc('pageDumps.modal.deleteDump'),
-            cancelTitle: this.$t('global.action.cancel'),
-            autoFocusButton: 'ok',
-          })
+          .msgBoxConfirm(
+            i18n.global.t('pageDumps.modal.deleteDumpConfirmation'),
+            {
+              title: i18n.global.t('pageDumps.modal.deleteDump'),
+              okTitle: i18n.global.t('pageDumps.modal.deleteDump'),
+              cancelTitle: i18n.global.t('global.action.cancel'),
+              autoFocusButton: 'ok',
+            },
+          )
           .then((deleteConfrimed) => {
             if (deleteConfrimed) {
               this.$store
@@ -357,20 +363,20 @@ export default {
       if (action === 'delete') {
         this.$bvModal
           .msgBoxConfirm(
-            this.$tc(
+            i18n.global.t(
               'pageDumps.modal.deleteDumpConfirmation',
               this.selectedRows.length,
             ),
             {
-              title: this.$tc(
+              title: i18n.global.t(
                 'pageDumps.modal.deleteDump',
                 this.selectedRows.length,
               ),
-              okTitle: this.$tc(
+              okTitle: i18n.global.t(
                 'pageDumps.modal.deleteDump',
                 this.selectedRows.length,
               ),
-              cancelTitle: this.$t('global.action.cancel'),
+              cancelTitle: i18n.global.t('global.action.cancel'),
               autoFocusButton: 'ok',
             },
           )

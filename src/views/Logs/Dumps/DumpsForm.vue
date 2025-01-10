@@ -9,7 +9,7 @@
           id="selectDumpType"
           v-model="selectedDumpType"
           :options="dumpTypeOptions"
-          :state="getValidationState($v.selectedDumpType)"
+          :state="getValidationState(v$.selectedDumpType)"
         >
           <template #first>
             <b-form-select-option :value="null" disabled>
@@ -33,24 +33,33 @@
 </template>
 
 <script>
-import { required } from 'vuelidate/lib/validators';
+import { useVuelidate } from '@vuelidate/core';
+import { required } from '@vuelidate/validators';
 import ModalConfirmation from './DumpsModalConfirmation';
 import Alert from '@/components/Global/Alert';
 import BVToastMixin from '@/components/Mixins/BVToastMixin';
 import VuelidateMixin from '@/components/Mixins/VuelidateMixin.js';
+import { useI18n } from 'vue-i18n';
+import i18n from '@/i18n';
 
 export default {
   components: { Alert, ModalConfirmation },
   mixins: [BVToastMixin, VuelidateMixin],
+  setup() {
+    return {
+      v$: useVuelidate(),
+    };
+  },
   data() {
     return {
+      $t: useI18n().t,
       selectedDumpType: null,
       dumpTypeOptions:
         process.env.VUE_APP_ENV_NAME === 'nvidia-bluefield'
-          ? [{ value: 'bmc', text: this.$t('pageDumps.form.bmcDump') }]
+          ? [{ value: 'bmc', text: i18n.global.t('pageDumps.form.bmcDump') }]
           : [
-              { value: 'bmc', text: this.$t('pageDumps.form.bmcDump') },
-              { value: 'system', text: this.$t('pageDumps.form.systemDump') },
+              { value: 'bmc', text: i18n.global.t('pageDumps.form.bmcDump') },
+              { value: 'system', text: i18n.global.t('pageDumps.form.systemDump') },
             ],
     };
   },
@@ -61,8 +70,8 @@ export default {
   },
   methods: {
     handleSubmit() {
-      this.$v.$touch();
-      if (this.$v.$invalid) return;
+      this.v$.$touch();
+      if (this.v$.$invalid) return;
 
       // System dump initiation
       if (this.selectedDumpType === 'system') {
@@ -73,10 +82,15 @@ export default {
         this.$store
           .dispatch('dumps/createBmcDump')
           .then(() =>
-            this.infoToast(this.$t('pageDumps.toast.successStartBmcDump'), {
-              title: this.$t('pageDumps.toast.successStartBmcDumpTitle'),
-              timestamp: true,
-            }),
+            this.infoToast(
+              i18n.global.t('pageDumps.toast.successStartBmcDump'),
+              {
+                title: i18n.global.t(
+                  'pageDumps.toast.successStartBmcDumpTitle',
+                ),
+                timestamp: true,
+              },
+            ),
           )
           .catch(({ message }) => this.errorToast(message));
       }
@@ -88,10 +102,15 @@ export default {
       this.$store
         .dispatch('dumps/createSystemDump')
         .then(() =>
-          this.infoToast(this.$t('pageDumps.toast.successStartSystemDump'), {
-            title: this.$t('pageDumps.toast.successStartSystemDumpTitle'),
-            timestamp: true,
-          }),
+          this.infoToast(
+            i18n.global.t('pageDumps.toast.successStartSystemDump'),
+            {
+              title: i18n.global.t(
+                'pageDumps.toast.successStartSystemDumpTitle',
+              ),
+              timestamp: true,
+            },
+          ),
         )
         .catch(({ message }) => this.errorToast(message));
     },

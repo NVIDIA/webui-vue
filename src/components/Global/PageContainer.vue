@@ -16,6 +16,7 @@ import { mapState } from 'vuex';
 import JumpLinkMixin from '@/components/Mixins/JumpLinkMixin';
 import GlobalBanner from '@/components/Global/GlobalBanner';
 import { startManagerStatusCheck } from '@/services/ManagerStatusService';
+import { useI18n } from 'vue-i18n';
 export default {
   name: 'PageContainer',
   components: { GlobalBanner },
@@ -24,6 +25,11 @@ export default {
     isManagerReady() {
       return this.$store.state.bmc.isManagerReady;
     },
+  },
+  data() {
+    return {
+      $t: useI18n().t,
+    };
   },
   created() {
     this.managerStatusIntervalId = startManagerStatusCheck();
@@ -39,6 +45,10 @@ export default {
 };
 </script>
 <style lang="scss" scoped>
+@import '@/assets/styles/bmc/helpers/_index.scss';
+@import '@/assets/styles/bootstrap/_helpers.scss';
+
+@import 'bootstrap/dist/css/bootstrap.css';
 main {
   width: 100%;
   height: 100%;

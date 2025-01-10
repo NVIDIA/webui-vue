@@ -56,7 +56,9 @@
 
 <script>
 import { omit } from 'lodash';
+import { useI18n } from 'vue-i18n';
 import { TextLogHandler } from '@/store/modules/Logs/TextLogHandler';
+
 export default {
   name: 'TableRowAction',
   props: {
@@ -96,6 +98,11 @@ export default {
       type: Boolean,
       default: true,
     },
+  },
+  data() {
+    return {
+      $t: useI18n().t,
+    };
   },
   computed: {
     dataForExport() {

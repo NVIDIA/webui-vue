@@ -60,6 +60,7 @@ import { BFormTextarea } from 'bootstrap-vue';
 import { required } from 'vuelidate/lib/validators';
 import VuelidateMixin from '@/components/Mixins/VuelidateMixin.js';
 import StatusIcon from '@/components/Global/StatusIcon';
+import { useI18n } from 'vue-i18n';
 
 export default {
   components: {
@@ -75,6 +76,7 @@ export default {
   },
   data() {
     return {
+      $t: useI18n().t,
       remoteServerIp: null,
       remoteServerKey: null,
       bmcKey: null,

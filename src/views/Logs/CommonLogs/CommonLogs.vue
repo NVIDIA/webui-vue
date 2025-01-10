@@ -282,6 +282,8 @@ import SearchFilterMixin, {
   searchFilter,
 } from '@/components/Mixins/SearchFilterMixin';
 import { TextLogHandler } from '@/store/modules/Logs/TextLogHandler';
+import { useI18n } from 'vue-i18n';
+import i18n from '@/i18n';
 export default {
   components: {
     IconDelete,
@@ -336,6 +338,7 @@ export default {
   },
   data() {
     return {
+      $t: useI18n().t,
       isBusy: true,
       fields: [
         {
@@ -349,37 +352,37 @@ export default {
         },
         {
           key: 'Id',
-          label: this.$t('pageEventLogs.table.id'),
+          label: i18n.global.t('pageEventLogs.table.id'),
           sortable: true,
         },
         {
           key: 'Severity',
-          label: this.$t('pageEventLogs.table.severity'),
+          label: i18n.global.t('pageEventLogs.table.severity'),
           sortable: true,
           tdClass: 'text-nowrap',
         },
         {
           key: 'date',
-          label: this.$t('pageEventLogs.table.date'),
+          label: i18n.global.t('pageEventLogs.table.date'),
           sortable: true,
           tdClass: 'text-nowrap',
         },
         this.optFields.includes('sensor')
           ? {
               key: 'sensor',
-              label: this.$t('pageEventLogs.table.sensor'),
+              label: i18n.global.t('pageEventLogs.table.sensor'),
               tdClass: 'text-break',
             }
           : {},
         {
           key: 'Message',
-          label: this.$t('pageEventLogs.table.description'),
+          label: i18n.global.t('pageEventLogs.table.description'),
           tdClass: 'text-break',
         },
         this.optFields.includes('asserted')
           ? {
               key: 'asserted',
-              label: this.$t('pageEventLogs.table.asserted'),
+              label: i18n.global.t('pageEventLogs.table.asserted'),
               tdClass: 'text-break',
             }
           : {},
@@ -388,7 +391,7 @@ export default {
           ? {}
           : {
               key: 'Resolved',
-              label: this.$t('pageEventLogs.table.status'),
+              label: i18n.global.t('pageEventLogs.table.status'),
             },
         {
           key: 'actions',
@@ -403,19 +406,19 @@ export default {
           ? [
               {
                 key: 'Severity',
-                label: this.$t('pageEventLogs.table.severity'),
+                label: i18n.global.t('pageEventLogs.table.severity'),
                 values: ['OK', 'Warning', 'Critical'],
               },
             ]
           : [
               {
                 key: 'Severity',
-                label: this.$t('pageEventLogs.table.severity'),
+                label: i18n.global.t('pageEventLogs.table.severity'),
                 values: ['OK', 'Warning', 'Critical'],
               },
               {
                 key: 'status',
-                label: this.$t('pageEventLogs.table.status'),
+                label: i18n.global.t('pageEventLogs.table.status'),
                 values: ['Resolved', 'Unresolved'],
               },
             ],
@@ -427,7 +430,7 @@ export default {
           : [
               {
                 value: 'delete',
-                label: this.$t('global.action.delete'),
+                label: i18n.global.t('global.action.delete'),
               },
             ],
       currentPage: currentPage,
@@ -470,17 +473,17 @@ export default {
             ? [
                 {
                   value: 'export',
-                  title: this.$t('global.action.export'),
+                  title: i18n.global.t('global.action.export'),
                 },
               ]
             : [
                 {
                   value: 'export',
-                  title: this.$t('global.action.export'),
+                  title: i18n.global.t('global.action.export'),
                 },
                 {
                   value: 'delete',
-                  title: this.$t('global.action.delete'),
+                  title: i18n.global.t('global.action.delete'),
                 },
               ],
         };
@@ -545,11 +548,11 @@ export default {
     },
     deleteAllLogs() {
       this.$bvModal
-        .msgBoxConfirm(this.$t('pageEventLogs.modal.deleteAllMessage'), {
-          title: this.$t('pageEventLogs.modal.deleteAllTitle'),
-          okTitle: this.$t('global.action.delete'),
+        .msgBoxConfirm(i18n.global.t('pageEventLogs.modal.deleteAllMessage'), {
+          title: i18n.global.t('pageEventLogs.modal.deleteAllTitle'),
+          okTitle: i18n.global.t('global.action.delete'),
           okVariant: 'danger',
-          cancelTitle: this.$t('global.action.cancel'),
+          cancelTitle: i18n.global.t('global.action.cancel'),
           autoFocusButton: 'cancel',
         })
         .then((deleteConfirmed) => {
@@ -595,10 +598,10 @@ export default {
       const uri = item?.['@odata.id'];
       if (action === 'delete') {
         this.$bvModal
-          .msgBoxConfirm(this.$tc('pageEventLogs.modal.deleteMessage'), {
-            title: this.$tc('pageEventLogs.modal.deleteTitle'),
-            okTitle: this.$t('global.action.delete'),
-            cancelTitle: this.$t('global.action.cancel'),
+          .msgBoxConfirm(i18n.global.tc('pageEventLogs.modal.deleteMessage'), {
+            title: i18n.global.tc('pageEventLogs.modal.deleteTitle'),
+            okTitle: i18n.global.t('global.action.delete'),
+            cancelTitle: i18n.global.t('global.action.cancel'),
             autoFocusButton: 'ok',
           })
           .then((deleteConfirmed) => {
@@ -611,17 +614,17 @@ export default {
         const uris = this.selectedRows.map((row) => row?.['@odata.id']);
         this.$bvModal
           .msgBoxConfirm(
-            this.$tc(
+            i18n.global.tc(
               'pageEventLogs.modal.deleteMessage',
               this.selectedRows.length,
             ),
             {
-              title: this.$tc(
+              title: i18n.global.tc(
                 'pageEventLogs.modal.deleteTitle',
                 this.selectedRows.length,
               ),
-              okTitle: this.$t('global.action.delete'),
-              cancelTitle: this.$t('global.action.cancel'),
+              okTitle: i18n.global.t('global.action.delete'),
+              cancelTitle: i18n.global.t('global.action.cancel'),
               autoFocusButton: 'ok',
             },
           )
@@ -635,7 +638,7 @@ export default {
                   )
                   .then(() => {
                     this.successToast(
-                      this.$tc(
+                      i18n.global.tc(
                         'pageEventLogs.toast.successDelete',
                         uris.length,
                       ),

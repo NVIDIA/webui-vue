@@ -38,9 +38,15 @@
 
 <script>
 import PageSection from '@/components/Global/PageSection';
+import { useI18n } from 'vue-i18n';
 
 export default {
   components: { PageSection },
+  data() {
+    return {
+      $t: useI18n().t,
+    };
+  },
   computed: {
     running() {
       return this.$store.getters['firmware/activeHostFirmware'];
@@ -69,6 +75,11 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+@import '@/assets/styles/bmc/helpers/_index.scss';
+@import '@/assets/styles/bootstrap/_helpers.scss';
+
+@import '@/assets/styles/bootstrap/_helpers.scss';
+
 .page-section {
   margin-top: -$spacer * 1.5;
 }
