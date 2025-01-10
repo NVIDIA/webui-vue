@@ -24,7 +24,7 @@
     </page-section>
 
     <!-- System table -->
-    <table-system ref="system" v-bind:show-leds="showLeds" />
+    <table-system ref="system" v-bind:show-leds="showSystemLeds" />
 
     <!-- BMC manager table -->
     <table-bmc-manager ref="bmc" v-bind:show-leds="showLeds" />
@@ -96,6 +96,9 @@ export default {
   data() {
     return {
       showLeds:
+        (process.env.VUE_APP_ENV_NAME === 'nvidia-gb') ? false :
+        process.env.VUE_APP_HIDE_INVENTORY_LED !== 'true',
+      showSystemLeds:
         process.env.VUE_APP_HIDE_INVENTORY_LED !== 'true',
       observer: null,
       validLinks: [],
