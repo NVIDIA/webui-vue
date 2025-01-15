@@ -128,6 +128,18 @@ const AppNavigationMixin = {
             },
           ],
         },
+        {
+          id: 'security-and-access',
+          label: this.$t('appNavigation.securityAndAccess'),
+          icon: 'iconSecurityAndAccess',
+          children: [
+            {
+              id: 'user-management',
+              label: this.$t('appNavigation.userManagement'),
+              route: '/security-and-access/user-management',
+            },
+          ],
+        },
       ],
     };
   },

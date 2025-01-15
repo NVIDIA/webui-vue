@@ -9,6 +9,7 @@ import Firmware from '@/views/Operations/Firmware';
 import Inventory from '@/views/HardwareStatus/Inventory';
 import Kvm from '@/views/Operations/Kvm';
 import KvmConsole from '@/views/Operations/Kvm/KvmConsole';
+import UserManagement from '@/views/SecurityAndAccess/UserManagement';
 import Login from '@/views/Login';
 import LoginLayout from '@/layouts/LoginLayout';
 import Network from '@/views/Settings/Network';
@@ -172,6 +173,14 @@ const routes = [
         component: Network,
         meta: {
           title: i18n.t('appPageTitle.network'),
+        },
+      },
+      {
+        path: '/security-and-access/user-management',
+        name: 'user-management',
+        component: UserManagement,
+        meta: {
+          title: i18n.t('appPageTitle.userManagement'),
         },
       },
       {
