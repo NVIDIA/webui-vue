@@ -68,6 +68,7 @@ export default {
   data() {
     return {
       $t: useI18n().t,
+      enableCustomKeys: process.env.VUE_APP_ENABLE_CUSTOM_KEYS === 'true',
       resizeConsoleWindow: null,
       terminalClass: this.isFullWindow ? 'full-window' : '',
     };
@@ -94,6 +95,25 @@ export default {
     this.closeTerminal();
   },
   methods: {
+    customKeys(ev) {
+      var BACKSPACE = 8;
+      var sequence = '';
+      if (ev.type != 'keydown' || ev.shiftKey || ev.altKey) {
+        return true;
+      }
+      switch (ev.keyCode) {
+        case BACKSPACE:
+          sequence = '\b';
+          break;
+        default:
+          return true;
+      }
+      this.ws.send(sequence);
+      return false;
+    },
+    customKeyHandlers(ev) {
+      return this.customKeys(ev);
+    },
     openTerminal() {
       const token = this.$store.getters['authentication/token'];
       this.ws = new WebSocket(`wss://${window.location.host}/console/default`, [
@@ -124,6 +144,9 @@ export default {
       this.term.open(this.$refs.panel);
       fitAddon.fit();
 
+      if (this.enableCustomKeys) {
+        this.term.attachCustomKeyEventHandler(this.customKeyHandlers);
+      }
       this.resizeConsoleWindow = throttle(() => {
         fitAddon.fit();
       }, 1000);
