@@ -46,6 +46,7 @@ const FirmwareStore = {
       errMsg: null,
       touch: false,
       uploadProgress: 0,
+      jsonErrMsg: null,
     },
   },
   getters: {
@@ -126,6 +127,8 @@ const FirmwareStore = {
       (state.firmwareUpdateInfo.touch = !state.firmwareUpdateInfo.touch),
     setFirmwareUploadProgress: (state, progress) =>
       (state.firmwareUpdateInfo.uploadProgress = progress),
+    setFirmwareUpdateJsonErrMsg: (state, jsonErrMsg) =>
+      (state.firmwareUpdateInfo.jsonErrMsg = jsonErrMsg),
   },
   actions: {
     async getFirmwareInformation({ dispatch }) {
@@ -385,6 +388,7 @@ const FirmwareStore = {
         console.log(resp);
         const errMsg = await dispatch('extractResolutionForFailedTask', resp);
         commit('setFirmwareUpdateErrMsg', errMsg);
+        commit('setFirmwareUpdateJsonErrMsg', resp?.data);
         commit('setFirmwareUpdateState', 'TaskFailed');
         commit('setFirmwareUpdateInitiator', false);
       } else {

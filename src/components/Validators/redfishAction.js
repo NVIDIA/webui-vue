@@ -9,10 +9,17 @@ export function redfishAction(serverError, fieldName, customErrorMessage) {
   const extendedInfo = serverError['@Message.ExtendedInfo'];
 
   if (!Array.isArray(extendedInfo) || extendedInfo.length === 0) {
-    return {
-      isValid: false,
-      errorDetails: serverError.message,
-    };
+    if (fieldName) {
+      return {
+        isValid: true,
+        errorDetails: null,
+      };
+    } else {
+      return {
+        isValid: false,
+        errorDetails: serverError.message,
+      };
+    }
   }
 
   if (!fieldName) {

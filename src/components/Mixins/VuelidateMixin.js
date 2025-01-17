@@ -6,12 +6,12 @@ const VuelidateMixin = {
       const { $dirty, $error } = model;
       return $dirty ? !$error : null;
     },
-    validateRedfishError() {
+    validateRedfishError(customErrorMessage = null) {
       if (this.serverError && !this.$v.$anyError) {
         const result = redfishAction(this.serverError, null, null);
         if (!result.isValid) {
           this.redfishCommonError = true;
-          this.errorDetails = result.errorDetails;
+          this.errorDetails = customErrorMessage || result.errorDetails;
         }
       }
     },

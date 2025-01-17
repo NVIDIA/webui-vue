@@ -508,7 +508,7 @@ export default {
       }
     },
     displayUpdateProgress(
-      { state, taskPercent, errMsg },
+      { state, taskPercent, errMsg, jsonErrMsg },
       { state: oldState, initiator: oldInitiator },
     ) {
       if (state === 'TaskStarted') {
@@ -537,7 +537,13 @@ export default {
           this.errorToast(this.$t('pageFirmware.toast.waitReadyFailedMessage'));
       } else if (state === 'TaskFailed' && oldState !== state) {
         this.endLoader();
-        if (oldInitiator) this.errorToast(errMsg);
+        if (oldInitiator) {
+          this.serverError = jsonErrMsg || null;
+          this.$v.$touch();
+          this.validateRedfishError(errMsg);
+          const lastToast = document.querySelector('.toast');
+          this.$bvToast.hide(lastToast.id);
+        }
       }
     },
     onConfirmIdentity() {
