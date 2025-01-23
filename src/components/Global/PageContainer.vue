@@ -23,7 +23,7 @@ export default {
   mixins: [JumpLinkMixin],
   computed: {
     isManagerReady() {
-      return this.$store.state.bmc.isManagerReady;
+      return !!this.$store?.state?.bmc?.isManagerReady;
     },
   },
   data() {

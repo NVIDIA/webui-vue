@@ -85,13 +85,7 @@ export default {
     };
   },
   computed: {
-    isSingleFileUploadEnabled() {
-      return this.$store.getters['firmware/isSingleFileUploadEnabled'];
-    },
     sectionTitle() {
-      if (this.isSingleFileUploadEnabled) {
-        return i18n.global.t('pageFirmware.sectionTitleBmcCardsCombined');
-      }
       return i18n.global.t('pageFirmware.sectionTitleBmcCards');
     },
     running() {

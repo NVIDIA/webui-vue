@@ -18,12 +18,12 @@ const FirmwareStore = {
   namespaced: true,
   state: {
     bmcFirmware: [],
-    hostFirmware: [],
+    biosFirmware: [],
     firmwareInventory: [],
     bmcActiveFirmwareId: null,
-    hostActiveFirmwareId: null,
+    biosActiveFirmwareId: null,
     bmcSoftwareImageIds: [],
-    hostSoftwareImageIds: [],
+    biosSoftwareImageIds: [],
     checkedItems: [],
     applyTime: null,
     multipartHttpPushUri: null,
@@ -46,6 +46,7 @@ const FirmwareStore = {
       errMsg: null,
       touch: false,
       uploadProgress: 0,
+      jsonErrMsg: null,
     },
   },
   getters: {
@@ -56,15 +57,14 @@ const FirmwareStore = {
       if (state.publicKeyExchangeUri != null) methods.push('PublicKey');
       return methods;
     },
-    isSingleFileUploadEnabled: (state) => state.hostFirmware.length === 0,
     activeBmcFirmware: (state) => {
       return state.bmcFirmware.find(
         (firmware) => firmware.id === state.bmcActiveFirmwareId,
       );
     },
-    activeHostFirmware: (state) => {
-      return state.hostFirmware.find(
-        (firmware) => firmware.id === state.hostActiveFirmwareId,
+    activeBiosFirmware: (state) => {
+      return state.biosFirmware.find(
+        (firmware) => firmware.id === state.biosActiveFirmwareId,
       );
     },
     backupBmcFirmware: (state) => {
@@ -72,11 +72,12 @@ const FirmwareStore = {
         (firmware) => firmware.id !== state.bmcActiveFirmwareId,
       );
     },
-    backupHostFirmware: (state) => {
-      return state.hostFirmware.filter(
-        (firmware) => firmware.id !== state.hostActiveFirmwareId,
+    backupBiosFirmware: (state) => {
+      return state.biosFirmware.filter(
+        (firmware) => firmware.id !== state.biosActiveFirmwareId,
       );
     },
+    isBiosFirmwareAvailable: (state) => state.biosFirmware.length > 0,
     firmwareInventory: (state) => state.firmwareInventory,
     firmwareUpdateInfo: (state) => state.firmwareUpdateInfo,
     isFirmwareUpdateInProgress: (state) =>
@@ -90,11 +91,11 @@ const FirmwareStore = {
   },
   mutations: {
     setActiveBmcFirmwareId: (state, id) => (state.bmcActiveFirmwareId = id),
-    setActiveHostFirmwareId: (state, id) => (state.hostActiveFirmwareId = id),
+    setActiveBiosFirmwareId: (state, id) => (state.biosActiveFirmwareId = id),
     setBmcFirmware: (state, firmware) => (state.bmcFirmware = firmware),
-    setHostFirmware: (state, firmware) => (state.hostFirmware = firmware),
+    setBiosFirmware: (state, firmware) => (state.biosFirmware = firmware),
     setBmcSoftwareImageIds: (state, ids) => (state.bmcSoftwareImageIds = ids),
-    setHostSoftwareImageIds: (state, ids) => (state.hostSoftwareImageIds = ids),
+    setBiosSoftwareImageIds: (state, ids) => (state.biosSoftwareImageIds = ids),
     setCheckedItems: (state, items) => (state.checkedItems = items),
     setFirmwareInventory(state, firmwareInventory) {
       state.firmwareInventory = firmwareInventory;
@@ -126,11 +127,15 @@ const FirmwareStore = {
       (state.firmwareUpdateInfo.touch = !state.firmwareUpdateInfo.touch),
     setFirmwareUploadProgress: (state, progress) =>
       (state.firmwareUpdateInfo.uploadProgress = progress),
+    setFirmwareUpdateJsonErrMsg: (state, jsonErrMsg) =>
+      (state.firmwareUpdateInfo.jsonErrMsg = jsonErrMsg),
   },
   actions: {
     async getFirmwareInformation({ dispatch }) {
-      await dispatch('getActiveHostFirmware');
-      await dispatch('getActiveBmcFirmware');
+      await Promise.all([
+        dispatch('getActiveBiosFirmware'),
+        dispatch('getActiveBmcFirmware')
+      ]);
       return await dispatch('getFirmwareInventory');
     },
     async getActiveBmcFirmware({ commit }) {
@@ -146,15 +151,15 @@ const FirmwareStore = {
         })
         .catch((error) => console.log(error));
     },
-    async getActiveHostFirmware({ commit }) {
+    async getActiveBiosFirmware({ commit }) {
       return api
         .get(`${await this.dispatch('global/getSystemPath')}/Bios`)
         .then(({ data: { Links } }) => {
           const activeImageId = Links?.ActiveSoftwareImage['@odata.id'];
           const softwareImageIds =
             Links?.SoftwareImages?.map((image) => image['@odata.id']) || [];
-          commit('setActiveHostFirmwareId', activeImageId);
-          commit('setHostSoftwareImageIds', softwareImageIds);
+          commit('setActiveBiosFirmwareId', activeImageId);
+          commit('setBiosSoftwareImageIds', softwareImageIds);
         })
         .catch((error) => console.log(error));
     },
@@ -169,7 +174,7 @@ const FirmwareStore = {
         .all(inventoryList)
         .then((response) => {
           const bmcFirmware = [];
-          const hostFirmware = [];
+          const biosFirmware = [];
           const firmwareInventory = [];
           response.forEach(({ data }) => {
             const item = {
@@ -191,13 +196,13 @@ const FirmwareStore = {
 
             if (state.bmcSoftwareImageIds.includes(item.id)) {
               bmcFirmware.push(item);
-            } else if (state.hostSoftwareImageIds.includes(item.id)) {
-              hostFirmware.push(item);
+            } else if (state.biosSoftwareImageIds.includes(item.id)) {
+              biosFirmware.push(item);
             }
           });
           commit('setFirmwareInventory', firmwareInventory);
           commit('setBmcFirmware', bmcFirmware);
-          commit('setHostFirmware', hostFirmware);
+          commit('setBiosFirmware', biosFirmware);
           return firmwareInventory;
         })
         .catch((error) => {
@@ -210,6 +215,10 @@ const FirmwareStore = {
         .then(async ({ data }) => {
           const applyTime =
             data.HttpPushUriOptions.HttpPushUriApplyTime.ApplyTime;
+          const allowableActions =
+            data?.Actions?.['#UpdateService.SimpleUpdate']?.[
+              'TransferProtocol@Redfish.AllowableValues'
+            ];
           commit('setApplyTime', applyTime);
           const httpPushUri = data.HttpPushUri;
           commit('setHttpPushUri', httpPushUri);
@@ -284,6 +293,7 @@ const FirmwareStore = {
           console.log(error);
           throw new Error(
             await dispatch('extractResolutionForFailedCmd', error),
+            { cause: error },
           );
         });
     },
@@ -305,6 +315,7 @@ const FirmwareStore = {
           console.log(error);
           throw new Error(
             await dispatch('extractResolutionForFailedCmd', error),
+            { cause: error },
           );
         });
     },
@@ -321,7 +332,7 @@ const FirmwareStore = {
       );
 
       if (resolutions.length > 0) return resolutions;
-      else return i18n.t('pageFirmware.toast.errorUpdateFirmware');
+      else return i18n.global.t('pageFirmware.toast.errorUpdateFirmware');
     },
     initFirmwareUpdate({ commit }, { taskHandle, taskState, initiator }) {
       commit('setFirmwareUpdateTaskHandle', taskHandle);
@@ -377,6 +388,7 @@ const FirmwareStore = {
         console.log(resp);
         const errMsg = await dispatch('extractResolutionForFailedTask', resp);
         commit('setFirmwareUpdateErrMsg', errMsg);
+        commit('setFirmwareUpdateJsonErrMsg', resp?.data);
         commit('setFirmwareUpdateState', 'TaskFailed');
         commit('setFirmwareUpdateInitiator', false);
       } else {
@@ -409,7 +421,7 @@ const FirmwareStore = {
     },
     async isManagerStateEnabled() {
       return await api
-        .get(`${await this.dispatch('global/getBmcPath')}`, {timeout: 5 * 1000})
+        .get(`${await this.dispatch('global/getBmcPath')}`, {timeout: 30 * 1000})
         .then((resp) => resp?.data?.Status?.State === 'Enabled')
         .catch(() => console.log('No response yet from Manager'));
     },
@@ -535,7 +547,7 @@ const FirmwareStore = {
         .patch(`${await this.dispatch('global/getBmcPath')}`, data)
         .catch((error) => {
           console.log(error);
-          throw new Error(i18n.t('pageFirmware.toast.errorSwitchImages'));
+          throw new Error(i18n.global.t('pageFirmware.toast.errorSwitchImages'));
         });
     },
     async exchangePublicKey(

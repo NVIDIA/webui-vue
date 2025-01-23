@@ -1,31 +1,5 @@
 import api from '@/store/api';
 
-const HOST_STATE = {
-  on: 'xyz.openbmc_project.State.Host.HostState.Running',
-  off: 'xyz.openbmc_project.State.Host.HostState.Off',
-  error: 'xyz.openbmc_project.State.Host.HostState.Quiesced',
-  diagnosticMode: 'xyz.openbmc_project.State.Host.HostState.DiagnosticMode',
-};
-
-const serverStateMapper = (hostState) => {
-  switch (hostState) {
-    case HOST_STATE.on:
-    case 'On': // Redfish PowerState
-      return 'on';
-    case HOST_STATE.off:
-    case 'Off': // Redfish PowerState
-      return 'off';
-    case HOST_STATE.error:
-    case 'Quiesced': // Redfish Status
-      return 'error';
-    case HOST_STATE.diagnosticMode:
-    case 'InTest': // Redfish Status
-      return 'diagnosticMode';
-    default:
-      return 'unreachable';
-  }
-};
-
 const GlobalStore = {
   namespaced: true,
   state: {
@@ -34,7 +8,8 @@ const GlobalStore = {
     bmcTime: null,
     modelType: null,
     serialNumber: null,
-    serverStatus: 'unreachable',
+    serverStatus: '',
+    powerState: '',
     languagePreference: localStorage.getItem('storedLanguage') || 'en-US',
     isUtcDisplay: localStorage.getItem('storedUtcDisplay')
       ? JSON.parse(localStorage.getItem('storedUtcDisplay'))
@@ -50,6 +25,8 @@ const GlobalStore = {
     modelType: (state) => state.modelType,
     serialNumber: (state) => state.serialNumber,
     serverStatus: (state) => state.serverStatus,
+    powerState: (state) => state.powerState,
+    isPowerOff: (state) => state.powerState.toLowerCase() === 'off',
     bmcPath: (state) => state.bmcPath,
     bmcTime: (state) => state.bmcTime,
     languagePreference: (state) => state.languagePreference,
@@ -66,8 +43,8 @@ const GlobalStore = {
     setSerialNumber: (state, serialNumber) =>
       (state.serialNumber = serialNumber),
     setBmcTime: (state, bmcTime) => (state.bmcTime = bmcTime),
-    setServerStatus: (state, serverState) =>
-      (state.serverStatus = serverStateMapper(serverState)),
+    setServerStatus: (state, serverState) => (state.serverStatus = serverState),
+    setPowerState: (state, powerState) => (state.powerState = powerState),
     setServiceRoot: (state, serviceRoot) => {
       state.serviceRoot = serviceRoot.data;
       state.bmcPath = serviceRoot.data?.ManagerProvidingService?.['@odata.id'];
@@ -141,14 +118,8 @@ const GlobalStore = {
             commit('setAssetTag', AssetTag);
             commit('setSerialNumber', SerialNumber);
             commit('setModelType', Model);
-            if (State === 'Quiesced' || State === 'InTest') {
-              // OpenBMC's host state interface is mapped to 2 Redfish
-              // properties "Status""State" and "PowerState". Look first
-              // at State for certain cases.
-              commit('setServerStatus', State);
-            } else {
-              commit('setServerStatus', PowerState);
-            }
+            commit('setServerStatus', State);
+            commit('setPowerState', PowerState);
           },
         )
         .catch((error) => console.log(error));

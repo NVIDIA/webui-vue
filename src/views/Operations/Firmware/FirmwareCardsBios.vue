@@ -1,5 +1,5 @@
 <template>
-  <page-section :section-title="$t('pageFirmware.sectionTitleHostCards')">
+  <page-section :section-title="$t('pageFirmware.sectionTitleBiosCards')">
     <b-card-group deck>
       <!-- Running image -->
       <b-card>
@@ -49,12 +49,12 @@ export default {
   },
   computed: {
     running() {
-      return this.$store.getters['firmware/activeHostFirmware'];
+      return this.$store.getters['firmware/activeBiosFirmware'];
     },
     // TODO: Update the template to show an array of bmc images
     backup() {
-      const hostFirmwares = this.$store.getters['firmware/backupHostFirmware'];
-      return hostFirmwares?.[0] ?? null;
+      const biosFirmwares = this.$store.getters['firmware/backupBiosFirmware'];
+      return biosFirmwares?.[0] ?? null;
     },
     runningVersion() {
       return this.running?.version || '--';
@@ -76,8 +76,6 @@ export default {
 
 <style lang="scss" scoped>
 @import '@/assets/styles/bmc/helpers/_index.scss';
-@import '@/assets/styles/bootstrap/_helpers.scss';
-
 @import '@/assets/styles/bootstrap/_helpers.scss';
 
 .page-section {

@@ -15,7 +15,7 @@
         </dl>
         <dl v-if="showBios">
           <dt v-if="showBios">
-            {{ $t('pageOverview.hostBiosFirmwareVersion') }}
+            {{ $t('pageOverview.biosFirmwareVersion') }}
           </dt>
           <dd v-if="showBios">{{ dataFormatter(firmwareVersion) }}</dd>
         </dl>
@@ -60,14 +60,14 @@ export default {
       activeBmcFirmware() {
         return this.$store.getters[`firmware/activeBmcFirmware`];
       },
-      activeHostFirmware() {
-        return this.$store.getters[`firmware/activeHostFirmware`];
+      activeBiosFirmware() {
+        return this.$store.getters[`firmware/activeBiosFirmware`];
       },
       firmwareVersion() {
         if (process.env.VUE_APP_ENV_NAME === 'nvidia-bluefield') {
-          return this.activeHostFirmware?.version;
+          return this.activeBiosFirmware?.version;
         }
-        return this.activeHostFirmware?.version;
+        return this.activeBiosFirmware?.version;
       },
       runningVersion() {
         return this.activeBmcFirmware?.version;

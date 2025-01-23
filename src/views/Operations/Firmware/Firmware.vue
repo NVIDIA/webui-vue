@@ -15,8 +15,8 @@
           :is-server-off="isServerOff"
         />
 
-        <!-- Host Firmware -->
-        <host-cards v-if="!isSingleFileUploadEnabled" />
+        <!-- Bios Firmware -->
+        <bios-cards v-if="isBiosFirmwareAvailable" />
       </b-col>
     </b-row>
 
@@ -49,7 +49,7 @@ import AlertsServerPower from './FirmwareAlertServerPower';
 import FirmwareInventory from './FirmwareInventory';
 import BmcCards from './FirmwareCardsBmc';
 import FormUpdate from './FirmwareFormUpdate';
-import HostCards from './FirmwareCardsHost';
+import BiosCards from './FirmwareCardsBios';
 import PageSection from '@/components/Global/PageSection';
 import PageTitle from '@/components/Global/PageTitle';
 
@@ -63,7 +63,7 @@ export default {
     BmcCards,
     FirmwareInventory,
     FormUpdate,
-    HostCards,
+    BiosCards,
     PageSection,
     PageTitle,
   },
@@ -83,17 +83,17 @@ export default {
     };
   },
   computed: {
-    serverStatus() {
-      return this.$store.getters['global/serverStatus'];
+    powerState() {
+      return this.$store.getters['global/powerState'];
+    },
+    isPowerOff() {
+      return this.$store.getters['global/isPowerOff'];
     },
     isOperationInProgress() {
       return this.$store.getters['controls/isOperationInProgress'];
     },
     isServerOff() {
-      return this.serverStatus === 'off' ? true : false;
-    },
-    isSingleFileUploadEnabled() {
-      return this.$store.getters['firmware/isSingleFileUploadEnabled'];
+      return this.isPowerOff;
     },
     isPageDisabled() {
       if (this.isServerPowerOffRequired) {
@@ -103,6 +103,9 @@ export default {
         return this.isServerOff || this.loading || this.isOperationInProgress;
       }
       return this.loading || this.isOperationInProgress;
+    },
+    isBiosFirmwareAvailable() {
+      return this.$store.getters['firmware/isBiosFirmwareAvailable'];
     },
   },
   created() {

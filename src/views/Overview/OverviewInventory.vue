@@ -3,7 +3,7 @@
     :title="showLeds ? $t('pageOverview.inventory') : $t('pageOverview.inventoryNoLeds')"
     :to="`/hardware-status/inventory`"
   >
-    <b-row class="mt-3">
+    <b-row class="mt-3" v-if="showLeds">
       <b-col sm="6">
         <dl sm="6">
           <dt>{{ $t('pageOverview.systemIdentifyLed') }}</dt>

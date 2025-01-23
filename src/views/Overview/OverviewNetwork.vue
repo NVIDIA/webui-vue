@@ -68,6 +68,24 @@
         </dl>
       </b-col>
     </b-row>
+    <b-row v-if="showIPv6">
+      <b-col>
+      </b-col>
+      <b-col>
+        <dl>
+          <dt>{{ $t('pageOverview.slaac') }}</dt>
+          <dd>
+            {{
+              dataFormatter(
+                network.slaacAddress.length !== 0
+                  ? network.slaacAddress[0].Address
+                  : null,
+              )
+            }}
+          </dd>
+        </dl>
+      </b-col>
+    </b-row>
   </overview-card>
 </template>
 

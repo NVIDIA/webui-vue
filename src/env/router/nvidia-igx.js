@@ -4,12 +4,12 @@ import ConsoleLayout from '@/layouts/ConsoleLayout.vue';
 import DateTime from '@/views/Settings/DateTime';
 import Dumps from '@/views/Logs/Dumps';
 import EventLogs from '@/views/Logs/EventLogs';
-import SelLogs from '@/views/Logs/SelLogs';
 import FactoryReset from '@/views/Operations/FactoryReset';
 import Firmware from '@/views/Operations/Firmware';
 import Inventory from '@/views/HardwareStatus/Inventory';
 import Kvm from '@/views/Operations/Kvm';
 import KvmConsole from '@/views/Operations/Kvm/KvmConsole';
+import UserManagement from '@/views/SecurityAndAccess/UserManagement';
 import Login from '@/views/Login';
 import LoginLayout from '@/layouts/LoginLayout';
 import Network from '@/views/Settings/Network';
@@ -22,7 +22,6 @@ import SerialOverLan from '@/views/Operations/SerialOverLan';
 import SerialOverLanConsole from '@/views/Operations/SerialOverLan/SerialOverLanConsole';
 import ServerPowerOperations from '@/views/Operations/ServerPowerOperations';
 import VirtualMedia from '@/views/Operations/VirtualMedia';
-import SnmpAlerts from '@/views/Settings/SnmpAlerts';
 import i18n from '@/i18n';
 
 const roles = {
@@ -113,14 +112,6 @@ const routes = [
         },
       },
       {
-        path: '/logs/sel-logs',
-        name: 'sel-logs',
-        component: SelLogs,
-        meta: {
-          title: i18n.global.t('appPageTitle.eventLogs'),
-        },
-      },
-      {
         path: '/logs/dumps',
         name: 'dumps',
         component: Dumps,
@@ -153,14 +144,6 @@ const routes = [
         },
       },
       {
-        path: '/settings/snmp-alerts',
-        name: 'snmp-alerts',
-        component: SnmpAlerts,
-        meta: {
-          title: i18n.global.t('appPageTitle.snmpAlerts'),
-        },
-      },
-      {
         path: '/operations/factory-reset',
         name: 'factory-reset',
         component: FactoryReset,
@@ -190,6 +173,22 @@ const routes = [
         component: Network,
         meta: {
           title: i18n.global.t('appPageTitle.network'),
+        },
+      },
+      {
+        path: '/security-and-access/user-management',
+        name: 'user-management',
+        component: UserManagement,
+        meta: {
+          title: i18n.global.t('appPageTitle.userManagement'),
+        },
+      },
+      {
+        path: '/security-and-access/user-management',
+        name: 'user-management',
+        component: UserManagement,
+        meta: {
+          title: i18n.global.t('appPageTitle.userManagement'),
         },
       },
       {

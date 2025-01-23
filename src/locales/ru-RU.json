@@ -163,7 +163,7 @@
         "policies": "Политики безопасности",
         "sensors": "Датчики",
         "serialOverLan": "Консоль Serial over LAN (SOL)",
-        "serverPowerOperations": "Управление питанием сервера",
+        "serverPowerOperations": "Система питанием сервера",
         "certificates": "Сертификаты",
         "snmpAlerts": "SNMP оповещения",
         "virtualMedia": "Виртуальные носители",
@@ -212,9 +212,7 @@
                 "timezone": "@:pageDateTime.form.time.label (%{timezone})"
             },
             "ntpServers": {
-                "server1": "Сервер 1",
-                "server2": "Сервер 2",
-                "server3": "Сервер 3"
+                "server1": "Сервер %{index}"
             }
         },
         "toast": {
@@ -339,6 +337,7 @@
         "sectionTitleBmcCards": "BMC",
         "sectionTitleBmcCardsCombined": "BMC и сервер",
         "sectionTitleHostCards": "Хост",
+        "sectionTitleBiosCards": "BIOS",
         "sectionTitleConfirmIdentify": "Подтвердите личность",
         "sectionTitleUpdateFirmware": "Обновить встроенное ПО",
         "sectionTitleFirmwareInventory": "Инвентаризация прошивки",
@@ -347,6 +346,8 @@
 	"tableHeaderVersion": "Версия",
         "viewMore": "Посмотреть больше",
         "viewLess": "Посмотреть меньше",
+        "expand": "Развернуть",
+        "collapse": "Свернуть",
         "showAdvanced": "Показать дополнительные настройки",
         "hideAdvanced": "Скрыть дополнительные настройки",
         "alert": {
@@ -365,12 +366,17 @@
                 "fileAddress": "Адрес файла",
                 "fileSource": "Источник файла",
                 "confirmIdentity": "Подтвердите личность",
+                "trustCertificate": "Доверенные сертификаты",
                 "imageFile": "Файл образа",
                 "forceUpdate": "Принудительное обновление",
                 "startUpdate": "Начать обновление",
                 "server": "сервер",
                 "workstation": "Локальный файл",
-                "confirmCheckedMessage": "Указание целей обычно не требуется. По умолчанию все прошивки, включенные в комплект, будут прошиты. Продолжить обновление только выбранных целей?"
+                "confirmCheckedMessage": "Указание целей обычно не требуется. По умолчанию все прошивки, включенные в комплект, будут прошиты. Продолжить обновление только выбранных целей?",
+                "apiErrorResponse": "Ответ об ошибке API",
+                "clickToViewApiResponse": "нажмите, чтобы просмотреть ответ об ошибке API",
+                "invalidFileAddress": "Неверный адрес файла",
+                "invalidTargetSelection": "неверный выбор цели"
             }
         },
         "modal": {
@@ -665,7 +671,7 @@
         "eventLogs": "Журнал событий",
         "selLogs": "Журналы SEL",
         "firmwareInformation": "Информация о встроенном ПО",
-        "hostBiosFirmwareVersion": "Версия встроенного ПО",
+        "biosFirmwareVersion": "BIOS",
         "hostName": "Имя хоста",
         "idlePower": "Без нагрузки",
         "inventory": "Перечень оборудования и LED",
@@ -906,7 +912,7 @@
     "pageServerPowerOperations": {
         "currentStatus": "Текущий статус",
         "serverBootSettings": "Настройки загрузки",
-        "serverStatus": "Статус сервера",
+        "systemStatus": "Состояние системы",
         "lastPowerOperation": "Последняя операция управления питанием сервера",
         "oneTimeBootWarning": "Единовременное изменение порядка загрузки сервера. Последующие запуски сервера будут производиться в соответствии с установленным порядком загрузки.",
         "operationInProgress": "Выполняется операция управления электропитанием сервера. Изменение настроек будет возможно после её окончания.",
@@ -922,6 +928,7 @@
         "gracefulShutdown": "Мягкое завершение работы",
         "gracefulShutdownInfo": "Завершите работу корректно и выключите", 
         "powerOn": "Включить",
+        "powerState": "Состояние питания",
         "reboot": "Перезапустить",
         "rebootServer": "Перезапустить сервер",
         "shutDown": "Выключить",

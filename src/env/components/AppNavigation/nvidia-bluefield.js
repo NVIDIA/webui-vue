@@ -123,6 +123,28 @@ const AppNavigationMixin = {
             },
           ],
         },
+        {
+          id: 'security-and-access',
+          label: i18n.global.t('appNavigation.securityAndAccess'),
+          icon: 'iconSecurityAndAccess',
+          children: [
+            {
+              id: 'sessions',
+              label: i18n.global.t('appNavigation.sessions'),
+              route: '/security-and-access/sessions',
+            },
+            {
+              id: 'user-management',
+              label: i18n.global.t('appNavigation.userManagement'),
+              route: '/security-and-access/user-management',
+            },
+            {
+              id: 'certificates',
+              label: i18n.global.t('appNavigation.certificates'),
+              route: '/security-and-access/certificates',
+            },
+          ],
+        },
       ],
     };
   },

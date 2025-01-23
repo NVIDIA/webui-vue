@@ -11,8 +11,8 @@
         id="remote-server-ip"
         v-model="remoteServerIp"
         type="text"
-        :state="getValidationState($v.remoteServerIp)"
-        @input="$v.remoteServerIp.$touch()"
+        :state="getValidationState(v$.remoteServerIp)"
+        @input="v$.remoteServerIp.$touch()"
       />
       <b-form-invalid-feedback role="alert">
         {{ $t('global.form.fieldRequired') }}
@@ -25,8 +25,8 @@
         rows="3"
         max-rows="6"
         placeholder="<type> <public_key>"
-        :state="getValidationState($v.remoteServerKey)"
-        @input="$v.remoteServerKey.$touch()"
+        :state="getValidationState(v$.remoteServerKey)"
+        @input="v$.remoteServerKey.$touch()"
       />
       <b-form-invalid-feedback role="alert">
         {{ $t('global.form.fieldRequired') }}
@@ -58,6 +58,7 @@
 <script>
 import { BFormTextarea } from 'bootstrap-vue';
 import { required } from 'vuelidate/lib/validators';
+import { useVuelidate } from '@vuelidate/core';
 import VuelidateMixin from '@/components/Mixins/VuelidateMixin.js';
 import StatusIcon from '@/components/Global/StatusIcon';
 import { useI18n } from 'vue-i18n';
@@ -73,6 +74,11 @@ export default {
       type: String,
       default: '',
     },
+  },
+  setup() {
+    return {
+      v$: useVuelidate({ $stopPropagation: true }),
+    };
   },
   data() {
     return {
@@ -103,8 +109,8 @@ export default {
       // prevent modal close
       bvModalEvt.preventDefault();
 
-      this.$v.$touch();
-      if (this.$v.$invalid) return;
+      this.v$.$touch();
+      if (this.v$.$invalid) return;
       this.bmcKey = null;
       this.errMessage = null;
 
@@ -125,7 +131,7 @@ export default {
       this.remoteServerKey = null;
       this.bmcKey = null;
       this.errMessage = null;
-      this.$v.$reset();
+      this.v$.$reset();
     },
   },
 };

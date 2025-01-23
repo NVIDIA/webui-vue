@@ -2,11 +2,13 @@ import { createI18n } from 'vue-i18n';
 
 import en_us from './locales/en-US.json';
 import ru_ru from './locales/ru-RU.json';
+import zh_cn from './locales/zh-CN.json';
 
 function loadLocaleMessages() {
   const messages = {
     'en-US': en_us,
     'ru-RU': ru_ru,
+    'zh-CN': zh_cn,
   };
   return messages;
 }

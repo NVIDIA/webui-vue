@@ -90,7 +90,7 @@ const VirtualMediaStore = {
           data,
         )
         .catch((e) => {
-          let message = i18n.t('pageVirtualMedia.toast.errorMounting');
+          let message = i18n.global.t('pageVirtualMedia.toast.errorMounting');
           if (
             e.response &&
             e.response.data &&
@@ -108,7 +108,7 @@ const VirtualMediaStore = {
           `${await this.dispatch('global/getBmcPath')}/VirtualMedia/${id}/Actions/VirtualMedia.EjectMedia`,
         )
         .catch((e) => {
-          let message = i18n.t('pageVirtualMedia.toast.errorUnmounting');
+          let message = i18n.global.t('pageVirtualMedia.toast.errorUnmounting');
           if (
             e.response &&
             e.response.data &&

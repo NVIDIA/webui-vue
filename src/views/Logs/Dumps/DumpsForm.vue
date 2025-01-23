@@ -55,7 +55,7 @@ export default {
       $t: useI18n().t,
       selectedDumpType: null,
       dumpTypeOptions:
-        process.env.VUE_APP_ENV_NAME === 'nvidia-bluefield'
+        process.env.VUE_APP_HIDE_SYSTEM_DUMP === 'true'
           ? [{ value: 'bmc', text: i18n.global.t('pageDumps.form.bmcDump') }]
           : [
               { value: 'bmc', text: i18n.global.t('pageDumps.form.bmcDump') },

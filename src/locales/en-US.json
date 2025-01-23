@@ -164,7 +164,7 @@
         "policies": "Policies",
         "sensors": "Sensors",
         "serialOverLan": "Serial over LAN (SOL) console",
-        "serverPowerOperations": "Server power operations",
+        "serverPowerOperations": "System power operations",
         "certificates": "Certificates",
         "snmpAlerts": "SNMP Alerts",
         "virtualMedia": "Virtual media",
@@ -213,9 +213,7 @@
                 "timezone": "@:pageDateTime.form.time.label (%{timezone})"
             },
             "ntpServers": {
-                "server1": "Server 1",
-                "server2": "Server 2",
-                "server3": "Server 3"
+                "server": "Server %{index}"
             }
         },
         "toast": {
@@ -342,6 +340,7 @@
         "sectionTitleBmcCards": "BMC",
         "sectionTitleBmcCardsCombined": "BMC and server",
         "sectionTitleHostCards": "Host",
+        "sectionTitleBiosCards": "BIOS",
         "sectionTitleConfirmIdentify": "Confirm the identity",
         "sectionTitleUpdateFirmware": "Update firmware",
 	"sectionTitleFirmwareInventory": "Firmware Inventory",
@@ -350,6 +349,8 @@
 	"tableHeaderVersion": "Version",
         "viewMore": "View More",
         "viewLess": "View Less",
+        "expand": "Expand",
+        "collapse": "Collapse",
         "showAdvanced": "Show advanced",
         "hideAdvanced": "Hide advanced",
         "alert": {
@@ -368,12 +369,17 @@
                 "fileAddress": "File address",
                 "fileSource": "File source",
                 "confirmIdentity": "Confirm the identity",
+                "trustCertificate": "Trusted certificates",
                 "imageFile": "Image file",
                 "forceUpdate": "Force Update",
                 "startUpdate": "Start update",
                 "server": "server",
                 "workstation": "Local file",
-                "confirmCheckedMessage": "Specifying targets is normally not required. By default all firmware included in a bundle will be flashed. Continue to update only the selected Target(s)?"
+                "confirmCheckedMessage": "Specifying targets is normally not required. By default all firmware included in a bundle will be flashed. Continue to update only the selected Target(s)?",
+                "apiErrorResponse": "API Error Response",
+                "clickToViewApiResponse": "click to view api error response",
+                "invalidFileAddress": "Invalid File Address",
+                "invalidTargetSelection": "Invalid Target Selection"
             }
         },
         "modal": {
@@ -685,11 +691,12 @@
         "criticalEvents": "Critical",
         "dhcp": "DHCPv4",
         "dhcp6": "DHCPv6",
+        "slaac": "SLAAC",
         "dumps": "Dumps",
         "eventLogs": "Event logs",
         "selLogs": "SEL logs",
         "firmwareInformation": "Firmware information",
-        "hostBiosFirmwareVersion": "Host BIOS",
+        "biosFirmwareVersion": "BIOS",
         "hostName": "Hostname",
         "idlePower": "Idle power",
         "inventory": "Inventory and LEDs",
@@ -946,7 +953,7 @@
     "pageServerPowerOperations": {
         "currentStatus": "Current status",
         "serverBootSettings": "Boot settings",
-        "serverStatus": "Server status",
+        "systemStatus": "System status",
         "lastPowerOperation": "Last power operation",
         "oneTimeBootWarning": "Pending one time boot. Next boot will be performed with the specified one time boot settings. Subsequent boots will be performed with the default settings.",
         "operationInProgress": "There are no options to display while a power operation is in progress. When complete, power operations will be displayed here.",
@@ -962,6 +969,7 @@
         "gracefulShutdown": "Graceful Shutdown",
         "gracefulShutdownInfo": "Shut down gracefully and power off",
         "powerOn": "Power on",
+        "powerState": "Power state",
         "reboot": "Reboot",
         "rebootServer": "Reboot server",
         "shutDown": "Shut down",

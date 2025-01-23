@@ -197,17 +197,21 @@ export default {
       }
     },
     deleteIpv4TableRow(index) {
-      const AddressOrigin = this.form.ipv4TableItems[index].AddressOrigin;
-      this.form.ipv4TableItems.splice(index, 1);
-      const newIpv4Array = this.form.ipv4TableItems.map((ipv4) => {
-        const { Address, SubnetMask, Gateway } = ipv4;
-        return {
-          Address,
-          SubnetMask,
-          Gateway,
-        };
-      });
-      if (newIpv4Array.length == 0 && AddressOrigin === 'Static') {
+      const AddressToDelete = this.form.ipv4TableItems[index].Address;
+      const newIpv4Array = this.form.ipv4TableItems
+        .filter((ipv4) => ipv4.AddressOrigin === 'Static')
+        .map((ipv4) => {
+          let { Address, SubnetMask, Gateway } = ipv4;
+          if (Address === AddressToDelete) {
+            Address = '0.0.0.0';
+          }
+          return {
+            Address,
+            SubnetMask,
+            Gateway,
+          };
+        });
+      if (newIpv4Array.length == 1) {
         this.$store
           .dispatch('network/saveDhcpEnabledState', true)
           .then((message) => this.successToast(message))

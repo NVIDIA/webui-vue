@@ -12,36 +12,41 @@
               v-model="resetOption"
               stacked
             >
+            <div v-for="(item, index) in resetBiosUris">
               <b-form-radio
-                v-if="isBiosEnabled"
                 class="mb-1"
-                value="resetBios"
+                :value="{ ...item, value: 'resetBios' }"
+                :target="item.target"
                 aria-describedby="reset-bios"
-                data-test-id="factoryReset-radio-resetBios"
+                :data-test-id="'factoryReset-radio-resetBios-' + index"
               >
-                {{ $t('pageFactoryReset.form.resetBiosOptionLabel') }}
+                {{ (resetBiosUris.length < 2) ? $t('pageFactoryReset.form.resetBiosOptionLabel') :
+                 $t('pageFactoryReset.form.resetBiosOptionLabel') + ': ['+item.Id+']' }}
               </b-form-radio>
               <b-form-text
-                v-if="isBiosEnabled"
-                id="reset-bios"
+                :id="'reset-bios-' +index"
                 class="ml-4 mb-3"
               >
                 {{ $t('pageFactoryReset.form.resetBiosOptionHelperText') }}
               </b-form-text>
+            </div>
 
+            <div v-for="(item, index) in bmcResetToDefaultsUris">
               <b-form-radio
                 class="mb-1"
-                value="resetToDefaults"
+                :value="{ ...item, value: 'resetToDefaults' }"
                 aria-describedby="reset-to-defaults"
-                data-test-id="factoryReset-radio-resetToDefaults"
+                data-test-id="'factoryReset-radio-resetToDefaults' + index"
               >
-                {{ $t('pageFactoryReset.form.resetToDefaultsOptionLabel') }}
+                {{ (bmcResetToDefaultsUris.length < 2) ? $t('pageFactoryReset.form.resetToDefaultsOptionLabel') :
+                 $t('pageFactoryReset.form.resetToDefaultsOptionLabel') + ': ['+item.Id+']' }}
               </b-form-radio>
               <b-form-text id="reset-to-defaults" class="ml-4 mb-3">
                 {{
                   $t('pageFactoryReset.form.resetToDefaultsOptionHelperText')
                 }}
               </b-form-text>
+            </div>
             </b-form-radio-group>
           </b-form-group>
           <b-button
@@ -56,7 +61,7 @@
     </b-form>
 
     <!-- Modals -->
-    <modal-reset :reset-type="resetOption" @ok-confirm="onOkConfirm" />
+    <modal-reset :reset-type="resetOption.value" @okConfirm="onOkConfirm" />
   </b-container>
 </template>
 
@@ -74,24 +79,28 @@ export default {
   data() {
     return {
       $t: useI18n().t,
-      resetOption: 'resetBios',
+      resetOption: {value:'resetBios'},
     };
   },
   computed: {
-    isBiosEnabled() {
-      return this.$store.getters['factoryReset/biosSupported'];
+    resetBiosUris() {
+      return this.$store.getters['factoryReset/resetBiosUris'];
+    },
+    bmcResetToDefaultsUris() {
+      return this.$store.getters['bmc/resetToDefaultsUris'];
     },
   },
   created() {
     this.hideLoader();
-    this.$store.dispatch('factoryReset/isBiosSupported');
+    this.$store.dispatch('factoryReset/preloadResetBiosTargets');
+    this.$store.dispatch('bmc/getBmcInfo');
   },
   methods: {
     onResetSubmit() {
       this.$bvModal.show('modal-reset');
     },
     onOkConfirm() {
-      if (this.resetOption == 'resetBios') {
+      if (this.resetOption.value == 'resetBios') {
         this.onResetBiosConfirm();
       } else {
         this.onResetToDefaultsConfirm();
@@ -99,7 +108,7 @@ export default {
     },
     onResetBiosConfirm() {
       this.$store
-        .dispatch('factoryReset/resetBios')
+        .dispatch('factoryReset/resetBios', this.resetOption.target)
         .then((title) => {
           this.successToast('', {
             title,
@@ -113,7 +122,7 @@ export default {
     },
     onResetToDefaultsConfirm() {
       this.$store
-        .dispatch('factoryReset/resetToDefaults')
+        .dispatch('factoryReset/resetToDefaults', this.resetOption.target)
         .then((title) => {
           this.successToast('', {
             title,

@@ -14,41 +14,56 @@ const PowerPolicyStore = {
   mutations: {
     setPowerRestoreCurrentPolicy: (state, powerRestoreCurrentPolicy) =>
       (state.powerRestoreCurrentPolicy = powerRestoreCurrentPolicy),
-    setPowerRestorePolicies: (state, powerRestorePolicies) =>
-      (state.powerRestorePolicies = powerRestorePolicies),
+    setPowerRestorePolicies: (state, PowerRestorePolicyTypes) => {
+      const PowerTypes = PowerRestorePolicyTypes ||  {
+        "description": "The enumerations of `PowerRestorePolicyTypes` specify the choice of power state for the system when power is applied.",
+        "enum": [
+            "AlwaysOn",
+            "AlwaysOff",
+            "LastState"
+        ],
+        "enumDescriptions": {
+            "AlwaysOff": "The system always remains powered off when power is applied.",
+            "AlwaysOn": "The system always powers on when power is applied.",
+            "LastState": "The system returns to its last on or off power state when power is applied."
+        },
+        "type": "string"
+      };
+      const powerPoliciesData = PowerTypes.enum.map(
+        (powerState) => {
+          let desc = `${i18n.global.t(
+            `pagePowerRestorePolicy.policies.${powerState}`,
+          )} - ${PowerTypes.enumDescriptions[powerState]}`;
+          return {
+            state: powerState,
+            desc,
+          };
+        },
+      );
+      state.powerRestorePolicies = powerPoliciesData;
+    }
   },
   actions: {
     async getPowerRestorePolicies({ commit }) {
       return await api
-        .get('/redfish/v1/JsonSchemas/ComputerSystem')
-        .then(async (response) => {
-          if (
-            response.data?.Location.length > 0 &&
-            response.data?.Location[0].Uri
-          ) {
-            return await api.get(response.data?.Location[0].Uri).then(
-              ({
-                data: {
-                  definitions: { PowerRestorePolicyTypes = {} },
-                },
-              }) => {
-                let powerPoliciesData = PowerRestorePolicyTypes.enum.map(
-                  (powerState) => {
-                    let desc = `${i18n.global.t(
-                      `pagePowerRestorePolicy.policies.${powerState}`,
-                    )} - ${
-                      PowerRestorePolicyTypes.enumDescriptions[powerState]
-                    }`;
-                    return {
-                      state: powerState,
-                      desc,
-                    };
-                  },
-                );
-                commit('setPowerRestorePolicies', powerPoliciesData);
-              },
-            );
-          }
+        .get('/redfish/v1/JsonSchemas/ComputerSystem/')
+        .then(
+          ({
+            data: {
+              Location
+            }
+          }) => api.get(Location[0].Uri)
+        )
+        .then(
+          ({
+            data: {
+              definitions: { PowerRestorePolicyTypes = {} },
+            },
+          }) => {
+            commit('setPowerRestorePolicies', PowerRestorePolicyTypes);
+          },
+        ).catch(_error => {
+          commit('setPowerRestorePolicies', null);
         });
     },
     async getPowerRestoreCurrentPolicy({ commit }) {

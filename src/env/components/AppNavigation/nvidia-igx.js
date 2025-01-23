@@ -45,11 +45,6 @@ const AppNavigationMixin = {
               route: '/logs/event-logs',
             },
             {
-              id: 'sel-logs',
-              label: i18n.global.t('appNavigation.selLogs'),
-              route: '/logs/sel-logs',
-            },
-            {
               id: 'dumps',
               label: i18n.global.t('appNavigation.dumps'),
               route: '/logs/dumps',
@@ -132,10 +127,17 @@ const AppNavigationMixin = {
               label: i18n.global.t('appNavigation.network'),
               route: '/settings/network',
             },
+          ],
+        },
+        {
+          id: 'security-and-access',
+          label: i18n.global.t('appNavigation.securityAndAccess'),
+          icon: 'iconSecurityAndAccess',
+          children: [
             {
-              id: 'snmp-alerts',
-              label: i18n.global.t('appNavigation.snmpAlerts'),
-              route: '/settings/snmp-alerts',
+              id: 'user-management',
+              label: i18n.global.t('appNavigation.userManagement'),
+              route: '/security-and-access/user-management',
             },
           ],
         },

@@ -4,26 +4,33 @@ import i18n from '@/i18n';
 const FactoryResetStore = {
   namespaced: true,
   state: {
-    biosSupported: true,
+    resetBiosUris: [],
   },
   getters: {
-    biosSupported: (state) => state.biosSupported,
+    resetBiosUris: (state) => state.resetBiosUris,
   },
   mutations: {
-    setBiosSupported: (state, value) => {
-      state.biosSupported = value;
+    setResetBiosUris: (state, value) => {
+      state.resetBiosUris = value;
     },
   },
   actions: {
-    async isBiosSupported({ commit }) {
-      this.dispatch('system/getSystemsWithProp', {
-       prop: 'Bios',
-      }).then((results) => commit('setBiosSupported', !!results?.length > 0));
+    async preloadResetBiosTargets({ commit }) {
+      const results = await this.dispatch('system/getSystemsResources', {
+        name: 'Bios',
+      });
+      const resetBiosUris = results.flatMap(
+        (bios) => {
+          const uri = bios.Actions?.["#Bios.ResetBios"]?.['target'];
+          if (uri) return { Id: bios.Id, target: uri }
+        }
+      );
+      commit('setResetBiosUris', resetBiosUris);
     },
-    async resetToDefaults() {
+    async resetToDefaults(_context, target) {
       return await api
         .post(
-          `${await this.dispatch('global/getBmcPath')}/Actions/Manager.ResetToDefaults`,
+          target,
           {
             ResetType: 'ResetAll',
           },
@@ -38,30 +45,9 @@ const FactoryResetStore = {
           );
         });
     },
-    async resetBios() {
-      if (process.env.VUE_APP_ENV_NAME === 'nvidia-bluefield') {
-        return await api
-          .patch(
-            `${await this.dispatch('global/getSystemPath')}/Bios/Settings`,
-            {
-              Attributes: {
-                ResetEfiVars: true,
-              },
-            },
-          )
-          .then(() => {
-            i18n.t('pageFactoryReset.toast.resetBiosSuccessAndReboot');
-            this.dispatch('controls/serverSoftReboot');
-          })
-          .catch((error) => {
-            console.log('Factory Reset: ', error);
-            throw new Error(i18n.t('pageFactoryReset.toast.resetBiosError'));
-          });
-      }
+    async resetBios(_context, target) {
       return await api
-        .post(
-          `${await this.dispatch('global/getSystemPath')}/Bios/Actions/Bios.ResetBios`,
-        )
+        .post(target)
         .then(() => i18n.global.t('pageFactoryReset.toast.resetBiosSuccess'))
         .catch((error) => {
           console.log('Factory Reset: ', error);

@@ -1,0 +1,26 @@
+<!-- 
+Original from https://raw.githubusercontent.com/carbon-design-system/carbon/6dc14bdf69926f23bb26bab2c7bb7369aa9db15c/packages/icons/src/svg/32/power.svg
+Licensed under the Apache 2.0 License.
+-->
+
+<svg id="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" >
+    <title>power</title>
+    <g data-id="power-on">
+        <path fill="currentColor" d="M22.5,5.74l-1,1.73a11,11,0,1,1-11,0l-1-1.73a13,13,0,1,0,13,0Z" transform="translate(0)" />
+        <rect fill="currentColor" x="15" y="2" width="2" height="14" />
+    </g>
+    <g data-id="power-off">
+        <path fill="currentColor" d="
+            M29,17
+            a11,11,0,1,0,-26,0
+            a11,11,0,1,0,26,0
+            M27,17
+            a10,10,0,1,1,-22,0
+            a10,10,0,1,1,22,0
+            Z" transform="translate(0)" 
+        />
+        <rect fill="currentColor" stroke ="none" x="15" y="10" width="2" height="14" />
+    </g>
+    <rect id="_Transparent_Rectangle_" data-name="&lt;Transparent Rectangle&gt;" class="cls-1" width="32"
+        height="32" />
+</svg>

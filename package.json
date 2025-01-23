@@ -21,7 +21,7 @@
         "@vue/vue3-jest": "27.0.0",
         "@vuelidate/core": "2.0.3",
         "@vuelidate/validators": "2.0.4",
-        "axios": "1.6.0",
+        "axios": "1.7.9",
         "axios-cache-interceptor": "1.5.1",
         "bootstrap": "4.6.2",
         "bootstrap-vue": "2.23.1",

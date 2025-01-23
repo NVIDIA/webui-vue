@@ -164,7 +164,7 @@
         "policies": "策略",
         "sensors": "传感器",
         "serialOverLan": "局域网串行（SOL）控制台",
-        "serverPowerOperations": "服务器电源操作",
+        "serverPowerOperations": "系统电源操作",
         "certificates": "证书",
         "snmpAlerts": "SNMP警报",
         "virtualMedia": "虚拟媒体",
@@ -213,9 +213,7 @@
                 "timezone": "@:pageDateTime.form.time.label (%{timezone})"
             },
             "ntpServers": {
-                "server1": "服务器 1",
-                "server2": "服务器 2",
-                "server3": "服务器 3"
+                "server1": "服务器 %{index}"
             }
         },
         "toast": {
@@ -342,6 +340,7 @@
         "sectionTitleBmcCards": "BMC",
         "sectionTitleBmcCardsCombined": "BMC 和服务器",
         "sectionTitleHostCards": "主机",
+        "sectionTitleBiosCards": "BIOS",
         "sectionTitleConfirmIdentify": "确认身份",
         "sectionTitleUpdateFirmware": "更新固件",
         "sectionTitleFirmwareInventory": "固件清单",
@@ -350,6 +349,8 @@
         "tableHeaderVersion": "版本",
         "viewMore": "查看更多",
         "viewLess": "查看更少",
+        "expand": "展开",
+        "collapse": "收合",
         "showAdvanced": "显示高级选项",
         "hideAdvanced": "隐藏高级选项",
         "alert": {
@@ -368,12 +369,17 @@
                 "fileAddress": "文件地址",
                 "fileSource": "文件来源",
                 "confirmIdentity": "确认身份",
+                "trustCertificate": "信任证书",
                 "imageFile": "映像文件",
                 "forceUpdate": "强制更新",
                 "startUpdate": "开始更新",
                 "server": "服务器",
                 "workstation": "本地文件",
-                "confirmCheckedMessage": "通常不需要指定目标。预设情况下，将刷新所有韧体。继续仅更新选定的目标吗？"
+                "confirmCheckedMessage": "通常不需要指定目标。预设情况下，将刷新所有韧体。继续仅更新选定的目标吗？",
+                "apiErrorResponse": "API错误回应",
+                "clickToViewApiResponse": "点此检视API错误讯息",
+                "invalidFileAddress": "不合法的档案位址",
+                "invalidTargetSelection": "选择了错误的目标"
             }
         },
         "modal": {
@@ -683,11 +689,12 @@
         "criticalEvents": "严重",
         "dhcp": "DHCPv4",
         "dhcp6": "DHCPv6",
+        "slaac": "SLAAC",
         "dumps": "Dumps",
         "eventLogs": "事件日志",
         "selLogs": "SEL日志",
         "firmwareInformation": "固件信息",
-        "hostBiosFirmwareVersion": "主机 BIOS",
+        "biosFirmwareVersion": "BIOS",
         "hostName": "主机名",
         "idlePower": "空闲功率",
         "inventory": "组件和 LED",
@@ -941,7 +948,7 @@
     "pageServerPowerOperations": {
         "currentStatus": "当前状态",
         "serverBootSettings": "启动设置",
-        "serverStatus": "服务器状态",
+        "systemStatus": "系统状态",
         "lastPowerOperation": "最后一次电源操作",
         "oneTimeBootWarning": "待处理的一次性启动。下次启动将使用指定的一次性启动设置。随后的启动将使用默认设置。",
         "operationInProgress": "在电源操作进行时没有选项可显示。完成后，电源操作将在此处显示。",
@@ -957,6 +964,7 @@
         "gracefulShutdown": "优雅关机",
         "gracefulShutdownInfo": "优雅关闭并断电",
         "powerOn": "开机",
+        "powerState": "电源状态",
         "reboot": "重启",
         "rebootServer": "重启服务器",
         "shutDown": "关闭",

@@ -155,7 +155,7 @@ const AssemblyStore = {
               productSerialNumber: assembly.SerialNumber,
               productManufacturer: assembly.Vendor,
               productVersion: assembly.Version,
-              productAssetTag: chassis?.data?.AssetTag,
+              productAssetTag: chassis.AssetTag,
               productExtra: oemProperties?.VendorData?.join(';'),
             };
           } else if (assembly.PhysicalContext === 'Chassis') {
