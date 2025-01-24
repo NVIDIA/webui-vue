@@ -1075,9 +1075,11 @@
         "defaultDeviceName": "Virtual media device",
         "start": "Start",
         "stop": "Stop",
+        "eject": "Eject",
         "inserted": "Inserted",
         "virtualMediaSubTitleFirst": "Load image from web browser",
         "virtualMediaSubTitleSecond": "Load image from external server",
+        "websocketVMinUse": "Another user is using this device, the Eject button will force eject.",
         "modal": {
             "title": "Configure Remote Media",
             "serverUri": "Image URI (HTTPS or CIFS)",
