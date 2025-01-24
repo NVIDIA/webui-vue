@@ -62,7 +62,7 @@
             :filter="searchFilter"
             :busy="isBusy"
             @filtered="onFiltered"
-            @row-selected="onRowSelected($event, filteredTableItems.length)"
+            @row-selected="onRowSelected($event, filteredDumps.length)"
           >
             <!-- Checkbox column -->
             <template #head(checkbox)>
@@ -382,7 +382,7 @@ export default {
           )
           .then((deleteConfrimed) => {
             if (deleteConfrimed) {
-              if (this.selectedRows.length === this.dumps.length) {
+              if (this.selectedRows.length === this.allDumps.length) {
                 this.$store
                   .dispatch('dumps/deleteAllDumps')
                   .then((success) => this.successToast(success))
