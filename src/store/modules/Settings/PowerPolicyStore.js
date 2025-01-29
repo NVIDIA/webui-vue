@@ -14,33 +14,57 @@ const PowerPolicyStore = {
   mutations: {
     setPowerRestoreCurrentPolicy: (state, powerRestoreCurrentPolicy) =>
       (state.powerRestoreCurrentPolicy = powerRestoreCurrentPolicy),
-    setPowerRestorePolicies: (state, powerRestorePolicies) =>
-      (state.powerRestorePolicies = powerRestorePolicies),
+    setPowerRestorePolicies: (state, PowerRestorePolicyTypes) => {
+      const PowerTypes = PowerRestorePolicyTypes ||  {
+        "description": "The enumerations of `PowerRestorePolicyTypes` specify the choice of power state for the system when power is applied.",
+        "enum": [
+            "AlwaysOn",
+            "AlwaysOff",
+            "LastState"
+        ],
+        "enumDescriptions": {
+            "AlwaysOff": "The system always remains powered off when power is applied.",
+            "AlwaysOn": "The system always powers on when power is applied.",
+            "LastState": "The system returns to its last on or off power state when power is applied."
+        },
+        "type": "string"
+      };
+      const powerPoliciesData = PowerTypes.enum.map(
+        (powerState) => {
+          let desc = `${i18n.global.t(
+            `pagePowerRestorePolicy.policies.${powerState}`,
+          )} - ${PowerTypes.enumDescriptions[powerState]}`;
+          return {
+            state: powerState,
+            desc,
+          };
+        },
+      );
+      state.powerRestorePolicies = powerPoliciesData;
+    }
   },
   actions: {
     async getPowerRestorePolicies({ commit }) {
       return await api
-        .get('/redfish/v1/JsonSchemas/ComputerSystem/ComputerSystem.json')
+        .get('/redfish/v1/JsonSchemas/ComputerSystem/')
+        .then(
+          ({
+            data: {
+              Location
+            }
+          }) => api.get(Location[0].Uri)
+        )
         .then(
           ({
             data: {
               definitions: { PowerRestorePolicyTypes = {} },
             },
           }) => {
-            let powerPoliciesData = PowerRestorePolicyTypes.enum.map(
-              (powerState) => {
-                let desc = `${i18n.t(
-                  `pagePowerRestorePolicy.policies.${powerState}`,
-                )} - ${PowerRestorePolicyTypes.enumDescriptions[powerState]}`;
-                return {
-                  state: powerState,
-                  desc,
-                };
-              },
-            );
-            commit('setPowerRestorePolicies', powerPoliciesData);
+            commit('setPowerRestorePolicies', PowerRestorePolicyTypes);
           },
-        );
+        ).catch(_error => {
+          commit('setPowerRestorePolicies', null);
+        });
     },
     async getPowerRestoreCurrentPolicy({ commit }) {
       return await api
@@ -57,12 +81,14 @@ const PowerPolicyStore = {
         .patch(`${await this.dispatch('global/getSystemPath')}`, data)
         .then(() => {
           dispatch('getPowerRestoreCurrentPolicy');
-          return i18n.t('pagePowerRestorePolicy.toast.successSaveSettings');
+          return i18n.global.t(
+            'pagePowerRestorePolicy.toast.successSaveSettings',
+          );
         })
         .catch((error) => {
           console.log(error);
           throw new Error(
-            i18n.t('pagePowerRestorePolicy.toast.errorSaveSettings'),
+            i18n.global.t('pagePowerRestorePolicy.toast.errorSaveSettings'),
           );
         });
     },

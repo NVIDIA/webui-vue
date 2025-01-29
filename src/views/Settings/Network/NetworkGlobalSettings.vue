@@ -12,7 +12,16 @@
               <icon-edit :title="$t('pageNetwork.modal.editHostnameTitle')" />
             </b-button>
           </dt>
-          <dd>{{ dataFormatter(firstInterface.hostname) }}</dd>
+          <dd style="word-break: break-all">
+            {{ dataFormatter(firstInterface.hostname) }}
+          </dd>
+        </dl>
+      </b-col>
+      <b-col md="2">
+        <dl>
+          <dt>{{ $t('pageNetwork.ipVersion') }}</dt>
+          <dd>{{ $t('pageNetwork.ipv4') }}</dd>
+          <dd>{{ $t('pageNetwork.ipv6') }}</dd>
         </dl>
       </b-col>
       <b-col md="2">
@@ -53,6 +62,20 @@
               <span v-else>{{ $t('global.status.disabled') }}</span>
             </b-form-checkbox>
           </dd>
+          <dd>
+            <b-form-checkbox
+              id="useDomainNameSwitchIpv6"
+              v-model="useDomainNameStateIpv6"
+              data-test-id="networkSettings-switch-useDomainNameIpv6"
+              switch
+              @change="changeDomainNameStateIpv6"
+            >
+              <span v-if="useDomainNameStateIpv6">
+                {{ $t('global.status.enabled') }}
+              </span>
+              <span v-else>{{ $t('global.status.disabled') }}</span>
+            </b-form-checkbox>
+          </dd>
         </dl>
       </b-col>
       <b-col md="2">
@@ -81,6 +104,20 @@
               @change="changeDnsStateIpv6"
             >
               <span v-if="dnsStateIpv6">
+                {{ $t('global.status.enabled') }}
+              </span>
+              <span v-else>{{ $t('global.status.disabled') }}</span>
+            </b-form-checkbox>
+          </dd>
+          <dd>
+            <b-form-checkbox
+              id="useDnsSwitchIpv6"
+              v-model="useDnsStateIpv6"
+              data-test-id="networkSettings-switch-useDnsIpv6"
+              switch
+              @change="changeDnsStateIpv6"
+            >
+              <span v-if="useDnsStateIpv6">
                 {{ $t('global.status.enabled') }}
               </span>
               <span v-else>{{ $t('global.status.disabled') }}</span>
@@ -119,6 +156,20 @@
               <span v-else>{{ $t('global.status.disabled') }}</span>
             </b-form-checkbox>
           </dd>
+          <dd>
+            <b-form-checkbox
+              id="useNtpSwitchIpv6"
+              v-model="useNtpStateIpv6"
+              data-test-id="networkSettings-switch-useNtpIpv6"
+              switch
+              @change="changeNtpStateIpv6"
+            >
+              <span v-if="useNtpStateIpv6">
+                {{ $t('global.status.enabled') }}
+              </span>
+              <span v-else>{{ $t('global.status.disabled') }}</span>
+            </b-form-checkbox>
+          </dd>
         </dl>
       </b-col>
     </b-row>
@@ -131,6 +182,7 @@ import IconEdit from '@carbon/icons-vue/es/edit/16';
 import DataFormatterMixin from '@/components/Mixins/DataFormatterMixin';
 import PageSection from '@/components/Global/PageSection';
 import { mapState } from 'vuex';
+import { useI18n } from 'vue-i18n';
 
 export default {
   name: 'GlobalNetworkSettings',
@@ -139,6 +191,7 @@ export default {
 
   data() {
     return {
+      $t: useI18n().t,
       hostname: '',
       dnsState: '',
       ntpState: '',

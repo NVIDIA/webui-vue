@@ -135,6 +135,8 @@ import TableRowExpandMixin, {
   expandRowLabel,
 } from '@/components/Mixins/TableRowExpandMixin';
 import DataFormatterMixin from '@/components/Mixins/DataFormatterMixin';
+import { useI18n } from 'vue-i18n';
+import i18n from '@/i18n';
 
 export default {
   components: { IconChevron, PageSection },
@@ -142,6 +144,7 @@ export default {
   props: ['showLeds'],
   data() {
     return {
+      $t: useI18n().t,
       isBusy: true,
       expandRowLabel: expandRowLabel,
       showFru: process.env.VUE_APP_SHOW_FRU === 'true',
@@ -168,22 +171,22 @@ export default {
           },
           {
             key: 'name',
-            label: this.$t('pageInventory.table.name'),
+            label: i18n.global.t('pageInventory.table.name'),
             formatter: this.dataFormatter,
           },
           {
             key: 'chassisType',
-            label: this.$t('pageInventory.table.chassisType'),
+            label: i18n.global.t('pageInventory.table.chassisType'),
             formatter: this.dataFormatter,
           },
           {
             key: 'chassisPartNumber',
-            label: this.$t('pageInventory.table.chassisPartNumber'),
+            label: i18n.global.t('pageInventory.table.chassisPartNumber'),
             formatter: this.dataFormatter,
           },
           {
             key: 'chassisSerialNumber',
-            label: this.$t('pageInventory.table.chassisSerialNumber'),
+            label: i18n.global.t('pageInventory.table.chassisSerialNumber'),
             formatter: this.dataFormatter,
           },
         ];
@@ -196,25 +199,25 @@ export default {
         },
         {
           key: 'name',
-          label: this.$t('pageInventory.table.id'),
+          label: i18n.global.t('pageInventory.table.id'),
           formatter: this.dataFormatter,
           sortable: true,
         },
         {
           key: 'partNumber',
-          label: this.$t('pageInventory.table.partNumber'),
+          label: i18n.global.t('pageInventory.table.partNumber'),
           formatter: this.dataFormatter,
           sortable: true,
         },
         {
           key: 'locationNumber',
-          label: this.$t('pageInventory.table.locationNumber'),
+          label: i18n.global.t('pageInventory.table.locationNumber'),
           formatter: this.dataFormatter,
           sortable: true,
         },
         this.showLeds ? {
           key: 'identifyLed',
-          label: this.$t('pageInventory.table.identifyLed'),
+          label: i18n.global.t('pageInventory.table.identifyLed'),
           formatter: this.dataFormatter,
         }:{},
       ];

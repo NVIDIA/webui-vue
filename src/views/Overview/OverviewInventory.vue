@@ -3,7 +3,7 @@
     :title="showLeds ? $t('pageOverview.inventory') : $t('pageOverview.inventoryNoLeds')"
     :to="`/hardware-status/inventory`"
   >
-    <b-row class="mt-3">
+    <b-row class="mt-3" v-if="showLeds">
       <b-col sm="6">
         <dl sm="6">
           <dt>{{ $t('pageOverview.systemIdentifyLed') }}</dt>
@@ -30,6 +30,7 @@
 <script>
 import OverviewCard from './OverviewCard';
 import BVToastMixin from '@/components/Mixins/BVToastMixin';
+import { useI18n } from 'vue-i18n';
 
 export default {
   name: 'Inventory',
@@ -39,6 +40,7 @@ export default {
   mixins: [BVToastMixin],
   data() {
     return {
+      $t: useI18n().t,
       showLeds:
         process.env.VUE_APP_HIDE_INVENTORY_LED !== 'true',
     }

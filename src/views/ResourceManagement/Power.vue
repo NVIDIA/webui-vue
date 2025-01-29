@@ -52,27 +52,27 @@
                   }}
                 </b-form-text>
 
-                <b-form-input
-                  id="input-1"
-                  v-model.number="powerCapValue"
-                  :disabled="!isPowerCapFieldEnabled"
-                  data-test-id="power-input-powerCapValue"
-                  type="number"
-                  aria-describedby="power-help-text"
-                  :state="getValidationState($v.powerCapValue)"
-                ></b-form-input>
+              <b-form-input
+                id="input-1"
+                v-model.number="powerCapValue"
+                :disabled="!isPowerCapFieldEnabled"
+                data-test-id="power-input-powerCapValue"
+                type="number"
+                aria-describedby="power-help-text"
+                :state="getValidationState(v$.powerCapValue)"
+              ></b-form-input>
 
-                <b-form-invalid-feedback id="input-live-feedback" role="alert">
-                  <template v-if="!$v.powerCapValue.required">
-                    {{ $t('global.form.fieldRequired') }}
-                  </template>
-                  <template v-else-if="!$v.powerCapValue.between">
-                    {{ $t('global.form.invalidValue') }}
-                  </template>
-                </b-form-invalid-feedback>
-              </b-form-group>
-            </b-col>
-          </b-row>
+              <b-form-invalid-feedback id="input-live-feedback" role="alert">
+                <template v-if="v$.powerCapValue.required.$invalid">
+                  {{ $t('global.form.fieldRequired') }}
+                </template>
+                <template v-else-if="v$.powerCapValue.between.$invalid">
+                  {{ $t('global.form.invalidValue') }}
+                </template>
+              </b-form-invalid-feedback>
+            </b-form-group>
+          </b-col>
+        </b-row>
 
           <b-button
             variant="primary"
@@ -91,9 +91,12 @@
 import PageTitle from '@/components/Global/PageTitle';
 import LoadingBarMixin, { loading } from '@/components/Mixins/LoadingBarMixin';
 import VuelidateMixin from '@/components/Mixins/VuelidateMixin.js';
+import { useVuelidate } from '@vuelidate/core';
+
 import BVToastMixin from '@/components/Mixins/BVToastMixin';
-import { requiredIf, between } from 'vuelidate/lib/validators';
+import { requiredIf, between } from '@vuelidate/validators';
 import { mapGetters } from 'vuex';
+import { useI18n } from 'vue-i18n';
 
 export default {
   name: 'Power',
@@ -103,8 +106,14 @@ export default {
     this.hideLoader();
     next();
   },
+  setup() {
+    return {
+      v$: useVuelidate(),
+    };
+  },
   data() {
     return {
+      $t: useI18n().t,
       loading,
     };
   },
@@ -123,7 +132,7 @@ export default {
         return this.powerCapValue !== null;
       },
       set(value) {
-        this.$v.$reset();
+        this.v$.$reset();
         let newValue = null;
         if (value) {
           if (this.powerCapValue) {
@@ -140,7 +149,7 @@ export default {
         return this.$store.getters['powerControl/powerCapValue'];
       },
       set(value) {
-        this.$v.$touch();
+        this.v$.$touch();
         this.$store.dispatch('powerControl/setPowerCapUpdatedValue', value);
       },
     },
@@ -161,8 +170,8 @@ export default {
   },
   methods: {
     submitForm() {
-      this.$v.$touch();
-      if (this.$v.$invalid) return;
+      this.v$.$touch();
+      if (this.v$.$invalid) return;
       this.startLoader();
       this.$store
         .dispatch('powerControl/setPowerControl', this.powerCapValue)

@@ -33,12 +33,11 @@ const VirtualMediaStore = {
   actions: {
     async getData({ commit }) {
       const virtualMediaListEnabled =
-        process.env.VUE_APP_VIRTUAL_MEDIA_LIST_ENABLED === 'false'
-          ? false
-          : true;
-
+        process.env.VUE_APP_VIRTUAL_MEDIA_LIST_ENABLED === 'true'
+          ? true
+          : false;
       const device = {
-        id: i18n.t('pageVirtualMedia.defaultDeviceName'),
+        id: i18n.global.t('pageVirtualMedia.defaultDeviceName'),
         websocket: '/vm/0/0',
         file: null,
         transferProtocolType: transferProtocolType.OEM,
@@ -91,7 +90,7 @@ const VirtualMediaStore = {
           data,
         )
         .catch((e) => {
-          let message = i18n.t('pageVirtualMedia.toast.errorMounting');
+          let message = i18n.global.t('pageVirtualMedia.toast.errorMounting');
           if (
             e.response &&
             e.response.data &&
@@ -109,7 +108,7 @@ const VirtualMediaStore = {
           `${await this.dispatch('global/getBmcPath')}/VirtualMedia/${id}/Actions/VirtualMedia.EjectMedia`,
         )
         .catch((e) => {
-          let message = i18n.t('pageVirtualMedia.toast.errorUnmounting');
+          let message = i18n.global.t('pageVirtualMedia.toast.errorUnmounting');
           if (
             e.response &&
             e.response.data &&

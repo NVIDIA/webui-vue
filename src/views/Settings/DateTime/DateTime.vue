@@ -18,14 +18,14 @@
         <b-col lg="3">
           <dl>
             <dt>{{ $t('pageDateTime.form.date') }}</dt>
-            <dd v-if="bmcTime">{{ bmcTime | formatDate }}</dd>
+            <dd v-if="bmcTime">{{ $filters.formatDate(bmcTime) }}</dd>
             <dd v-else>--</dd>
           </dl>
         </b-col>
         <b-col lg="3">
           <dl>
             <dt>{{ $t('pageDateTime.form.time.label') }}</dt>
-            <dd v-if="bmcTime">{{ bmcTime | formatTime }}</dd>
+            <dd v-if="bmcTime">{{ $filters.formatTime(bmcTime) }}</dd>
             <dd v-else>--</dd>
           </dl>
         </b-col>
@@ -56,17 +56,17 @@
                   <b-form-input
                     id="input-manual-date"
                     v-model="form.manual.date"
-                    :state="getValidationState($v.form.manual.date)"
+                    :state="getValidationState(v$.form.manual.date)"
                     :disabled="ntpOptionSelected"
                     data-test-id="dateTime-input-manualDate"
                     class="form-control-with-button"
-                    @blur="$v.form.manual.date.$touch()"
+                    @blur="v$.form.manual.date.$touch()"
                   />
                   <b-form-invalid-feedback role="alert">
-                    <div v-if="!$v.form.manual.date.pattern">
+                    <div v-if="v$.form.manual.date.pattern.$invalid">
                       {{ $t('global.form.invalidFormat') }}
                     </div>
-                    <div v-if="!$v.form.manual.date.required">
+                    <div v-if="v$.form.manual.date.required.$invalid">
                       {{ $t('global.form.fieldRequired') }}
                     </div>
                   </b-form-invalid-feedback>
@@ -105,16 +105,16 @@
                   <b-form-input
                     id="input-manual-time"
                     v-model="form.manual.time"
-                    :state="getValidationState($v.form.manual.time)"
+                    :state="getValidationState(v$.form.manual.time)"
                     :disabled="ntpOptionSelected"
                     data-test-id="dateTime-input-manualTime"
-                    @blur="$v.form.manual.time.$touch()"
+                    @blur="v$.form.manual.time.$touch()"
                   />
                   <b-form-invalid-feedback role="alert">
-                    <div v-if="!$v.form.manual.time.pattern">
+                    <div v-if="v$.form.manual.time.pattern.$invalid">
                       {{ $t('global.form.invalidFormat') }}
                     </div>
-                    <div v-if="!$v.form.manual.time.required">
+                    <div v-if="v$.form.manual.time.required.$invalid">
                       {{ $t('global.form.fieldRequired') }}
                     </div>
                   </b-form-invalid-feedback>
@@ -130,54 +130,38 @@
             NTP
           </b-form-radio>
           <b-row class="mt-3 ml-3">
-            <b-col sm="6" lg="4" xl="3">
+            <b-col
+              v-for="(item, index) in form.ntpItems"
+              :key="index"
+              sm="6"
+              lg="4"
+              xl="3"
+            >
               <b-form-group
-                :label="$t('pageDateTime.form.ntpServers.server1')"
-                label-for="input-ntp-1"
+                :label="$t('pageDateTime.form.ntpServers.server', { index })"
+                :label-for="item.id"
               >
-                <b-input-group>
+                <b-input-group v-if="index == 0">
                   <b-form-input
-                    id="input-ntp-1"
+                    :id="item.id"
                     v-model="form.ntp.firstAddress"
-                    :state="getValidationState($v.form.ntp.firstAddress)"
+                    :state="getValidationState(v$.form.ntp.firstAddress)"
                     :disabled="manualOptionSelected"
-                    data-test-id="dateTime-input-ntpServer1"
-                    @blur="$v.form.ntp.firstAddress.$touch()"
+                    :data-test-id="item.dataTestId"
+                    @blur="v$.form.ntp.firstAddress.$touch()"
                   />
                   <b-form-invalid-feedback role="alert">
-                    <div v-if="!$v.form.ntp.firstAddress.required">
+                    <div v-if="v$.form.ntp.firstAddress.required.$invalid">
                       {{ $t('global.form.fieldRequired') }}
                     </div>
                   </b-form-invalid-feedback>
                 </b-input-group>
-              </b-form-group>
-            </b-col>
-            <b-col sm="6" lg="4" xl="3">
-              <b-form-group
-                :label="$t('pageDateTime.form.ntpServers.server2')"
-                label-for="input-ntp-2"
-              >
-                <b-input-group>
+                <b-input-group v-else>
                   <b-form-input
-                    id="input-ntp-2"
-                    v-model="form.ntp.secondAddress"
+                    :id="item.id"
+                    v-model="form.ntpAddresses[index]"
                     :disabled="manualOptionSelected"
-                    data-test-id="dateTime-input-ntpServer2"
-                  />
-                </b-input-group>
-              </b-form-group>
-            </b-col>
-            <b-col sm="6" lg="4" xl="3">
-              <b-form-group
-                :label="$t('pageDateTime.form.ntpServers.server3')"
-                label-for="input-ntp-3"
-              >
-                <b-input-group>
-                  <b-form-input
-                    id="input-ntp-3"
-                    v-model="form.ntp.thirdAddress"
-                    :disabled="manualOptionSelected"
-                    data-test-id="dateTime-input-ntpServer3"
+                    :data-test-id="item.dataTestId"
                   />
                 </b-input-group>
               </b-form-group>
@@ -206,9 +190,12 @@ import BVToastMixin from '@/components/Mixins/BVToastMixin';
 import LoadingBarMixin, { loading } from '@/components/Mixins/LoadingBarMixin';
 import LocalTimezoneLabelMixin from '@/components/Mixins/LocalTimezoneLabelMixin';
 import VuelidateMixin from '@/components/Mixins/VuelidateMixin.js';
+import { useVuelidate } from '@vuelidate/core';
 
 import { mapState } from 'vuex';
-import { requiredIf, helpers } from 'vuelidate/lib/validators';
+import { requiredIf } from '@vuelidate/validators';
+import { helpers } from 'vuelidate/lib/validators';
+import { useI18n } from 'vue-i18n';
 
 const isoDateRegex = /([12]\d{3}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01]))/;
 const isoTimeRegex = /^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]$/;
@@ -226,8 +213,27 @@ export default {
     this.hideLoader();
     next();
   },
-  data() {
+  setup() {
     return {
+      v$: useVuelidate(),
+    };
+  },
+  data() {
+    const ntpServerNumber = process.env.VUE_APP_NTP_SERVER_NUMBER
+      ? process.env.VUE_APP_NTP_SERVER_NUMBER
+      : 3;
+    const addresses = [];
+    const items = [];
+    for (let i = 0; i < ntpServerNumber; i++) {
+      addresses.push('');
+      const item = {
+        id: 'input-ntp-' + i.toString(),
+        dataTestId: 'dateTime-input-ntpServer' + i.toString(),
+      };
+      items.push(item);
+    }
+    return {
+      $t: useI18n().t,
       locale: this.$store.getters['global/languagePreference'],
       form: {
         configurationSelected: 'manual',
@@ -235,7 +241,11 @@ export default {
           date: '',
           time: '',
         },
-        ntp: { firstAddress: '', secondAddress: '', thirdAddress: '' },
+        ntpItems: items,
+        ntpAddresses: addresses,
+        ntp: {
+          firstAddress: '',
+        },
       },
       loading,
     };
@@ -296,10 +306,10 @@ export default {
       this.emitChange();
     },
     bmcTime() {
-      this.form.manual.date = this.$options.filters.formatDate(
+      this.form.manual.date = this.$filters.formatDate(
         this.$store.getters['global/bmcTime'],
       );
-      this.form.manual.time = this.$options.filters
+      this.form.manual.time = this.$filters
         .formatTime(this.$store.getters['global/bmcTime'])
         .slice(0, 5);
     },
@@ -314,8 +324,8 @@ export default {
   },
   methods: {
     emitChange() {
-      if (this.$v.$invalid) return;
-      this.$v.$reset(); //reset to re-validate on blur
+      if (this.v$.$invalid) return;
+      this.v$.$reset(); //reset to re-validate on blur
       this.$emit('change', {
         manualDate: this.manualDate ? new Date(this.manualDate) : null,
       });
@@ -324,15 +334,14 @@ export default {
       this.form.configurationSelected = this.isNtpProtocolEnabled
         ? 'ntp'
         : 'manual';
-      [
-        this.form.ntp.firstAddress = '',
-        this.form.ntp.secondAddress = '',
-        this.form.ntp.thirdAddress = '',
-      ] = [this.ntpServers[0], this.ntpServers[1], this.ntpServers[2]];
+      this.form.ntp.firstAddress = this.ntpServers[0];
+      for (let i = 0; i < this.ntpServers.length; i++) {
+        this.form.ntpAddresses[i] = this.ntpServers[i];
+      }
     },
     submitForm() {
-      this.$v.$touch();
-      if (this.$v.$invalid) return;
+      this.v$.$touch();
+      if (this.v$.$invalid) return;
       this.startLoader();
 
       let dateTimeForm = {};
@@ -355,12 +364,22 @@ export default {
         dateTimeForm.updatedDateTime = date.toISOString();
       } else {
         dateTimeForm.ntpProtocolEnabled = true;
-
-        const ntpArray = [
-          this.form.ntp.firstAddress,
-          this.form.ntp.secondAddress,
-          this.form.ntp.thirdAddress,
-        ];
+        // Shift address up if address is empty in the middle
+        // to avoid refreshing after delay when updating NTP
+        let i = 1,
+          j = 1;
+        for (; i < this.form.ntpAddresses.length; i++) {
+          if (this.form.ntpAddresses[i]) {
+            this.form.ntpAddresses[j++] = this.form.ntpAddresses[i];
+          }
+        }
+        for (; j < this.form.ntpAddresses.length; ) {
+          this.form.ntpAddresses[j++] = '';
+        }
+        const ntpArray = [this.form.ntp.firstAddress];
+        for (let i = 1; i < this.form.ntpAddresses.length; i++) {
+          ntpArray.push(this.form.ntpAddresses[i]);
+        }
 
         // Filter the ntpArray to remove empty strings,
         // per Redfish spec there should be no empty strings or null on the ntp array.
@@ -368,9 +387,12 @@ export default {
 
         dateTimeForm.ntpServersArray = [...ntpArrayFiltered];
 
-        [this.ntpServers[0], this.ntpServers[1], this.ntpServers[2]] = [
-          ...dateTimeForm.ntpServersArray,
-        ];
+        for (let i = 0; i < this.form.ntpAddresses.length; i++) {
+          this.ntpServers[i] = '';
+        }
+        for (let i = 0; i < dateTimeForm.ntpServersArray.length; i++) {
+          this.ntpServers[i] = dateTimeForm.ntpServersArray[i];
+        }
 
         this.setNtpValues();
       }
@@ -380,19 +402,13 @@ export default {
         .then((success) => {
           this.successToast(success);
           if (!isNTPEnabled) return;
-          // Shift address up if second address is empty
-          // to avoid refreshing after delay when updating NTP
-          if (!this.form.ntp.secondAddress && this.form.ntp.thirdAddres) {
-            this.form.ntp.secondAddress = this.form.ntp.thirdAddres;
-            this.form.ntp.thirdAddress = '';
-          }
         })
         .then(() => {
           this.$store.dispatch('global/getBmcTime');
         })
         .catch(({ message }) => this.errorToast(message))
         .finally(() => {
-          this.$v.form.$reset();
+          this.v$.form.$reset();
           this.endLoader();
         });
     },

@@ -20,6 +20,9 @@ import SerialOverLan from '@/views/Operations/SerialOverLan';
 import SerialOverLanConsole from '@/views/Operations/SerialOverLan/SerialOverLanConsole';
 import ServerPowerOperations from '@/views/Operations/ServerPowerOperations';
 import Inventory from '@/views/HardwareStatus/Inventory';
+import Sessions from '@/views/SecurityAndAccess/Sessions';
+import UserManagement from '@/views/SecurityAndAccess/UserManagement';
+import Certificates from '@/views/SecurityAndAccess/Certificates';
 import i18n from '@/i18n';
 
 const roles = {
@@ -39,7 +42,7 @@ const routes = [
         name: 'login',
         component: Login,
         meta: {
-          title: i18n.t('appPageTitle.login'),
+          title: i18n.global.t('appPageTitle.login'),
         },
       },
       {
@@ -47,7 +50,7 @@ const routes = [
         name: 'change-password',
         component: ChangePassword,
         meta: {
-          title: i18n.t('appPageTitle.changePassword'),
+          title: i18n.global.t('appPageTitle.changePassword'),
           requiresAuth: true,
         },
       },
@@ -65,7 +68,7 @@ const routes = [
         name: 'serial-over-lan-console',
         component: SerialOverLanConsole,
         meta: {
-          title: i18n.t('appPageTitle.serialOverLan'),
+          title: i18n.global.t('appPageTitle.serialOverLan'),
         },
       },
       {
@@ -73,7 +76,7 @@ const routes = [
         name: 'kvm-console',
         component: KvmConsole,
         meta: {
-          title: i18n.t('appPageTitle.kvm'),
+          title: i18n.global.t('appPageTitle.kvm'),
         },
       },
     ],
@@ -90,7 +93,7 @@ const routes = [
         name: 'overview',
         component: Overview,
         meta: {
-          title: i18n.t('appPageTitle.overview'),
+          title: i18n.global.t('appPageTitle.overview'),
         },
       },
       {
@@ -98,7 +101,7 @@ const routes = [
         name: 'profile-settings',
         component: ProfileSettings,
         meta: {
-          title: i18n.t('appPageTitle.profileSettings'),
+          title: i18n.global.t('appPageTitle.profileSettings'),
         },
       },
       {
@@ -106,7 +109,7 @@ const routes = [
         name: 'event-logs',
         component: EventLogs,
         meta: {
-          title: i18n.t('appPageTitle.eventLogs'),
+          title: i18n.global.t('appPageTitle.eventLogs'),
         },
       },
       {
@@ -114,7 +117,7 @@ const routes = [
         name: 'sel-logs',
         component: SelLogs,
         meta: {
-          title: i18n.t('appPageTitle.eventLogs'),
+          title: i18n.global.t('appPageTitle.eventLogs'),
         },
       },
       {
@@ -122,7 +125,7 @@ const routes = [
         name: 'dumps',
         component: Dumps,
         meta: {
-          title: i18n.t('appPageTitle.dumps'),
+          title: i18n.global.t('appPageTitle.dumps'),
         },
       },
       {
@@ -130,7 +133,7 @@ const routes = [
         name: 'inventory',
         component: Inventory,
         meta: {
-          title: i18n.t('appPageTitle.inventory'),
+          title: i18n.global.t('appPageTitle.inventory'),
         },
       },
       {
@@ -138,7 +141,7 @@ const routes = [
         name: 'sensors',
         component: Sensors,
         meta: {
-          title: i18n.t('appPageTitle.sensors'),
+          title: i18n.global.t('appPageTitle.sensors'),
         },
       },
       {
@@ -146,7 +149,7 @@ const routes = [
         name: 'date-time',
         component: DateTime,
         meta: {
-          title: i18n.t('appPageTitle.dateTime'),
+          title: i18n.global.t('appPageTitle.dateTime'),
         },
       },
       {
@@ -154,7 +157,7 @@ const routes = [
         name: 'factory-reset',
         component: FactoryReset,
         meta: {
-          title: i18n.t('appPageTitle.factoryReset'),
+          title: i18n.global.t('appPageTitle.factoryReset'),
         },
       },
       {
@@ -162,7 +165,7 @@ const routes = [
         name: 'firmware',
         component: Firmware,
         meta: {
-          title: i18n.t('appPageTitle.firmware'),
+          title: i18n.global.t('appPageTitle.firmware'),
         },
       },
       {
@@ -170,7 +173,31 @@ const routes = [
         name: 'network',
         component: Network,
         meta: {
-          title: i18n.t('appPageTitle.network'),
+          title: i18n.global.t('appPageTitle.network'),
+        },
+      },
+      {
+        path: '/security-and-access/sessions',
+        name: 'sessions',
+        component: Sessions,
+        meta: {
+          title: i18n.global.t('appPageTitle.sessions'),
+        },
+      },
+      {
+        path: '/security-and-access/user-management',
+        name: 'user-management',
+        component: UserManagement,
+        meta: {
+          title: i18n.global.t('appPageTitle.userManagement'),
+        },
+      },
+      {
+        path: '/security-and-access/certificates',
+        name: 'certificates',
+        component: Certificates,
+        meta: {
+          title: i18n.global.t('appPageTitle.certificates'),
         },
       },
       {
@@ -178,7 +205,7 @@ const routes = [
         name: 'reboot-bmc',
         component: RebootBmc,
         meta: {
-          title: i18n.t('appPageTitle.rebootBmc'),
+          title: i18n.global.t('appPageTitle.rebootBmc'),
         },
       },
       {
@@ -186,7 +213,7 @@ const routes = [
         name: 'serial-over-lan',
         component: SerialOverLan,
         meta: {
-          title: i18n.t('appPageTitle.serialOverLan'),
+          title: i18n.global.t('appPageTitle.serialOverLan'),
           exclusiveToRoles: [roles.administrator],
         },
       },
@@ -195,7 +222,7 @@ const routes = [
         name: 'server-power-operations',
         component: ServerPowerOperations,
         meta: {
-          title: i18n.t('appPageTitle.serverPowerOperations'),
+          title: i18n.global.t('appPageTitle.serverPowerOperations'),
         },
       },
       {
@@ -203,7 +230,7 @@ const routes = [
         name: 'page-not-found',
         component: PageNotFound,
         meta: {
-          title: i18n.t('appPageTitle.pageNotFound'),
+          title: i18n.global.t('appPageTitle.pageNotFound'),
         },
       },
     ],

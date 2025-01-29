@@ -12,6 +12,7 @@
 
 <script>
 import IconTooltip from '@carbon/icons-vue/es/information/16';
+import { useI18n } from 'vue-i18n';
 
 export default {
   components: { IconTooltip },
@@ -21,10 +22,18 @@ export default {
       default: '',
     },
   },
+  data() {
+    return {
+      $t: useI18n().t,
+    };
+  },
 };
 </script>
 
 <style lang="scss" scoped>
+@import '@/assets/styles/bmc/helpers/_index.scss';
+@import '@/assets/styles/bootstrap/_helpers.scss';
+
 .btn-tooltip {
   padding: 0;
   line-height: 1em;

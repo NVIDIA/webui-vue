@@ -46,6 +46,7 @@ const FirmwareStore = {
       errMsg: null,
       touch: false,
       uploadProgress: 0,
+      jsonErrMsg: null,
     },
   },
   getters: {
@@ -126,6 +127,8 @@ const FirmwareStore = {
       (state.firmwareUpdateInfo.touch = !state.firmwareUpdateInfo.touch),
     setFirmwareUploadProgress: (state, progress) =>
       (state.firmwareUpdateInfo.uploadProgress = progress),
+    setFirmwareUpdateJsonErrMsg: (state, jsonErrMsg) =>
+      (state.firmwareUpdateInfo.jsonErrMsg = jsonErrMsg),
   },
   actions: {
     async getFirmwareInformation({ dispatch }) {
@@ -290,6 +293,7 @@ const FirmwareStore = {
           console.log(error);
           throw new Error(
             await dispatch('extractResolutionForFailedCmd', error),
+            { cause: error },
           );
         });
     },
@@ -311,6 +315,7 @@ const FirmwareStore = {
           console.log(error);
           throw new Error(
             await dispatch('extractResolutionForFailedCmd', error),
+            { cause: error },
           );
         });
     },
@@ -327,7 +332,7 @@ const FirmwareStore = {
       );
 
       if (resolutions.length > 0) return resolutions;
-      else return i18n.t('pageFirmware.toast.errorUpdateFirmware');
+      else return i18n.global.t('pageFirmware.toast.errorUpdateFirmware');
     },
     initFirmwareUpdate({ commit }, { taskHandle, taskState, initiator }) {
       commit('setFirmwareUpdateTaskHandle', taskHandle);
@@ -383,6 +388,7 @@ const FirmwareStore = {
         console.log(resp);
         const errMsg = await dispatch('extractResolutionForFailedTask', resp);
         commit('setFirmwareUpdateErrMsg', errMsg);
+        commit('setFirmwareUpdateJsonErrMsg', resp?.data);
         commit('setFirmwareUpdateState', 'TaskFailed');
         commit('setFirmwareUpdateInitiator', false);
       } else {
@@ -523,7 +529,7 @@ const FirmwareStore = {
       });
 
       if (resolutions.length > 0) return resolutions;
-      else return i18n.t('pageFirmware.toast.errorCompleteUpdateFirmware');
+      else return i18n.global.t('pageFirmware.toast.errorCompleteUpdateFirmware');
     },
     // eslint-disable-next-line no-unused-vars
     sleep({ state }, seconds) {
@@ -541,7 +547,7 @@ const FirmwareStore = {
         .patch(`${await this.dispatch('global/getBmcPath')}`, data)
         .catch((error) => {
           console.log(error);
-          throw new Error(i18n.t('pageFirmware.toast.errorSwitchImages'));
+          throw new Error(i18n.global.t('pageFirmware.toast.errorSwitchImages'));
         });
     },
     async exchangePublicKey(

@@ -43,6 +43,7 @@
 
 <script>
 import Alert from '@/components/Global/Alert';
+import { useI18n } from 'vue-i18n';
 
 export default {
   components: { Alert },
@@ -55,6 +56,7 @@ export default {
   },
   data() {
     return {
+      $t: useI18n().t,
       isServerPowerOffRequired:
         process.env.VUE_APP_SERVER_OFF_REQUIRED === 'true',
       isServerPowerOnRequired:

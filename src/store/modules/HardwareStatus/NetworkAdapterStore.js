@@ -19,7 +19,7 @@ const NetworkAdapterStore = {
   },
   actions: {
     async getNetworkAdapters({ commit }) {
-      this.dispatch('system/getSytemsResources', {
+      this.dispatch('system/getSystemsResources', {
         name: 'EthernetInterfaces',
       }).then((results) => commit('setNetworkAdapters', results));
     },

@@ -24,7 +24,7 @@
     </page-section>
 
     <!-- System table -->
-    <table-system ref="system" v-bind:show-leds="showLeds" />
+    <table-system ref="system" v-bind:show-leds="showSystemLeds" />
 
     <!-- BMC manager table -->
     <table-bmc-manager ref="bmc" v-bind:show-leds="showLeds" />
@@ -69,6 +69,8 @@ import PageSection from '@/components/Global/PageSection';
 import JumpLink16 from '@carbon/icons-vue/es/jump-link/16';
 import JumpLinkMixin from '@/components/Mixins/JumpLinkMixin';
 import { chunk } from 'lodash';
+import { useI18n } from 'vue-i18n';
+import i18n from '@/i18n';
 
 export default {
   components: {
@@ -95,7 +97,11 @@ export default {
   },
   data() {
     return {
+      $t: useI18n().t,
       showLeds:
+        (process.env.VUE_APP_ENV_NAME === 'nvidia-gb') ? false :
+        process.env.VUE_APP_HIDE_INVENTORY_LED !== 'true',
+      showSystemLeds:
         process.env.VUE_APP_HIDE_INVENTORY_LED !== 'true',
       observer: null,
       validLinks: [],
@@ -104,55 +110,61 @@ export default {
           id: 'system',
           dataRef: 'system',
           href: '#system',
-          linkText: this.$t('pageInventory.system'),
+          linkText: i18n.global.t('pageInventory.system'),
         },
         {
           id: 'bmc',
           dataRef: 'bmc',
           href: '#bmc',
-          linkText: this.$t('pageInventory.bmcManager'),
+          linkText: i18n.global.t('pageInventory.bmcManager'),
         },
         {
           id: 'chassis',
           dataRef: 'chassis',
           href: '#chassis',
-          linkText: this.$t('pageInventory.chassis'),
+          linkText: i18n.global.t('pageInventory.chassis'),
         },
         {
           id: 'dimms',
           dataRef: 'dimms',
           href: '#dimms',
-          linkText: this.$t('pageInventory.dimmSlot'),
+          linkText: i18n.global.t('pageInventory.dimmSlot'),
         },
         {
           id: 'fans',
           dataRef: 'fans',
           href: '#fans',
-          linkText: this.$t('pageInventory.fans'),
+          linkText: i18n.global.t('pageInventory.fans'),
         },
         {
           id: 'powerSupply',
           dataRef: 'powerSupply',
           href: '#powerSupply',
-          linkText: this.$t('pageInventory.powerSupplies'),
+          linkText: i18n.global.t('pageInventory.powerSupplies'),
         },
         {
           id: 'processors',
           dataRef: 'processors',
           href: '#processors',
-          linkText: this.$t('pageInventory.processors'),
+          linkText: i18n.global.t('pageInventory.processors'),
         },
         {
           id: 'assembly',
           dataRef: 'assembly',
           href: '#assembly',
-          linkText: this.$t('pageInventory.assemblies'),
+          linkText: i18n.global.t('pageInventory.assemblies'),
         },
         {
           id: 'networkAdapter',
           dataRef: 'networkAdapter',
           href: '#networkAdapter',
-          linkText: this.$t('pageInventory.networkAdapters'),
+          linkText: i18n.global.t('pageInventory.networkAdapters'),
+        },
+        {
+          id: 'networkAdapter',
+          dataRef: 'networkAdapter',
+          href: '#networkAdapter',
+          linkText: i18n.global.t('pageInventory.networkAdapters'),
         },
       ],
     };

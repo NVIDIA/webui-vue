@@ -7,10 +7,12 @@ const BmcStore = {
   state: {
     bmc: [],
     isManagerReady: false,
+    resetToDefaultsUris: [],
   },
   getters: {
     bmc: (state) => state.bmc,
     isManagerReady: (state) => state.isManagerReady,
+    resetToDefaultsUris: (state) => state.resetToDefaultsUris,
   },
   mutations: {
     setBmcInfo: (state, data) => {
@@ -49,6 +51,9 @@ const BmcStore = {
     setManagerReady: (state, ready) => {
       state.isManagerReady = ready;
     },
+    setResetToDefaultsUris: (state, value) => {
+      state.resetToDefaultsUris = value;
+    },
   },
   actions: {
     async getBmcInfo({ commit }) {
@@ -65,6 +70,13 @@ const BmcStore = {
         const allManagersReady = results.every((manager) =>
           manager?.Status?.State === 'Enabled');
         commit('setManagerReady', allManagersReady);
+        const resetToDefaultsUris = results.flatMap(
+          (bmc) => {
+            const uri = bmc.Actions?.["#Manager.ResetToDefaults"]?.['target'];
+            if (uri) return { "Id": bmc.Id, "target": uri }
+          }
+        );
+        commit('setResetToDefaultsUris', resetToDefaultsUris);
         return results;
       } catch (error) {
         console.log(error);
@@ -82,9 +94,13 @@ const BmcStore = {
         .then(() => {
           dispatch('getBmcInfo');
           if (led.identifyLed) {
-            return i18n.t('pageInventory.toast.successEnableIdentifyLed');
+            return i18n.global.t(
+              'pageInventory.toast.successEnableIdentifyLed',
+            );
           } else {
-            return i18n.t('pageInventory.toast.successDisableIdentifyLed');
+            return i18n.global.t(
+              'pageInventory.toast.successDisableIdentifyLed',
+            );
           }
         })
         .catch((error) => {
@@ -92,16 +108,16 @@ const BmcStore = {
           console.log('error', error);
           if (led.identifyLed) {
             throw new Error(
-              i18n.t('pageInventory.toast.errorEnableIdentifyLed'),
+              i18n.global.t('pageInventory.toast.errorEnableIdentifyLed'),
             );
           } else {
             throw new Error(
-              i18n.t('pageInventory.toast.errorDisableIdentifyLed'),
+              i18n.global.t('pageInventory.toast.errorDisableIdentifyLed'),
             );
           }
         });
     },
-    async checkManagerStatus({ dispatch, state }) {
+    async checkManagerStatus({ dispatch }) {
       await dispatch('getBmcInfo');
     },
   },

@@ -64,16 +64,16 @@ const SystemStore = {
         })
         .catch((error) => console.log(error));
     },
-    async getSytemsResources({ getters, dispatch }, { name, callback }) {
+    async getSystemsResources({ getters, dispatch }, { name, callback }) {
       if (!getters.isLoaded) await dispatch('getSystem');
       let Systems = getters.redfish_systems;
       let promises = Systems.flatMap(async (system) => {
         if (!(system[name] && system[name]['@odata.id'])) return;
         return await api
           .get(system[name]['@odata.id'])
-          .then(async ({ data: { Members = [] } }) => {
-            if (Members) {
-              const gets = Members.map((member) =>
+          .then(async ({data}) => {
+            if (data?.Members?.length) {
+              const gets = data.Members.map((member) =>
                 api
                   .get(member['@odata.id'])
                   .then((data) => {
@@ -83,7 +83,8 @@ const SystemStore = {
                   .catch(() => {}),
               );
               return await api.allSettled(gets);
-            }
+            } 
+            else return api.allSettled([data]);
           });
       });
       return await api
@@ -112,9 +113,13 @@ const SystemStore = {
         })
         .then(() => {
           if (ledState) {
-            return i18n.t('pageInventory.toast.successEnableIdentifyLed');
+            return i18n.global.t(
+              'pageInventory.toast.successEnableIdentifyLed',
+            );
           } else {
-            return i18n.t('pageInventory.toast.successDisableIdentifyLed');
+            return i18n.global.t(
+              'pageInventory.toast.successDisableIdentifyLed',
+            );
           }
         })
         .catch((error) => {
@@ -122,11 +127,11 @@ const SystemStore = {
           console.log('error', error);
           if (ledState) {
             throw new Error(
-              i18n.t('pageInventory.toast.errorEnableIdentifyLed'),
+              i18n.global.t('pageInventory.toast.errorEnableIdentifyLed'),
             );
           } else {
             throw new Error(
-              i18n.t('pageInventory.toast.errorDisableIdentifyLed'),
+              i18n.global.t('pageInventory.toast.errorDisableIdentifyLed'),
             );
           }
         });

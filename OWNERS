@@ -37,7 +37,7 @@ owners:
 
 reviewers:
 - a.nikhil@ibm.com
-- Renuka.Sharanya.Pundla@ibm.com
+- jwestover@nvidia.com
 - sivaprabug@ami.com
 
 matchers:
@@ -46,15 +46,15 @@ openbmc:
 - name: Gunnar Mills
   email: gunnar@gmills.xyz
   discord: GunnarM
+- name: Jason Westover
+  email: jwestover@nvidia.com
+  discord: jasonwestover
 - name: Kirankumar Ballapalli
   email: kirankumarb@ami.com
   discord: kirankumarb
 - name: Nikhil Ashoka
   email: a.nikhil@ibm.com
   discord: NikhilAshoka
-- name: Renuka Sharanya Pundla
-  email: Renuka.Sharanya.Pundla@ibm.com
-  discord: Renuka Sharanya
 - name: Sivaprabu Ganesan
   email: sivaprabug@ami.com
   discord: sivaprabug

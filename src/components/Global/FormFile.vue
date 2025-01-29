@@ -8,7 +8,7 @@
         :disabled="disabled"
         :state="state"
         plain
-        @input="$emit('input', file)"
+        @input="$emit('input', $event)"
       >
       </b-form-file>
       <span
@@ -42,6 +42,7 @@
 <script>
 import { BFormFile } from 'bootstrap-vue';
 import IconClose from '@carbon/icons-vue/es/close/20';
+import { useI18n } from 'vue-i18n';
 
 export default {
   name: 'FormFile',
@@ -70,6 +71,7 @@ export default {
   },
   data() {
     return {
+      $t: useI18n().t,
       file: null,
     };
   },
@@ -82,6 +84,9 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+@import '@/assets/styles/bmc/helpers/_index.scss';
+@import '@/assets/styles/bootstrap/_helpers.scss';
+
 .form-control-file {
   opacity: 0;
   height: 0;

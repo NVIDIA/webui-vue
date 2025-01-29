@@ -1,7 +1,7 @@
 <template>
   <div>
     <div class="form-background p-3">
-      <b-form @submit.prevent="onSubmitUpload">
+      <b-form @submit.stop.prevent="onSubmitUpload">
         <b-form-group
           v-if="isBluefield"
           :label="$t('pageFirmware.form.updateFirmware.target')"
@@ -83,7 +83,7 @@
 
         <b-form-checkbox
           v-if="isForceUpdateEnabled"
-          v-model="forceUpdate"
+          v-model="form.forceUpdate"
           class="mb-4"
           :disabled="isPageDisabled || isFirmwareUpdateInProgress"
         >
@@ -99,7 +99,7 @@
             <form-file
               id="image-file"
               :disabled="isPageDisabled || isFirmwareUpdateInProgress"
-              :state="getValidationState($v.file)"
+              :state="getValidationState(v$.file)"
               aria-describedby="image-file-help-block"
               @input="onFileUpload($event)"
             >
@@ -136,14 +136,23 @@
             </template>
             <b-form-input
               id="file-address"
-              v-model="fileAddress"
+              v-model="form.ImageURI"
               type="text"
-              :state="getValidationState($v.fileAddress)"
+              :state="!v$.form.ImageURI.$invalid && !serverError"
               :disabled="isPageDisabled || isFirmwareUpdateInProgress"
-              @input="$v.fileAddress.$touch()"
+              @blur="v$.form.ImageURI.$touch()"
+              @input="clearServerError"
             />
-            <b-form-invalid-feedback role="alert">
-              {{ $t('global.form.fieldRequired') }}
+            <b-form-invalid-feedback role="alert" v-if="v$.form.ImageURI.$error">
+              <span v-if="!v$.form.ImageURI.serverError">
+                <a href="#"
+                  @click.prevent="showDetailServerError"
+                  :title="$t('pageFirmware.form.updateFirmware.clickToViewApiResponse')"
+                  class="error"
+                >
+                  {{ errorDetails }}
+                </a>
+              </span>
             </b-form-invalid-feedback>
           </b-form-group>
           <b-form-group
@@ -153,11 +162,11 @@
           >
             <b-form-input
               id="username"
-              v-model="username"
+              v-model="form.username"
               type="text"
-              :state="getValidationState($v.username)"
+              :state="getValidationState(v$.form.username)"
               :disabled="isPageDisabled || isFirmwareUpdateInProgress"
-              @input="$v.username.$touch()"
+              @input="v$.form.username.$touch()"
             />
             <b-form-invalid-feedback role="alert">
               {{ $t('global.form.fieldRequired') }}
@@ -179,11 +188,40 @@
             </b-progress-bar>
           </b-progress>
         </div>
+        <div class="mb-3">
+          <b-form-invalid-feedback role="alert" :state="false" v-if="v$.form.ImageURI.$error">
+            <span v-if="!v$.form.ImageURI.required">
+              {{ $t('global.form.fieldRequired') }}
+            </span>
+          </b-form-invalid-feedback>
+          <b-form-invalid-feedback role="alert" :state="false" v-if="v$.form.Target.$error">
+            <span v-if="!v$.form.Target.serverError">
+              <a href="#"
+                @click.prevent="showDetailServerError"
+                :title="$t('pageFirmware.form.updateFirmware.clickToViewApiResponse')"
+                class="error"
+              >
+                {{ errorDetails }}
+              </a>
+            </span>
+          </b-form-invalid-feedback>
+          <b-form-invalid-feedback role="alert" :state="false" v-if="redfishCommonError">
+            <span>
+              <a href="#"
+                @click.prevent="showDetailServerError"
+                :title="$t('pageFirmware.form.updateFirmware.clickToViewApiResponse')"
+                class="error"
+              >
+                {{ errorDetails }}
+              </a>
+            </span>
+          </b-form-invalid-feedback>
+        </div>
         <b-btn
           data-test-id="firmware-button-startUpdate"
           type="submit"
           variant="primary"
-          :disabled="isPageDisabled || isFirmwareUpdateInProgress"
+          :disabled="isPageDisabled || isFirmwareUpdateInProgress || hasFormError"
         >
           {{ $t('pageFirmware.form.updateFirmware.startUpdate') }}
         </b-btn>
@@ -191,8 +229,13 @@
     </div>
 
     <!-- Modals -->
-    <modal-update-firmware :targets="targets" @ok="updateFirmware" />
+    <modal-update-firmware :targets="form.Target" @ok="updateFirmware" />
     <modal-confirm-identity :default-remote-server-ip="remoteServerIp" />
+    <json-modal
+      :title="$t('pageFirmware.form.updateFirmware.apiErrorResponse')"
+    >
+      {{ serverError }}
+    </json-modal>
   </div>
 </template>
 
@@ -202,13 +245,18 @@ import { requiredIf } from 'vuelidate/lib/validators';
 import BVToastMixin from '@/components/Mixins/BVToastMixin';
 import LoadingBarMixin, { loading } from '@/components/Mixins/LoadingBarMixin';
 import VuelidateMixin from '@/components/Mixins/VuelidateMixin.js';
+import { useVuelidate } from '@vuelidate/core';
 
 import FormFile from '@/components/Global/FormFile';
 import ModalUpdateFirmware from './FirmwareModalUpdateFirmware';
+import { useI18n } from 'vue-i18n';
+import i18n from '@/i18n';
 import ModalConfirmIdentity from './FirmwareModalConfirmIdentity';
+import JsonModal from '@/components/Global/JsonModal.vue';
+import { generateValidation } from '@/components/Validators/redfishAction';
 
 export default {
-  components: { FormFile, ModalUpdateFirmware, ModalConfirmIdentity },
+  components: { FormFile, ModalUpdateFirmware, ModalConfirmIdentity, JsonModal },
   mixins: [BVToastMixin, LoadingBarMixin, VuelidateMixin],
   props: {
     isPageDisabled: {
@@ -221,14 +269,23 @@ export default {
       type: Boolean,
     },
   },
+  setup() {
+    return {
+      v$: useVuelidate(),
+    };
+  },
   data() {
     return {
+      $t: useI18n().t,
       loading,
       fileSource: 'LOCAL',
       file: null,
-      fileAddress: null,
-      username: null,
-      forceUpdate: false,
+      form: {
+        ImageURI: null,
+        username: null,
+        forceUpdate: false,
+        Target: [],
+      },
       isUploading: false,
       isServerPowerOffRequired:
         process.env.VUE_APP_SERVER_OFF_REQUIRED === 'true',
@@ -238,6 +295,9 @@ export default {
       nvidiaGBTarget: 'BMC',
       hideFirmwareTargets:
         process.env.VUE_APP_HIDE_FIRMWARE_TARGETS === 'true',
+      serverError: null,
+      errorDetails: null,
+      redfishCommonError: false,
     };
   },
   computed: {
@@ -287,7 +347,7 @@ export default {
       if (this.isBluefield && !this.isLocalSelected ) return false;
       return true;
     },
-    targets() {
+    computedTargets() {
       if (this.isBluefield) {
         if (this.fileSource === 'LOCAL') return [];
         else return ['redfish/v1/UpdateService/FirmwareInventory/DPU_OS'];
@@ -316,18 +376,23 @@ export default {
       return this.fileSource === 'HTTPS';
     },
     remoteServerIp() {
-      return this.fileAddress?.split('/')?.[0];
+      return this.form.ImageURI?.split('/')?.[0];
     },
     uploadProgress() {
       return this.$store.getters['firmware/getFirmwareUploadProgress'];
     },
+    hasFormError() {
+      return this.serverError && !this.v$.$dirty && !this.v$.$anyError;
+    },
   },
   watch: {
     fileSource: function () {
-      this.$v.$reset();
+      this.v$.$reset();
       this.file = null;
-      this.fileAddress = null;
-      this.username = null;
+      this.form.ImageURI = null;
+      this.form.username = null;
+      this.serverError = null;
+      this.redfishCommonError = false;
     },
     firmwareUpdateInfo: {
       handler(newInfo, oldInfo) {
@@ -348,6 +413,19 @@ export default {
       },
       immdiate: true,
     },
+    computedTargets: {
+      handler(newValue) {
+        this.clearServerError();
+        this.form.Target = newValue;
+      },
+      immediate: true,
+    },
+    'form.Target': {
+      handler() {
+        this.clearServerError();
+        this.v$.form.Target.$touch();
+      }
+    },
   },
   validations() {
     return {
@@ -356,15 +434,27 @@ export default {
           return this.isLocalSelected;
         }),
       },
-      fileAddress: {
-        required: requiredIf(function () {
-          return !this.isLocalSelected;
-        }),
-      },
-      username: {
-        required: requiredIf(function () {
-          return this.isUsernameNeeded;
-        }),
+      form: {
+        ...generateValidation(
+          this,
+          'ImageURI',
+          i18n.global.t('pageFirmware.form.updateFirmware.invalidFileAddress'),
+          {
+            required: requiredIf(function () {
+              return !this.isLocalSelected;
+            }),
+          }
+        ),
+        ...generateValidation(
+          this,
+          'Target',
+          i18n.global.t('pageFirmware.form.updateFirmware.invalidTargetSelection')
+        ),
+        username: {
+          required: requiredIf(function () {
+            return this.isUsernameNeeded;
+          }),
+        },
       },
     };
   },
@@ -373,12 +463,29 @@ export default {
     this.$store.dispatch('firmware/attachExistingUpdateTask');
   },
   methods: {
+    clearServerError() {
+      this.serverError = null;
+      this.redfishCommonError = false;
+    },
+    showDetailServerError() {
+      this.$bvModal.show('json-modal');
+    },
     updateFirmware() {
       this.isUploading = true;
       this.$store.commit('firmware/setFirmwareUploadProgress', 0);
       this.startLoader();
-      this.infoToast(this.$t('pageFirmware.toast.updateStartedMessage'), {
-        title: this.$t('pageFirmware.toast.updateStarted'),
+      const timerId = setTimeout(() => {
+        this.endLoader();
+        this.infoToast(
+          i18n.global.t('pageFirmware.toast.verifyUpdateMessage'),
+          {
+            title: i18n.global.t('pageFirmware.toast.verifyUpdate'),
+            refreshAction: true,
+          },
+        );
+      }, 360000);
+      this.infoToast(i18n.global.t('pageFirmware.toast.updateStartedMessage'), {
+        title: i18n.global.t('pageFirmware.toast.updateStarted'),
         timestamp: true,
       });
       this.dispatchFileUpload()
@@ -389,8 +496,12 @@ export default {
             initiator: true,
           });
         })
-        .catch(({ message }) => {
-          this.errorToast(message);
+        .catch(({ message, cause }) => {
+          this.serverError = cause?.response?.data?.error || null;
+          this.v$.$touch();
+          this.validateRedfishError();
+          const lastToast = document.querySelector('.toast');
+          this.$bvToast.hide(lastToast.id);
         })
         .finally(() => {
           this.isUploading = false;
@@ -402,21 +513,21 @@ export default {
       if (this.fileSource === 'LOCAL') {
         return this.$store.dispatch('firmware/uploadFirmware', {
           image: this.file,
-          forceUpdate: this.forceUpdate,
-          targets: this.targets,
+          forceUpdate: this.form.forceUpdate,
+          targets: this.form.Target,
         });
       } else {
         return this.$store.dispatch('firmware/uploadFirmwareSimpleUpdate', {
           protocol: this.fileSource,
-          fileAddress: this.fileAddress,
-          forceUpdate: this.forceUpdate,
-          username: this.username,
-          targets: this.targets,
+          fileAddress: this.form.ImageURI,
+          forceUpdate: this.form.forceUpdate,
+          username: this.form.username,
+          targets: this.form.Target,
         });
       }
     },
     displayUpdateProgress(
-      { state, taskPercent, errMsg },
+      { state, taskPercent, errMsg, jsonErrMsg },
       { state: oldState, initiator: oldInitiator },
     ) {
       if (state === 'TaskStarted') {
@@ -430,38 +541,44 @@ export default {
       } else if (state === 'Done' && oldState !== state) {
         this.endLoader();
         if (oldInitiator) {
-          this.infoToast(this.$t('pageFirmware.toast.verifyUpdateMessage'), {
-            title: this.$t('pageFirmware.toast.verifyUpdate'),
+          this.infoToast(i18n.global.t('pageFirmware.toast.verifyUpdateMessage'), {
+            title: i18n.global.t('pageFirmware.toast.verifyUpdate'),
             refreshAction: true,
           });
         }
       } else if (state === 'ResetFailed' && oldState !== state) {
         this.endLoader();
         if (oldInitiator)
-          this.errorToast(this.$t('pageFirmware.toast.resetFailedMessage'));
+          this.errorToast(i18n.global.t('pageFirmware.toast.resetFailedMessage'));
       } else if (state === 'WaitReadyFailed' && state !== state) {
         this.endLoader();
         if (oldInitiator)
-          this.errorToast(this.$t('pageFirmware.toast.waitReadyFailedMessage'));
+          this.errorToast(i18n.global.t('pageFirmware.toast.waitReadyFailedMessage'));
       } else if (state === 'TaskFailed' && oldState !== state) {
         this.endLoader();
-        if (oldInitiator) this.errorToast(errMsg);
+        if (oldInitiator) {
+          this.serverError = jsonErrMsg || null;
+          this.v$.$touch();
+          this.validateRedfishError(errMsg);
+          const lastToast = document.querySelector('.toast');
+          this.$bvToast.hide(lastToast.id);
+        }
       }
     },
     onConfirmIdentity() {
       this.$bvModal.show('modal-confirm-identity');
     },
     onSubmitUpload() {
-      this.$v.$touch();
-      if (this.$v.$invalid) return;
+      this.v$.$touch();
+      if (this.v$.$invalid) return;
       if (this.hasCheckedTargets) {
         this.$bvModal.msgBoxConfirm(
-          this.$t('pageFirmware.form.updateFirmware.confirmCheckedMessage'),
+          i18n.global.t('pageFirmware.form.updateFirmware.confirmCheckedMessage'),
           {
             buttonSize: 'sm',
             okVariant: 'danger',
-            okTitle: this.$t('global.action.confirm'),
-            cancelTitle: this.$t('global.action.cancel'),
+            okTitle: i18n.global.t('global.action.confirm'),
+            cancelTitle: i18n.global.t('global.action.cancel'),
             cancelVariant: 'secondary',
           },
         ).then(confirmed => {
@@ -475,13 +592,17 @@ export default {
     },
     onFileUpload(file) {
       this.file = file;
-      this.$v.file.$touch();
+      this.v$.file.$touch();
     },
   },
 };
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
+@import '@/assets/styles/bmc/helpers/_index.scss';
+@import '@/assets/styles/bootstrap/_helpers.scss';
+@import '@/assets/styles/bmc/custom/_forms.scss';
+
 .progress-wrapper {
   position: relative;
 }

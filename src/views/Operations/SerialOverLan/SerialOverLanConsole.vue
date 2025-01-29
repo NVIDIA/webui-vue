@@ -50,6 +50,7 @@ import { Terminal } from 'xterm';
 import { throttle } from 'lodash';
 import IconLaunch from '@carbon/icons-vue/es/launch/20';
 import StatusIcon from '@/components/Global/StatusIcon';
+import { useI18n } from 'vue-i18n';
 
 export default {
   name: 'SerialOverLanConsole',
@@ -66,6 +67,7 @@ export default {
   },
   data() {
     return {
+      $t: useI18n().t,
       resizeConsoleWindow: null,
       terminalClass: this.isFullWindow ? 'full-window' : '',
     };
@@ -87,7 +89,7 @@ export default {
   mounted() {
     this.openTerminal();
   },
-  beforeDestroy() {
+  beforeUnmount() {
     window.removeEventListener('resize', this.resizeConsoleWindow);
     this.closeTerminal();
   },
@@ -162,6 +164,9 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+@import '@/assets/styles/bmc/helpers/_index.scss';
+@import '@/assets/styles/bootstrap/_helpers.scss';
+
 @import '~xterm/css/xterm.css';
 
 #terminal {

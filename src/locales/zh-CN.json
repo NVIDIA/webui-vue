@@ -213,9 +213,7 @@
                 "timezone": "@:pageDateTime.form.time.label (%{timezone})"
             },
             "ntpServers": {
-                "server1": "服务器 1",
-                "server2": "服务器 2",
-                "server3": "服务器 3"
+                "server1": "服务器 %{index}"
             }
         },
         "toast": {
@@ -377,7 +375,11 @@
                 "startUpdate": "开始更新",
                 "server": "服务器",
                 "workstation": "本地文件",
-                "confirmCheckedMessage": "通常不需要指定目标。预设情况下，将刷新所有韧体。继续仅更新选定的目标吗？"
+                "confirmCheckedMessage": "通常不需要指定目标。预设情况下，将刷新所有韧体。继续仅更新选定的目标吗？",
+                "apiErrorResponse": "API错误回应",
+                "clickToViewApiResponse": "点此检视API错误讯息",
+                "invalidFileAddress": "不合法的档案位址",
+                "invalidTargetSelection": "选择了错误的目标"
             }
         },
         "modal": {

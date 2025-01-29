@@ -133,6 +133,8 @@ import TableSortMixin from '@/components/Mixins/TableSortMixin';
 import SearchFilterMixin, {
   searchFilter,
 } from '@/components/Mixins/SearchFilterMixin';
+import { useI18n } from 'vue-i18n';
+import i18n from '@/i18n';
 
 export default {
   name: 'Sensors',
@@ -159,17 +161,18 @@ export default {
   },
   data() {
     return {
+      $t: useI18n().t,
       isBusy: true,
       supportMore: process.env.VUE_APP_SHOW_MORE_SENSOR_INFO === 'true',
       showMore: false,
       tableFilters: [
         {
           key: 'status',
-          label: this.$t('pageSensors.table.status'),
+          label: i18n.global.t('pageSensors.table.status'),
           values: [
-            this.$t('global.action.ok'),
-            this.$t('global.action.warning'),
-            this.$t('global.action.critical'),
+            i18n.global.t('global.action.ok'),
+            i18n.global.t('global.action.warning'),
+            i18n.global.t('global.action.critical'),
           ],
         },
       ],
@@ -193,54 +196,54 @@ export default {
           {
             key: 'id',
             sortable: true,
-            label: this.$t('pageSensors.table.id'),
+            label: i18n.global.t('pageSensors.table.id'),
           },
           {
             key: 'name',
             sortable: true,
-            label: this.$t('pageSensors.table.name'),
+            label: i18n.global.t('pageSensors.table.name'),
           },
           {
             key: 'status',
             sortable: true,
-            label: this.$t('pageSensors.table.status'),
+            label: i18n.global.t('pageSensors.table.status'),
             tdClass: 'text-nowrap',
           },
           {
             key: 'lowerFatal',
             formatter: this.dataFormatter,
-            label: this.$t('pageSensors.table.lowerFatal'),
+            label: i18n.global.t('pageSensors.table.lowerFatal'),
           },
           {
             key: 'lowerCritical',
             formatter: this.dataFormatter,
-            label: this.$t('pageSensors.table.lowerCritical'),
+            label: i18n.global.t('pageSensors.table.lowerCritical'),
           },
           {
             key: 'lowerCaution',
             formatter: this.dataFormatter,
-            label: this.$t('pageSensors.table.lowerWarning'),
+            label: i18n.global.t('pageSensors.table.lowerWarning'),
           },
 
           {
             key: 'currentValue',
             formatter: this.dataFormatter,
-            label: this.$t('pageSensors.table.currentValue'),
+            label: i18n.global.t('pageSensors.table.currentValue'),
           },
           {
             key: 'upperCaution',
             formatter: this.dataFormatter,
-            label: this.$t('pageSensors.table.upperWarning'),
+            label: i18n.global.t('pageSensors.table.upperWarning'),
           },
           {
             key: 'upperCritical',
             formatter: this.dataFormatter,
-            label: this.$t('pageSensors.table.upperCritical'),
+            label: i18n.global.t('pageSensors.table.upperCritical'),
           },
           {
             key: 'upperFatal',
             formatter: this.dataFormatter,
-            label: this.$t('pageSensors.table.upperFatal'),
+            label: i18n.global.t('pageSensors.table.upperFatal'),
           },
         ];
       } else {
@@ -253,39 +256,39 @@ export default {
           {
             key: 'name',
             sortable: true,
-            label: this.$t('pageSensors.table.name'),
+            label: i18n.global.t('pageSensors.table.name'),
           },
           {
             key: 'status',
             sortable: true,
-            label: this.$t('pageSensors.table.status'),
+            label: i18n.global.t('pageSensors.table.status'),
             tdClass: 'text-nowrap',
           },
           {
             key: 'lowerCritical',
             formatter: this.dataFormatter,
-            label: this.$t('pageSensors.table.lowerCritical'),
+            label: i18n.global.t('pageSensors.table.lowerCritical'),
           },
           {
             key: 'lowerCaution',
             formatter: this.dataFormatter,
-            label: this.$t('pageSensors.table.lowerWarning'),
+            label: i18n.global.t('pageSensors.table.lowerWarning'),
           },
 
           {
             key: 'currentValue',
             formatter: this.dataFormatter,
-            label: this.$t('pageSensors.table.currentValue'),
+            label: i18n.global.t('pageSensors.table.currentValue'),
           },
           {
             key: 'upperCaution',
             formatter: this.dataFormatter,
-            label: this.$t('pageSensors.table.upperWarning'),
+            label: i18n.global.t('pageSensors.table.upperWarning'),
           },
           {
             key: 'upperCritical',
             formatter: this.dataFormatter,
-            label: this.$t('pageSensors.table.upperCritical'),
+            label: i18n.global.t('pageSensors.table.upperCritical'),
           },
         ];
       }
@@ -331,7 +334,10 @@ export default {
         date.toISOString().slice(0, 10) +
         '_' +
         date.toString().split(':').join('-').split(' ')[4];
-      return this.$t('pageSensors.exportFilePrefix') + date;
+      return i18n.global.t('pageSensors.exportFilePrefix') + date;
+    },
+    toggleShowMore() {
+      this.showMore = !this.showMore;
     },
     toggleShowMore() {
       this.showMore = !this.showMore;

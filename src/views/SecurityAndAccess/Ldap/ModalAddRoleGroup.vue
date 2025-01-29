@@ -16,7 +16,7 @@
             <template v-if="roleGroup !== null">
               <dl class="mb-4">
                 <dt>{{ $t('pageLdap.modal.groupName') }}</dt>
-                <dd>{{ form.groupName }}</dd>
+                <dd style="word-break: break-all">{{ form.groupName }}</dd>
               </dl>
             </template>
 
@@ -29,8 +29,8 @@
                 <b-form-input
                   id="role-group-name"
                   v-model="form.groupName"
-                  :state="getValidationState($v.form.groupName)"
-                  @input="$v.form.groupName.$touch()"
+                  :state="getValidationState(v$.form.groupName)"
+                  @input="v$.form.groupName.$touch()"
                 />
                 <b-form-invalid-feedback role="alert">
                   {{ $t('global.form.fieldRequired') }}
@@ -46,8 +46,8 @@
                 id="privilege"
                 v-model="form.groupPrivilege"
                 :options="accountRoles"
-                :state="getValidationState($v.form.groupPrivilege)"
-                @input="$v.form.groupPrivilege.$touch()"
+                :state="getValidationState(v$.form.groupPrivilege)"
+                @input="v$.form.groupPrivilege.$touch()"
               >
                 <template v-if="!roleGroup" #first>
                   <b-form-select-option :value="null" disabled>
@@ -80,8 +80,10 @@
 </template>
 
 <script>
-import { required, requiredIf } from 'vuelidate/lib/validators';
+import { required, requiredIf } from '@vuelidate/validators';
 import VuelidateMixin from '@/components/Mixins/VuelidateMixin.js';
+import { useVuelidate } from '@vuelidate/core';
+import { useI18n } from 'vue-i18n';
 
 export default {
   mixins: [VuelidateMixin],
@@ -98,8 +100,14 @@ export default {
       },
     },
   },
+  setup() {
+    return {
+      v$: useVuelidate(),
+    };
+  },
   data() {
     return {
+      $t: useI18n().t,
       form: {
         groupName: null,
         groupPrivilege: null,
@@ -134,8 +142,8 @@ export default {
   },
   methods: {
     handleSubmit() {
-      this.$v.$touch();
-      if (this.$v.$invalid) return;
+      this.v$.$touch();
+      if (this.v$.$invalid) return;
       this.$emit('ok', {
         addNew: !this.roleGroup,
         groupName: this.form.groupName,
@@ -151,7 +159,7 @@ export default {
     resetForm() {
       this.form.groupName = null;
       this.form.groupPrivilege = null;
-      this.$v.$reset();
+      this.v$.$reset();
       this.$emit('hidden');
     },
     onOk(bvModalEvt) {

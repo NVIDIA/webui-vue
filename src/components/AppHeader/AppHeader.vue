@@ -135,7 +135,9 @@ import IconRenew from '@carbon/icons-vue/es/renew/20';
 import StatusIcon from '@/components/Global/StatusIcon';
 import PowerIcon from '@/components/Global/PowerIcon';
 import LoadingBar from '@/components/Global/LoadingBar';
+import { useI18n } from 'vue-i18n';
 import { mapState } from 'vuex';
+import i18n from '@/i18n';
 
 export default {
   name: 'AppHeader',
@@ -157,6 +159,7 @@ export default {
   },
   data() {
     return {
+      $t: useI18n().t,
       isNavigationOpen: false,
       altLogo: process.env.VUE_APP_COMPANY_NAME || 'Built on OpenBMC',
     };
@@ -222,13 +225,12 @@ export default {
   },
   watch: {
     consoleWindow() {
-      if (this.consoleWindow === false)
-        this?.$eventBus?.$consoleWindow?.close();
+      if (this.consoleWindow === false) this.$eventBus.$consoleWindow?.close();
     },
     isAuthorized(value) {
       if (value === false) {
-        this.errorToast(this.$t('global.toast.unAuthDescription'), {
-          title: this.$t('global.toast.unAuthTitle'),
+        this.errorToast(i18n.global.t('global.toast.unAuthDescription'), {
+          title: i18n.global.t('global.toast.unAuthTitle'),
         });
       }
     },
@@ -271,6 +273,9 @@ export default {
 </script>
 
 <style lang="scss">
+@import '@/assets/styles/bmc/helpers/_index.scss';
+@import '@/assets/styles/bootstrap/_helpers.scss';
+
 @mixin focus-box-shadow($padding-color: $navbar-color, $outline-color: $white) {
   box-shadow:
     inset 0 0 0 3px $padding-color,
@@ -281,11 +286,11 @@ export default {
     position: absolute;
     top: -60px;
     left: 0.5rem;
-    z-index: $zindex-popover;
-    transition: $duration--moderate-01 $exit-easing--expressive;
+    //z-index: $zindex-popover;
+    //transition: $duration--moderate-01 $exit-easing--expressive;
     &:focus {
       top: 0.5rem;
-      transition-timing-function: $entrance-easing--expressive;
+      //transition-timing-function: $entrance-easing--expressive;
     }
   }
   .navbar-text,
@@ -314,6 +319,7 @@ export default {
   .navbar {
     padding: 0;
     background-color: $navbar-color;
+
     @include media-breakpoint-up($responsive-layout-bp) {
       height: $header-height;
     }
