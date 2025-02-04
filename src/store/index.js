@@ -33,7 +33,7 @@ import PoliciesStore from './modules/SecurityAndAccess/PoliciesStore';
 import FactoryResetStore from './modules/Operations/FactoryResetStore';
 import SnmpAlertsStore from './modules/Settings/SnmpAlertsStore';
 import KeyClearStore from './modules/Operations/KeyClearStore';
-
+import PcieSlotsStore from './modules/HardwareStatus/PcieSlotsStore';
 import DateTimeStore from './modules/Settings/DateTimeStore';
 import VirtualMediaStore from './modules/Operations/VirtualMediaStore';
 
@@ -78,6 +78,7 @@ const store = new Vuex.Store({
     policies: PoliciesStore,
     factoryReset: FactoryResetStore,
     keyClear: KeyClearStore,
+    pcieSlots: PcieSlotsStore,
   },
 });
 

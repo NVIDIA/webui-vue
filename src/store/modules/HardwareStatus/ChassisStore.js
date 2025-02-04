@@ -1,5 +1,6 @@
 import api from '@/store/api';
 import i18n from '@/i18n';
+import Vue from 'vue';
 
 const ChassisStore = {
   namespaced: true,
@@ -13,7 +14,7 @@ const ChassisStore = {
   },
   mutations: {
     setChassisInfo: (state, data) => {
-      state.redfish_chassis = data;
+      Vue.set(state, 'redfish_chassis', data);
       state.chassis = data.map((chassis) => {
         const {
           Id,

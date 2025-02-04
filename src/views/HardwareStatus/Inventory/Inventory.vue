@@ -52,6 +52,9 @@
 
     <!-- Drives table -->
     <table-drives ref="drives" v-bind:show-leds="showLeds" />
+
+    <!-- PCIe slots table -->
+    <table-pcie-slots ref="pcieSlots" />
   </b-container>
 </template>
 
@@ -68,6 +71,7 @@ import TableProcessors from './InventoryTableProcessors';
 import TableAssembly from './InventoryTableAssembly';
 import TableNetworkAdapter from './InventoryTableNetworkAdapter';
 import TableDrives from './InventoryTableDrives';
+import TablePcieSlots from './InventoryTablePcieSlots';
 import LoadingBarMixin from '@/components/Mixins/LoadingBarMixin';
 import PageSection from '@/components/Global/PageSection';
 import JumpLink16 from '@carbon/icons-vue/es/jump-link/16';
@@ -91,6 +95,7 @@ export default {
     TableNetworkAdapter,
     TableDrives,
     PageSection,
+    TablePcieSlots,
     JumpLink: JumpLink16,
   },
   mixins: [LoadingBarMixin, JumpLinkMixin],
@@ -166,16 +171,16 @@ export default {
           linkText: i18n.global.t('pageInventory.networkAdapters'),
         },
         {
-          id: 'networkAdapter',
-          dataRef: 'networkAdapter',
-          href: '#networkAdapter',
-          linkText: i18n.global.t('pageInventory.networkAdapters'),
-        },
-        {
           id: 'drives',
           dataRef: 'drives',
           href: '#drives',
           linkText: i18n.global.t('pageInventory.drives'),
+        },
+        {
+          id: 'pcieSlots',
+          dataRef: 'pcieSlots',
+          href: '#pcieSlots',
+          linkText: i18n.global.t('pageInventory.pcieSlots'),
         },
       ],
     };
@@ -252,6 +257,9 @@ export default {
     const drivesTablePromise = new Promise((resolve) => {
       this.$root.$on('hardware-status-drives-complete', () => resolve());
     });
+    const pcieSlotsTablePromise = new Promise((resolve) => {
+      this.$root.$on('hardware-status-pcie-slots-complete', () => resolve());
+    });
     // Combine all child component Promises to indicate
     // when page data load complete
     Promise.all([
@@ -266,6 +274,7 @@ export default {
       assemblyTablePromise,
       networkAdapterTablePromise,
       drivesTablePromise,
+      pcieSlotsTablePromise,
     ]).finally(() => {
       this.endLoader();
       this.validateLinks();
