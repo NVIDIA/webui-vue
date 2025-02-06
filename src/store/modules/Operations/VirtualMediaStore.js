@@ -68,6 +68,7 @@ const VirtualMediaStore = {
           });
           const legacyDevices = deviceData
             .filter((d) => d.transferProtocolType !== transferProtocolType.OEM)
+            .filter((d) => d.id !== 'Slot_0')
             .map((device) => {
               return {
                 ...device,
