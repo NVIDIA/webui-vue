@@ -226,14 +226,6 @@ const routes = [
         },
       },
       {
-        path: '/resource-management/power',
-        name: 'power',
-        component: Power,
-        meta: {
-          title: i18n.global.t('appPageTitle.power'),
-        },
-      },
-      {
         path: '/operations/factory-reset',
         name: 'factory-reset',
         component: FactoryReset,
