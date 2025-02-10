@@ -175,18 +175,6 @@ const AppNavigationMixin = {
             },
           ],
         },
-        {
-          id: 'resource-management',
-          label: this.$t('appNavigation.resourceManagement'),
-          icon: 'iconResourceManagement',
-          children: [
-            {
-              id: 'power',
-              label: this.$t('appNavigation.power'),
-              route: '/resource-management/power',
-            },
-          ],
-        },
       ],
     };
   },
