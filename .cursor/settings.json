@@ -1,0 +1,8 @@
+{
+  "modelContextProviders": {
+    "openapi": {
+      "type": "openapi",
+      "path": "src/api/schema/openapi.yaml"
+    }
+  }
+} 

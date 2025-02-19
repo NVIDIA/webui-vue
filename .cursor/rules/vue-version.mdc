@@ -1,0 +1,21 @@
+---
+description: 
+globs: 
+---
+# Vue Version Rule
+
+All Vue-related dependencies must use Vue 2.6.x to ensure compatibility and consistent behavior across the project.
+
+## Requirements
+
+Name: "Vue Framework Version"
+Pattern: \.(vue|js)$
+Description: "Project uses Vue.js 2.6.12, Vue Router 3.5.1, and Vuex 3.6.2"
+Framework Versions:
+  vue: 2.6.12
+  vue-router: 3.5.1
+  vuex: 3.6.2
+Severity: Info
+
+## Examples
+

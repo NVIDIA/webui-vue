@@ -1,0 +1,12 @@
+---
+description: Use openapi.yaml file to guide cursor for API modelling
+globs: 
+---
+
+# Your rule content
+
+- You can @ files here
+- You can use markdown but dont have to
+Use [openapi.yaml](mdc:src/api/schema/openapi.yaml) as model API interaction for this project.
+Redfish is a DMTF standard.
+Enforce Redfish CamelCase naming stype for API properties.

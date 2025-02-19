@@ -12,7 +12,8 @@
         "lint": "vue-cli-service lint",
         "docs:build": "vuepress build docs",
         "docs:serve": "vuepress dev docs",
-        "i18n:report": "vue-cli-service i18n:report --src './src/**/*.?(js|vue)' --locales './src/locales/**/*.json'"
+        "i18n:report": "vue-cli-service i18n:report --src './src/**/*.?(js|vue)' --locales './src/locales/**/*.json'",
+        "postinstall": "node ./src/api/schema/download-openapi.js"
     },
     "dependencies": {
         "@carbon/icons-vue": "10.28.0",
