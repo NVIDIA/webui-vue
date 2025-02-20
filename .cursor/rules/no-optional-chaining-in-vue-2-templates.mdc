@@ -1,0 +1,14 @@
+---
+description: No Optional Chaining in Vue Templates
+globs: *.vue
+---
+
+# Your rule content
+
+Name: "No Optional Chaining in Vue Templates"
+Pattern: \.vue$
+Description: "Optional chaining (?.) is not supported in Vue 2 templates. Use && operator instead."
+Search: \?\.|(?<=<template[^>]*>)[\s\S]*?(?=<\/template>)
+Include Sections: <template>.*?</template>
+Exclude Sections: <script>.*?</script>
+Severity: Error

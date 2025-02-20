@@ -21,3 +21,6 @@ yarn-error.log*
 *.sln
 *.sw?
 .env
+
+# OpenAPI schema - downloaded from npm install
+src/api/schema/openapi.yaml
