@@ -1,9 +1,29 @@
 <template>
-  <div class="change-password-container">
-    <alert variant="danger" class="mb-4">
-      <p v-if="changePasswordError">
-        {{ $t('pageChangePassword.changePasswordError') }}
-      </p>
+     <!-- Success state after password change -->
+     <div v-if="passwordChanged">
+       <alert variant="success">
+         {{ $t('pageChangePassword.passwordChangedSuccess') }}
+       </alert>
+
+       <div class="message-spacer"></div>
+
+       <alert variant="warning">
+         {{ $t('pageChangePassword.savePasswordWarning') }}
+       </alert>
+
+       <div class="text-right mt-4">
+         <b-button variant="primary" @click="goToHome">
+           {{ $t('pageChangePassword.continue') }}
+         </b-button>
+       </div>
+     </div>
+
+     <!-- Password change form -->
+     <div v-else>
+       <alert variant="danger" class="mb-4">
+       <p v-if="changePasswordError">
+          {{ $t('pageChangePassword.changePasswordError') }}
+       </p>
       <p v-else>{{ $t('pageChangePassword.changePasswordAlertMessage') }}</p>
     </alert>
     <div class="change-password__form-container">
@@ -12,6 +32,7 @@
         <dd>{{ username }}</dd>
       </dl>
       <b-form novalidate @submit.prevent="changePassword">
+        <input hidden id="username" type="text" autocomplete="username" name="username" :value="username">
         <b-form-group
           label-for="password"
           :label="$t('pageChangePassword.newPassword')"
@@ -19,6 +40,7 @@
           <input-password-toggle>
             <b-form-input
               id="password"
+              autocomplete="new-password"
               v-model="form.password"
               autofocus="autofocus"
               type="password"
@@ -41,6 +63,7 @@
           <input-password-toggle>
             <b-form-input
               id="password-confirm"
+              autocomplete="new-password"
               v-model="form.passwordConfirm"
               type="password"
               :state="getValidationState(v$.form.passwordConfirm)"
@@ -60,10 +83,13 @@
             </b-form-invalid-feedback>
           </input-password-toggle>
         </b-form-group>
+        <alert variant="warning" class="mt-4 mb-4">
+          <div class="text-center mb-2">
+            {{ $t('pageChangePassword.savePasswordAttention') }}
+          </div>
+          {{ $t('pageChangePassword.savePasswordWarning') }}
+        </alert>
         <div class="text-right">
-          <b-button type="button" variant="link" @click="goBack">
-            {{ $t('pageChangePassword.goBack') }}
-          </b-button>
           <b-button type="submit" variant="primary">
             {{ $t('pageChangePassword.changePassword') }}
           </b-button>
@@ -100,6 +126,7 @@ export default {
       },
       username: this.$store.getters['global/username'],
       changePasswordError: false,
+      passwordChanged: false,
     };
   },
   validations() {
@@ -108,16 +135,13 @@ export default {
         password: { required },
         passwordConfirm: {
           required,
-          sameAsPassword: sameAs('password'),
+          sameAsPassword: sameAs(this.form.password),
         },
       },
     };
   },
   methods: {
-    goBack() {
-      // Remove session created if navigating back to the Login page
-      this.$store.dispatch('authentication/logout');
-    },
+
     changePassword() {
       this.v$.$touch();
       if (this.v$.$invalid) return;
@@ -128,8 +152,16 @@ export default {
 
       this.$store
         .dispatch('userManagement/updateUser', data)
-        .then(() => this.$router.push('/'))
+        .then(() => {
+          this.passwordChanged = true;
+        })
         .catch(() => (this.changePasswordError = true));
+    },
+    goBack() {
+      this.$router.go(-1);
+    },
+    goToHome() {
+     this.$router.push('/');
     },
   },
 };
@@ -141,6 +173,9 @@ export default {
 
 @import '@/assets/styles/bootstrap/_helpers.scss';
 
+.message-spacer {
+  margin: 120px 0;
+}
 .change-password__form-container {
   @include media-breakpoint-up('md') {
     max-width: 360px;

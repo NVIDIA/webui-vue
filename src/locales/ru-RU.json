@@ -178,8 +178,11 @@
         "changePassword": "Изменить пароль",
         "changePasswordAlertMessage": "Срок действия пароля истёк.",
         "changePasswordError": "Произошла ошибка при изменении пароля.",
+        "savePasswordWarning": "Запомнили ли вы пароль и надежно ли его сохранили?",
+        "passwordChangedSuccess":"Пароль успешно изменен",
         "confirmNewPassword": "Подтвердите новый пароль",
         "goBack": "Назад",
+        "continue": "продолжать",
         "newPassword": "Новый пароль",
         "username": "Имя пользователя"
     },
