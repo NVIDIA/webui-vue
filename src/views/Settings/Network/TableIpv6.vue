@@ -233,12 +233,13 @@ export default {
         .map((ipv6) => {
           let { Address, PrefixLength } = ipv6;
           if (Address === AddressToDelete) {
-            Address = '0000:0000:0000:0000::0000';
+            return null;
+          } else {
+            return {
+              Address,
+              PrefixLength,
+            };
           }
-          return {
-            Address,
-            PrefixLength,
-          };
         });
       if (newIpv6Array.length == 1) {
         this.$store

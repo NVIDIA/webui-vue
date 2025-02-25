@@ -203,13 +203,14 @@ export default {
         .map((ipv4) => {
           let { Address, SubnetMask, Gateway } = ipv4;
           if (Address === AddressToDelete) {
-            Address = '0.0.0.0';
+            return null;
+          } else {
+            return {
+              Address,
+              SubnetMask,
+              Gateway,
+            };
           }
-          return {
-            Address,
-            SubnetMask,
-            Gateway,
-          };
         });
       if (newIpv4Array.length == 1) {
         this.$store
