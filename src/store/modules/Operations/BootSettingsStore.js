@@ -110,37 +110,6 @@ const BootSettingsStore = {
           return error;
         });
     },
-    async getTpmPolicy({ commit }) {
-      return await api
-        .get('/redfish/v1/Systems/System_0')
-        .then(
-          ({
-            data: {
-              Boot: { TrustedModuleRequiredToBoot },
-            },
-          }) => commit('setTpmPolicy', TrustedModuleRequiredToBoot === 'Required' ? true : false),
-        )
-        .catch((error) => console.log(error));
-    },
-    saveTpmPolicy({ commit, dispatch }, tpmEnabled) {
-      const data = {"Boot": {"TrustedModuleRequiredToBoot": tpmEnabled}};
-      return api
-        .patch(
-          '/redfish/v1/Systems/System_0',
-          data,
-        )
-        .then((response) => {
-          // If request success, commit the values
-          commit('setTpmPolicy', tpmEnabled);
-          return response;
-        })
-        .catch((error) => {
-          console.log(error);
-          // If request error, GET saved policy
-          dispatch('getTpmPolicy');
-          return error;
-        });
-    },
     async saveSettings(
       { dispatch },
       { bootSource, overrideEnabled, tpmEnabled, bootOption },
@@ -155,9 +124,6 @@ const BootSettingsStore = {
             bootOption,
           }),
         );
-      }
-      if (tpmEnabled !== null) {
-        promises.push(dispatch('saveTpmPolicy', tpmEnabled));
       }
 
       return await api.all(promises).then(
