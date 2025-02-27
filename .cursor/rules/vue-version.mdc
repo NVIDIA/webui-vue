@@ -1,6 +1,7 @@
 ---
-description: 
+description: Generate Vue 2 compatible code, not Vue 3
 globs: 
+alwaysApply: true
 ---
 # Vue Version Rule
 

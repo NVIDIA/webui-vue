@@ -456,7 +456,7 @@
             "identifyLed": "Идентификационный LED",
             "instructionSet": "Набор инструкций",
             "lastResetTime": "Время последнего сброса",
-            "locationNumber": "Номер позиции",
+            "locationNumber": "Метка расположения",
             "managerType": "Тип обработчика",
             "manufacturer": "Производитель",
             "maxConcurrentSessions": "Максимальное количество одновременных сессий",

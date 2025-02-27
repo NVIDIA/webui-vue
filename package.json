@@ -13,7 +13,8 @@
         "docs:build": "vuepress build docs",
         "docs:serve": "vuepress dev docs",
         "i18n:report": "vue-cli-service i18n:report --src './src/**/*.?(js|vue)' --locales './src/locales/**/*.json'",
-        "postinstall": "node ./src/api/schema/download-openapi.js"
+        "postinstall": "node ./src/api/schema/download-openapi.js",
+        "validate-translations": "node scripts/validate-translations.js"
     },
     "dependencies": {
         "@carbon/icons-vue": "10.28.0",
@@ -76,5 +77,13 @@
             "vue-cli-service lint",
             "git add"
         ]
-    }
+    },
+    "tasks": [
+        {
+            "label": "Validate Translations",
+            "type": "shell",
+            "command": "node scripts/validate-translations.js",
+            "problemMatcher": []
+        }
+    ]
 }

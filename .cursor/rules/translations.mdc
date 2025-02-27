@@ -1,0 +1,28 @@
+# Localization Files Completeness
+
+## Rule
+
+All vue-i18n new/changed string tokens in .vue files (example: `$t('pageInventory.systemIndicator.identifyLed')` ), must be added/updated to the primary English (en-US.json) file.
+All localization files (specifically ru-RU.json and zh-CN.json) must contain all the keys that exist in the primary English (en-US.json) file.
+
+## Why
+
+Missing translation keys will cause parts of the UI to fall back to English or potentially display empty content for users using the Russian or Chinese localizations. This creates a poor user experience for non-English speaking users.
+
+## How to Fix
+
+1. Add any missing keys to the localization files
+2. Use the "scripts/validate-translations.js" script, to identify missing keys
+
+## Integration
+
+Add this check to your CI pipeline or git pre-commit hooks:
+
+```bash
+node /scripts/validate-translations.js
+```
+
+## Notes
+
+- The English file (en-US.json) is considered the primary source of truth
+- All keys present in the English file must exist in all other translation files
