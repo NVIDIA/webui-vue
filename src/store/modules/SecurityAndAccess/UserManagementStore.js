@@ -1,6 +1,9 @@
 import api, { getResponseCount } from '@/store/api';
 import i18n from '@/i18n';
 
+/** FIXME: This is a temporary fix to get the resolution from the error message. 
+ *  It is not translated and the current error message does not provide an easy way to translate.
+*/
 const getServerErrorMessages = function (error) {
   let errorData = error.response.data.error
     ? error.response.data.error
@@ -10,8 +13,8 @@ const getServerErrorMessages = function (error) {
   }
   return Object.values(errorData)
     .reduce((a, b) => a.concat(b))
-    .filter((info) => info.Message)
-    .map((info) => info.Message);
+    .filter((info) => info.MessageArgs && info.MessageArgs?.[0] !== 'null')
+    .map((info) => info?.Resolution?.length ? info.Resolution : info.Message);
 };
 
 const UserManagementStore = {
@@ -135,6 +138,9 @@ const UserManagementStore = {
               : i18n.global.t('pageUserManagement.toast.errorCreateUser', {
                   username: username,
                 });
+                // FIXME:  Don't toast here
+                // See redfish error handling in FirmwareUpdate
+                // Keep the Add user modal open, match error to form element
           throw new Error(message);
         });
     },
