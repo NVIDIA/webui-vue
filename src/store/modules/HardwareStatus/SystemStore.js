@@ -84,7 +84,7 @@ const SystemStore = {
               );
               return await api.allSettled(gets);
             } 
-            else return api.allSettled([data]);
+            else return;
           });
       });
       return await api

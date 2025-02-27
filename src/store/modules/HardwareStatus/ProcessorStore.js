@@ -32,6 +32,7 @@ const ProcessorStore = {
           TotalThreads,
           Location,
           LocationIndicatorActive,
+          FirmwareVersion,
         } = processor;
         return {
           id: Id,
@@ -56,6 +57,7 @@ const ProcessorStore = {
           locationNumber: Location?.PartLocation?.ServiceLabel,
           identifyLed: LocationIndicatorActive,
           uri: processor['@odata.id'],
+          FirmwareVersion
         };
       });
     },

@@ -1,20 +1,21 @@
 ---
-description: 
+description: Generate Vue 3 code
 globs: 
+alwaysApply: true
 ---
 # Vue Version Rule
 
-All Vue-related dependencies must use Vue 2.6.x to ensure compatibility and consistent behavior across the project.
+All Vue-related dependencies must use Vue 3.4.x to ensure compatibility and consistent behavior across the project.
 
 ## Requirements
 
 Name: "Vue Framework Version"
 Pattern: \.(vue|js)$
-Description: "Project uses Vue.js 2.6.12, Vue Router 3.5.1, and Vuex 3.6.2"
+Description: "Project uses Vue.js 3.4.29, Vue Router 4.4.0, and Vuex 4.1.0"
 Framework Versions:
-  vue: 2.6.12
-  vue-router: 3.5.1
-  vuex: 3.6.2
+  vue: 3.4.29
+  vue-router: 4.4.0
+  vuex: 4.1.0
 Severity: Info
 
 ## Examples

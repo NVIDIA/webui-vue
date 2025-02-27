@@ -469,7 +469,7 @@
             "identifyLed": "识别 LED",
             "instructionSet": "指令集",
             "lastResetTime": "最后重置时间",
-            "locationNumber": "位置编号",
+            "locationNumber": "位置标签",
             "managerType": "管理器类型",
             "manufacturer": "制造商",
             "maxConcurrentSessions": "最大并发会话",

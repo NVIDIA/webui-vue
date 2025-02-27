@@ -89,14 +89,14 @@
                 <dt>{{ $t('pageInventory.table.serialNumber') }}:</dt>
                 <dd>{{ dataFormatter(item.serialNumber) }}</dd>
                 <!-- Spare Part Number -->
-                <dt>{{ $t('pageInventory.table.sparePartNumber') }}:</dt>
-                <dd>{{ dataFormatter(item.sparePartNumber) }}</dd>
+                <dt v-if="item.sparePartNumber">{{ $t('pageInventory.table.sparePartNumber') }}:</dt>
+                <dd v-if="item.sparePartNumber">{{ dataFormatter(item.sparePartNumber) }}</dd>
                 <!-- Model -->
                 <dt>{{ $t('pageInventory.table.model') }}:</dt>
                 <dd>{{ dataFormatter(item.model) }}</dd>
                 <!-- Asset Tag -->
-                <dt>{{ $t('pageInventory.table.assetTag') }}:</dt>
-                <dd>{{ dataFormatter(item.assetTag) }}</dd>
+                <dt v-if="item.assetTag">{{ $t('pageInventory.table.assetTag') }}:</dt>
+                <dd v-if="item.assetTag">{{ dataFormatter(item.assetTag) }}</dd>
               </dl>
             </b-col>
             <b-col class="mt-2" sm="6" xl="6">
@@ -105,8 +105,8 @@
                 <dt>{{ $t('pageInventory.table.statusState') }}:</dt>
                 <dd>{{ dataFormatter(item.statusState) }}</dd>
                 <!-- Health Rollup -->
-                <dt>{{ $t('pageInventory.table.healthRollup') }}:</dt>
-                <dd>{{ dataFormatter(item.healthRollup) }}</dd>
+                <dt v-if="item.healthRollup">{{ $t('pageInventory.table.healthRollup') }}:</dt>
+                <dd v-if="item.healthRollup">{{ dataFormatter(item.healthRollup) }}</dd>
               </dl>
             </b-col>
           </b-row>
@@ -121,21 +121,24 @@
                 <dt>{{ $t('pageInventory.table.processorType') }}:</dt>
                 <dd>{{ dataFormatter(item.processorType) }}</dd>
                 <!-- Processor Architecture -->
-                <dt>{{ $t('pageInventory.table.processorArchitecture') }}:</dt>
-                <dd>{{ dataFormatter(item.processorArchitecture) }}</dd>
+                <dt v-if="item.processorArchitecture">{{ $t('pageInventory.table.processorArchitecture') }}:</dt>
+                <dd v-if="item.processorArchitecture">{{ dataFormatter(item.processorArchitecture) }}</dd>
                 <!-- Instruction Set -->
-                <dt>{{ $t('pageInventory.table.instructionSet') }}:</dt>
-                <dd>{{ dataFormatter(item.instructionSet) }}</dd>
+                <dt v-if="item.instructionSet">{{ $t('pageInventory.table.instructionSet') }}:</dt>
+                <dd v-if="item.instructionSet">{{ dataFormatter(item.instructionSet) }}</dd>
                 <!-- Version -->
                 <dt>{{ $t('pageInventory.table.version') }}:</dt>
                 <dd>{{ dataFormatter(item.version) }}</dd>
+                <!-- Firmware Version -->
+                <dt v-if="item.FirmwareVersion">{{ $t('pageInventory.table.firmwareVersion') }}:</dt>
+                <dd v-if="item.FirmwareVersion">{{ dataFormatter(item.FirmwareVersion) }}</dd>
               </dl>
             </b-col>
             <b-col class="mt-1" sm="6" xl="6">
               <dl>
                 <!-- Min Speed MHz -->
-                <dt>{{ $t('pageInventory.table.minSpeedMHz') }}:</dt>
-                <dd>
+                <dt v-if="item.minSpeedMHz">{{ $t('pageInventory.table.minSpeedMHz') }}:</dt>
+                <dd v-if="item.minSpeedMHz">
                   {{ dataFormatter(item.minSpeedMHz) }}
                   {{ $t('unit.MHz') }}
                 </dd>
@@ -146,11 +149,11 @@
                   {{ $t('unit.MHz') }}
                 </dd>
                 <!-- Total Cores -->
-                <dt>{{ $t('pageInventory.table.totalCores') }}:</dt>
-                <dd>{{ dataFormatter(item.totalCores) }}</dd>
+                <dt v-if="item.processorType !== 'GPU'">{{ $t('pageInventory.table.totalCores') }}:</dt>
+                <dd v-if="item.processorType !== 'GPU'">{{ dataFormatter(item.totalCores) }}</dd>
                 <!-- Total Threads -->
-                <dt>{{ $t('pageInventory.table.totalThreads') }}:</dt>
-                <dd>{{ dataFormatter(item.totalThreads) }}</dd>
+                <dt v-if="item.processorType !== 'GPU'">{{ $t('pageInventory.table.totalThreads') }}:</dt>
+                <dd v-if="item.processorType !== 'GPU'">{{ dataFormatter(item.totalThreads) }}</dd>
               </dl>
             </b-col>
           </b-row>
