@@ -1,48 +1,51 @@
 <template>
   <div>
     <div class="nav-container" :class="{ open: isNavigationOpen }">
-      <nav ref="nav" :aria-label="$t('appNavigation.primaryNavigation')">
-        <b-nav vertical class="mb-4">
-          <template v-for="(navItem, index) in navigationItems">
-            <!-- Navigation items with no children -->
-            <b-nav-item
-              v-if="!navItem.children"
-              :key="index"
-              :to="navItem.route"
-              :data-test-id="`nav-item-${navItem.id}`"
-            >
-              <component :is="navItem.icon" />
-              {{ navItem.label }}
-            </b-nav-item>
-
-            <!-- Navigation items with children -->
-            <li v-else :key="index" class="nav-item">
-              <b-button
-                v-b-toggle="`${navItem.id}`"
-                variant="link"
-                :data-test-id="`nav-button-${navItem.id}`"
+      <div class="nav-content">
+        <nav ref="nav" :aria-label="$t('appNavigation.primaryNavigation')">
+          <b-nav vertical class="mb-4">
+            <template v-for="(navItem, index) in navigationItems">
+              <!-- Navigation items with no children -->
+              <b-nav-item
+                v-if="!navItem.children"
+                :key="index"
+                :to="navItem.route"
+                :data-test-id="`nav-item-${navItem.id}`"
               >
                 <component :is="navItem.icon" />
                 {{ navItem.label }}
-                <icon-expand class="icon-expand" />
-              </b-button>
-              <b-collapse :id="navItem.id" tag="ul" class="nav-item__nav">
-                <li class="nav-item">
-                  <router-link
-                    v-for="(subNavItem, i) of filteredNavItem(navItem.children)"
-                    :key="i"
-                    :to="subNavItem.route"
-                    :data-test-id="`nav-item-${subNavItem.id}`"
-                    class="nav-link"
-                  >
-                    {{ subNavItem.label }}
-                  </router-link>
-                </li>
-              </b-collapse>
-            </li>
-          </template>
-        </b-nav>
-      </nav>
+              </b-nav-item>
+
+              <!-- Navigation items with children -->
+              <li v-else :key="`nav-${index}`" class="nav-item">
+                <b-button
+                  v-b-toggle="`${navItem.id}`"
+                  variant="link"
+                  :data-test-id="`nav-button-${navItem.id}`"
+                >
+                  <component :is="navItem.icon" />
+                  {{ navItem.label }}
+                  <icon-expand class="icon-expand" />
+                </b-button>
+                <b-collapse :id="navItem.id" tag="ul" class="nav-item__nav">
+                  <li class="nav-item">
+                    <router-link
+                      v-for="(subNavItem, i) of filteredNavItem(navItem.children)"
+                      :key="i"
+                      :to="subNavItem.route"
+                      :data-test-id="`nav-item-${subNavItem.id}`"
+                      class="nav-link"
+                    >
+                      {{ subNavItem.label }}
+                    </router-link>
+                  </li>
+                </b-collapse>
+              </li>
+            </template>
+          </b-nav>
+        </nav>
+        <app-footer class="nav-footer" />
+      </div>
     </div>
     <transition name="fade">
       <div
@@ -60,9 +63,13 @@
 //Exact match alias set to support
 //dotenv customizations.
 import AppNavigationMixin from './AppNavigationMixin';
+import AppFooter from '@/components/Global/AppFooter';
 
 export default {
   name: 'AppNavigation',
+  components: {
+    AppFooter
+  },
   mixins: [AppNavigationMixin],
   data() {
     return {
@@ -237,6 +244,12 @@ svg {
   }
 }
 
+.nav-content {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
 .nav-overlay {
   position: fixed;
   top: $header-height;
@@ -264,5 +277,12 @@ svg {
   @include media-breakpoint-up($responsive-layout-bp) {
     display: none;
   }
+}
+
+.nav-footer {
+  margin-top: auto;
+  padding: $spacer;
+  padding-top: 0;
+  padding-bottom: 0;
 }
 </style>

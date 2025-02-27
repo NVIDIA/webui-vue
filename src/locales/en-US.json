@@ -26,6 +26,9 @@
             "critical": "Critical",
             "submitting": "Submitting..."
         },
+        "footer": {
+            "version": "build"
+        },
         "ariaLabel": {
             "clearSearch": "Clear search input",
             "hidePassword": "Hide password",

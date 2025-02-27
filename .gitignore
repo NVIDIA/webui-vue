@@ -24,3 +24,5 @@ yarn-error.log*
 
 # OpenAPI schema - downloaded from npm install
 src/api/schema/openapi.yaml
+scripts/generate-version-info.js
+
