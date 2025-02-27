@@ -51,6 +51,17 @@ export default {
       }
     }
 
+    &.secondary {
+      color: gray('600');
+
+      >[data-id="power-on"] {
+        display: none;
+      }
+      >[data-id="power-off"] {
+        display: initial;
+      }
+    }
+
     &.blink { 
       g rect,
       g path,

@@ -4,6 +4,7 @@ const GlobalStore = {
   namespaced: true,
   state: {
     assetTag: null,
+    ManagerProvidingService: null,
     bmcPath: null,
     bmcTime: null,
     modelType: null,
@@ -19,6 +20,8 @@ const GlobalStore = {
     userPrivilege: null,
     serviceRoot: null,
     systemPath: null,
+    chassisPath: null,
+    systemId: null,
   },
   getters: {
     assetTag: (state) => state.assetTag,
@@ -36,6 +39,8 @@ const GlobalStore = {
     userPrivilege: (state) => state.userPrivilege,
     serviceRoot: (state) => state.serviceRoot,
     systemPath: (state) => state.systemPath,
+    chassisPath: (state) => state.chassisPath,
+    systemId: (state) => state.systemId,
   },
   mutations: {
     setAssetTag: (state, assetTag) => (state.assetTag = assetTag),
@@ -63,6 +68,8 @@ const GlobalStore = {
       state.userPrivilege = privilege;
     },
     setSystemPath: (state, systemPath) => (state.systemPath = systemPath),
+    setChassisPath: (state, chassisPath) => (state.chassisPath = chassisPath),
+    setSystemId: (state, systemId) => (state.systemId = systemId),
   },
   actions: {
     async fetchServiceRoot({ commit }) {
@@ -78,22 +85,47 @@ const GlobalStore = {
         const managers = await api
           .get('/redfish/v1/Managers', {timeout: 60 * 1000})
           .catch((error) => console.log(error));
+        // Note: This is only set here if ManagerProvidingService is not found in the service root
         state.bmcPath = managers.data?.Members?.[0]?.['@odata.id'];
       }
       return state.bmcPath;
     },
-    async getSystemPath({ state, commit }) {
+    async getSystemPath({ state, commit, dispatch }) {
       if (state.systemPath) return state.systemPath;
-      const systems = await api
-        .get('/redfish/v1/Systems')
-        .catch((error) => console.log(error));
-      let systemPath = systems.data?.Members?.[0]?.['@odata.id'];
+      if (!state.bmcPath) await dispatch('getBmcPath');
+      if (!state.ManagerProvidingService) state.ManagerProvidingService = await api.get(state.bmcPath);
+      if (!state.ManagerProvidingService) throw new Error('BMC not found');
+      let systemPath = state.ManagerProvidingService?.Links?.ManagerForServers?.[0]?.['@odata.id'];
+      if (!systemPath) {
+        const systems = await api
+          .get('/redfish/v1/Systems')
+          .catch((error) => console.log(error));
+        // Note: This is only set here if ManagerForServers is not found in the ManagerProvidingService
+        systemPath = systems.data?.Members?.[0]?.['@odata.id'];
+      }
       commit('setSystemPath', systemPath);
       return systemPath;
     },
-    async getBmcTime({ commit }) {
+    async getChassisPath({ state, commit, dispatch }) {
+      if (state.chassisPath) return state.chassisPath;
+      if (!state.bmcPath) await dispatch('getBmcPath');
+      if (!state.ManagerProvidingService) state.ManagerProvidingService = await api.get(state.bmcPath);
+      if (!state.ManagerProvidingService) throw new Error('BMC not found');
+      let chassisPath = state.ManagerProvidingService?.Links?.ManagerForChassis?.[0]?.['@odata.id'];
+      if (!chassisPath) {
+        const chassis = await api
+          .get('/redfish/v1/Chassis')
+          .catch((error) => console.log(error));
+        // Note: This is only set here if ManagerForChassis is not found in the ManagerProvidingService
+        chassisPath = chassis.data?.Members?.[0]?.['@odata.id'];
+      }
+      commit('setChassisPath', chassisPath);
+      return chassisPath;
+    },
+    async getBmcTime({ commit, dispatch, state }) {
+      if (!state.bmcPath) await dispatch('getBmcPath');
       return await api
-        .get(`${await this.dispatch('global/getBmcPath')}`)
+        .get(state.bmcPath)
         .then((response) => {
           const bmcDateTime = response.data.DateTime;
           const date = new Date(bmcDateTime);
@@ -102,13 +134,15 @@ const GlobalStore = {
         })
         .catch((error) => console.log(error));
     },
-    async getSystemInfo({ commit }) {
-      api
-        .get(`${await this.dispatch('global/getSystemPath')}`)
+    async getSystemInfo({ commit, dispatch, state }) {
+      if (!state.systemPath) await dispatch('getSystemPath');
+      return api
+        .get(state.systemPath)
         .then(
           ({
             data: {
               AssetTag,
+              Id,
               Model,
               PowerState,
               SerialNumber,
@@ -120,6 +154,7 @@ const GlobalStore = {
             commit('setModelType', Model);
             commit('setServerStatus', State);
             commit('setPowerState', PowerState);
+            commit('setSystemId', Id);
           },
         )
         .catch((error) => console.log(error));
