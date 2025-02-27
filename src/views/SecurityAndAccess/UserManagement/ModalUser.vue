@@ -83,6 +83,7 @@
                 data-test-id="userManagement-input-username"
                 :state="getValidationState($v.form.username)"
                 :disabled="!newUser && originalUsername === disabled"
+                autocomplete="username"
                 @input="$v.form.username.$touch()"
               />
               <b-form-invalid-feedback role="alert">
@@ -147,6 +148,7 @@
                   aria-describedby="password-help-block"
                   :state="getValidationState($v.form.password)"
                   class="form-control-with-button"
+                  autocomplete="new-password"
                   @input="$v.form.password.$touch()"
                 />
                 <b-form-invalid-feedback role="alert">
@@ -180,6 +182,7 @@
                   type="password"
                   :state="getValidationState($v.form.passwordConfirmation)"
                   class="form-control-with-button"
+                  autocomplete="new-password"
                   @input="$v.form.passwordConfirmation.$touch()"
                 />
                 <b-form-invalid-feedback role="alert">
