@@ -117,6 +117,14 @@ module.exports = {
 
     config.optimization.runtimeChunk = false;
   },
+  css: {
+    loaderOptions: {
+      scss: {
+        additionalData:
+          '@import "~bootstrap/scss/functions"; @import "~bootstrap/scss/variables"; @import "~bootstrap/scss/mixins";',
+      },
+    },
+  },
   pluginOptions: {
     i18n: {
       localeDir: 'locales',

@@ -29,6 +29,9 @@
         "footer": {
             "version": "ui build"
         },
+        "footer": {
+            "version": "build"
+        },
         "ariaLabel": {
             "clearSearch": "Clear search input",
             "hidePassword": "Hide password",

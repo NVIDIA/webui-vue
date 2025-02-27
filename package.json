@@ -4,8 +4,8 @@
     "private": true,
     "description": "OpenBMC Web UI using the Vue.js front-end framework",
     "scripts": {
-        "serve": "check-node-version --package && vue-cli-service serve --mode development",
-        "build": "check-node-version --package && vue-cli-service build",
+        "serve": "check-node-version --package && node ./scripts/generate-version-info.js && vue-cli-service serve --mode development",
+        "build": "check-node-version --package && node ./scripts/generate-version-info.js && vue-cli-service build",
         "test:unit": "vue-cli-service test:unit",
         "test:unit:debugger": "node --inspect-brk ./node_modules/jest/bin/jest.js --no-cache --runInBand",
         "test:update": "vue-cli-service test:unit -u",
@@ -13,7 +13,8 @@
         "docs:build": "vuepress build docs",
         "docs:serve": "vuepress dev docs",
         "i18n:report": "vue-cli-service i18n:report --src './src/**/*.?(js|vue)' --locales './src/locales/**/*.json'",
-        "postinstall": "node ./src/api/schema/download-openapi.js",
+        "postinstall": "node ./scripts/api/schema/download-openapi.js",
+        "generate-version": "node ./scripts/generate-version-info.js",
         "validate-translations": "node scripts/validate-translations.js"
     },
     "dependencies": {
