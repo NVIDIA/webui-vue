@@ -220,16 +220,10 @@ export default {
   },
   created() {
     this.startLoader();
-    const bootSettingsPromise = new Promise((resolve) => {
-      this.$root.$on('server-power-operations-boot-settings-complete', () =>
-        resolve(),
-      );
-    });
     Promise.all([
       this.$store.dispatch('serverBootSettings/getBootSettings'),
       this.$store.dispatch('controls/getLastPowerOperationTime'),
       this.$store.dispatch('global/getSystemInfo'),
-      bootSettingsPromise,
     ]).finally(() => this.endLoader());
   },
   methods: {
