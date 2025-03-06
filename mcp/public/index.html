@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OpenAPI Schema Explorer</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+        }
+        .search-form {
+            margin-bottom: 20px;
+        }
+        .search-row {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            width: 100%;
+        }
+        .input-group label {
+            font-weight: 500;
+            color: #2c3e50;
+            font-size: 14px;
+        }
+        .help-text {
+            font-size: 12px;
+            color: #666;
+            margin-top: 2px;
+        }
+        .filters {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+            margin-bottom: 15px;
+        }
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        .filter-group label {
+            font-weight: 500;
+            color: #2c3e50;
+        }
+        .checkbox-group, .radio-group {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        .checkbox-group label, .radio-group label {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-weight: normal;
+        }
+        select {
+            padding: 5px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        .example-queries {
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+        }
+        .example-query {
+            display: inline-block;
+            margin: 5px;
+            padding: 5px 10px;
+            background-color: #e9ecef;
+            border-radius: 15px;
+            cursor: pointer;
+        }
+        .example-query:hover {
+            background-color: #dee2e6;
+        }
+        #results {
+            margin-top: 20px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+        .loading {
+            display: none;
+            margin: 20px 0;
+            text-align: center;
+            color: #666;
+        }
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #e9ecef;
+            padding-bottom: 10px;
+        }
+        .tab-button {
+            background: none;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            font-size: 16px;
+            color: #6c757d;
+            border-radius: 4px;
+        }
+        .tab-button:hover {
+            background-color: #f8f9fa;
+        }
+        .tab-button.active {
+            color: #3498db;
+            font-weight: 500;
+            background-color: #e9ecef;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .schema-controls {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .format-options {
+            display: flex;
+            gap: 15px;
+        }
+        .schema-display {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            max-height: 600px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 14px;
+            line-height: 1.5;
+            margin-top: 20px;
+        }
+        .primary-button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .primary-button:hover {
+            background-color: #2980b9;
+        }
+        .example-patterns {
+            margin-top: 8px;
+            font-size: 12px;
+        }
+        .example-pattern {
+            display: inline-block;
+            margin: 2px;
+            padding: 2px 8px;
+            background-color: #e9ecef;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        .example-pattern:hover {
+            background-color: #dee2e6;
+        }
+        .search-actions {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>OpenAPI Schema Explorer</h1>
+        
+        <div class="tabs">
+            <button class="tab-button active" onclick="switchTab('search')">Search Endpoints</button>
+            <button class="tab-button" onclick="switchTab('schema')">View Schema</button>
+        </div>
+
+        <div id="search-tab" class="tab-content active">
+            <h2>Query Endpoints using the Schema Indexer</h2>
+            <p>This tool allows you to search for API endpoints using keywords. It uses the schema indexer to find endpoints that match the search query.</p>
+            <div class="search-form">
+                <div class="search-row">
+                    <div class="input-group">
+                        <label for="searchInput">Search Query:</label>
+                        <input type="text" id="searchInput" placeholder="Enter search terms...">
+                    </div>
+                    <div class="input-group">
+                        <label for="pathPattern">Path Pattern:</label>
+                        <input type="text" id="pathPattern" placeholder="e.g., AccountService|Systems">
+                        <small class="help-text">Regular expression to filter paths</small>
+                        <div class="example-patterns">
+                            <small>Examples:</small>
+                            <div class="example-pattern" onclick="usePattern('AccountService')">AccountService</div>
+                            <div class="example-pattern" onclick="usePattern('Systems.*Storage')">Systems.*Storage</div>
+                            <div class="example-pattern" onclick="usePattern('Certificates$')">*Certificates</div>
+                            <div class="example-pattern" onclick="usePattern('CompositionService|ResourceBlocks')">CompositionService|ResourceBlocks</div>
+                        </div>
+                    </div>
+                    <div class="search-actions">
+                        <button onclick="searchEndpoints()">Search</button>
+                    </div>
+                </div>
+                <div class="filters">
+                    <div class="filter-group">
+                        <label>HTTP Methods:</label>
+                        <div class="checkbox-group">
+                            <label><input type="checkbox" name="method" value="get" checked> GET</label>
+                            <label><input type="checkbox" name="method" value="post" checked> POST</label>
+                            <label><input type="checkbox" name="method" value="put" checked> PUT</label>
+                            <label><input type="checkbox" name="method" value="patch" checked> PATCH</label>
+                            <label><input type="checkbox" name="method" value="delete" checked> DELETE</label>
+                        </div>
+                    </div>
+                    <div class="filter-group">
+                        <label for="maxResults">Max Results:</label>
+                        <select id="maxResults">
+                            <option value="10">10</option>
+                            <option value="25">25</option>
+                            <option value="50" selected>50</option>
+                            <option value="100">100</option>
+                            <option value="0">All</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Display Options:</label>
+                        <div class="radio-group">
+                            <label><input type="radio" name="view" value="compact" checked> Compact</label>
+                            <label><input type="radio" name="view" value="detailed"> Detailed</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="example-queries">
+                <h3>Example Queries:</h3>
+                <div class="example-query" onclick="useExample('user account management')">user account management</div>
+                <div class="example-query" onclick="useExample('certificate management')">certificate management</div>
+                <div class="example-query" onclick="useExample('secure boot')">secure boot</div>
+            </div>
+
+            <div class="loading" id="loading">Searching...</div>
+            <div id="results"></div>
+        </div>
+
+        <div id="schema-tab" class="tab-content">
+            <h2>View OpenAPI Schema</h2>
+            <p>View and explore the complete OpenAPI schema.</p>
+            
+            <div class="schema-controls">
+                <button onclick="loadSchema()" class="primary-button">Load Schema</button>
+                <div class="format-options">
+                    <label>
+                        <input type="radio" name="format" value="yaml" checked> YAML
+                    </label>
+                    <label>
+                        <input type="radio" name="format" value="json"> JSON
+                    </label>
+                </div>
+            </div>
+
+            <div class="loading" id="schema-loading">Loading schema...</div>
+            <pre id="schema-content" class="schema-display"></pre>
+        </div>
+    </div>
+
+    <script>
+        function useExample(query) {
+            document.getElementById('searchInput').value = query;
+            searchEndpoints();
+        }
+
+        function usePattern(pattern) {
+            document.getElementById('pathPattern').value = pattern;
+            // Only trigger search if there's already a query
+            if (document.getElementById('searchInput').value) {
+                searchEndpoints();
+            }
+        }
+
+        async function searchEndpoints() {
+            const query = document.getElementById('searchInput').value;
+            const pathPattern = document.getElementById('pathPattern').value;
+            const resultsDiv = document.getElementById('results');
+            const loading = document.getElementById('loading');
+            const maxResults = parseInt(document.getElementById('maxResults').value);
+            const viewMode = document.querySelector('input[name="view"]:checked').value;
+            const selectedMethods = Array.from(document.querySelectorAll('input[name="method"]:checked'))
+                .map(cb => cb.value.toUpperCase());
+
+            if (!query) {
+                resultsDiv.textContent = 'Please enter a search query';
+                return;
+            }
+
+            loading.style.display = 'block';
+            resultsDiv.textContent = '';
+
+            try {
+                const response = await fetch('/tools/search_endpoints', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ 
+                        query,
+                        methods: selectedMethods,
+                        limit: maxResults,
+                        path_pattern: pathPattern
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+
+                // Use the server's formatted results directly
+                const formattedResults = {
+                    count: data.result.count,
+                    query: data.result.query, // Include query parameters in output
+                    endpoints: data.result.endpoints.map(endpoint => {
+                        if (viewMode === 'compact') {
+                            return {
+                                path: endpoint.path,
+                                methods: endpoint.methods
+                            };
+                        }
+                        return {
+                            path: endpoint.path,
+                            methods: endpoint.methods,
+                            description: endpoint.description || '(no description)',
+                            tags: endpoint.tags || [],
+                            details: endpoint.details // Include endpoint details
+                        };
+                    })
+                };
+
+                resultsDiv.textContent = JSON.stringify(formattedResults, null, 2);
+            } catch (error) {
+                resultsDiv.textContent = 'Error: ' + error.message;
+            } finally {
+                loading.style.display = 'none';
+            }
+        }
+
+        // Allow pressing Enter to search
+        document.getElementById('searchInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                searchEndpoints();
+            }
+        });
+
+        function switchTab(tabName) {
+            // Update tab buttons
+            document.querySelectorAll('.tab-button').forEach(button => {
+                button.classList.remove('active');
+            });
+            document.querySelector(`.tab-button[onclick*="${tabName}"]`).classList.add('active');
+
+            // Update tab content
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            document.getElementById(`${tabName}-tab`).classList.add('active');
+        }
+
+        async function loadSchema() {
+            const schemaContent = document.getElementById('schema-content');
+            const loading = document.getElementById('schema-loading');
+            const format = document.querySelector('input[name="format"]:checked').value;
+
+            loading.style.display = 'block';
+            schemaContent.textContent = '';
+
+            try {
+                const response = await fetch('/tools/openapi_schema', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ format }) // Send format preference to server
+                });
+
+                const data = await response.json();
+                
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+
+                // No need to convert format on client side anymore since server handles it
+                schemaContent.textContent = data.result.content;
+            } catch (error) {
+                schemaContent.textContent = 'Error loading schema: ' + error.message;
+            } finally {
+                loading.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html> 

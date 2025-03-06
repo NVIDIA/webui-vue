@@ -3,7 +3,7 @@ const fs = require('fs');
 const path = require('path');
 
 const url = 'https://raw.githubusercontent.com/DMTF/Redfish-Publications/refs/heads/main/openapi/openapi.yaml';
-const outputPath = path.join(__dirname, 'openapi.yaml');
+const outputPath = path.join(__dirname, '../../../src/api/schema/openapi.yaml');
 
 // Create directory if it doesn't exist
 const dir = path.dirname(outputPath);
@@ -23,7 +23,7 @@ https.get(url, (response) => {
 
   file.on('finish', () => {
     file.close();
-    console.log('OpenAPI schema downloaded successfully');
+    console.log('OpenAPI schema downloaded successfully at ', outputPath);
   });
 }).on('error', (err) => {
   console.error('Error downloading schema:', err.message);
