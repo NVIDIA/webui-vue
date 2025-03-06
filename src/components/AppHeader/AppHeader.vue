@@ -136,8 +136,8 @@ import StatusIcon from '@/components/Global/StatusIcon';
 import PowerIcon from '@/components/Global/PowerIcon';
 import LoadingBar from '@/components/Global/LoadingBar';
 import { useI18n } from 'vue-i18n';
-import { mapState } from 'vuex';
 import i18n from '@/i18n';
+import { mapState, mapGetters } from 'vuex';
 
 export default {
   name: 'AppHeader',
@@ -166,32 +166,10 @@ export default {
   },
   computed: {
     ...mapState('authentication', ['consoleWindow']),
+    ...mapGetters('global', ['assetTag', 'modelType', 'serialNumber', 'isAuthorized', 'userPrivilege', 'serverStatus', 'powerState', 'healthStatus', 'username']),
+    ...mapGetters('eventLog', ['healthStatus']),
     isNavTagPresent() {
       return this.assetTag || this.modelType || this.serialNumber;
-    },
-    assetTag() {
-      return this.$store.getters['global/assetTag'];
-    },
-    modelType() {
-      return this.$store.getters['global/modelType'];
-    },
-    serialNumber() {
-      return this.$store.getters['global/serialNumber'];
-    },
-    isAuthorized() {
-      return this.$store.getters['global/isAuthorized'];
-    },
-    userPrivilege() {
-      return this.$store.getters['global/userPrivilege'];
-    },
-    serverStatus() {
-      return this.$store.getters['global/serverStatus'];
-    },
-    powerState() {
-      return this.$store.getters['global/powerState'];
-    },
-    healthStatus() {
-      return this.$store.getters['eventLog/healthStatus'];
     },
     powerStateIcon() {
       switch (this.powerState) {
@@ -203,8 +181,10 @@ export default {
         case 'Paused':
           return 'on blink 1Hz';
         case 'Off':
-        default:
           return 'off';
+        case 'Secondary':
+        default:
+          return 'secondary';
       }
     },
     healthStatusIcon() {
@@ -218,9 +198,6 @@ export default {
         default:
           return 'secondary';
       }
-    },
-    username() {
-      return this.$store.getters['global/username'];
     },
   },
   watch: {

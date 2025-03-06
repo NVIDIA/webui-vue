@@ -6,7 +6,7 @@
 </template>
 
 <script>
-//import i18n from '@/i18n';
+import i18n from '@/i18n';
 export default {
   name: 'PageTitle',
   props: {
@@ -32,8 +32,8 @@ export default {
         );
         i++;
       }
-      //this.title = i18n.t('appPageTitle.' + title);
-      //document.title = this.title;
+      this.title = i18n.global.t('appPageTitle.' + title);
+      document.title = this.title;
     }
   },
 };

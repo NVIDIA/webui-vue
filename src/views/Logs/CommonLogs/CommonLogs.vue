@@ -1,6 +1,33 @@
 <template>
   <b-container fluid="xl">
     <page-title />
+    <b-row v-if="Object.keys(logServices).length > 1">
+      <b-col>
+        <b-form-group 
+        class="d-flex align-items-center select-system"
+        :label="$t('pageInventory.system')"
+        label-for="selectSystem"
+        label-cols-sm="auto"
+        label-cols-lg="auto"
+        content-cols-sm="auto"
+        content-cols-lg="auto"
+        >
+          <b-form-select
+            id="selectSystem"
+            v-model="logService"
+            aria-required="true"
+            @change="getLogData($event)"
+          >
+            <b-form-select-option v-for="option in logServices" :key="option.value" :value="option.value">
+              {{ option.value }}
+            </b-form-select-option>
+          </b-form-select>
+        </b-form-group>
+      </b-col>
+      <b-col>
+
+      </b-col>
+    </b-row>
     <b-row class="align-items-start">
       <b-col sm="8" xl="6" class="d-sm-flex align-items-end mb-4">
         <search
@@ -40,7 +67,15 @@
         </b-button>
       </b-col>
     </b-row>
-    <b-row>
+    <b-row v-if="isBusy" class="justify-content-center">
+      <b-spinner 
+        label="Spinning"
+        aria-label="Loading dump type options"
+      >
+        SPINNER
+      </b-spinner>
+    </b-row>
+    <b-row v-else>
       <b-col>
         <table-toolbar
           ref="toolbar"
@@ -50,13 +85,13 @@
           @batch-action="onBatchAction"
         >
           <template #toolbar-buttons>
-            <b-button v-if="!hideToggle" variant="primary" @click="resolveLogs">
+            <b-button v-if="!hideToggle" variant="primary" @click="toggleResolvedStatus(true)">
               {{ $t('pageEventLogs.resolve') }}
             </b-button>
             <b-button
               v-if="!hideToggle"
               variant="primary"
-              @click="unresolveLogs"
+              @click="toggleResolvedStatus(false)"
             >
               {{ $t('pageEventLogs.unresolve') }}
             </b-button>
@@ -284,6 +319,7 @@ import SearchFilterMixin, {
 import { TextLogHandler } from '@/store/modules/Logs/TextLogHandler';
 import { useI18n } from 'vue-i18n';
 import i18n from '@/i18n';
+import { BSpinner } from 'bootstrap-vue'
 export default {
   components: {
     IconDelete,
@@ -300,6 +336,7 @@ export default {
     TableToolbar,
     TableToolbarExport,
     TableDateFilter,
+    'b-spinner': BSpinner 
   },
   mixins: [
     BVPaginationMixin,
@@ -312,6 +349,13 @@ export default {
     TableRowExpandMixin,
     SearchFilterMixin,
   ],
+  beforeRouteEnter(to, from, next) {
+    next(async function(vm) {
+      if (!vm.$store.getters[vm.logStore + '/isInitialized']) {
+        await vm.$store.dispatch(vm.logStore + '/initializeLogStore');
+      }
+    });
+  },
   beforeRouteLeave(to, from, next) {
     // Hide loader if the user navigates to another page
     // before request is fulfilled.
@@ -448,16 +492,21 @@ export default {
         this.hideFields.includes('status'),
       hideDelete:
         process.env.VUE_APP_EVENT_LOGS_DELETE_BUTTON_DISABLED === 'true',
+      logService: null,
+      logs: [],
     };
   },
   computed: {
+    logServices() {
+      return this.$store.getters[this.logStore + '/logServices'];
+    },
     filteredRows() {
       return this.searchFilter
         ? this.searchTotalFilteredRows
         : this.filteredLogs.length;
     },
-    allLogs() {
-      return this.$store.getters[this.logStore + '/allEvents'].map((event) => {
+    allLogs(state) {
+      return this.logs.map((event) => {
         return {
           ...event,
           date: new Date(event.Created),
@@ -506,14 +555,31 @@ export default {
       );
     },
   },
-  created() {
+  async created() {
     this.startLoader();
-    this.$store.dispatch(this.logStore + '/getLogData').finally(() => {
-      this.endLoader();
-      this.isBusy = false;
-    });
+    if (!this.$store.getters[this.logStore + '/isInitialized']) {
+      await this.$store.dispatch(this.logStore + '/initializeLogStore');
+    }
+    
+    // Set first option as default when data is loaded
+    const logServices = this.$store.getters[this.logStore + '/logServices'];
+    if (logServices && Object.keys(logServices).length > 0) {
+      this.logService = Object.values(logServices)[0].value;
+    }
+    
+    this.getLogData(this.logService);
   },
   methods: {
+    getLogData(logService) {
+      this.startLoader();
+      this.logService = logService;
+      this.isBusy = true;
+      this.$store.dispatch(this.logStore + '/getLogData', this.logServices[logService]).finally(() => {
+        this.endLoader();
+        this.logs = this.$store.getters[this.logStore + '/getAllEventsByValue'](logService);
+        this.isBusy = false;
+      });
+    },
     downloadEntry(uri) {
       let filename = uri?.split('LogServices/')?.[1];
       filename.replace(RegExp('/', 'g'), '_');
@@ -558,7 +624,10 @@ export default {
         .then((deleteConfirmed) => {
           if (deleteConfirmed) {
             this.$store
-              .dispatch(this.logStore + '/deleteAllLogs', this.allLogs)
+              .dispatch(this.logStore + '/deleteAllLogs', {
+                data: this.allLogs, 
+                LogService: this.logServices[this.logService]
+              })
               .then((message) => this.successToast(message))
               .catch(({ message }) => this.errorToast(message));
           }
@@ -598,8 +667,8 @@ export default {
       const uri = item?.['@odata.id'];
       if (action === 'delete') {
         this.$bvModal
-          .msgBoxConfirm(i18n.global.tc('pageEventLogs.modal.deleteMessage'), {
-            title: i18n.global.tc('pageEventLogs.modal.deleteTitle'),
+          .msgBoxConfirm(i18n.global.t('pageEventLogs.modal.deleteMessage'), {
+            title: i18n.global.t('pageEventLogs.modal.deleteTitle'),
             okTitle: i18n.global.t('global.action.delete'),
             cancelTitle: i18n.global.t('global.action.cancel'),
             autoFocusButton: 'ok',
@@ -614,12 +683,12 @@ export default {
         const uris = this.selectedRows.map((row) => row?.['@odata.id']);
         this.$bvModal
           .msgBoxConfirm(
-            i18n.global.tc(
+            i18n.global.t(
               'pageEventLogs.modal.deleteMessage',
               this.selectedRows.length,
             ),
             {
-              title: i18n.global.tc(
+              title: i18n.global.t(
                 'pageEventLogs.modal.deleteTitle',
                 this.selectedRows.length,
               ),
@@ -638,7 +707,7 @@ export default {
                   )
                   .then(() => {
                     this.successToast(
-                      i18n.global.tc(
+                      i18n.global.t(
                         'pageEventLogs.toast.successDelete',
                         uris.length,
                       ),
@@ -674,22 +743,12 @@ export default {
       }
       return fileName + '_' + date;
     },
-    resolveLogs() {
+    toggleResolvedStatus(resolved = true) {
       this.$store
-        .dispatch(this.logStore + '/resolveLogs', this.selectedRows)
-        .then((messages) => {
-          messages.forEach(({ type, message }) => {
-            if (type === 'success') {
-              this.successToast(message);
-            } else if (type === 'error') {
-              this.errorToast(message);
-            }
-          });
-        });
-    },
-    unresolveLogs() {
-      this.$store
-        .dispatch(this.logStore + '/unresolveLogs', this.selectedRows)
+        .dispatch(this.logStore + '/toggleLogsResolvedStatus', {
+          logs: this.selectedRows,
+          resolved
+        })
         .then((messages) => {
           messages.forEach(({ type, message }) => {
             if (type === 'success') {
@@ -703,3 +762,27 @@ export default {
   },
 };
 </script>
+
+<style lang="scss" scoped>
+/* Apply styles to the form group itself */
+.select-system {
+  margin-bottom: 0 !important;
+  
+  /* Target the div that Bootstrap generates as a container for the select */
+  & div {
+    margin-bottom: 0 !important;
+    align-items: center !important;
+    display: flex !important;
+  }
+  
+  /* Specifically target the parent of #selectSystem */
+  & div:has(#selectSystem) {
+    margin-bottom: 0 !important;
+    align-items: center !important;
+    display: flex !important;
+  }
+}
+
+</style>
+
+  

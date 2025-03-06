@@ -28,20 +28,9 @@ const PowerControlStore = {
     setPowerCapUpdatedValue({ commit }, value) {
       commit('setPowerCapValue', value);
     },
-    async getChassisCollection() {
+    async getPowerControl({ commit }) {
       return await api
-        .get('/redfish/v1/')
-        .then((response) => api.get(response.data.Chassis['@odata.id']))
-        .then(({ data: { Members } }) =>
-          Members.map((member) => member['@odata.id']),
-        )
-        .catch((error) => console.log(error));
-    },
-    async getPowerControl({ dispatch, commit }) {
-      const collection = await dispatch('getChassisCollection');
-      if (!collection || collection.length === 0) return;
-      return await api
-        .get(`${collection[0]}`) //FIXME:  What is this?? It's the BMC Chassis in my case, a terrible assumption.
+        .get(`${await this.dispatch('global/getChassisPath')}`)
         .then((response) => {
           if (typeof response.data.Power === 'undefined') {
             commit('setHasPowerControl', false);

@@ -107,10 +107,10 @@ exports[`AppHeader.vue should render correctly 1`] = `
             id="tooltip-target-power"
           >
             <span
-              class="status-icon off"
+              class="status-icon secondary"
             >
               <img
-                class="off"
+                class="secondary"
                 height="24"
                 src="@/assets/images/power.svg"
                 svg-inline=""
