@@ -12,11 +12,13 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 mcp/pid/*
-mcp/pid/*
+mcp/cache/*
 
 # Editor directories and files
 .idea
-.vscode
+# Ignore .vscode directory but keep tasks.json
+.vscode/*
+!.vscode/tasks.json
 *.suo
 *.ntvs*
 *.njsproj
@@ -26,5 +28,3 @@ mcp/pid/*
 
 # OpenAPI schema - downloaded from npm install
 src/api/schema/openapi.yaml
-scripts/generate-version-info.js
-

@@ -7,11 +7,14 @@
 const fs = require('fs');
 const path = require('path');
 
+// Define project root path
+const PROJECT_ROOT = path.resolve(__dirname, '..');
+
 // Paths to localization files
-const PRIMARY_FILE = path.join(__dirname, '../src/locales/en-US.json');
+const PRIMARY_FILE = path.join(PROJECT_ROOT, 'src/locales/en-US.json');
 const TRANSLATION_FILES = [
-  path.join(__dirname, '../src/locales/ru-RU.json'),
-  path.join(__dirname, '../src/locales/zh-CN.json')
+  path.join(PROJECT_ROOT, 'src/locales/ru-RU.json'),
+  path.join(PROJECT_ROOT, 'src/locales/zh-CN.json')
 ];
 
 // Load the files
