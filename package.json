@@ -14,7 +14,7 @@
         "docs:serve": "vuepress dev docs",
         "i18n:report": "vue-cli-service i18n:report --src './src/**/*.?(js|vue)' --locales './src/locales/**/*.json'",
         "postinstall": "node ./scripts/api/schema/download-openapi.js && node mcp/init-schema.js",
-        "generate-version": "node ./scripts/generate-version-info.js",
+        "generate-version": "node scripts/generate-version-info.js",
         "validate-translations": "node scripts/validate-translations.js",
         "mcp": "node mcp/mcp-server.js",
         "mcp:start": "./scripts/start_mcp_server.sh",

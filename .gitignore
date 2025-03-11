@@ -28,3 +28,9 @@ mcp/cache/*
 
 # OpenAPI schema - downloaded from npm install
 src/api/schema/openapi.yaml
+mcp/cache/schema-index.json
+mcp/pid/mcp.log
+mcp/pid/mcp.pid
+scripts/generate-version-info.js
+
+src/env/version-info.js

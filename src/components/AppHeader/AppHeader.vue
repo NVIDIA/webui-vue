@@ -167,7 +167,6 @@ export default {
   computed: {
     ...mapState('authentication', ['consoleWindow']),
     ...mapGetters('global', ['assetTag', 'modelType', 'serialNumber', 'isAuthorized', 'userPrivilege', 'serverStatus', 'powerState', 'healthStatus', 'username']),
-    ...mapGetters('eventLog', ['healthStatus']),
     isNavTagPresent() {
       return this.assetTag || this.modelType || this.serialNumber;
     },
@@ -217,7 +216,9 @@ export default {
     // on available browser cookies
     this.$store.dispatch('authentication/resetStoreState');
     this.getSystemInfo();
+    this.getHealthStatus();
     this.getEvents();
+
   },
   mounted() {
     this.$root.$on(
@@ -226,6 +227,9 @@ export default {
     );
   },
   methods: {
+    getHealthStatus() {
+      this.$store.dispatch('global/fetchHealthStatus');
+    },
     getSystemInfo() {
       this.$store.dispatch('global/getSystemInfo');
     },
