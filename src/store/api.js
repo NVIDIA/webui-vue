@@ -46,7 +46,7 @@ api.interceptors.response.use(undefined, (error) => {
 
   // Check if action is unauthorized.
   if (response.status == 403) {
-    if (isPasswordExpired(response)) {
+    if (isPasswordExpired(response.data)) {
       router.push('/change-password');
     } else {
       // Toast error message will appear on screen.
@@ -56,7 +56,7 @@ api.interceptors.response.use(undefined, (error) => {
     // what HTTP status code should we expect if the BMC aggregated a response from other BMCs, but at least one was non-responsive?
     // 206 Partial seems appropriate, but unfortunately 206 isn't in the Redfish spec explicitly, and 206 should be in response to the "Content-Range" header on the request
     // For now, handle the 500->206 if it has a valid data payload, (a 500 does put a nasty line on the JavaScript console for each call)
-    if (response.data) {
+    if (response?.data && !response?.data?.error) {
       //console.log('500 -> 206 Partial: ', error);
       response.status = 206;
       return Promise.resolve(response);
@@ -111,12 +111,27 @@ export const getResponseCount = (responses) => {
   };
 };
 
-export const isPasswordExpired = (response) => {
-  let extInfoMsgs = response?.data?.['@Message.ExtendedInfo'];
+export const isPasswordExpired = (data) => {
+  return !!findMessageId(data, 'PasswordChangeRequired');
+};
+/**
+ * Returns the first ExtendedInfo.Message to start with the
+ * Registry Name (Default: "Base") and end with the given key
+ * Ignore versions (.<X>.<Y>) --or-- (.<X>.<Y>.<Z>.),
+ *   but adhere to Registry namespace
+ * @param {object} data - AxiosResponse.data
+ * @param { {MessageKey: string}} key - key into the message registry
+ * @param { {MessageRegistryPrefix: string}} [registry=Base] - the name of the
+ *        message registry, undefined param defaults to "Base"
+ * @returns {ExtendedInfo.Message} ExtendedInfo.Message | undefined
+ */
+export const findMessageId = (data, key, registry = 'Base') => {
+  let extInfoMsgs = data?.error?.['@Message.ExtendedInfo'];
   return (
     extInfoMsgs &&
-    extInfoMsgs.find(
-      (i) => i.MessageId.split('.')[4] === 'PasswordChangeRequired',
-    )
+    extInfoMsgs.find((i) => {
+      const words = i.MessageId.split('.');
+      return words[words.length - 1] === key && words[0] === registry;
+    })
   );
 };

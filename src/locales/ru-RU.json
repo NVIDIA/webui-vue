@@ -23,7 +23,10 @@
             "selected": "Выбрано",
             "ok": "Хорошо",
             "warning": "Предупреждение",
-            "critical": "Критический"
+            "critical": "Критический",
+            "submitting": "Отправка...",
+            "close": "Закрыть",
+            "viewDetails": "Просмотреть детали"
         },
         "footer": {
             "version": "ui строить"
@@ -217,7 +220,8 @@
                 "timezone": "@:pageDateTime.form.time.label (%{timezone})"
             },
             "ntpServers": {
-                "server1": "Сервер %{index}"
+                "server1": "Сервер %{index}",
+                "server": "Сервер %{index}"
             }
         },
         "toast": {
@@ -233,7 +237,10 @@
             "initiateDump": "Запустить дамп",
             "selectDumpType": "Выберите тип дампа",
             "systemDump": "Системный дамп (разрушительный)",
-            "systemDumpInfo": "Системные дампы будут выгружены в операционную систему и не появятся в таблице ниже."
+            "systemDumpInfo": "Системные дампы будут выгружены в операционную систему и не появятся в таблице ниже.",
+            "hmcDump": "HMC дамп",
+            "systemBmcDump": "Системный [BMC] дамп (разрушительный)",
+            "systemHgxDump": "Системный [HGX] дамп (разрушительный)"
         },
         "modal": {
             "deleteDump": "Удалить дамп | Удалить дампы",
@@ -332,7 +339,8 @@
             "resetBiosSuccess": "Успешный сброс встроенного ПО сервера до заводских настроек.",
             "resetBiosError": "Ошибка сброса встроенного ПО сервера до заводских настроек.",
             "resetToDefaultsSuccess": "Успешный сброс BMC и встроенного ПО сервера до заводских настроек.",
-            "resetToDefaultsError": "Ошибка сброса BMC и встроенного ПО сервера до заводских настроек."
+            "resetToDefaultsError": "Ошибка сброса BMC и встроенного ПО сервера до заводских настроек.",
+            "resetBiosSuccessAndReboot": "Сброс BIOS до заводских настроек выполнен успешно, сервер будет перезагружен."
         }
     },
     "pageFirmware": {
@@ -400,6 +408,7 @@
             "updateFirmwareInfo": "В зависимости от типа прошивки, BMC может перезагрузиться или может произойти перезагрузка питания хоста во время обновления. Не включайте/выключайте устройство до завершения обновления.",
             "updateFirmwareInfoTargetBackup": "Текущий рабочий образ (%{running}) будет скопирован в резервный. Существующий резервный образ будет удален.",
             "updateFirmwareInfoBackup": "Если у этого образа есть резервная копия, рабочий образ будет скопирован в резервный и заменит текущий резервный образ.",
+            "updateFirmwareInfoDefault1": "В зависимости от типа прошивки, BMC может перезагрузиться, или может произойти перезагрузка питания хоста во время обновления. Не включайте/выключайте устройство до завершения обновления.",
             "updateFirmwareInfoDefault2": "Вы уверены, что хотите продолжить обновление?"
         },
         "toast": {
@@ -505,11 +514,20 @@
             "boardProductName": "Продукт платы",
             "boardSerialNumber": "Серийный номер платы",
             "chassisPartNumber": "Номер детали шасси",
-            "chassisSerialNumber": "Серийный номер шасси"
+            "chassisSerialNumber": "Серийный номер шасси",
+            "productAssetTag": "Метка продукта",
+            "productExtra": "Дополнительная информация о продукте",
+            "productManufacturer": "Производитель продукта",
+            "productProductName": "Название продукта",
+            "productPartNumber": "Номер детали продукта",
+            "productSerialNumber": "Серийный номер продукта",
+            "productVersion": "Версия продукта"
         },
         "toast": {
             "errorDisableIdentifyLed": "Ошибка выключения идентификационного LED.",
-            "errorEnableIdentifyLed": "Ошибка включения идентификационного LED."
+            "errorEnableIdentifyLed": "Ошибка включения идентификационного LED.",
+            "successDisableIdentifyLed": "Идентификационный LED успешно отключен.",
+            "successEnableIdentifyLed": "Идентификационный LED успешно включен."
         }
     },
     "pageKeyClear": {
@@ -714,7 +732,12 @@
         "systemInformation": "Информация о системе",
         "total": "Всего",
         "warningEvents": "Предупреждения",
-        "viewMore": "Подробнее"
+        "viewMore": "Подробнее",
+        "bmcUpTime": "Время работы BMC",
+        "dhcp6": "DHCPv6",
+        "slaac": "SLAAC",
+        "ipv4StaticAddress": "Статический IPv4",
+        "ipv6StaticAddress": "Статический IPv6"
     },
     "pagePostCodeLogs": {
         "allExportFilePrefix": "Лог_всех_POST_кодов_",
@@ -792,7 +815,9 @@
             "gateway": "Шлюз",
             "ipAddress": "IP адрес",
             "staticDns": "Статический DNS",
-            "subnetMask": "Маска подсети"
+            "subnetMask": "Маска подсети",
+            "editIPv6DefaultGatewayTitle": "Редактировать IPv6 Шлюз по умолчанию",
+            "prefixLength": "Длина префикса"
         },
         "table": {
             "addDnsAddress": "Добавить IP адрес",
@@ -804,7 +829,10 @@
             "editIpv4": "Редактировать IPv4 адрес",
             "gateway": "Шлюз",
             "ipAddress": "IP адрес",
-            "subnet": "Маска подсети"
+            "subnet": "Маска подсети",
+            "addIpv6Address": "Добавить статический IPv6 адрес",
+            "deleteIpv6": "Удалить IPv6 адрес",
+            "editIpv6": "Редактировать IPv6 адрес"
         },
         "toast": {
             "errorSaveNetworkSettings": "Ошибка обновления %{setting} настроек.",
@@ -927,7 +955,10 @@
             "upperWarning": "Макс. значение",
             "upperCritical": "Макс. крит. значение",
             "assertionsEnabled": "Включены уведомления",
-            "deassertionsEnabled": "Включены сброс уведомлений"
+            "deassertionsEnabled": "Включены сброс уведомлений",
+            "id": "Идентификатор",
+            "lowerFatal": "Нижний неустранимый",
+            "upperFatal": "Верхний неустранимый"
         }
     },
     "pageSerialOverLan": {
@@ -968,7 +999,8 @@
             "bootSettingsOverride": "Переопределение параметров загрузки сервера",
             "enableOneTimeBoot": "Однократное переопределение",
             "tpmRequiredPolicy": "Наличие и исправность TPM",
-            "tpmRequiredPolicyHelper": "При включении этой опции сервер загрузится только при наличии и исправной работе TPM."
+            "tpmRequiredPolicyHelper": "При включении этой опции сервер загрузится только при наличии и исправной работе TPM.",
+            "bootOptions": "Параметры загрузки"
         },
         "modal": {
             "confirmRebootMessage": "Вы уверены, что хотите перезагрузить сервер?",
@@ -1075,7 +1107,8 @@
             "serverUri": "URI Внешнего сервера",
             "title": "Конфигурация Legacy режима",
             "username": "Имя пользователя",
-            "rw": "Чтение-запись (по умолчанию только чтение)"  
+            "rw": "Чтение-запись (по умолчанию только чтение)",
+            "inserted": "Вставлено"
         },
         "toast": {
             "errorMounting": "Ошибка монтирования",
@@ -1349,5 +1382,8 @@
         "RPM": "об/мин",
         "V": "В",
         "W": "Вт"
+    },
+    "message": {
+        "errorDetails": "Детали ошибки"
     }
 }

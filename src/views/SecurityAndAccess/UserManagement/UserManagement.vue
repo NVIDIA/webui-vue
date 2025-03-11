@@ -107,7 +107,7 @@
       :user="activeUser"
       :password-requirements="passwordRequirements"
       @ok="saveUser"
-      @hidden="activeUser = null"
+      @hidden="closeModalUser"
     />
   </b-container>
 </template>
@@ -115,7 +115,7 @@
 <script>
 import IconTrashcan from '@carbon/icons-vue/es/trash-can/20';
 import IconEdit from '@carbon/icons-vue/es/edit/20';
-import IconAdd from '@carbon/icons-vue/es/add--alt/20';
+import IconAdd from '@carbon/icons-vue/es/add/20';
 import IconSettings from '@carbon/icons-vue/es/settings/20';
 import IconChevron from '@carbon/icons-vue/es/chevron--up/20';
 
@@ -242,6 +242,9 @@ export default {
     passwordRequirements() {
       return this.$store.getters['userManagement/accountPasswordRequirements'];
     },
+    availableRoles() {
+      return this.$store.getters['userManagement/accountRoles'] || [];
+    },
   },
   created() {
     this.startLoader();
@@ -339,9 +342,12 @@ export default {
                 this.$store
                   .dispatch('userManagement/deleteUsers', this.selectedRows)
                   .then((messages) => {
-                    messages.forEach(({ type, message }) => {
-                      if (type === 'success') this.successToast(message);
-                      if (type === 'error') this.errorToast(message);
+                    messages.forEach(({ type, message, errorDetails }) => {
+                      if (type === 'success') {
+                        this.successToast(message);
+                      } else if (type === 'error') {
+                        this.errorToast(message, { redfishError: errorDetails });
+                      }
                     });
                   })
                   .finally(() => this.endLoader());
@@ -353,9 +359,12 @@ export default {
           this.$store
             .dispatch('userManagement/enableUsers', this.selectedRows)
             .then((messages) => {
-              messages.forEach(({ type, message }) => {
-                if (type === 'success') this.successToast(message);
-                if (type === 'error') this.errorToast(message);
+              messages.forEach(({ type, message, errorDetails }) => {
+                if (type === 'success') {
+                  this.successToast(message);
+                } else if (type === 'error') {
+                  this.errorToast(message, { redfishError: errorDetails });
+                }
               });
             })
             .finally(() => this.endLoader());
@@ -365,9 +374,12 @@ export default {
           this.$store
             .dispatch('userManagement/disableUsers', this.selectedRows)
             .then((messages) => {
-              messages.forEach(({ type, message }) => {
-                if (type === 'success') this.successToast(message);
-                if (type === 'error') this.errorToast(message);
+              messages.forEach(({ type, message, errorDetails }) => {
+                if (type === 'success') {
+                  this.successToast(message);
+                } else if (type === 'error') {
+                  this.errorToast(message, { redfishError: errorDetails });
+                }
               });
             })
             .finally(() => this.endLoader());
@@ -393,6 +405,10 @@ export default {
         .then((message) => this.successToast(message))
         .catch(({ message }) => this.errorToast(message))
         .finally(() => this.endLoader());
+    },
+    closeModalUser() {
+      this.activeUser = null;
+      this.$bvModal.hide('modal-user');
     },
   },
 };

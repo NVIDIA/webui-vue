@@ -23,7 +23,10 @@
         "selected": "已选择",
         "ok": "确定",
         "warning": "告警",
-        "critical": "严重"
+        "critical": "严重",
+        "submitting": "提交中...",
+        "close": "关闭",
+        "viewDetails": "查看详情"
       },
       "footer": {
           "version": "ui 构建"
@@ -90,7 +93,8 @@
       "toast": {
         "unAuthTitle": "未授权",
         "unAuthDescription": "尝试的操作无法从当前登录的账户访问。请联系系统管理员以检查您的权限角色。",
-        "bmcIsNotReady": "BMC 仍在初始化中，使用风险请自行承担。"
+        "bmcIsNotReady": "BMC 仍在初始化中，使用风险请自行承担。",
+        "errorDetails": "错误详情"
       }
     },
     "appHeader": {
@@ -257,7 +261,9 @@
             "errorStartSystemDump": "启动新的系统Dump时出错。",
             "successDeleteDump": "成功删除 %{count} 个Dump。| 成功删除 %{count} 个Dumps。",
             "successStartBmcDumpTitle": "已启动 BMC Dump",
-            "successStartSystemDumpTitle": "已启动系统Dump"
+            "successStartSystemDumpTitle": "已启动系统Dump",
+            "successStartBmcDump": "转储将需要一些时间才能完成。刷新应用程序以在表中查看已完成的转储。",
+            "successStartSystemDump": "转储将需要一些时间才能完成。转储将被卸载到操作系统。"
         },
         "dumpTypes": {
             "hmcDump": "HMC 转储",
@@ -405,6 +411,7 @@
             "updateFirmwareInfo": "根据固件类型，在更新过程中，BMC 可能会重新启动，或者主机电源可能会重新启动。在更新完成之前，请勿打开/关闭设备电源。",
             "updateFirmwareInfoTargetBackup": "正在运行的映像 (%{running}) 将被复制到备份。备份映像将被删除。",
             "updateFirmwareInfoBackup": "如果此镜像有备份，则运行镜像将被复制到备份并替换当前备份镜像。",
+            "updateFirmwareInfoDefault1": "根据固件类型，在更新过程中，BMC 可能会重新启动，或者主机电源可能会重新启动。在更新完成之前，请勿打开/关闭设备电源。",
             "updateFirmwareInfoDefault2": "您确定要继续更新吗？"
         },
         "toast": {
@@ -953,7 +960,10 @@
             "upperWarning": "上限告警",
             "upperCritical": "上限严重",
             "assertionsEnabled": "启用断言",
-            "deassertionsEnabled": "启用取消断言"
+            "deassertionsEnabled": "启用取消断言",
+            "id": "ID",
+            "lowerFatal": "下限不可恢复",
+            "upperFatal": "上限不可恢复"
         }
     },
     "pageSerialOverLan": {

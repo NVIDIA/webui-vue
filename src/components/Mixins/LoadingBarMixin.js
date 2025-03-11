@@ -1,6 +1,15 @@
 export const loading = true;
 
 const LoadingBarMixin = {
+  data() {
+    return {
+      loading: false
+    };
+  },
+  created() {
+    // Ensure loading is initialized when the component is created
+    this.loading = this.loading !== undefined ? this.loading : false;
+  },
   methods: {
     progressLoader(percents) {
       this.$root.$emit('loader-start', percents);

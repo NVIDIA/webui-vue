@@ -24,7 +24,9 @@
             "ok": "OK",
             "warning": "Warning",
             "critical": "Critical",
-            "submitting": "Submitting..."
+            "submitting": "Submitting...",
+            "close": "Close",
+            "viewDetails": "View details"
         },
         "footer": {
             "version": "ui build"
@@ -92,6 +94,9 @@
             "unAuthTitle": "Unauthorized",
             "unAuthDescription": "The attempted action is not accessible from the logged in account. Contact your system administrator to check your privilege role.",
             "bmcIsNotReady": "BMC is still initializing. Use at your own risk."
+        },
+        "message": {
+            "errorDetails": "Error Details"
         }
     },
     "appHeader": {

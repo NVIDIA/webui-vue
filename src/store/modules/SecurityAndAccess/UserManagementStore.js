@@ -189,131 +189,67 @@ const UserManagementStore = {
           throw new Error(message);
         });
     },
+    // Define createApiPromises as a Vuex action
+    createApiPromises({ commit }, { users, apiMethod, data }) {
+      return users.map(({ username }) => {
+        return apiMethod(`/redfish/v1/AccountService/Accounts/${username}`, data)
+          .then(response => ({ success: true, username, response }))
+          .catch((error) => ({ success: false, username, error }));
+      });
+    },
+    // Utility function to handle API responses and dispatch actions
+    handleApiResponse({ dispatch }, { promises, successMessage, errorMessage }) {
+      return api
+        .all(promises)
+        .then((response) => {
+          dispatch('getUsers');
+          return response;
+        })
+        .then(
+          api.spread((...responses) => {
+            const successResponses = responses.filter(r => r.success);
+            const errorResponses = responses.filter(r => !r.success);
+            const successCount = successResponses.length;
+            const errorCount = errorResponses.length;
+            
+            let toastMessages = [];
+
+            if (successCount) {
+              const message = i18n.tc(successMessage, successCount);
+              toastMessages.push({ type: 'success', message });
+            }
+
+            if (errorCount) {
+              const message = i18n.tc(errorMessage, errorCount);
+              const errorDetails = errorResponses.map(r => r.error?.response?.data || r.error);
+              
+              toastMessages.push({ 
+                type: 'error', 
+                message, 
+                errorDetails 
+              });
+            }
+
+            return toastMessages;
+          }),
+        );
+    },
+    // Refactor deleteUsers action
     async deleteUsers({ dispatch }, users) {
-      const promises = users.map(({ username }) => {
-        return api
-          .delete(`/redfish/v1/AccountService/Accounts/${username}`)
-          .catch((error) => {
-            console.log(error);
-            return error;
-          });
-      });
-      return await api
-        .all(promises)
-        .then((response) => {
-          dispatch('getUsers');
-          return response;
-        })
-        .then(
-          api.spread((...responses) => {
-            const { successCount, errorCount } = getResponseCount(responses);
-            let toastMessages = [];
-
-            if (successCount) {
-              const message = i18n.tc(
-                'pageUserManagement.toast.successBatchDelete',
-                successCount,
-              );
-              toastMessages.push({ type: 'success', message });
-            }
-
-            if (errorCount) {
-              const message = i18n.tc(
-                'pageUserManagement.toast.errorBatchDelete',
-                errorCount,
-              );
-              toastMessages.push({ type: 'error', message });
-            }
-
-            return toastMessages;
-          }),
-        );
+      const promises = await dispatch('createApiPromises', { users, apiMethod: api.delete });
+      return dispatch('handleApiResponse', { promises, successMessage: 'pageUserManagement.toast.successBatchDelete', errorMessage: 'pageUserManagement.toast.errorBatchDelete' });
     },
+    // Refactor enableUsers action
     async enableUsers({ dispatch }, users) {
-      const data = {
-        Enabled: true,
-      };
-      const promises = users.map(({ username }) => {
-        return api
-          .patch(`/redfish/v1/AccountService/Accounts/${username}`, data)
-          .catch((error) => {
-            console.log(error);
-            return error;
-          });
-      });
-      return await api
-        .all(promises)
-        .then((response) => {
-          dispatch('getUsers');
-          return response;
-        })
-        .then(
-          api.spread((...responses) => {
-            const { successCount, errorCount } = getResponseCount(responses);
-            let toastMessages = [];
-
-            if (successCount) {
-              const message = i18n.tc(
-                'pageUserManagement.toast.successBatchEnable',
-                successCount,
-              );
-              toastMessages.push({ type: 'success', message });
-            }
-
-            if (errorCount) {
-              const message = i18n.tc(
-                'pageUserManagement.toast.errorBatchEnable',
-                errorCount,
-              );
-              toastMessages.push({ type: 'error', message });
-            }
-
-            return toastMessages;
-          }),
-        );
+      const data = { Enabled: true };
+      const promises = await dispatch('createApiPromises', { users, apiMethod: api.patch, data });
+      return dispatch('handleApiResponse', { promises, successMessage: 'pageUserManagement.toast.successBatchEnable', errorMessage: 'pageUserManagement.toast.errorBatchEnable' });
     },
+    // Refactor disableUsers action
     async disableUsers({ dispatch }, users) {
-      const data = {
-        Enabled: false,
-      };
-      const promises = users.map(({ username }) => {
-        return api
-          .patch(`/redfish/v1/AccountService/Accounts/${username}`, data)
-          .catch((error) => {
-            console.log(error);
-            return error;
-          });
-      });
-      return await api
-        .all(promises)
-        .then((response) => {
-          dispatch('getUsers');
-          return response;
-        })
-        .then(
-          api.spread((...responses) => {
-            const { successCount, errorCount } = getResponseCount(responses);
-            let toastMessages = [];
-
-            if (successCount) {
-              const message = i18n.tc(
-                'pageUserManagement.toast.successBatchDisable',
-                successCount,
-              );
-              toastMessages.push({ type: 'success', message });
-            }
-
-            if (errorCount) {
-              const message = i18n.tc(
-                'pageUserManagement.toast.errorBatchDisable',
-                errorCount,
-              );
-              toastMessages.push({ type: 'error', message });
-            }
-
-            return toastMessages;
-          }),
-        );
+      const data = { Enabled: false };
+      const promises = await dispatch('createApiPromises', { users, apiMethod: api.patch, data });
+      return dispatch('handleApiResponse', { promises, successMessage: 'pageUserManagement.toast.successBatchDisable', errorMessage: 'pageUserManagement.toast.errorBatchDisable' });
     },
     async saveAccountSettings(
       { dispatch },
