@@ -25,6 +25,9 @@
             "warning": "Предупреждение",
             "critical": "Критический"
         },
+        "footer": {
+            "version": "ui строить"
+        },
         "ariaLabel": {
             "clearSearch": "Очистить поле поиска",
             "hidePassword": "Скрыть пароль",
