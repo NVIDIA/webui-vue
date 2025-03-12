@@ -1,5 +1,6 @@
 <template>
   <b-modal
+    v-if="resetType"
     id="modal-reset"
     ref="modal"
     :title="$t(`pageFactoryReset.modal.${resetType}Title`)"

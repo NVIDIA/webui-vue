@@ -53,6 +53,7 @@
             type="submit"
             variant="primary"
             data-test-id="factoryReset-button-submit"
+            :disabled="!resetOption.value"
           >
             {{ $t('global.action.reset') }}
           </b-button>
@@ -71,6 +72,7 @@ import BVToastMixin from '@/components/Mixins/BVToastMixin';
 import LoadingBarMixin from '@/components/Mixins/LoadingBarMixin';
 import ModalReset from './FactoryResetModal';
 import { useI18n } from 'vue-i18n';
+import { mapGetters } from 'vuex';
 
 export default {
   name: 'FactoryReset',
@@ -79,16 +81,12 @@ export default {
   data() {
     return {
       $t: useI18n().t,
-      resetOption: {value:'resetBios'},
+      resetOption: {value:null},
     };
   },
   computed: {
-    resetBiosUris() {
-      return this.$store.getters['factoryReset/resetBiosUris'];
-    },
-    bmcResetToDefaultsUris() {
-      return this.$store.getters['bmc/resetToDefaultsUris'];
-    },
+    ...mapGetters('factoryReset', ['resetBiosUris']),
+    ...mapGetters('bmc', {bmcResetToDefaultsUris:'resetToDefaultsUris'}),
   },
   created() {
     this.hideLoader();
