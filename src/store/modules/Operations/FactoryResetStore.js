@@ -16,8 +16,8 @@ const FactoryResetStore = {
   },
   actions: {
     async preloadResetBiosTargets({ commit }) {
-      const results = await this.dispatch('system/getSystemsResources', {
-        name: 'Bios',
+      const results = await this.dispatch('system/getSystemsProp', {
+        prop: 'Bios',
       });
       const resetBiosUris = results.flatMap(
         (bios) => {

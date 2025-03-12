@@ -1,5 +1,6 @@
 <template>
   <b-modal
+    v-if="resetType"
     id="modal-reset"
     ref="modal"
     :title="$t(`pageFactoryReset.modal.${resetType}Title`)"
@@ -17,7 +18,7 @@
         :key="index"
         class="mt-1 mb-1"
       >
-        {{ $t(item) }}
+        {{ item }}
       </li>
     </ul>
 

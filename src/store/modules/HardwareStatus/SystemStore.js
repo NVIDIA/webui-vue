@@ -64,7 +64,7 @@ const SystemStore = {
         })
         .catch((error) => console.log(error));
     },
-    async getSystemsResources({ getters, dispatch }, { name, callback }) {
+    async getSystemsResourceMembers({ getters, dispatch }, { name, callback }) {
       if (!getters.isLoaded) await dispatch('getSystem');
       let Systems = getters.redfish_systems;
       let promises = Systems.flatMap(async (system) => {
@@ -97,6 +97,24 @@ const SystemStore = {
             .flat()
             .filter((result) => result.status === 'fulfilled' && result.value)
             .map((result) => result.value);
+          return results;
+        })
+        .catch((error) => console.log(error));
+    },
+    async getSystemsProp({ getters, dispatch }, { prop }) {
+      let Systems = await dispatch('getSystemsWithProp', { prop });
+      let promises = Systems.flatMap(async (system) => {
+        if (!(system[prop] && system[prop]['@odata.id'])) return;
+        return await api.get(system[prop]['@odata.id'])
+      });
+      return await api
+        .allSettled(promises.flat())
+        .then((response) => {
+          // resolved/fulfilled Promises' values
+          var results = response
+            .filter((result) => result.status === 'fulfilled' && result.value)
+            .map((result) => result.value.data)
+            .flat();
           return results;
         })
         .catch((error) => console.log(error));

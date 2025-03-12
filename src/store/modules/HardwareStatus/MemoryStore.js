@@ -59,7 +59,7 @@ const MemoryStore = {
   },
   actions: {
     async getDimms({ commit }) {
-      this.dispatch('system/getSystemsResources', {
+      this.dispatch('system/getSystemsResourceMembers', {
         name: 'Memory',
       }).then((results) => commit('setMemoryInfo', results));
     },

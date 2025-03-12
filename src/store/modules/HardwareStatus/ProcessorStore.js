@@ -64,7 +64,7 @@ const ProcessorStore = {
   },
   actions: {
     async getProcessorsInfo({ commit }) {
-      await this.dispatch('system/getSystemsResources', {
+      await this.dispatch('system/getSystemsResourceMembers', {
         name: 'Processors',
       }).then((results) => commit('setProcessorsInfo', results));
     },
