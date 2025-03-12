@@ -31,3 +31,4 @@ mcp/pid/mcp.log
 mcp/pid/mcp.pid
 scripts/generate-version-info.js
 
+src/env/version-info.js

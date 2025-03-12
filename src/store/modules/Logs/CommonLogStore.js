@@ -44,7 +44,7 @@ const CommonLogStore = {
   getters: {
     getAllEventsByValue: (state) => (value = state.systemId) => state.allEvents[value] ?? [],
     highPriorityEvents: (state) => (value = state.systemId) => getHighPriorityEvents(state.allEvents[value]),
-    healthStatus: (state) => getHealthStatus(null, state.loadedEvents),
+    healthStatus: (state) => getHealthStatus(state.allEvents, state.loadedEvents),
     isInitialized: (state) => state.isInitialized,
     logServices: (state) => state.logServices,
   },
