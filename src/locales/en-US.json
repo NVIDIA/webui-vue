@@ -27,7 +27,7 @@
             "submitting": "Submitting..."
         },
         "footer": {
-            "version": "build"
+            "version": "ui build"
         },
         "ariaLabel": {
             "clearSearch": "Clear search input",
