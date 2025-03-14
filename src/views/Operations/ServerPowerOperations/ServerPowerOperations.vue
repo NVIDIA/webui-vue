@@ -190,7 +190,7 @@ export default {
         shutdownOption: 'orderly',
       },
       showPowerCycle: process.env.VUE_APP_ENV_NAME === 'nvidia-bluefield',
-      showForceOff: process.env.VUE_APP_ENV_NAME !== 'nvidia-bluefield',
+      showForceOff: process.env.VUE_APP_ENV_NAME !== 'nvidia-bluefield'
     };
   },
   computed: {
@@ -223,7 +223,7 @@ export default {
     Promise.all([
       this.$store.dispatch('serverBootSettings/getBootSettings'),
       this.$store.dispatch('controls/getLastPowerOperationTime'),
-      this.$store.dispatch('global/getSystemInfo'),
+      this.$store.dispatch('global/getSystemInfo')
     ]).finally(() => this.endLoader());
   },
   methods: {
@@ -278,8 +278,7 @@ export default {
           .then((confirmed) => {
             if (confirmed) this.$store.dispatch('controls/serverSoftPowerOff');
           });
-      }
-      if (this.form.shutdownOption === 'immediate') {
+      } else if (this.form.shutdownOption === 'immediate') {
         this.$bvModal
           .msgBoxConfirm(modalMessage, modalOptions)
           .then((confirmed) => {

@@ -26,7 +26,8 @@
         "critical": "严重",
         "submitting": "提交中...",
         "close": "关闭",
-        "viewDetails": "查看详情"
+        "viewDetails": "查看详情",
+        "unknown": "未知"
       },
       "footer": {
           "version": "ui 构建"
@@ -168,7 +169,7 @@
         "postCodeLogs": "POST代码日志",
         "powerRestorePolicy": "电源恢复策略",
         "profileSettings": "个人资料设置",
-        "rebootBmc": "重启BMC",
+        "rebootBmc": "重置 BMC",
         "policies": "策略",
         "sensors": "传感器",
         "serialOverLan": "局域网串行（SOL）控制台",
@@ -866,16 +867,34 @@
         }
     },
     "pageRebootBmc": {
-        "lastReboot": "最后 BMC 重启",
-        "rebootBmc": "重启 BMC",
-        "rebootInformation": "当您重启 BMC 时，您的网页浏览器将与 BMC 失去联系几分钟。当 BMC 重新上线时，您可能需要重新登录。",
+        "lastReboot": "最后 BMC 重置",
+        "lastRebootTimes": "管理器启动时间",
+        "rebootBmc": "重置 BMC",
+        "reset": "重置",
+        "rebootInformation": "当您重置 BMC 时，您的网页浏览器将与 BMC 失去联系几分钟。当 BMC 重新上线时，您可能需要重新登录。",
+        "form": {
+            "selectResetType": "选择重置类型",
+            "resetType": "重置类型"
+        },
+        "table": {
+            "manager": "管理器",
+            "timestamp": "时间戳",
+            "upTime": "运行时间"
+        },
         "modal": {
-            "confirmMessage": "您确定要重启 BMC 吗？",
-            "confirmTitle": "确认 BMC 重启"
+            "confirmMessage": "您确定要重置 BMC 吗？",
+            "dynamicConfirmMessage": "您确定要使用 {type} 重置 {manager} 吗？",
+            "confirmTitle": "确认 BMC 重置"
         },
         "toast": {
-            "errorRebootStart": "重启 BMC 时出错。",
-            "successRebootStart": "正在重启 BMC。"
+            "errorRebootStart": "重置 BMC 时出错。",
+            "successRebootStart": "正在重置 BMC。",
+            "errorInvalidManager": "选择了无效的管理器。"
+        },
+        "error": {
+            "failedToLoadManagers": "加载 BMC 管理器失败",
+            "loadingManagers": "正在加载管理器信息...",
+            "retry": "重试"
         }
     },
     "pagePolicies": {

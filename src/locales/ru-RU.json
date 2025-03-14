@@ -24,6 +24,7 @@
             "ok": "Хорошо",
             "warning": "Предупреждение",
             "critical": "Критический",
+            "unknown": "Неизвестно",
             "submitting": "Отправка...",
             "close": "Закрыть",
             "viewDetails": "Просмотреть детали"
@@ -166,7 +167,7 @@
         "postCodeLogs": "Логи POST кодов",
         "powerRestorePolicy": "Действие при восстановлении питания",
         "profileSettings": "Настройки профиля",
-        "rebootBmc": "Перезапуск BMC",
+        "rebootBmc": "Сброс BMC",
         "policies": "Политики безопасности",
         "sensors": "Датчики",
         "serialOverLan": "Консоль Serial over LAN (SOL)",
@@ -861,16 +862,34 @@
         }
     },
     "pageRebootBmc": {
-        "lastReboot": "Последний перезапуск BMC",
-        "rebootBmc": "Перезапустить BMC",
-        "rebootInformation": "При перезапуске BMC веб браузер не сможет соединиться с BMC в течение нескольких минут. Когда BMC будет доступен, Вам понадобится снова войти в систему.",
+        "lastReboot": "Последний сброс BMC",
+        "lastRebootTimes": "Время загрузки менеджеров",
+        "rebootBmc": "Сбросить BMC",
+        "reset": "Сбросить",
+        "rebootInformation": "При сбросе BMC веб браузер не сможет соединиться с BMC в течение нескольких минут. Когда BMC будет доступен, Вам понадобится снова войти в систему.",
+        "form": {
+            "selectResetType": "Выберите тип сброса",
+            "resetType": "Тип сброса"
+        },
+        "table": {
+            "manager": "Менеджер",
+            "timestamp": "Время",
+            "upTime": "Время работы"
+        },
         "modal": {
-            "confirmMessage": "Вы уверены, что хотите перезапустить BMC?",
-            "confirmTitle": "Подтвердить перезапуск BMC"
+            "confirmMessage": "Вы уверены, что хотите сбросить BMC?",
+            "dynamicConfirmMessage": "Вы уверены, что хотите сбросить {manager} используя {type}?",
+            "confirmTitle": "Подтвердить сброс BMC"
         },
         "toast": {
-            "errorRebootStart": "Ошибка перезапуска BMC.",
-            "successRebootStart": "Перезапуск BMC."
+            "errorRebootStart": "Ошибка сброса BMC.",
+            "successRebootStart": "Сброс BMC.",
+            "errorInvalidManager": "Выбран неверный менеджер."
+        },
+        "error": {
+            "failedToLoadManagers": "Ошибка загрузки менеджеров BMC",
+            "loadingManagers": "Загрузка информации о менеджерах...",
+            "retry": "Повторить"
         }
     },
     "pagePolicies": {

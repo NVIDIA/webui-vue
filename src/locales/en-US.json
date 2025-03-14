@@ -97,7 +97,8 @@
         },
         "message": {
             "errorDetails": "Error Details"
-        }
+        },
+        "unknown": "Unknown"
     },
     "appHeader": {
         "applicationHeader": "Application header",
@@ -170,7 +171,7 @@
         "postCodeLogs": "POST code logs",
         "powerRestorePolicy": "Power restore policy",
         "profileSettings": "Profile settings",
-        "rebootBmc": "Reboot BMC",
+        "rebootBmc": "Reset BMC",
         "policies": "Policies",
         "sensors": "Sensors",
         "serialOverLan": "Serial over LAN (SOL) console",
@@ -865,16 +866,34 @@
         }
     },
     "pageRebootBmc": {
-        "lastReboot": "Last BMC reboot",
-        "rebootBmc": "Reboot BMC",
-        "rebootInformation": "When you reboot the BMC, your web browser loses contact with the BMC for several minutes. When the BMC is back online, you may need to log in again.",
+        "lastReboot": "Last BMC boot",
+        "lastRebootTimes": "Manager boot times",
+        "rebootBmc": "Reset BMC",
+        "reset": "Reset",
+        "rebootInformation": "When you reset the BMC, your web browser loses contact with the BMC for several minutes. When the BMC is back online, you may need to log in again.",
+        "form": {
+            "selectResetType": "Select reset type",
+            "resetType": "Reset type"
+        },
+        "table": {
+            "manager": "Manager",
+            "timestamp": "Timestamp",
+            "upTime": "Up time"
+        },
         "modal": {
-            "confirmMessage": "Are you sure you want to reboot the BMC?",
-            "confirmTitle": "Confirm BMC reboot"
+            "confirmMessage": "Are you sure you want to reset the BMC?",
+            "dynamicConfirmMessage": "Are you sure you want to reset {manager} using {type}?",
+            "confirmTitle": "Confirm BMC reset"
         },
         "toast": {
-            "errorRebootStart": "Error rebooting BMC.",
-            "successRebootStart": "Rebooting BMC."
+            "errorRebootStart": "Error resetting BMC.",
+            "successRebootStart": "Resetting BMC.",
+            "errorInvalidManager": "Invalid manager selected."
+        },
+        "error": {
+            "failedToLoadManagers": "Failed to load BMC managers",
+            "loadingManagers": "Loading manager information...",
+            "retry": "Retry"
         }
     },
     "pagePolicies": {

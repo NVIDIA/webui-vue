@@ -193,7 +193,7 @@ export default {
       return this.$store.getters['certificates/availableUploadTypes'];
     },
     bmcTime() {
-      return this.$store.getters['global/bmcTime'];
+      return this.$store.getters['bmc/bmcTime'];
     },
     expiredCertificateTypes() {
       return this.certificates.reduce((acc, val) => {
@@ -216,7 +216,7 @@ export default {
   },
   async created() {
     this.startLoader();
-    await this.$store.dispatch('global/getBmcTime');
+    await this.$store.dispatch('bmc/getBmcTime');
     this.$store.dispatch('certificates/getCertificates').finally(() => {
       this.endLoader();
       this.isBusy = false;

@@ -7,7 +7,11 @@ export const startManagerStatusCheck = () => {
   store.dispatch('bmc/checkManagerStatus');
 
   const intervalId = setInterval(() => {
-    store.dispatch('bmc/checkManagerStatus');
+    if (store.getters['bmc/isManagerReady']) {
+      clearInterval(intervalId);
+    } else {
+      store.dispatch('bmc/checkManagerStatus');
+    }
   }, REFRESH_INTERVAL);
 
   return intervalId;

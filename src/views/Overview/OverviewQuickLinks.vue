@@ -37,6 +37,7 @@
 <script>
 import ArrowRight16 from '@carbon/icons-vue/es/arrow--right/16';
 import BVToastMixin from '@/components/Mixins/BVToastMixin';
+import { mapState, mapActions } from 'vuex';
 
 export default {
   name: 'QuickLinks',
@@ -45,36 +46,12 @@ export default {
   },
   mixins: [BVToastMixin],
   computed: {
-    bmcTime() {
-      return this.$store.getters['global/bmcTime'];
-    },
-    bmcUpTime() {
-      var a = this.$store.getters['global/bmcTime'];
-      var b = this.$store.getters['controls/lastBmcRebootTime'];
-      var milliseconds = parseInt(a - b);
-      if (milliseconds < 0) return '0/NA';
+    ...mapState('bmc', ['bmcTime', 'bmcUpTime']),
 
-      var seconds = milliseconds / 1000;
-      seconds = Number(seconds);
-
-      var d = Math.floor(seconds / (3600 * 24));
-      var h = Math.floor((seconds % (3600 * 24)) / 3600);
-      var m = Math.floor((seconds % 3600) / 60);
-      var s = Math.floor(seconds % 60);
-
-      var dDisplay = d > 0 ? d + (d == 1 ? ' day, ' : ' days, ') : '';
-      var hDisplay = h > 0 ? h + (h == 1 ? ' hr ' : ' hrs ') : '';
-      var mDisplay = m > 0 ? m + (m == 1 ? ' min, ' : ' mins, ') : '';
-      var sDisplay = s > 0 ? s + (s == 1 ? ' sec' : ' secs') : '';
-      return dDisplay + hDisplay + mDisplay + sDisplay;
-    },
   },
   created() {
-    Promise.all([this.$store.dispatch('global/getBmcTime')]).finally(() => {
-      this.$root.$emit('overview-quicklinks-complete');
-    });
-
-    this.$store.dispatch('controls/getLastBmcRebootTime');
+    this.$store.dispatch('bmc/getBmcUpTime');
+    this.$root.$emit('overview-quicklinks-complete');
   },
 };
 </script>
