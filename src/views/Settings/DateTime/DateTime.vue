@@ -280,7 +280,7 @@ export default {
   computed: {
     ...mapState('dateTime', ['ntpServers', 'isNtpProtocolEnabled']),
     bmcTime() {
-      return this.$store.getters['global/bmcTime'];
+      return this.$store.getters['bmc/bmcTime'];
     },
     ntpOptionSelected() {
       return this.form.configurationSelected === 'ntp';
@@ -306,11 +306,11 @@ export default {
       this.emitChange();
     },
     bmcTime() {
-      this.form.manual.date = this.$filters.formatDate(
-        this.$store.getters['global/bmcTime'],
+      this.form.manual.date = this.$options.filters.formatDate(
+        this.$store.getters['bmc/bmcTime'],
       );
-      this.form.manual.time = this.$filters
-        .formatTime(this.$store.getters['global/bmcTime'])
+      this.form.manual.time = this.$options.filters
+        .formatTime(this.$store.getters['bmc/bmcTime'])
         .slice(0, 5);
     },
   },
@@ -318,7 +318,7 @@ export default {
     this.startLoader();
     this.setNtpValues();
     Promise.all([
-      this.$store.dispatch('global/getBmcTime'),
+      this.$store.dispatch('bmc/getBmcTime'),
       this.$store.dispatch('dateTime/getNtpData'),
     ]).finally(() => this.endLoader());
   },
@@ -404,7 +404,7 @@ export default {
           if (!isNTPEnabled) return;
         })
         .then(() => {
-          this.$store.dispatch('global/getBmcTime');
+          this.$store.dispatch('bmc/getBmcTime');
         })
         .catch(({ message }) => this.errorToast(message))
         .finally(() => {

@@ -2,31 +2,129 @@
   <b-container fluid="xl">
     <page-title />
     <b-row>
-      <b-col md="8" lg="8" xl="6">
+      <b-col>
         <page-section>
+          <!-- Error message -->
+          <alert
+            v-if="managersError"
+            variant="danger"
+            show
+            class="mb-4"
+            role="alert"
+          >
+            <strong>{{ managersError.message }}</strong>
+            <p v-if="managersError.details">{{ managersError.details }}</p>
+            <template #action>
+              <b-button 
+                variant="outline-danger" 
+                size="sm" 
+                @click="retryFetchManagers"
+              >
+                {{ $t('pageRebootBmc.error.retry') }}
+              </b-button>
+            </template>
+          </alert>
+
           <b-row>
             <b-col>
-              <dl>
-                <dt>
-                  {{ $t('pageRebootBmc.lastReboot') }}
-                </dt>
-                <dd v-if="lastBmcRebootTime">
-                  {{ $filters.formatDate(lastBmcRebootTime) }}
-                  {{ $filters.formatTime(lastBmcRebootTime) }}
-                </dd>
-                <dd v-else>--</dd>
-              </dl>
+              <h3 class="mb-3">{{ $t('pageRebootBmc.lastRebootTimes') }}</h3>
+              <div v-if="Managers.length && !isManagersLoading">
+                <b-table
+                  hover
+                  responsive
+                  striped
+                  bordered
+                  class="mb-3"
+                  :items="Managers"
+                  :fields="managerFields"
+                  data-test-id="rebootBmc-table-managers"
+                >
+                  <template #cell(manager)="data">
+                    <strong>{{ data.item.displayName }}</strong>
+                  </template>
+                  
+                  <template #cell(timestamp)="data">
+                    <span v-if="data.item.lastRebootTime">
+                      {{ $filters.formatDate(data.item.lastRebootTime) }}
+                      {{ $filters.formatTime(data.item.lastRebootTime) }}
+                    </span>
+                    <span v-else-if="data.item.lastResetTime">
+                      {{ $filters.formatDate(data.item.lastResetTime) }}
+                      {{ $filters.formatTime(data.item.lastResetTime) }}
+                    </span>
+                    <span v-else class="text-muted">{{ $t('global.unknown') }}</span>
+                  </template>
+                  
+                  <template #cell(upTime)="data">
+                    <span v-if="data.item.upTime">
+                      {{ data.item.upTime }}
+                    </span>
+                    <span v-else class="text-muted">{{ $t('global.unknown') }}</span>
+                  </template>
+                </b-table>
+              </div>
+              <b-spinner v-else :label="$t('pageRebootBmc.error.loadingManagers')"></b-spinner>
             </b-col>
           </b-row>
-          {{ $t('pageRebootBmc.rebootInformation') }}
+          <b-row>
+            <b-col md="8" lg="8" xl="6">
+          <p class="my-3">
+            {{ $t('pageRebootBmc.rebootInformation') }}
+          </p>
+          <b-form-group
+            :label="hasOnlyOneOption ? $t('pageRebootBmc.form.resetType') : $t('pageRebootBmc.form.selectResetType')"
+            label-for="selectResetType"
+            label-class="h4 mb-4"
+            v-if="availableManagers.length && !isManagersLoading"
+          >
+            <!-- Display static text when only one option is available -->
+            <div v-if="hasOnlyOneOption">
+              <b-form-text tag="div" id="selectResetType">
+                {{ singleOption.label }}: {{ singleOption.type }}
+              </b-form-text>
+            </div>
+            <!-- Otherwise show select dropdown -->
+            <b-form-select
+              v-else
+              id="selectResetType"
+              v-model="selectedResetType"
+              aria-required="true"
+            >
+              <template #first>
+                <b-form-select-option :value="null" disabled>
+                  {{ $t('global.form.selectAnOption') }}
+                </b-form-select-option>
+              </template>
+              <optgroup 
+                v-for="(manager, index) in availableManagers" 
+                :key="index"
+                :label="manager.displayName"
+              >
+                <option 
+                  v-for="(value, valueIndex) in manager && manager.resetOptions && manager.resetOptions.allowableValues" 
+                  :key="`${index}-${valueIndex}`"
+                  :value="{ type: value, manager: manager.displayName, id: manager.id }"
+                >
+                  {{ value }}
+                </option>
+              </optgroup>
+            </b-form-select>
+            <b-form-invalid-feedback>
+              {{ $t('global.form.required') }}
+            </b-form-invalid-feedback>
+          </b-form-group>
+          
           <b-button
             variant="primary"
-            class="d-block mt-5"
+            class="d-block mt-3"
             data-test-id="rebootBmc-button-reboot"
             @click="onClick"
+            :disabled="(!selectedResetType && !hasOnlyOneOption) || isManagersLoading"
           >
-            {{ $t('pageRebootBmc.rebootBmc') }}
-          </b-button>
+            {{ selectedResetType ? $t('pageRebootBmc.reset') + ' ' + selectedResetType.manager : $t('pageRebootBmc.rebootBmc') }}
+            </b-button>
+          </b-col>
+        </b-row>
         </page-section>
       </b-col>
     </b-row>
@@ -36,14 +134,22 @@
 <script>
 import PageTitle from '@/components/Global/PageTitle';
 import PageSection from '@/components/Global/PageSection';
+import Alert from '@/components/Global/Alert';
 import BVToastMixin from '@/components/Mixins/BVToastMixin';
 import LoadingBarMixin from '@/components/Mixins/LoadingBarMixin';
 import { useI18n } from 'vue-i18n';
 import i18n from '@/i18n';
+import { BSpinner } from 'bootstrap-vue'
+import { mapState, mapGetters } from 'vuex';
 
 export default {
   name: 'RebootBmc',
-  components: { PageTitle, PageSection },
+  components: { 
+    PageTitle, 
+    PageSection, 
+    Alert,
+    'b-spinner': BSpinner 
+  },
   mixins: [BVToastMixin, LoadingBarMixin],
   beforeRouteLeave(to, from, next) {
     this.hideLoader();
@@ -52,37 +158,131 @@ export default {
   data() {
     return {
       $t: useI18n().t,
+      selectedResetType: null,
+      managerFields: [
+        { key: 'manager', label: i18n.global.t('pageRebootBmc.table.manager') || 'Manager' },
+        { key: 'timestamp', label: i18n.global.t('pageRebootBmc.table.timestamp') || 'Timestamp' },
+        { key: 'upTime', label: i18n.global.t('pageRebootBmc.table.upTime') || 'Up time' }
+      ],
     };
   },
   computed: {
-    lastBmcRebootTime() {
-      return this.$store.getters['controls/lastBmcRebootTime'];
+    ...mapGetters('controls', ['Managers', 'managersError', 'isManagersLoading']),
+    
+    // Managers with reset options
+    availableManagers() {
+      return this.Managers.filter(manager => 
+        manager.resetOptions && manager.resetOptions.allowableValues && 
+        manager.resetOptions.allowableValues.length > 0
+      );
     },
+    
+    // Check if there's only a single option available
+    hasOnlyOneOption() {
+      if (this.availableManagers.length !== 1) return false;
+      return this.availableManagers[0].resetOptions.allowableValues.length === 1;
+    },
+    
+    // Get the single option object for direct use
+    singleOption() {
+      if (!this.hasOnlyOneOption) return null;
+      const manager = this.availableManagers[0];
+      return {
+        id: manager.id,
+        label: manager.displayName,
+        type: manager.resetOptions && manager.resetOptions.allowableValues ? manager.resetOptions.allowableValues[0] : '',
+        target: manager.resetOptions && manager.resetOptions.target ? manager.resetOptions.target : ''
+      };
+    }
   },
   created() {
     this.startLoader();
     this.$store
-      .dispatch('controls/getLastBmcRebootTime')
-      .finally(() => this.endLoader());
+      .dispatch('controls/fetchManagersInfo')
+      .finally(() => {
+        this.stopManagersLoading();
+        // Auto-select the single option if available
+        if (this.hasOnlyOneOption) {
+          this.selectedResetType = { 
+            id: this.singleOption.id,
+            type: this.singleOption.type, 
+            manager: this.singleOption.label 
+          };
+        }
+      });
   },
   methods: {
     onClick() {
+      // Use either selected or single option
+      const resetOption = this.selectedResetType || 
+        (this.hasOnlyOneOption ? { 
+          id: this.singleOption.id,
+          type: this.singleOption.type, 
+          manager: this.singleOption.label 
+        } : null);
+      
+      if (!resetOption) {
+        this.errorToast(i18n.global.t('global.form.required'));
+        return;
+      }
+      
       this.$bvModal
-        .msgBoxConfirm(i18n.global.t('pageRebootBmc.modal.confirmMessage'), {
+        .msgBoxConfirm(i18n.global.t('pageRebootBmc.modal.dynamicConfirmMessage', {
+          manager: resetOption.manager,
+          type: resetOption.type
+        }), {
           title: i18n.global.t('pageRebootBmc.modal.confirmTitle'),
           okTitle: i18n.global.t('global.action.confirm'),
           cancelTitle: i18n.global.t('global.action.cancel'),
           autoFocusButton: 'ok',
         })
         .then((confirmed) => {
-          if (confirmed) this.rebootBmc();
+          if (confirmed) this.rebootBmc(resetOption);
         });
     },
-    rebootBmc() {
+    rebootBmc(resetOption = this.selectedResetType) {
+      const managerId = resetOption.id;
+      const resetType = resetOption.type;
+      
+      // Find the appropriate manager in Managers
+      const manager = this.Managers.find(m => m.id === managerId || m.displayName === resetOption.manager);
+      
+      if (!manager || !manager.resetOptions) {
+        this.errorToast(i18n.global.t('pageRebootBmc.toast.errorInvalidManager'));
+        return;
+      }
+      
+      // Create payload with target and parameters
+      const payload = {
+        target: manager.resetOptions.target,
+        parameters: { ResetType: resetType },
+        managerId: manager.id
+      };
+      
       this.$store
-        .dispatch('controls/rebootBmc')
+        .dispatch('controls/rebootBmc', payload)
         .then((message) => this.successToast(message))
         .catch(({ message }) => this.errorToast(message));
+    },
+    retryFetchManagers() {
+      // Clear the error state to hide the alert
+      this.$store.commit('controls/setManagersError', null);
+      
+      // Clear manager data to show spinner
+      this.$store.commit('controls/setManagers', []);
+      
+      // Set loading state to true
+      this.$store.commit('controls/setManagersLoading', true);
+      
+      // Start loader to show the spinner
+      this.startLoader();
+      this.$store
+        .dispatch('controls/fetchManagersInfo')
+        .finally(() => this.stopManagersLoading());
+    },
+    stopManagersLoading() {
+      this.$store.commit('controls/setManagersLoading', false);
+      this.endLoader()
     },
   },
 };
@@ -91,4 +291,8 @@ export default {
 <style lang="scss" scoped>
 @import '@/assets/styles/bmc/helpers/_index.scss';
 @import '@/assets/styles/bootstrap/_helpers.scss';
+
+.form-group {
+  margin-top: 1rem;
+}
 </style>

@@ -6,7 +6,6 @@ const GlobalStore = {
     assetTag: null,
     ManagerProvidingService: null,
     bmcPath: null,
-    bmcTime: null,
     modelType: null,
     serialNumber: null,
     serverStatus: '',
@@ -32,7 +31,6 @@ const GlobalStore = {
     powerState: (state) => state.powerState,
     isPowerOff: (state, getters) => getters.powerState?.toLowerCase() === 'off',
     bmcPath: (state) => state.bmcPath,
-    bmcTime: (state) => state.bmcTime,
     languagePreference: (state) => state.languagePreference,
     isUtcDisplay: (state) => state.isUtcDisplay,
     username: (state) => state.username,
@@ -49,7 +47,6 @@ const GlobalStore = {
     setModelType: (state, modelType) => (state.modelType = modelType),
     setSerialNumber: (state, serialNumber) =>
       (state.serialNumber = serialNumber),
-    setBmcTime: (state, bmcTime) => (state.bmcTime = bmcTime),
     setServerStatus: (state, serverState) => (state.serverStatus = serverState),
     setPowerState: (state, powerState) => (state.powerState = powerState),
     setServiceRoot: (state, serviceRoot) => {
@@ -166,7 +163,7 @@ const GlobalStore = {
     async getSystemPath({ state, commit, dispatch }) {
       if (state.systemPath) return state.systemPath;
       if (!state.bmcPath) await dispatch('getBmcPath');
-      if (!state.ManagerProvidingService) state.ManagerProvidingService = await api.get(state.bmcPath);
+      if (!state.ManagerProvidingService) state.ManagerProvidingService = (await api.get(state.bmcPath))?.data;
       if (!state.ManagerProvidingService) throw new Error('BMC not found');
       let systemPath = state.ManagerProvidingService?.Links?.ManagerForServers?.[0]?.['@odata.id'];
       if (!systemPath) {
@@ -176,6 +173,7 @@ const GlobalStore = {
         // Note: This is only set here if ManagerForServers is not found in the ManagerProvidingService
         systemPath = systems?.data?.Members?.[0]?.['@odata.id'];
       }
+      
       commit('setSystemPath', systemPath);
       return systemPath;
     },
