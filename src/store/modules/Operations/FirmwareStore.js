@@ -1,5 +1,6 @@
 import api from '@/store/api';
 import i18n from '@/i18n';
+import { startManagerStatusCheck } from '@/services/ManagerStatusService';
 
 function envInt(key, defaultValue) {
   if (process.env[key] == null) return defaultValue;
@@ -439,6 +440,13 @@ const FirmwareStore = {
         promise = this.dispatch('controls/rebootBmc');
       } else {
         promise = api.post(resetUri, { ResetType: resetType });
+        setTimeout(() => {
+          try {
+            startManagerStatusCheck();
+          } catch (error) {
+            console.log(error);
+          }
+        }, 5000);
       }
 
       return await promise

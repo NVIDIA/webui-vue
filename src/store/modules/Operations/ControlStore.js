@@ -95,7 +95,11 @@ const ControlStore = {
         // FIXME: Wait a moment for the BMC to reboot?
         .then(() => {
           setTimeout(() => {
-            startManagerStatusCheck();
+            try {
+              startManagerStatusCheck();
+            } catch (error) {
+              console.log(error);
+            }
           }, 5000);
           return i18n.t('pageRebootBmc.toast.successRebootStart')
         })

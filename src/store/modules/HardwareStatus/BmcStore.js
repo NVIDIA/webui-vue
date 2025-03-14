@@ -2,6 +2,25 @@ import api from '@/store/api';
 import i18n from '@/i18n';
 import Vue from 'vue';
 
+// Helper function to format uptime seconds into a human-readable string
+const formatUptime = (seconds) => {
+  seconds = Number(seconds);
+  
+  const d = Math.floor(seconds / (3600 * 24));
+  const h = Math.floor((seconds % (3600 * 24)) / 3600);
+  const m = Math.floor((seconds % 3600) / 60);
+  const s = Math.floor(seconds % 60);
+  
+  const dDisplay = d > 0 ? d + (d == 1 ? ' day, ' : ' days, ') : '';
+  const hDisplay = h > 0 ? h + (h == 1 ? ' hr ' : ' hrs ') : '';
+  const mDisplay = m > 0 ? m + (m == 1 ? ' min, ' : ' mins, ') : '';
+  const sDisplay = s > 0 ? s + (s == 1 ? ' sec' : ' secs') : '';
+  
+  // Combine the parts and trim any trailing commas and spaces
+  const result = (dDisplay + hDisplay + mDisplay + sDisplay).replace(/,\s*$/, '');
+  return result.length > 0 ? result : '0 secs';
+};
+
 const BmcStore = {
   namespaced: true,
   state: {
@@ -88,7 +107,45 @@ const BmcStore = {
         const bmcPromises = Members.map((member, idx) =>
           api.get(member['@odata.id']).then(async ({ data }) => {
             commit('setBmcInfo', { ...data, index: idx });
-            const upTimeData = await dispatch('calculateUpTime', { currentDate: data.DateTime, lastResetTime: data.LastResetTime });
+            
+            // Check if UptimeSeconds is available in any OEM section
+            let upTimeData;
+            let uptimeSeconds = null;
+            let date = null;
+            
+            // Look for UptimeSeconds in any OEM provider
+            if (data.Oem) {
+              // Check each OEM provider
+              for (const provider in data.Oem) {
+                if (data.Oem[provider]?.UptimeSeconds !== undefined) {
+                  uptimeSeconds = data.Oem[provider].UptimeSeconds;
+                  date = new Date(data.DateTime);
+                  break;
+                }
+              }
+            }
+            
+            if (uptimeSeconds !== null && !isNaN(date.getTime())) {
+              // Use the server-provided uptime value
+              const lastResetTime = new Date(date.getTime() - (uptimeSeconds * 1000));
+              
+              // Format the uptime using the helper function
+              const upTime = formatUptime(uptimeSeconds);
+              
+              upTimeData = { 
+                date, 
+                lastResetTime, 
+                upTime,
+                uptimeSeconds
+              };
+            } else {
+              // Calculate uptime manually if UptimeSeconds is not available
+              upTimeData = await dispatch('calculateUpTime', { 
+                currentDate: data.DateTime, 
+                lastResetTime: data.LastResetTime 
+              });
+            }
+            
             data = { ...data, ...upTimeData };
             if (bmcPath === member['@odata.id']) {
               commit('setBmcTime', upTimeData.date);
@@ -153,30 +210,22 @@ const BmcStore = {
     async calculateUpTime({ commit }, { currentDate, lastResetTime}) {
       // Get BMC path from the global store if needed
       const date = new Date(currentDate);
-
-      //commit('setBmcTime', date);
-
       const lastDate = new Date(lastResetTime);
-    
       const milliseconds = parseInt(date - lastDate);
       if (milliseconds < 0) {
         commit('setBmcUpTime', '0/NA');
-        return '0/NA';
+        return { date, lastResetTime: lastDate, upTime: '0/NA', uptimeSeconds: 0 };
       } 
 
-      var seconds = milliseconds / 1000;
-      seconds = Number(seconds);
-
-      var d = Math.floor(seconds / (3600 * 24));
-      var h = Math.floor((seconds % (3600 * 24)) / 3600);
-      var m = Math.floor((seconds % 3600) / 60);
-      var s = Math.floor(seconds % 60);
-
-      var dDisplay = d > 0 ? d + (d == 1 ? ' day, ' : ' days, ') : '';
-      var hDisplay = h > 0 ? h + (h == 1 ? ' hr ' : ' hrs ') : '';
-      var mDisplay = m > 0 ? m + (m == 1 ? ' min, ' : ' mins, ') : '';
-      var sDisplay = s > 0 ? s + (s == 1 ? ' sec' : ' secs') : '';
-      return { date, lastResetTime: lastDate, upTime: dDisplay + hDisplay + mDisplay + sDisplay };
+      const seconds = milliseconds / 1000;
+      const upTime = formatUptime(seconds);
+      
+      return { 
+        date, 
+        lastResetTime: lastDate, 
+        upTime,
+        uptimeSeconds: seconds
+      };
     },
     async getBmcUpTime({ dispatch, state }) {
       await dispatch('getBmcInfo');
