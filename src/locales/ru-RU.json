@@ -439,6 +439,8 @@
         "quicklinkTitle": "Быстрые ссылки к компонентам оборудования",
         "assemblies": "Сборки",
         "system": "Система",
+        "networkAdapters": "Сетевые адаптеры системы",
+        "drives": "Дисковые накопители",
         "systemIndicator": {
             "powerStatus": "Состояние питания",
             "identifyLed": "Идентификационный LED системы",
@@ -522,7 +524,14 @@
             "productProductName": "Название продукта",
             "productPartNumber": "Номер детали продукта",
             "productSerialNumber": "Серийный номер продукта",
-            "productVersion": "Версия продукта"
+            "productVersion": "Версия продукта",
+            "capableSpeed": "Допустимая скорость",
+            "formFactor": "Форм-фактор",
+            "statusIndicator": "Индикатор состояния",
+            "mediaType": "Тип носителя",
+            "failurePredicted": "Прогнозируемый сбой",
+            "capacityBytes": "Емкость",
+            "predictedLifeLeft": "Прогнозируемый оставшийся срок службы"
         },
         "toast": {
             "errorDisableIdentifyLed": "Ошибка выключения идентификационного LED.",
@@ -1400,7 +1409,15 @@
         "Percent": "%",
         "RPM": "об/мин",
         "V": "В",
-        "W": "Вт"
+        "W": "Вт",
+        "byte": "Б",
+        "kilobyte": "кБ",
+        "megabyte": "МБ",
+        "gigabyte": "ГБ",
+        "terabyte": "ТБ",
+        "petabyte": "ПБ",
+        "gbps": "Гбит/с",
+        "percent": "%"
     },
     "message": {
         "errorDetails": "Детали ошибки"

@@ -27,6 +27,7 @@ import BmcStore from './modules/HardwareStatus/BmcStore';
 import ProcessorStore from './modules/HardwareStatus/ProcessorStore';
 import AssemblyStore from './modules/HardwareStatus/AssemblyStore';
 import NetworkAdapterStore from './modules/HardwareStatus/NetworkAdapterStore';
+import DriveStore from './modules/HardwareStatus/DriveStore';
 import PostCodeLogsStore from './modules/Logs/PostCodeLogsStore';
 import PoliciesStore from './modules/SecurityAndAccess/PoliciesStore';
 import FactoryResetStore from './modules/Operations/FactoryResetStore';
@@ -71,6 +72,7 @@ export default new Vuex.Store({
     processors: ProcessorStore,
     assemblies: AssemblyStore,
     networkAdapters: NetworkAdapterStore,
+    drives: DriveStore,
     postCodeLogs: PostCodeLogsStore,
     virtualMedia: VirtualMediaStore,
     policies: PoliciesStore,

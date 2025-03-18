@@ -442,6 +442,7 @@
         "system": "System",
         "assemblies": "Assemblies",
         "networkAdapters": "System Network Adapters",
+        "drives": "Drives",
         "systemIndicator": {
             "powerStatus": "Power status",
             "identifyLed": "System identify LED",
@@ -459,6 +460,7 @@
             "boardPartNumber": "Board Part Number",
             "boardProductName": "Board Product",
             "boardSerialNumber": "Board Serial Number",
+            "capacityBytes": "Capacity",
             "capacityMiB": "Capacity",
             "chassisPartNumber": "Chassis Part Number",
             "chassisSerialNumber": "Chassis Serial Number",
@@ -471,6 +473,7 @@
             "efficiencyPercent": "Efficiency",
             "enabled": "Enabled",
             "errorCorrection": "Error correction",
+            "failurePredicted": "Failure predicted",
             "fanSpeed": "Fan speed",
             "firmwareVersion": "Firmware version",
             "graphicalConsole": "Graphical console",
@@ -487,6 +490,7 @@
             "maxConcurrentSessions": "Max concurrent sessions",
             "maxSpeedMHz": "Max speed",
             "maxPowerWatts": "Max power",
+            "mediaType": "Media type",
             "memoryType": "Memory type",
             "memorySummary": "Memory summary",
             "minPowerWatts": "Min power",
@@ -498,6 +502,7 @@
             "physicalContext": "Physical context",
             "power": "Power",
             "powerInputWatts": "Power input",
+            "predictedLifeLeft": "Predicted media life left",
             "processorArchitecture": "Processor architecture",
             "processorSummary": "Processor summary",
             "processorType": "Processor type",
@@ -508,6 +513,7 @@
             "productPartNumber": "Product Part Number",
             "productSerialNumber": "Product Serial Number",
             "productVersion": "Product Version",
+            "protocol": "Protocol",
             "rankCount": "Rank count",
             "serialConsole": "Serial console",
             "serialNumber": "Serial number",
@@ -524,7 +530,10 @@
             "totalThreads": "Total threads",
             "uuid": "UUID",
             "vendor": "Vendor",
-            "version": "Version"
+            "version": "Version",
+            "capableSpeed": "Capable speed",
+            "formFactor": "Form factor",
+            "statusIndicator": "Status indicator"
         },
         "toast": {
             "errorDisableIdentifyLed": "Error disabling Identify LED.",
@@ -1393,6 +1402,14 @@
         "Percent": "%",
         "RPM": "RPM",
         "V": "V",
-        "W": "W"
+        "W": "W",
+        "byte": "B",
+        "kilobyte": "kB",
+        "megabyte": "MB",
+        "gigabyte": "GB",
+        "terabyte": "TB",
+        "petabyte": "PB",
+        "gbps": "Gb/s",
+        "percent": "%"
     }
 }
