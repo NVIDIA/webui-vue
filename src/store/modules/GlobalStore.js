@@ -133,7 +133,7 @@ const GlobalStore = {
         console.log(error);
 
         // Ensure eventLog store is initialized
-        if (!rootGetters['eventLog/isInitialized']) {
+        if (!rootGetters['eventLog/isInitialized'] || rootGetters['eventLog/healthStatus'] === "") {
           await dispatch('eventLog/initializeLogStore', null, { root: true });
           // Wait for log data to be fetched
           await dispatch('eventLog/getLogData', null, { root: true });

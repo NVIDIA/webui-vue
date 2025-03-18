@@ -443,6 +443,7 @@
         "system": "系统",
         "assemblies": "组件",
         "networkAdapters": "系统网络适配器",
+        "drives": "驱动器",
         "systemIndicator": {
             "powerStatus": "电源状态",
             "identifyLed": "系统识别 LED",
@@ -525,7 +526,14 @@
             "totalThreads": "总线程数",
             "uuid": "UUID",
             "vendor": "厂商",
-            "version": "版本"
+            "version": "版本",
+            "capableSpeed": "能力速度",
+            "formFactor": "尺寸规格",
+            "statusIndicator": "状态指示器",
+            "mediaType": "媒体类型",
+            "failurePredicted": "故障预测",
+            "capacityBytes": "容量",
+            "predictedLifeLeft": "预测剩余媒体寿命"
         },
         "toast": {
             "errorDisableIdentifyLed": "禁用识别 LED 时出错。",
@@ -1405,6 +1413,14 @@
         "Percent": "%",
         "RPM": "RPM",
         "V": "V",
-        "W": "W"
+        "W": "W",
+        "byte": "B",
+        "kilobyte": "kB",
+        "megabyte": "MB",
+        "gigabyte": "GB",
+        "terabyte": "TB",
+        "petabyte": "PB",
+        "gbps": "Gb/s",
+        "percent": "%"
     }
 }

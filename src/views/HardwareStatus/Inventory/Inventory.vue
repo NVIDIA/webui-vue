@@ -49,6 +49,9 @@
 
     <!-- NetworkAdapter table -->
     <table-network-adapter ref="networkAdapter" v-bind:show-leds="showLeds" />
+
+    <!-- Drives table -->
+    <table-drives ref="drives" v-bind:show-leds="showLeds" />
   </b-container>
 </template>
 
@@ -64,6 +67,7 @@ import TableChassis from './InventoryTableChassis';
 import TableProcessors from './InventoryTableProcessors';
 import TableAssembly from './InventoryTableAssembly';
 import TableNetworkAdapter from './InventoryTableNetworkAdapter';
+import TableDrives from './InventoryTableDrives';
 import LoadingBarMixin from '@/components/Mixins/LoadingBarMixin';
 import PageSection from '@/components/Global/PageSection';
 import JumpLink16 from '@carbon/icons-vue/es/jump-link/16';
@@ -85,6 +89,7 @@ export default {
     TableProcessors,
     TableAssembly,
     TableNetworkAdapter,
+    TableDrives,
     PageSection,
     JumpLink: JumpLink16,
   },
@@ -166,6 +171,12 @@ export default {
           href: '#networkAdapter',
           linkText: i18n.global.t('pageInventory.networkAdapters'),
         },
+        {
+          id: 'drives',
+          dataRef: 'drives',
+          href: '#drives',
+          linkText: i18n.global.t('pageInventory.drives'),
+        },
       ],
     };
   },
@@ -238,6 +249,9 @@ export default {
         resolve(),
       );
     });
+    const drivesTablePromise = new Promise((resolve) => {
+      this.$root.$on('hardware-status-drives-complete', () => resolve());
+    });
     // Combine all child component Promises to indicate
     // when page data load complete
     Promise.all([
@@ -251,6 +265,7 @@ export default {
       systemTablePromise,
       assemblyTablePromise,
       networkAdapterTablePromise,
+      drivesTablePromise,
     ]).finally(() => {
       this.endLoader();
       this.validateLinks();
