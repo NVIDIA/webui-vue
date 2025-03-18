@@ -72,13 +72,23 @@ const ControlStore = {
         })
         .catch((error) => console.log(error));
     },
-    async getLastBmcRebootTime({ commit }) {
-      return api
-        .get(`${await this.dispatch('global/getBmcPath')}`)
-        .then((response) => {
-          const lastBmcReset = response.data.LastResetTime;
-          const lastBmcRebootTime = new Date(lastBmcReset);
-          commit('setLastBmcRebootTime', lastBmcRebootTime);
+    async rebootBmc({ commit, dispatch }, payload) {
+      // Extract target and parameters from payload
+      const { target, parameters= { ResetType: 'GracefulRestart' } } = payload;
+      const managerId = payload.managerId;
+
+      return await api
+        .post(target, parameters)
+        // FIXME: Wait a moment for the BMC to reboot?
+        .then(() => {
+          setTimeout(() => {
+            try {
+              startManagerStatusCheck();
+            } catch (error) {
+              console.log(error);
+            }
+          }, 5000);
+          return i18n.global.t('pageRebootBmc.toast.successRebootStart')
         })
         .catch((error) => console.log(error));
     },
