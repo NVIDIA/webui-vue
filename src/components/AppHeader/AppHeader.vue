@@ -78,7 +78,7 @@
                 {{
                   $t('pageServerPowerOperations.systemStatus') +
                   ' : ' +
-                  serverStatus
+                  (serverStatus && serverStatus.State ? serverStatus.State : '')
                 }}
               </div>
             </b-tooltip>

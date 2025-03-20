@@ -5,6 +5,7 @@
             "cancel": "Cancel",
             "clearAll": "Clear all",
             "confirm": "Confirm",
+            "connect": "Connect",
             "copy": "Copy",
             "delete": "Delete",
             "deleteAll": "Delete all",
@@ -63,6 +64,14 @@
             "valueMustBeBetween": "Value must be between %{min} – %{max}",
             "submitting": "Submitting..."
         },
+        "powerState": {
+            "On": "On",
+            "Off": "Off",
+            "PoweringOn": "Powering On",    
+            "PoweringOff": "Powering Off",
+            "Paused": "Paused",
+            "Unknown": "Unknown"
+        },
         "status": {
             "copied": "Copied",
             "diagnosticMode": "Diagnostic mode",
@@ -75,6 +84,21 @@
             "success": "Success",
             "warning": "Warning",
             "informational": "Informational"
+        },
+        "statusState": {
+            "Enabled": "Enabled",
+            "Disabled": "Disabled",
+            "StandbyOffline": "Standby Offline",
+            "StandbySpare": "Standby Spare",
+            "InTest": "In Test",
+            "Starting": "Starting",
+            "Absent": "Absent",
+            "UnavailableOffline": "Unavailable Offline",
+            "Deferring": "Deferring",
+            "Quiesced": "Quiesced",
+            "Updating": "Updating",
+            "Qualified": "Qualified",
+            "Degraded": "Degraded"
         },
         "table": {
             "collapseTableRow": "Collapse table row",
@@ -984,10 +1008,16 @@
     },
     "pageSerialOverLan": {
         "alert": {
-            "disconnectedAlertMessage": "System must be powered on to connect"
+            "disconnectedAlertMessage": "System must be powered on to use console",
+            "errorAlertMessage": "Error with console connection"
         },
         "connected": "Connected",
+        "connecting": "Connecting...",
+        "connectionError": "Connection Error",
+        "connectionClosedUnexpectedly": "Connection closed unexpectedly",
+        "failedToConnect": "Failed to connect to serial console",
         "disconnected": "Disconnected",
+        "error": "Error",
         "openNewTab": "Open in new tab",
         "status": "Status",
         "subTitle": "SOL console redirects the server's serial port output to this window."

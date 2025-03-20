@@ -84,11 +84,11 @@ export default {
     };
   },
   computed: {
-    serverStatus() {
-      return this.$store.getters['global/serverStatus'];
+    powerState() {
+      return this.$store.getters['global/powerState'];
     },
     isServerOff() {
-      return this.serverStatus === 'off' ? true : false;
+      return this.powerState && this.powerState === 'Off' ? true : false;
     },
   },
   validations: {

@@ -3,13 +3,8 @@ import api from '@/store/api';
 const GlobalStore = {
   namespaced: true,
   state: {
-    assetTag: null,
     ManagerProvidingService: null,
     bmcPath: null,
-    modelType: null,
-    serialNumber: null,
-    serverStatus: '',
-    powerState: '',
     languagePreference: localStorage.getItem('storedLanguage') || 'en-US',
     isUtcDisplay: localStorage.getItem('storedUtcDisplay')
       ? JSON.parse(localStorage.getItem('storedUtcDisplay'))
@@ -20,16 +15,16 @@ const GlobalStore = {
     userPrivilege: null,
     serviceRoot: null,
     systemPath: null,
+    system: null,
     chassisPath: null,
-    systemId: null,
   },
   getters: {
-    assetTag: (state) => state.assetTag,
-    modelType: (state) => state.modelType,
-    serialNumber: (state) => state.serialNumber,
-    serverStatus: (state) => state.serverStatus,
-    powerState: (state) => state.powerState,
-    isPowerOff: (state) => state.powerState.toLowerCase() === 'off',
+    assetTag: (state) => state.system?.AssetTag || null,
+    modelType: (state) => state.system?.Model || null,
+    serialNumber: (state) => state.system?.SerialNumber || null,
+    serverStatus: (state) => state.system?.Status || null,
+    powerState: (state) => state.system?.PowerState || null,
+    isPowerOff: (state) => state.powerState?.toLowerCase() === 'off',
     bmcPath: (state) => state.bmcPath,
     languagePreference: (state) => state.languagePreference,
     isUtcDisplay: (state) => state.isUtcDisplay,
@@ -40,15 +35,10 @@ const GlobalStore = {
     serviceRoot: (state) => state.serviceRoot,
     systemPath: (state) => state.systemPath,
     chassisPath: (state) => state.chassisPath,
-    systemId: (state) => state.systemId,
+    systemId: (state) => state.system?.Id || null,
+    locationIndicatorActive: (state) => state.system?.LocationIndicatorActive || null,
   },
   mutations: {
-    setAssetTag: (state, assetTag) => (state.assetTag = assetTag),
-    setModelType: (state, modelType) => (state.modelType = modelType),
-    setSerialNumber: (state, serialNumber) =>
-      (state.serialNumber = serialNumber),
-    setServerStatus: (state, serverState) => (state.serverStatus = serverState),
-    setPowerState: (state, powerState) => (state.powerState = powerState),
     setServiceRoot: (state, serviceRoot) => {
       state.serviceRoot = serviceRoot.data;
       state.bmcPath = serviceRoot.data?.ManagerProvidingService?.['@odata.id'];
@@ -69,7 +59,7 @@ const GlobalStore = {
     },
     setSystemPath: (state, systemPath) => (state.systemPath = systemPath),
     setChassisPath: (state, chassisPath) => (state.chassisPath = chassisPath),
-    setSystemId: (state, systemId) => (state.systemId = systemId),
+    setSystem: (state, system) => (state.system = system),
   },
   actions: {
     async fetchServiceRoot({ commit }) {
@@ -81,15 +71,9 @@ const GlobalStore = {
     },
     async fetchHealthStatus({ commit, dispatch, state, rootGetters }) {
       try {
-        // Ensure serviceRoot is available
-        if (!state.serviceRoot) await dispatch('fetchServiceRoot');
-
-        // FIRST See if the root system has a valid Status.healthRollup property
-        if (!state.systemPath) await dispatch('getSystemPath');
-        const systemResponse = await api.get(state.systemPath);
-        const healthRollup = systemResponse?.data?.Status?.HealthRollup;
+        const systemResponse = await dispatch('getSystemInfo');
+        const healthRollup = systemResponse?.Status?.HealthRollup;
         if (healthRollup) {
-          commit('setHealthStatus', healthRollup);
           return healthRollup;
         }
 
@@ -161,6 +145,8 @@ const GlobalStore = {
       return state.bmcPath;
     },
     async getSystemPath({ state, commit, dispatch }) {
+      // Ensure serviceRoot is available
+      if (!state.serviceRoot) await dispatch('fetchServiceRoot');
       if (state.systemPath) return state.systemPath;
       if (!state.bmcPath) await dispatch('getBmcPath');
       if (!state.ManagerProvidingService) state.ManagerProvidingService = (await api.get(state.bmcPath))?.data;
@@ -194,28 +180,18 @@ const GlobalStore = {
       return chassisPath;
     },
     async getSystemInfo({ commit, dispatch, state }) {
+      // See if the root system has a valid Status.healthRollup property
       if (!state.systemPath) await dispatch('getSystemPath');
       return api
         .get(state.systemPath)
-        .then(
-          ({
-            data: {
-              AssetTag,
-              Id,
-              Model,
-              PowerState,
-              SerialNumber,
-              Status: { State } = {},
-            },
-          } = {}) => {
-            commit('setAssetTag', AssetTag);
-            commit('setSerialNumber', SerialNumber);
-            commit('setModelType', Model);
-            commit('setServerStatus', State);
-            commit('setPowerState', PowerState);
-            commit('setSystemId', Id);
-          },
-        )
+        .then(({ data }) => {
+          commit('setSystem', data);
+          const healthRollup = data?.Status?.HealthRollup;
+          if (healthRollup) {
+            commit('setHealthStatus', healthRollup);
+          }
+          return data;
+        })
         .catch((error) => console.log(error));
     },
   },

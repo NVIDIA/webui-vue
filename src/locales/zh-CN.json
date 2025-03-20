@@ -5,6 +5,7 @@
         "cancel": "取消",
         "clearAll": "清除所有",
         "confirm": "确认",
+        "connect": "连接",
         "copy": "复制",
         "delete": "删除",
         "deleteAll": "删除所有",
@@ -64,6 +65,14 @@
         "valueMustBeBetween": "值必须在 %{min} – %{max} 之间",
         "submitting": "提交中..."
       },
+      "powerState": {
+        "On": "开启",
+        "Off": "关闭",
+        "PoweringOn": "开机中",    
+        "PoweringOff": "关机中",
+        "Paused": "暂停",
+        "Unknown": "未知"
+      },
       "status": {
         "copied": "已复制",
         "diagnosticMode": "诊断模式",
@@ -76,6 +85,21 @@
         "success": "成功",
         "warning": "告警",
         "informational": "信息"
+      },
+      "statusState": {
+        "Enabled": "已启用",
+        "Disabled": "已禁用",
+        "StandbyOffline": "离线备用",
+        "StandbySpare": "备用",
+        "InTest": "测试中",
+        "Starting": "启动中",
+        "Absent": "缺失",
+        "UnavailableOffline": "离线不可用",
+        "Deferring": "延迟中",
+        "Quiesced": "静默状态",
+        "Updating": "更新中",
+        "Qualified": "合格",
+        "Degraded": "降级"
       },
       "table": {
         "collapseTableRow": "折叠表格行",
@@ -995,10 +1019,16 @@
     },
     "pageSerialOverLan": {
         "alert": {
-            "disconnectedAlertMessage": "系统必须开机才能连接"
+            "disconnectedAlertMessage": "系统必须开机才能连接",
+            "errorAlertMessage": "控制台连接错误"
         },
         "connected": "已连接",
+        "connecting": "连接中...",
+        "connectionError": "连接错误",
+        "connectionClosedUnexpectedly": "连接意外关闭",
+        "failedToConnect": "无法连接到串行控制台",
         "disconnected": "已断开连接",
+        "error": "错误",
         "openNewTab": "在新标签页中打开",
         "status": "状态",
         "subTitle": "SOL 控制台将服务器的串口输出重定向到此窗口。"

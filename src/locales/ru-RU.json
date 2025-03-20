@@ -5,6 +5,7 @@
             "cancel": "Отменить",
             "clearAll": "Очистить всё",
             "confirm": "Подтвердить",
+            "connect": "Подключить",
             "copy": "Копировать",
             "delete": "Удалить",
             "deleteAll": "Удалить всё",
@@ -64,6 +65,14 @@
             "valueMustBeBetween": "Значение должно быть между %{min} – %{max}",
             "submitting": "Отправка..."
         },
+        "powerState": {
+            "On": "Вкл.",
+            "Off": "Выкл.",
+            "PoweringOn": "Включение",    
+            "PoweringOff": "Выключение",
+            "Paused": "Приостановлено",
+            "Unknown": "Неизвестно"
+        },
         "status": {
             "copied": "Скопировано",
             "diagnosticMode": "Самодиагностика",
@@ -76,6 +85,21 @@
             "success": "Успешно",
             "warning": "Предупреждение",
             "informational": "Информация"
+        },
+        "statusState": {
+            "Enabled": "Включено",
+            "Disabled": "Отключено",
+            "StandbyOffline": "Ожидание офлайн",
+            "StandbySpare": "Запасной режим ожидания",
+            "InTest": "Тестирование",
+            "Starting": "Запуск",
+            "Absent": "Отсутствует",
+            "UnavailableOffline": "Недоступен офлайн",
+            "Deferring": "Отложено",
+            "Quiesced": "Приостановлено",
+            "Updating": "Обновление",
+            "Qualified": "Квалифицировано",
+            "Degraded": "Ухудшено"
         },
         "table": {
             "collapseTableRow": "Свернуть",
@@ -991,10 +1015,16 @@
     },
     "pageSerialOverLan": {
         "alert": {
-            "disconnectedAlertMessage": "Система должна быть включена для соединения"
+            "disconnectedAlertMessage": "Система должна быть включена для соединения",
+            "errorAlertMessage": "Ошибка соединения с консолью"
         },
         "connected": "Подключено",
+        "connecting": "Подключение...",
+        "connectionError": "Ошибка подключения",
+        "connectionClosedUnexpectedly": "Соединение неожиданно закрылось",
+        "failedToConnect": "Не удалось подключиться к последовательной консоли",
         "disconnected": "Отключено",
+        "error": "Ошибка",
         "openNewTab": "Открыть в новом окне",
         "status": "Статус",
         "subTitle": "SOL консоль перенаправляет вывод последовательного порта сервера в это окно."
