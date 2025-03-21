@@ -11,7 +11,7 @@
               <dl>
                 <dt>{{ $t('pageServerPowerOperations.systemStatus') }}</dt>
                 <dd data-test-id="powerServerOps-text-hostStatus">
-                  {{ serverStatus }}
+                  {{ serverStatus ? $t(`global.statusState.${serverStatus.State}`) : '' }}
                 </dd>
               </dl>
             </b-col>
@@ -19,7 +19,7 @@
               <dl>
                 <dt>{{ $t('pageServerPowerOperations.powerState') }}</dt>
                 <dd data-test-id="powerServerOps-text-powerState">
-                  {{ powerState }}
+                  {{ powerState ? $t(`global.powerState.${powerState}`) : '' }}
                 </dd>
               </dl>
             </b-col>

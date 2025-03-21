@@ -7,9 +7,9 @@
       <b-row>
         <b-col sm="6" md="3">
           <dl>
-            <dt>{{ $t('pageInventory.systemIndicator.powerStatus') }}</dt>
+            <dt>{{ $t('pageServerPowerOperations.powerState') }}</dt>
             <dd>
-              {{ $t(powerStatus) }}
+              {{ powerState ? $t(`global.powerState.${powerState}`) : '' }}
             </dd>
           </dl>
         </b-col>
@@ -21,12 +21,12 @@
             <dd>
               <b-form-checkbox
                 id="identifyLedSwitchService"
-                v-model="systems.locationIndicatorActive"
+                v-model="locationIndicatorActive"
                 data-test-id="inventoryService-toggle-identifyLed"
                 switch
                 @change="toggleIdentifyLedSwitch"
               >
-                <span v-if="systems.locationIndicatorActive">
+                <span v-if="locationIndicatorActive">
                   {{ $t('global.status.on') }}
                 </span>
                 <span v-else>{{ $t('global.status.off') }}</span>
@@ -53,25 +53,18 @@ export default {
     };
   },
   computed: {
-    systems() {
-      let systemData = this.$store.getters['system/systems'][0];
-      return systemData ? systemData : {};
+    locationIndicatorActive() {
+      return this.$store.getters['global/locationIndicatorActive'];
     },
-    serverStatus() {
-      return this.$store.getters['global/serverStatus'];
-    },
-    powerStatus() {
-      if (this.serverStatus === 'unreachable') {
-        return `global.status.off`;
-      }
-      return `global.status.${this.serverStatus}`;
+    powerState() {
+      return this.$store.getters['global/powerState'] || `global.status.off`;
     },
     isLocationIndicatorUndefined() {
-      return typeof this.systems.locationIndicatorActive === 'undefined';
+      return typeof this.locationIndicatorActive === 'undefined';
     },
   },
   created() {
-    this.$store.dispatch('system/getSystem').finally(() => {
+    this.$store.dispatch('global/getSystemInfo').finally(() => {
       // Emit initial data fetch complete to parent component
       this.$root.$emit('hardware-status-service-complete');
     });
