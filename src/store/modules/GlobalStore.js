@@ -17,6 +17,7 @@ const GlobalStore = {
     systemPath: null,
     system: null,
     chassisPath: null,
+    lastPowerOperationTime: null,
   },
   getters: {
     assetTag: (state) => state.system?.AssetTag || null,
@@ -37,6 +38,7 @@ const GlobalStore = {
     chassisPath: (state) => state.chassisPath,
     systemId: (state) => state.system?.Id || null,
     locationIndicatorActive: (state) => state.system?.LocationIndicatorActive || null,
+    lastPowerOperationTime: (state) => state.lastPowerOperationTime,
   },
   mutations: {
     setServiceRoot: (state, serviceRoot) => {
@@ -60,6 +62,8 @@ const GlobalStore = {
     setSystemPath: (state, systemPath) => (state.systemPath = systemPath),
     setChassisPath: (state, chassisPath) => (state.chassisPath = chassisPath),
     setSystem: (state, system) => (state.system = system),
+    setLastPowerOperationTime: (state, lastPowerOperationTime) => 
+      (state.lastPowerOperationTime = lastPowerOperationTime),
   },
   actions: {
     async fetchServiceRoot({ commit }) {
@@ -180,15 +184,21 @@ const GlobalStore = {
       return chassisPath;
     },
     async getSystemInfo({ commit, dispatch, state }) {
-      // See if the root system has a valid Status.healthRollup property
       if (!state.systemPath) await dispatch('getSystemPath');
       return api
         .get(state.systemPath)
         .then(({ data }) => {
           commit('setSystem', data);
+          // See if the root system has a valid Status.healthRollup property
           const healthRollup = data?.Status?.HealthRollup;
           if (healthRollup) {
             commit('setHealthStatus', healthRollup);
+          }
+          // See if the root system has a valid LastResetTime property
+          const lastReset = data?.LastResetTime;
+          if (lastReset) {
+            const lastPowerOperationTime = new Date(lastReset);
+            commit('setLastPowerOperationTime', lastPowerOperationTime);
           }
           return data;
         })

@@ -1,6 +1,7 @@
 import api from '@/store/api';
 import i18n from '@/i18n';
 import { startManagerStatusCheck } from '@/services/ManagerStatusService';
+import redfishUtils from '@/utilities/redfishUtils';
 /**
  * Watch for serverStatus changes in GlobalStore module
  * to set isOperationInProgress state
@@ -14,6 +15,7 @@ import { startManagerStatusCheck } from '@/services/ManagerStatusService';
 const checkForServerState = function (serverState) {
   let unwatch = null;
   let timer = null;
+  const store = this;
 
   const cleanup = () => {
     if (unwatch) unwatch();
@@ -21,7 +23,7 @@ const checkForServerState = function (serverState) {
   };
 
   return new Promise((resolve) => {
-    unwatch = this.watch(
+    unwatch = store.watch(
       (state) => state.global.serverStatus,
       (value) => {
         if (value && value.State === serverState) {
@@ -32,10 +34,10 @@ const checkForServerState = function (serverState) {
     );
 
     timer = setInterval(() => {
-      this.dispatch('global/getSystemInfo');
+      store.dispatch('global/getSystemInfo', null, { root: true });
     }, 5000);
 
-    this.dispatch('global/getSystemInfo');
+    store.dispatch('global/getSystemInfo', null, { root: true });
   }).finally(cleanup);
 };
 
@@ -43,24 +45,25 @@ const ControlStore = {
   namespaced: true,
   state: {
     isOperationInProgress: false,
-    lastPowerOperationTime: null,
     Managers: [],
     managersLoading: false,
     managersError: null,
+    systemActions: {}, // Store all available actions with their options
+    systemActionsLoading: false,
+    systemActionsError: null
   },
   getters: {
     isOperationInProgress: (state) => state.isOperationInProgress,
-    lastPowerOperationTime: (state) => state.lastPowerOperationTime,
     Managers: (state) => state.Managers,
     isManagersLoading: (state) => state.managersLoading,
     managersError: (state) => state.managersError,
+    systemActions: (state) => state.systemActions,
+    isSystemActionsLoading: (state) => state.systemActionsLoading,
+    systemActionsError: (state) => state.systemActionsError
   },
   mutations: {
     setOperationInProgress: (state, inProgress) => {
       state.isOperationInProgress = inProgress;
-    },
-    setLastPowerOperationTime: (state, lastPowerOperationTime) => {
-      state.lastPowerOperationTime = lastPowerOperationTime;
     },
     setManagers: (state, Managers) => {
       state.Managers = [...Managers];
@@ -71,24 +74,26 @@ const ControlStore = {
     setManagersError: (state, error) => {
       state.managersError = error;
     },
+    setSystemActions: (state, actions) => {
+      state.systemActions = { ...actions };
+    },
+    addSystemAction: (state, { actionName, options }) => {
+      state.systemActions = { 
+        ...state.systemActions, 
+        [actionName]: options 
+      };
+    },
+    setSystemActionsLoading: (state, isLoading) => {
+      state.systemActionsLoading = isLoading;
+    },
+    setSystemActionsError: (state, error) => {
+      state.systemActionsError = error;
+    }
   },
   actions: {
-    async getLastPowerOperationTime({ commit }) {
-      return await api
-        .get(`${await this.dispatch('global/getSystemPath')}`)
-        .then((response) => {
-          const lastReset = response.data.LastResetTime;
-          if (lastReset) {
-            const lastPowerOperationTime = new Date(lastReset);
-            commit('setLastPowerOperationTime', lastPowerOperationTime);
-          }
-        })
-        .catch((error) => console.log(error));
-    },
     async rebootBmc({ commit, dispatch }, payload) {
       // Extract target and parameters from payload
       const { target, parameters= { ResetType: 'GracefulRestart' } } = payload;
-      const managerId = payload.managerId;
 
       return await api
         .post(target, parameters)
@@ -108,88 +113,143 @@ const ControlStore = {
           throw new Error(i18n.t('pageRebootBmc.toast.errorRebootStart'));
         });
     },
-    async serverPowerOn({ dispatch, commit }) {
-      const data = { ResetType: 'On' };
-      dispatch('serverPowerChange', data);
-      await checkForServerState.bind(this, 'Enabled')();
-      commit('setOperationInProgress', false);
-      dispatch('getLastPowerOperationTime');
-    },
-    async serverSoftReboot({ dispatch, commit }) {
-      const data = { ResetType: 'GracefulRestart' };
-      dispatch('serverPowerChange', data);
-      await checkForServerState.bind(this, 'Enabled')();
-      commit('setOperationInProgress', false);
-      dispatch('getLastPowerOperationTime');
-    },
-    async serverHardReboot({ dispatch, commit }) {
-      const data = { ResetType: 'ForceRestart' };
-      dispatch('serverPowerChange', data);
-      await checkForServerState.bind(this, 'Enabled')();
-      commit('setOperationInProgress', false);
-      dispatch('getLastPowerOperationTime');
-    },
-    async serverPowerCycle({ dispatch, commit }) {
-      const data = { ResetType: 'PowerCycle' };
-      dispatch('serverPowerChange', data);
-      await checkForServerState.bind(this, 'Enabled')();
-      commit('setOperationInProgress', false);
-      dispatch('getLastPowerOperationTime');
-    },
-    async serverSoftPowerOff({ dispatch, commit }) {
-      const data = { ResetType: 'GracefulShutdown' };
-      dispatch('serverPowerChange', data);
-      await checkForServerState.bind(this, 'Disabled')();
-      commit('setOperationInProgress', false);
-      dispatch('getLastPowerOperationTime');
-    },
-    async serverHardPowerOff({ dispatch, commit }) {
-      const data = { ResetType: 'ForceOff' };
-      dispatch('serverPowerChange', data);
-      await checkForServerState.bind(this, 'Disabled')();
-      commit('setOperationInProgress', false);
-      dispatch('getLastPowerOperationTime');
-    },
-    async serverPowerChange({ commit }, data) {
+    async executeSystemAction({ state, commit, dispatch, rootGetters }, { actionName, parameters, waitForState }) {
       commit('setOperationInProgress', true);
-      api
-        .post(
-          `${await this.dispatch('global/getSystemPath')}/Actions/ComputerSystem.Reset`,
-          data,
-        )
-        .catch((error) => {
-          console.log(error);
-          commit('setOperationInProgress', false);
+      
+      try {
+        // Check if the action exists in systemActions
+        if (!state.systemActions || !state.systemActions[actionName]) {
+          throw new Error(i18n.t('global.error.paramValueNotAllowed', { param: 'action', value: actionName }));
+        }
+
+        // Execute the action - trust the provided parameters without verification
+        await redfishUtils.executeAction(
+          state.systemActions,
+          actionName,
+          parameters
+        );
+        
+        // Update system info to get the latest status
+        const systemInfo = await dispatch('global/getSystemInfo', null, { root: true });
+
+        // Wait for server state to change if specified
+        if (waitForState) {
+          const value = rootGetters['global/serverStatus'];
+          if (!(value && value.State === waitForState)) {
+            await checkForServerState.bind(this, waitForState)();
+          }
+        }
+
+      } catch (error) {
+        console.error(`Error executing action ${actionName}:`, error);
+        throw error;
+      } finally {
+        commit('setOperationInProgress', false);
+      }
+    },
+    async fetchSystemActions({ commit, dispatch, state }) {
+      // Set loading state
+      commit('setSystemActionsLoading', true);
+      
+      try {
+        // Use global/getSystemInfo to get the system data instead of making a direct API call
+        const systemResource = await dispatch('global/getSystemInfo', null, { root: true });
+        
+        if (!systemResource) {
+          throw new Error('Failed to retrieve system information');
+        }
+        
+        // Define custom defaults for system actions
+        const customDefaults = {
+          'ComputerSystem.Reset': {
+            ResetType: {
+              required: true,
+              allowableValues: [
+                'On', 
+                'ForceOff', 
+                'GracefulShutdown', 
+                'GracefulRestart', 
+                'ForceRestart', 
+                'PowerCycle'
+              ]
+            }
+          }
+        };
+        
+        // Use redfishUtils with the system resource and custom defaults in a single call
+        const actions = await redfishUtils.discoverActions(systemResource, customDefaults);
+        
+        // Set all system actions
+        commit('setSystemActions', actions);
+        
+        // Clear any previous error
+        commit('setSystemActionsError', null);
+        
+        return actions;
+      } catch (error) {
+        console.error('Failed to fetch system actions:', error);
+        
+        // Set error state
+        commit('setSystemActionsError', {
+          message: i18n.t('pageServerPowerOperations.error.failedToLoadActions'),
+          details: error.message,
+          timestamp: new Date()
         });
+        
+        throw error;
+      } finally {
+        commit('setSystemActionsLoading', false);
+      }
     },
     async fetchManagersInfo({ commit, dispatch, state }) {
       // Set a loading state
       commit('setManagersLoading', true);
       
       try {
-        const managers = await this.dispatch('bmc/getBmcInfo');
+        // Get manager resources
+        const managers = await dispatch('bmc/getBmcInfo', null, { root: true });
+        
         const managersInfo = await Promise.all(managers.map(async (manager) => {
-          // Get the reset action info
-          const actionInfoUri = manager?.Actions['#Manager.Reset']?.['@Redfish.ActionInfo'];
-          const target = manager?.Actions['#Manager.Reset']?.target;
-          //FIXME: Check if the actionInfoUri is valid. Otherwise, look for other metadata like:
-          /* "ResetType@Redfish.AllowableValues": ["ResetAll" ],*/
-          const actionInfoResponse = await api.get(actionInfoUri);
+          // Define custom defaults for manager actions
+          const managerDefaults = {
+            'Manager.Reset': {
+              ResetType: {
+                required: true,
+                allowableValues: ['GracefulRestart', 'ForceRestart']
+              }
+            }
+          };
+          
+          // Use redfishUtils with already loaded manager resource and defaults in a single call
+          const managerActions = await redfishUtils.discoverActions(manager, managerDefaults);
+          const resetAction = managerActions['Manager.Reset'];
           
           // Extract allowable values for ResetType
-          let allowableValues = actionInfoResponse.data.Parameters.find(
-            //FIXME: Dynamically find *all* parameters
-            param => param.Name === 'ResetType'
-          ).AllowableValues || ['GracefulRestart'];
-
+          let allowableValues = [];
+          if (resetAction && resetAction.parameters && resetAction.parameters.ResetType) {
+            allowableValues = resetAction.parameters.ResetType.allowableValues;
+          }
+          
+          // Special case for NVIDIA
           if (process.env.VUE_APP_ENV_NAME === 'nvidia-gb') {
             allowableValues = ['GracefulRestart'];
           }
           
-          // Determine label based on manager ID
+          // Special case for NVIDIA: Determine label based on manager ID
           const displayName = manager.Id === 'BMC_0' ? 'BMC' : 
                             manager.Id === 'HGX_BMC_0' ? 'HMC' : 
                             manager.Id;
+          
+          // Construct the target path for the action, with validation
+          let targetPath;
+          if (resetAction && resetAction.target) {
+            targetPath = resetAction.target;
+          } else if (manager['@odata.id']) {
+            targetPath = `${manager['@odata.id']}/Actions/Manager.Reset`;
+          } else {
+            console.warn(`Manager ${manager.Id || 'unknown'} missing @odata.id property`);
+            targetPath = `/redfish/v1/Managers/${manager.Id || 'default'}/Actions/Manager.Reset`;
+          }
           
           return {
             ...manager,
@@ -198,7 +258,7 @@ const ControlStore = {
             resetOptions: {
               label: displayName,
               allowableValues,
-              target
+              target: targetPath
             }
           };
         }));
@@ -219,7 +279,13 @@ const ControlStore = {
         // Use any cached data if available
         if (state.Managers.length === 0) {
           // Fallback to a minimal default state if no data exists
-          const bmcPath = await this.dispatch('global/getBmcPath');
+          const bmcPath = await dispatch('global/getBmcPath', null, { root: true });
+          
+          // Validate bmcPath before using it
+          const fallbackTarget = bmcPath ? 
+            `${bmcPath}/Actions/Manager.Reset` : 
+            '/redfish/v1/Managers/default/Actions/Manager.Reset';
+          
           commit('setManagers', [{
             id: 'default',
             displayName: 'BMC',
@@ -227,7 +293,7 @@ const ControlStore = {
             resetOptions: {
               label: 'BMC',
               allowableValues: ['GracefulRestart'],
-              target: `${bmcPath}/Actions/Manager.Reset`
+              target: fallbackTarget
             }
           }]);
         }

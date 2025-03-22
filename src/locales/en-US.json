@@ -30,6 +30,9 @@
             "close": "Close",
             "viewDetails": "View details"
         },
+        "error": {
+            "paramValueNotAllowed": "Parameter {{param}} value '{{value}}' is not allowed for this action"
+        },
         "footer": {
             "version": "ui build"
         },
@@ -1038,6 +1041,7 @@
         "lastPowerOperation": "Last power operation",
         "oneTimeBootWarning": "Pending one time boot. Next boot will be performed with the specified one time boot settings. Subsequent boots will be performed with the default settings.",
         "operationInProgress": "There are no options to display while a power operation is in progress. When complete, power operations will be displayed here.",
+        "loadingActions": "Loading power operations...",
         "operations": "Operations",
         "powerCycle": "Power Cycle",
         "powerCycleInfo": "Power cycle the unit.  Behaves like a full power removal, followed by a power restore to the resource",
@@ -1055,6 +1059,9 @@
         "rebootServer": "Reboot server",
         "shutDown": "Shut down",
         "shutdownServer": "Shutdown server",
+        "error": {
+            "failedToLoadActions": "Failed to load system power actions"
+        },
         "bootSettings": {
             "bootSettingsOverride": "Boot settings override",
             "bootOptions": "Boot Options",

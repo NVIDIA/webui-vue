@@ -64,10 +64,16 @@
               {{ $t('pageServerPowerOperations.operationInProgress') }}
             </alert>
           </template>
+          <template v-else-if="!systemActions || !systemActions['ComputerSystem.Reset']">
+            <alert variant="info">
+              {{ $t('pageServerPowerOperations.loadingActions') }}
+            </alert>
+          </template>
           <template v-else-if="isPowerOff">
             <b-button
               variant="primary"
               data-test-id="serverPowerOperations-button-powerOn"
+              :disabled="!availableResetTypes.includes('On')"
               @click="powerOn"
             >
               {{ $t('pageServerPowerOperations.powerOn') }}
@@ -83,6 +89,7 @@
                   v-model="form.rebootOption"
                   name="reboot-option"
                   data-test-id="serverPowerOperations-radio-rebootOrderly"
+                  :disabled="!availableResetTypes.includes('GracefulRestart')"
                   value="orderly"
                 >
                   {{ $t('pageServerPowerOperations.gracefulRestart') }}
@@ -94,6 +101,7 @@
                   v-model="form.rebootOption"
                   name="reboot-option"
                   data-test-id="serverPowerOperations-radio-rebootImmediate"
+                  :disabled="!availableResetTypes.includes('ForceRestart')"
                   value="immediate"
                 >
                   {{ $t('pageServerPowerOperations.forceRestart') }}
@@ -102,10 +110,11 @@
                   />
                 </b-form-radio>
                 <b-form-radio
-                  v-if="showPowerCycle"
+                  v-if="showPowerCycleOption"
                   v-model="form.rebootOption"
                   name="reboot-option"
                   data-test-id="serverPowerOperations-radio-powerCycle"
+                  :disabled="!availableResetTypes.includes('PowerCycle')"
                   value="cycle"
                 >
                   {{ $t('pageServerPowerOperations.powerCycle') }}
@@ -131,6 +140,7 @@
                   v-model="form.shutdownOption"
                   name="shutdown-option"
                   data-test-id="serverPowerOperations-radio-shutdownOrderly"
+                  :disabled="!availableResetTypes.includes('GracefulShutdown')"
                   value="orderly"
                 >
                   {{ $t('pageServerPowerOperations.gracefulShutdown') }}
@@ -139,10 +149,11 @@
                   />
                 </b-form-radio>
                 <b-form-radio
-                  v-if="showForceOff"
+                  v-if="showForceOffOption"
                   v-model="form.shutdownOption"
                   name="shutdown-option"
                   data-test-id="serverPowerOperations-radio-shutdownImmediate"
+                  :disabled="!availableResetTypes.includes('ForceOff')"
                   value="immediate"
                 >
                   {{ $t('pageServerPowerOperations.forceOff') }}
@@ -207,7 +218,7 @@ export default {
       return this.$store.getters['controls/isOperationInProgress'];
     },
     lastPowerOperationTime() {
-      return this.$store.getters['controls/lastPowerOperationTime'];
+      return this.$store.getters['global/lastPowerOperationTime'];
     },
     oneTimeBootEnabled() {
       return this.$store.getters['serverBootSettings/overrideEnabled'];
@@ -217,18 +228,38 @@ export default {
         this.$store.getters['serverBootSettings/bootSourceOptions'];
       return bootOptions.length !== 0;
     },
+    systemActions() {
+      return this.$store.getters['controls/systemActions'];
+    },
+    availableResetTypes() {
+      const resetAction = this.systemActions['ComputerSystem.Reset'];
+      if (resetAction && resetAction.parameters && resetAction.parameters.ResetType) {
+        return resetAction.parameters.ResetType.allowableValues || [];
+      }
+      return [];
+    },
+    showPowerCycleOption() {
+      return this.showPowerCycle || this.availableResetTypes.includes('PowerCycle');
+    },
+    showForceOffOption() {
+      return this.showForceOff || this.availableResetTypes.includes('ForceOff');
+    },
   },
   created() {
     this.startLoader();
     Promise.all([
+      this.$store.dispatch('global/getSystemInfo'),
       this.$store.dispatch('serverBootSettings/getBootSettings'),
-      this.$store.dispatch('controls/getLastPowerOperationTime'),
-      this.$store.dispatch('global/getSystemInfo')
+      this.$store.dispatch('controls/fetchSystemActions')
     ]).finally(() => this.endLoader());
   },
   methods: {
     powerOn() {
-      this.$store.dispatch('controls/serverPowerOn');
+      this.$store.dispatch('controls/executeSystemAction', {
+        actionName: 'ComputerSystem.Reset',
+        parameters: { ResetType: 'On' },
+        waitForState: 'Enabled'
+      });
     },
     rebootServer() {
       const modalMessage = this.$t(
@@ -245,19 +276,37 @@ export default {
         this.$bvModal
           .msgBoxConfirm(modalMessage, modalOptions)
           .then((confirmed) => {
-            if (confirmed) this.$store.dispatch('controls/serverSoftReboot');
+            if (confirmed) {
+              this.$store.dispatch('controls/executeSystemAction', {
+                actionName: 'ComputerSystem.Reset',
+                parameters: { ResetType: 'GracefulRestart' },
+                waitForState: 'Enabled'
+              });
+            }
           });
       } else if (this.form.rebootOption === 'immediate') {
         this.$bvModal
           .msgBoxConfirm(modalMessage, modalOptions)
           .then((confirmed) => {
-            if (confirmed) this.$store.dispatch('controls/serverHardReboot');
+            if (confirmed) {
+              this.$store.dispatch('controls/executeSystemAction', {
+                actionName: 'ComputerSystem.Reset',
+                parameters: { ResetType: 'ForceRestart' },
+                waitForState: 'Enabled'
+              });
+            }
           });
       } else if (this.form.rebootOption === 'cycle') {
         this.$bvModal
           .msgBoxConfirm(modalMessage, modalOptions)
           .then((confirmed) => {
-            if (confirmed) this.$store.dispatch('controls/serverPowerCycle');
+            if (confirmed) {
+              this.$store.dispatch('controls/executeSystemAction', {
+                actionName: 'ComputerSystem.Reset',
+                parameters: { ResetType: 'PowerCycle' },
+                waitForState: 'Enabled'
+              });
+            }
           });
       }
     },
@@ -276,13 +325,25 @@ export default {
         this.$bvModal
           .msgBoxConfirm(modalMessage, modalOptions)
           .then((confirmed) => {
-            if (confirmed) this.$store.dispatch('controls/serverSoftPowerOff');
+            if (confirmed) {
+              this.$store.dispatch('controls/executeSystemAction', {
+                actionName: 'ComputerSystem.Reset',
+                parameters: { ResetType: 'GracefulShutdown' },
+                waitForState: 'Disabled'
+              });
+            }
           });
       } else if (this.form.shutdownOption === 'immediate') {
         this.$bvModal
           .msgBoxConfirm(modalMessage, modalOptions)
           .then((confirmed) => {
-            if (confirmed) this.$store.dispatch('controls/serverHardPowerOff');
+            if (confirmed) {
+              this.$store.dispatch('controls/executeSystemAction', {
+                actionName: 'ComputerSystem.Reset',
+                parameters: { ResetType: 'ForceOff' },
+                waitForState: 'Disabled'
+              });
+            }
           });
       }
     },

@@ -33,9 +33,9 @@ const BootSettingsStore = {
     setBootOptions: (state, bootOptions) => (state.bootOptions = bootOptions),
   },
   actions: {
-    async getBootSettings({ commit }) {
+    async getBootSettings({ commit, dispatch }) {
       return await api
-        .get(`${await this.dispatch('global/getSystemPath')}`)
+        .get(`${await dispatch('global/getSystemPath', null, { root: true })}`)
         .then(({ data: { Boot } }) => {
           commit(
             'setBootSourceOptions',
@@ -96,7 +96,7 @@ const BootSettingsStore = {
       }
 
       return api
-        .patch(`${await this.dispatch('global/getSystemPath')}`, data)
+        .patch(`${await dispatch('global/getSystemPath', null, { root: true })}`, data)
         .then((response) => {
           // If request success, commit the values
           commit('setBootSource', data.Boot.BootSourceOverrideTarget);
