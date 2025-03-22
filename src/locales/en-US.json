@@ -26,13 +26,16 @@
             "ok": "OK",
             "warning": "Warning",
             "critical": "Critical",
-            "submitting": "Submitting..."
+            "submitting": "Submitting...",
+            "close": "Close",
+            "viewDetails": "View details"
+        },
+        "description": "Description",
+        "error": {
+            "paramValueNotAllowed": "Parameter {param} value '{value}' is not allowed for this action"
         },
         "footer": {
             "version": "ui build"
-        },
-        "footer": {
-            "version": "build"
         },
         "ariaLabel": {
             "clearSearch": "Clear search input",
@@ -1036,23 +1039,47 @@
         "lastPowerOperation": "Last power operation",
         "oneTimeBootWarning": "Pending one time boot. Next boot will be performed with the specified one time boot settings. Subsequent boots will be performed with the default settings.",
         "operationInProgress": "There are no options to display while a power operation is in progress. When complete, power operations will be displayed here.",
+        "loadingActions": "Loading power operations...",
         "operations": "Operations",
         "powerCycle": "Power Cycle",
         "powerCycleInfo": "Power cycle the unit.  Behaves like a full power removal, followed by a power restore to the resource",
+        "fullPowerCycle": "Full Power Cycle",
+        "fullPowerCycleInfo": "Full power cycle the unit. Behaves like removing utility lines, followed by restoring utility lines to the resource",
         "forceRestart": "Force Restart",
         "forceRestartInfo": "Shut down immediately and non-gracefully and restart the unit",
         "forceOff": "Force Off",
         "forceOffInfo": "Turn off the unit immediately (non-graceful shutdown)",
+        "forceOn": "Force On",
+        "forceOnInfo": "Turn on the unit immediately",
         "gracefulRestart": "Graceful Restart",
         "gracefulRestartInfo": "Shut down gracefully and restart the unit",
         "gracefulShutdown": "Graceful Shutdown",
-        "gracefulShutdownInfo": "Shut down gracefully and power off",
+        "gracefulShutdownInfo": "System power operations will be according to the host OS setting ( Ignore, power off, reboot, halt ... etc. )",
+        "nmi": "NMI",
+        "nmiInfo": "Generate a diagnostic interrupt (Non-Maskable Interrupt)",
+        "otherOperations": "Other Operations",
+        "pause": "Pause",
+        "pauseInfo": "Pause execution on the unit but do not remove power. This is typically a feature of virtual machine hypervisors",
+        "pushPowerButton": "Push Power Button",
+        "pushPowerButtonInfo": "Simulate the pressing of the physical power button on this unit",
+        "powerCycleOperations": "Power Cycle Operations",
         "powerOn": "Power on",
+        "powerOnInfo": "Turn on the unit",
         "powerState": "Power state",
         "reboot": "Reboot",
         "rebootServer": "Reboot server",
+        "recommendedOperation": "Recommended for current power state",
+        "resume": "Resume",
+        "resumeInfo": "Resume execution on the paused unit. This is typically a feature of virtual machine hypervisors",
         "shutDown": "Shut down",
         "shutdownServer": "Shutdown server",
+        "specialOperations": "Special Operations",
+        "suspend": "Suspend",
+        "suspendInfo": "Write the state of the unit to disk before powering off. This allows for the state to be restored when powered back on",
+        "vmOperations": "Virtual Machine Operations",
+        "error": {
+            "failedToLoadActions": "Failed to load system power actions"
+        },
         "bootSettings": {
             "bootSettingsOverride": "Boot settings override",
             "bootOptions": "Boot Options",
@@ -1064,7 +1091,17 @@
             "confirmRebootMessage": "Are you sure you want to reboot?",
             "confirmRebootTitle": "Server reboot will cause outage",
             "confirmShutdownMessage": "Are you sure you want to shut down?",
-            "confirmShutdownTitle": "Server shutdown will cause outage"
+            "confirmShutdownTitle": "Server shutdown will cause outage",
+            "confirmPauseMessage": "Are you sure you want to perform the %{operation} operation?",
+            "confirmPauseTitle": "Confirm pause operation",
+            "confirmResumeMessage": "Are you sure you want to resume the paused system?",
+            "confirmResumeTitle": "Confirm resume operation",
+            "confirmSpecialOperationMessage": "Are you sure you want to perform the %{operation} operation?",
+            "confirmSpecialOperationTitle": "Confirm special operation",
+            "confirmPowerOnMessage": "Are you sure you want to perform the %{operation} operation?",
+            "confirmPowerOnTitle": "Confirm power on operation",
+            "confirmGenericOperationMessage": "Are you sure you want to perform the %{operation} operation?",
+            "confirmGenericOperationTitle": "Confirm operation"
         },
         "toast": {
             "errorSaveSettings": "Error saving settings.",

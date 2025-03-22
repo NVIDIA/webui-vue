@@ -17,6 +17,7 @@ const GlobalStore = {
     systemPath: null,
     system: null,
     chassisPath: null,
+    lastPowerOperationTime: null,
   },
   getters: {
     assetTag: (state) => state.system?.AssetTag || null,
@@ -37,6 +38,7 @@ const GlobalStore = {
     chassisPath: (state) => state.chassisPath,
     systemId: (state) => state.system?.Id || null,
     locationIndicatorActive: (state) => state.system?.LocationIndicatorActive || null,
+    lastPowerOperationTime: (state) => state.lastPowerOperationTime,
   },
   mutations: {
     setServiceRoot: (state, serviceRoot) => {
@@ -60,6 +62,8 @@ const GlobalStore = {
     setSystemPath: (state, systemPath) => (state.systemPath = systemPath),
     setChassisPath: (state, chassisPath) => (state.chassisPath = chassisPath),
     setSystem: (state, system) => (state.system = system),
+    setLastPowerOperationTime: (state, lastPowerOperationTime) => 
+      (state.lastPowerOperationTime = lastPowerOperationTime),
   },
   actions: {
     async fetchServiceRoot({ commit }) {
@@ -166,7 +170,7 @@ const GlobalStore = {
     async getChassisPath({ state, commit, dispatch }) {
       if (state.chassisPath) return state.chassisPath;
       if (!state.bmcPath) await dispatch('getBmcPath');
-      if (!state.ManagerProvidingService) state.ManagerProvidingService = await api.get(state.bmcPath);
+      if (!state.ManagerProvidingService) state.ManagerProvidingService = (await api.get(state.bmcPath))?.data;
       if (!state.ManagerProvidingService) throw new Error('BMC not found');
       let chassisPath = state.ManagerProvidingService?.Links?.ManagerForChassis?.[0]?.['@odata.id'];
       if (!chassisPath) {
@@ -179,28 +183,22 @@ const GlobalStore = {
       commit('setChassisPath', chassisPath);
       return chassisPath;
     },
-    async getBmcTime({ commit, dispatch, state }) {
-      if (!state.bmcPath) await dispatch('getBmcPath');
-      return await api
-        .get(state.bmcPath)
-        .then((response) => {
-          const bmcDateTime = response.data.DateTime;
-          const date = new Date(bmcDateTime);
-          commit('setBmcTime', date);
-          return date;
-        })
-        .catch((error) => console.log(error));
-    },
     async getSystemInfo({ commit, dispatch, state }) {
-      // See if the root system has a valid Status.healthRollup property
       if (!state.systemPath) await dispatch('getSystemPath');
       return api
         .get(state.systemPath)
         .then(({ data }) => {
           commit('setSystem', data);
+          // See if the root system has a valid Status.healthRollup property
           const healthRollup = data?.Status?.HealthRollup;
           if (healthRollup) {
             commit('setHealthStatus', healthRollup);
+          }
+          // See if the root system has a valid LastResetTime property
+          const lastReset = data?.LastResetTime;
+          if (lastReset) {
+            const lastPowerOperationTime = new Date(lastReset);
+            commit('setLastPowerOperationTime', lastPowerOperationTime);
           }
           return data;
         })
