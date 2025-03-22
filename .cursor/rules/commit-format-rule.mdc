@@ -1,0 +1,36 @@
+---
+description: commit messages
+globs: 
+alwaysApply: false
+---
+ # Commit Message Format
+
+This rule defines the format for all commit messages in the repository.
+
+## Requirements
+
+Name: "Commit Message Format"
+Pattern: \.git/COMMIT_EDITMSG$
+Description: "Follow the 50/72 rule for commit messages with specific required sections"
+Severity: Warning
+
+## Format Rules
+
+1. The first line should be a concise summary of 50 characters or less
+2. The second line should be blank
+3. The main body should wrap at 72 characters
+4. The body must include the following sections:
+   - **Changes added:** Brief description of what was added or changed
+   - **Problem:** Description of the issue being addressed
+   - **Solution:** Explanation of how the changes solve the problem
+   - **Testing:** Description of testing performed to verify the changes
+   - **Fixes** Reference to JIRA or nvbug issue, or other tracking ID (if applicable)
+
+## Benefits
+
+Following this format ensures:
+1. Commit messages are consistent and informative
+2. Changes are properly documented
+3. Problems and solutions are clearly articulated
+4. Testing performed is documented
+5. Issue tracking references are included

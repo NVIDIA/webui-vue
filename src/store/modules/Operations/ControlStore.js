@@ -15,20 +15,45 @@ import redfishUtils from '@/utilities/redfishUtils';
 const checkForServerState = function (serverState) {
   let unwatch = null;
   let timer = null;
+  let timeout = null;
+  let hasStateChanged = false;
   const store = this;
+  const initialState = store.state.global.system?.Status?.State;
+  const waitForTimeout = 60000; // 1 minute
 
   const cleanup = () => {
+    if (timeout) clearTimeout(timeout);
     if (unwatch) unwatch();
     if (timer) clearInterval(timer);
   };
 
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
+    timeout = setTimeout(() => {
+      cleanup();
+      if (store.state.global.system?.Status?.State === serverState) {
+        resolve();
+      } else {
+        reject(new Error('Operation timed out'));
+      }
+    }, waitForTimeout);
+
     unwatch = store.watch(
-      (state) => state.global.serverStatus,
+      (state) => state.global.system,
       (value) => {
-        if (value && value.State === serverState) {
-          cleanup();
-          resolve();
+        if (!value.Status?.State) {
+          return;
+        }
+        if (initialState !== value.Status?.State) {
+          hasStateChanged = true;
+        }
+        if (value && value.PowerState === 'PoweringOff') {
+          return;
+        }
+        if (value && value.Status?.State === serverState) {
+          if (hasStateChanged) {
+            cleanup();
+            resolve();
+          }
         }
       },
     );
@@ -128,17 +153,8 @@ const ControlStore = {
           actionName,
           parameters
         );
-        
-        // Update system info to get the latest status
-        const systemInfo = await dispatch('global/getSystemInfo', null, { root: true });
-
         // Wait for server state to change if specified
-        if (waitForState) {
-          const value = rootGetters['global/serverStatus'];
-          if (!(value && value.State === waitForState)) {
-            await checkForServerState.bind(this, waitForState)();
-          }
-        }
+        await checkForServerState.bind(this, waitForState)();
 
       } catch (error) {
         console.error(`Error executing action ${actionName}:`, error);
