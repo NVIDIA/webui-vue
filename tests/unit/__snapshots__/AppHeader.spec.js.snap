@@ -125,7 +125,8 @@ exports[`AppHeader.vue should render correctly 1`] = `
             </div>
           </b-tooltip>
         </b-nav-item>
-        <!-- Using LI elements instead of b-nav-item to support semantic button elements -->
+        <!-- Redfish Logger button - Red when recording, Gray when not -->
+        <!--v-if-->
         <li
           class="nav-item"
         >

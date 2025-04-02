@@ -3,6 +3,13 @@ import Cookies from 'js-cookie';
 import router from '@/router';
 import { roles } from '@/router/routes';
 
+// Helper function to reset API state on logout
+const resetApiStateOnLogout = () => {
+  if (typeof api.resetApiState === 'function') {
+    api.resetApiState();
+  }
+};
+
 const AuthenticationStore = {
   namespaced: true,
   state: {
@@ -58,6 +65,8 @@ const AuthenticationStore = {
       state.sessionURI = null;
       state.xAuthToken = null;
       state.consoleWindow = false;
+      // Reset API logs state to prevent data leaking across user sessions
+      resetApiStateOnLogout();
     },
   },
   actions: {

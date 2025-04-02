@@ -58,6 +58,22 @@ describe('AppHeader.vue', () => {
         getLogData: jest.fn(),
       },
     },
+    redfishLogger: {
+      namespaced: true,
+      state: {
+        featureEnabled: false,
+        loggingEnabled: false,
+        loggerVisible: false,
+      },
+      getters: {
+        isFeatureEnabled: (state) => state.featureEnabled,
+        isLoggingEnabled: (state) => state.loggingEnabled,
+        isLoggerVisible: (state) => state.loggerVisible,
+      },
+      actions: {
+        toggleLogging: jest.fn(),
+      },
+    },
   };
 
   const store = createStore({ modules });

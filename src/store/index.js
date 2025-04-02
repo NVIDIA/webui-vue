@@ -35,6 +35,7 @@ import KeyClearStore from './modules/Operations/KeyClearStore';
 
 import DateTimeStore from './modules/Settings/DateTimeStore';
 import VirtualMediaStore from './modules/Operations/VirtualMediaStore';
+import RedfishLoggerStore from './modules/RedfishLoggerStore';
 
 const store = createStore({
   state: {},
@@ -75,6 +76,7 @@ const store = createStore({
     policies: PoliciesStore,
     factoryReset: FactoryResetStore,
     keyClear: KeyClearStore,
+    redfishLogger: RedfishLoggerStore,
   },
 });
 

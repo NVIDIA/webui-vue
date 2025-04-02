@@ -157,6 +157,7 @@ VUE_APP_ENV_NAME=ibm npm run build
 | VUE_APP_SERVER_OFF_REQUIRED               | If true, requires server be powered off before protected operations (feature flag) |
 | VUE_APP_SWITCH_TO_BACKUP_IMAGE_DISABLED   | If true, disables UI option to switch to backup image (feature flag)               |
 | VUE_APP_VIRTUAL_MEDIA_LIST_ENABLED        | If true, enables Virtual Media list UI (feature flag)                              |
+| VUE_APP_ENABLE_REDFISH_LOGGER             | If true, enables Redfish API Logger (dev tool, keep disabled in production)        |
 | CUSTOM_STORE                              | Load env-specific Vuex store                                                       |
 | CUSTOM_ROUTER                             | Load env-specific router config                                                    |
 | CUSTOM_APP_NAV                            | Load env-specific AppNavigation mixin                                              |

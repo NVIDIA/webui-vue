@@ -63,3 +63,13 @@ h6,
   white-space: nowrap !important;
   border: 0 !important;
 }
+
+// Redfish Logger: reserve space at bottom when logger is visible (reviewer fix #4)
+// This prevents the fixed logger panel from overlapping bottom content.
+#app.redfish-logger-open {
+  padding-bottom: 40vh;
+  // Use dvh with vh fallback for mobile support
+  @supports (padding-bottom: 40dvh) {
+    padding-bottom: 40dvh;
+  }
+}

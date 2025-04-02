@@ -15,6 +15,115 @@ const axiosInstance = Axios.create({
   withCredentials: true,
 });
 
+// Redfish Logger configuration - check if feature is enabled
+const REDFISH_LOGGER_ENABLED = process.env.VUE_APP_ENABLE_REDFISH_LOGGER === 'true';
+
+// Generate a unique request ID using store
+const generateRequestId = () => {
+  if (REDFISH_LOGGER_ENABLED) {
+    store.commit('redfishLogger/incrementRequestIdCounter');
+    const counter = store.state.redfishLogger.requestIdCounter;
+    return `req-${Date.now()}-${counter}`;
+  }
+  return null;
+};
+
+// Check if logging should occur
+const shouldLog = () => {
+  return REDFISH_LOGGER_ENABLED && store.getters['redfishLogger/shouldLog'];
+};
+
+// Add request interceptor to track requests
+axiosInstance.interceptors.request.use(
+  config => {
+    // Always generate request ID for response correlation when feature is enabled
+    if (REDFISH_LOGGER_ENABLED) {
+      const requestId = generateRequestId();
+      config.requestId = requestId;
+      
+      // Only log if logging is enabled
+      if (shouldLog()) {
+        // Handle request data formatting
+        let formattedData = config.data || config.params;
+        
+        // Convert FormData to JSON object
+        if (formattedData instanceof FormData) {
+          const jsonData = {};
+          formattedData.forEach((value, key) => {
+            // Handle File objects specially
+            if (value instanceof File) {
+              jsonData[key] = {
+                name: value.name,
+                type: value.type,
+                size: value.size
+              };
+            } else {
+              jsonData[key] = value;
+            }
+          });
+          formattedData = jsonData;
+        }
+        
+        const requestData = {
+          type: 'request',
+          id: requestId,
+          url: config.url,
+          method: config.method,
+          data: formattedData,
+          headers: config.headers,
+          timestamp: new Date().toISOString()
+        };
+        
+        store.commit('redfishLogger/addLogEntry', requestData);
+      }
+    }
+    
+    return config;
+  },
+  error => {
+    return Promise.reject(error);
+  }
+);
+
+// Add response interceptor BEFORE setupCache to ensure requestId is preserved
+axiosInstance.interceptors.response.use(
+  response => {
+    if (shouldLog()) {
+      const requestId = response.config && response.config.requestId;
+      const responseData = {
+        type: 'response',
+        id: requestId,
+        url: response.config.url,
+        method: response.config.method,
+        status: response.status,
+        data: response.data,
+        headers: response.headers,
+        timestamp: new Date().toISOString()
+      };
+      store.commit('redfishLogger/addLogEntry', responseData);
+    }
+    return response;
+  },
+  (error) => {
+    let response = error.response;
+    if (response && response.status && shouldLog()) {
+      const requestId = response.config && response.config.requestId;
+      const responseData = {
+        type: 'error',
+        id: requestId,
+        url: response.config && response.config.url,
+        method: response.config && response.config.method,
+        status: response.status,
+        data: response.data,
+        headers: response.headers,
+        timestamp: new Date().toISOString()
+      };
+      store.commit('redfishLogger/addLogEntry', responseData);
+    }
+    return Promise.reject(error);
+  }
+);
+
 const api = setupCache(axiosInstance, {
   debug: process.env.NODE_ENV === 'development' ? console.log : undefined,
   methods: ['get'],
@@ -166,6 +275,12 @@ export default {
   set_auth_token(token) {
     axiosInstance.defaults.headers.common['X-Auth-Token'] = token;
   },
+  // Reset API state on logout to prevent data leaking across user sessions
+  resetApiState() {
+    if (REDFISH_LOGGER_ENABLED) {
+      store.dispatch('redfishLogger/resetOnLogout');
+    }
+  }
 };
 
 export const getResponseCount = (responses) => {
@@ -199,7 +314,7 @@ export const isPasswordExpired = (data) => {
  * @returns {ExtendedInfo.Message} ExtendedInfo.Message | undefined
  */
 export const findMessageId = (data, key, registry = 'Base') => {
-  let extInfoMsgs = data?.error?.['@Message.ExtendedInfo'];
+  let extInfoMsgs = data && data.error && data.error['@Message.ExtendedInfo'];
   return (
     extInfoMsgs &&
     extInfoMsgs.find((i) => {

@@ -83,7 +83,21 @@
               </div>
             </b-tooltip>
           </b-nav-item>
-          <!-- Using LI elements instead of b-nav-item to support semantic button elements -->
+          <!-- Redfish Logger button - Red when recording, Gray when not -->
+          <li v-if="isRedfishLoggerFeatureEnabled" class="nav-item">
+            <b-button
+              id="app-header-redfish-logger"
+              variant="link"
+              data-test-id="appHeader-button-redfishLogger"
+              :class="{ 'recording': isLoggingEnabled }"
+              @click="toggleLogging"
+              :title="isLoggingEnabled ? $t('appHeader.clickToStopRecording') : $t('appHeader.clickToStartRecording')"
+            >
+              <icon-recording v-if="isLoggingEnabled" class="recording-icon" :title="$t('appHeader.recording')" />
+              <icon-recording-filled v-else class="not-recording-icon" :title="$t('appHeader.notRecording')" />
+              <span class="responsive-text">{{ $t('appHeader.redfishLogger') }}</span>
+            </b-button>
+          </li>
           <li class="nav-item">
             <b-button
               id="app-header-refresh"
@@ -132,10 +146,12 @@ import IconAvatar from '@carbon/icons-vue/es/user--avatar/20';
 import IconClose from '@carbon/icons-vue/es/close/20';
 import IconMenu from '@carbon/icons-vue/es/menu/20';
 import IconRenew from '@carbon/icons-vue/es/renew/20';
+import IconRecording from '@carbon/icons-vue/es/recording/20';
+import IconRecordingFilled from '@carbon/icons-vue/es/recording--filled/20';
 import StatusIcon from '@/components/Global/StatusIcon';
 import PowerIcon from '@/components/Global/PowerIcon';
 import LoadingBar from '@/components/Global/LoadingBar';
-import { mapState, mapGetters } from 'vuex';
+import { mapState, mapGetters, mapActions } from 'vuex';
 import i18n from '@/i18n';
 
 export default {
@@ -145,6 +161,8 @@ export default {
     IconClose,
     IconMenu,
     IconRenew,
+    IconRecording,
+    IconRecordingFilled,
     StatusIcon,
     PowerIcon,
     LoadingBar,
@@ -167,6 +185,11 @@ export default {
     ...mapState('authentication', ['consoleWindow']),
     ...mapGetters('global', ['assetTag', 'modelType', 'serialNumber', 'isAuthorized',
      'userPrivilege', 'serverStatus', 'powerState', 'username', 'healthStatus']),
+    ...mapGetters('redfishLogger', {
+      isRedfishLoggerFeatureEnabled: 'isFeatureEnabled',
+      isLoggingEnabled: 'isLoggingEnabled',
+      isLoggerVisible: 'isLoggerVisible',
+    }),
     isNavTagPresent() {
       return this.assetTag || this.modelType || this.serialNumber;
     },
@@ -261,6 +284,7 @@ export default {
         this.$eventBus.emit('skip-navigation');
       }
     },
+    ...mapActions('redfishLogger', ['toggleLogging']),
   },
 };
 </script>
@@ -417,6 +441,27 @@ export default {
   .navbar-expand {
     @include media-breakpoint-down(sm) {
       flex-flow: wrap;
+    }
+  }
+
+  // Recording button styles
+  .recording {
+    .recording-icon {
+      fill: #ff4444 !important;
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+  }
+  
+  .not-recording-icon {
+    fill: $gray-500 !important;
+  }
+  
+  @keyframes pulse {
+    0%, 100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.5;
     }
   }
 }

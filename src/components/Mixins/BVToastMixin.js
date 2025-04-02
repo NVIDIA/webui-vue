@@ -1,4 +1,5 @@
 import { h } from 'vue';
+import { BLink } from 'bootstrap-vue-next';
 import StatusIcon from '../Global/StatusIcon';
 import i18n from '@/i18n';
 const BVToastMixin = {
@@ -32,19 +33,18 @@ const BVToastMixin = {
     },
     $_BVToastMixin_createRefreshAction() {
       return h(
-        'BLink',
+        BLink,
         {
           class: 'd-inline-block mt-3',
           onClick: () => {
             this.$eventBus.emit('refresh-application');
           },
         },
-        i18n.global.t('global.action.refresh'),
+        () => i18n.global.t('global.action.refresh'),
       );
     },
-    $_BVToastMixin_initToast(body, title, variant) {
+    $_BVToastMixin_initToast(body, title, variant, useRichContent = false) {
       // Use global toast plugin (works with Options API)
-      // Extract text content from VNodes for display
 
       // Extract title text from VNode
       const titleText =
@@ -52,37 +52,54 @@ const BVToastMixin = {
           ? title
           : title?.children?.[1] || title?.children || '';
 
-      // Extract body text from VNode array
-      // Each VNode (paragraph) should be on its own line
-      const bodyLines = Array.isArray(body)
-        ? body.map((node) => {
-            if (typeof node === 'string') return node;
-            // Extract text from VNode children
-            const text = node?.children || node?.props?.children || '';
-            // Ensure timestamps and other paragraphs are on separate lines
-            return text;
-          })
-        : [typeof body === 'string' ? body : body?.children || ''];
-
-      // Join with newlines to ensure timestamps appear on their own line
-      const bodyText = bodyLines.filter(Boolean).join('\n');
-
       // Show toast via global plugin
       if (this.$toast) {
-        this.$toast.show({
-          body: bodyText,
-          props: {
-            title: titleText,
-            variant,
-            isStatus: true,
-            solid: false, // Use light backgrounds with dark text (not solid colors)
-            // Success toasts auto-dismiss after 10s, others stay until closed
-            interval: variant === 'success' ? 10000 : 0,
-            // Note: Progress bar hidden via CSS in _toasts.scss (JS props to hide progress bar don't work as documented in Bootstrap Vue Next 0.40.8)
-          },
-        });
+        if (useRichContent) {
+          // Use slots.default for interactive content (links, buttons, etc.)
+          this.$toast.show({
+            props: {
+              title: titleText,
+              variant,
+              isStatus: true,
+              solid: false,
+              interval: variant === 'success' ? 10000 : 0,
+            },
+            slots: {
+              default: () => body,
+            },
+          });
+        } else {
+          // Extract text content from VNodes for simple display
+          const bodyLines = Array.isArray(body)
+            ? body.map((node) => {
+                if (typeof node === 'string') return node;
+                // Extract text from VNode children
+                const text = node?.children || node?.props?.children || '';
+                return text;
+              })
+            : [typeof body === 'string' ? body : body?.children || ''];
+
+          // Join with newlines to ensure timestamps appear on their own line
+          const bodyText = bodyLines.filter(Boolean).join('\n');
+
+          this.$toast.show({
+            body: bodyText,
+            props: {
+              title: titleText,
+              variant,
+              isStatus: true,
+              solid: false, // Use light backgrounds with dark text (not solid colors)
+              // Success toasts auto-dismiss after 10s, others stay until closed
+              interval: variant === 'success' ? 10000 : 0,
+              // Note: Progress bar hidden via CSS in _toasts.scss (JS props to hide progress bar don't work as documented in Bootstrap Vue Next 0.40.8)
+            },
+          });
+        }
       } else {
         // Fallback: log to console
+        const bodyText = Array.isArray(body)
+          ? body.map((n) => n?.children || n).join('\n')
+          : String(body);
         /* eslint-disable no-console */
         console[variant === 'danger' ? 'error' : 'log'](
           `[toast:${variant}]`,
@@ -133,7 +150,7 @@ const BVToastMixin = {
         body = [
           h('p', { class: 'mb-0' }, message),
           h(
-            'BLink',
+            BLink,
             {
               class: 'error-details-link mt-2 d-inline-block',
               'data-error-id': errorId,
@@ -142,7 +159,7 @@ const BVToastMixin = {
                 this.showErrorDetails(errorId);
               },
             },
-            i18n.global.t('global.action.viewDetails'),
+            () => i18n.global.t('global.action.viewDetails'),
           ),
         ];
       } else {
@@ -155,7 +172,8 @@ const BVToastMixin = {
         body.push(' '); // Extra newline for spacing above timestamp
         body.push(this.$_BVToastMixin_createTimestamp());
       }
-      this.$_BVToastMixin_initToast(body, title, 'danger');
+      // Use rich content mode when redfishError is provided for interactive links
+      this.$_BVToastMixin_initToast(body, title, 'danger', !!redfishError);
     },
     warningToast(
       message,
@@ -163,16 +181,48 @@ const BVToastMixin = {
         title: t = i18n.global.t('global.status.warning'),
         timestamp,
         refreshAction,
+        detailsData,
       } = {},
     ) {
-      const body = this.$_BVToastMixin_createBody(message);
+      let body;
+
+      if (detailsData) {
+        // Format the details - if it's already a string, use it directly; otherwise JSON stringify
+        const formattedContent =
+          typeof detailsData === 'string'
+            ? detailsData
+            : JSON.stringify(detailsData, null, 2);
+
+        // Create message with inline code block
+        body = [
+          h('p', { class: 'mb-0' }, message),
+          h(
+            'pre',
+            {
+              class: 'mt-2 p-2 bg-light text-dark rounded small',
+              style: {
+                whiteSpace: 'pre-wrap',
+                wordBreak: 'break-word',
+                maxHeight: '150px',
+                overflow: 'auto',
+                margin: '0',
+              },
+            },
+            formattedContent,
+          ),
+        ];
+      } else {
+        body = this.$_BVToastMixin_createBody(message);
+      }
+
       const title = this.$_BVToastMixin_createTitle(t, 'warning');
       if (refreshAction) body.push(this.$_BVToastMixin_createRefreshAction());
       if (timestamp) {
         body.push(' '); // Extra newline for spacing above timestamp
         body.push(this.$_BVToastMixin_createTimestamp());
       }
-      this.$_BVToastMixin_initToast(body, title, 'warning');
+      // Use rich content mode when detailsData is provided for interactive links
+      this.$_BVToastMixin_initToast(body, title, 'warning', !!detailsData);
     },
     infoToast(
       message,
@@ -191,47 +241,21 @@ const BVToastMixin = {
       }
       this.$_BVToastMixin_initToast(body, title, 'info');
     },
-    // Method to show error details in a modal
+    // Method to show error details in a modal or alert
     showErrorDetails(errorId) {
       if (!this._redfishErrorDetails || !this._redfishErrorDetails[errorId]) {
         return;
       }
-      
+
       const errorDetails = this._redfishErrorDetails[errorId];
-      const formattedJson = JSON.stringify(errorDetails, null, 2);
-      
-      try {
-        // If we have access to root's $bvModal, use it to show a message box
-        if (this.$root && this.$root.$bvModal && this.$root.$bvModal.msgBoxOk) {
-          // Create VNode for the pre element using h()
-          const preNode = h('pre', {
-            style: {
-              margin: '0',
-              whiteSpace: 'pre-wrap', 
-              wordBreak: 'break-word'
-            }
-          }, formattedJson);
-          
-          // Use msgBoxOk with the VNode as content
-          this.$root.$bvModal.msgBoxOk([preNode], {
-            title: i18n.global.t('global.message.errorDetails'),
-            size: 'lg',
-            centered: true,
-            headerBgVariant: 'danger',
-            headerTextVariant: 'light',
-            contentClass: 'p-0',
-            okVariant: 'secondary',
-            dialogClass: 'json-error-modal'
-          });
-        } else {
-          // If $bvModal isn't available, fall back to alert
-          alert(i18n.global.t('global.message.errorDetails') + ':\n\n' + formattedJson);
-        }
-      } catch (error) {
-        console.error('Error showing error details:', error);
-        // Fall back to alert
-        alert(i18n.global.t('global.message.errorDetails') + ':\n\n' + formattedJson);
-      }
+      // Format the details - if it's already a string, use it directly; otherwise JSON stringify
+      const formattedContent =
+        typeof errorDetails === 'string'
+          ? errorDetails
+          : JSON.stringify(errorDetails, null, 2);
+
+      // Use alert to show the details
+      alert(i18n.global.t('global.message.errorDetails') + ':\n\n' + formattedContent);
     },
   },
 };
