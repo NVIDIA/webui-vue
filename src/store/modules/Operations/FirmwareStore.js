@@ -430,14 +430,20 @@ const FirmwareStore = {
       if (!state.firmwareUpdateInfo.initiator) return true;
       const resetRequired = await dispatch('extractResetRequired', resp);
       if (resetRequired == null) return true;
-      const { resetUri, resetType } = resetRequired;
+      const { resetUri, resetType, deviceId } = resetRequired;
 
       let promise = null;
       if (
         resetUri ===
         `${await this.dispatch('global/getBmcPath')}/Actions/Manager.Reset`
       ) {
-        promise = this.dispatch('controls/rebootBmc');
+        // Create payload with target and parameters
+        const payload = {
+          target: resetUri,
+          parameters: { ResetType: resetType },
+          managerId: deviceId,
+        };
+        promise = this.dispatch('controls/rebootBmc', payload);
       } else {
         promise = api.post(resetUri, { ResetType: resetType });
         setTimeout(() => {
@@ -460,16 +466,20 @@ const FirmwareStore = {
     },
     // eslint-disable-next-line no-unused-vars
     async extractResetRequired({ state }, resp) {
-      let resolutionMsg = resp?.data?.Messages?.find((e) =>
+      const resolutionMsg = resp?.data?.Messages?.find((e) =>
         e?.MessageId?.includes('AwaitToActivate'),
       );
-      if (!resolutionMsg?.Resolution?.includes('power cycle')) return null;
+      const deviceId = resolutionMsg?.MessageArgs?.[1];
 
       const resetRequiredMsg = resp?.data?.Messages?.find((e) =>
         e?.MessageId?.includes('ResetRequired'),
       );
       const args = resetRequiredMsg?.MessageArgs;
-      if (args?.length === 2) return { resetUri: args[0], resetType: args[1] };
+      if (args?.length === 2) return {
+        resetUri: args[0],
+        resetType: args[1],
+        deviceId: deviceId,
+      };
 
       // Bluefield bmc does not support resetRequired, use hard code instead
       if (process.env.VUE_APP_ENV_NAME === 'nvidia-bluefield') {
@@ -479,12 +489,14 @@ const FirmwareStore = {
             resetUri:
               '/redfish/v1/Managers/Bluefield_BMC/Actions/Manager.Reset',
             resetType: 'GracefulRestart',
+            deviceId: 'BMC_Firmware',
           };
         else if (component?.includes('Bluefield_FW_ERoT'))
           return {
             resetUri:
               '/redfish/v1/Chassis/Bluefield_ERoT/Actions/Chassis.Reset',
             resetType: 'GracefulRestart',
+            deviceId: 'Bluefield_FW_ERoT',
           };
       }
       return null;
