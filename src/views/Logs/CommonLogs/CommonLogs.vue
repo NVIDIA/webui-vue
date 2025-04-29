@@ -648,11 +648,7 @@ export default {
     },
     exportAllLogs() {
       if (this.allLogs.length > 0) {
-        return this.$store.getters[this.logStore + '/allEvents'].map(
-          (eventLogs) => {
-            return eventLogs;
-          },
-        );
+        return this.logs;
       }
     },
     onFilterChange({ activeFilters }) {
