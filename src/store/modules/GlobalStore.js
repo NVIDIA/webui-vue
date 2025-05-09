@@ -24,7 +24,7 @@ const GlobalStore = {
     serialNumber: (state) => state.system?.SerialNumber || null,
     serverStatus: (state) => state.system?.Status || null,
     powerState: (state) => state.system?.PowerState || null,
-    isPowerOff: (state) => state.powerState?.toLowerCase() === 'off',
+    isPowerOff: (state, getters) => getters.powerState?.toLowerCase() === 'off',
     bmcPath: (state) => state.bmcPath,
     languagePreference: (state) => state.languagePreference,
     isUtcDisplay: (state) => state.isUtcDisplay,
