@@ -30,7 +30,7 @@ const GlobalStore = {
     serialNumber: (state) => state.serialNumber,
     serverStatus: (state) => state.serverStatus,
     powerState: (state) => state.powerState,
-    isPowerOff: (state) => state.powerState.toLowerCase() === 'off',
+    isPowerOff: (state, getters) => getters.powerState?.toLowerCase() === 'off',
     bmcPath: (state) => state.bmcPath,
     bmcTime: (state) => state.bmcTime,
     languagePreference: (state) => state.languagePreference,
