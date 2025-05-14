@@ -1,5 +1,6 @@
 .b-toaster {
   top: 75px!important; // make sure toasts do not hide top header
+  z-index: $zindex-dropdown + 5 !important // make sure toasts do not go over app navigation dropdowns;
 }
 
 // Toast component and status icon style

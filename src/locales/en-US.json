@@ -624,6 +624,7 @@
     "pageUserManagement": {
         "accountPolicySettings": "Account policy settings",
         "addUser": "Add user",
+        "bootstrapManagerDeletionError": "bootstrap manager account or current user cannot be deleted",
         "deleteUser": "Delete user | Delete users",
         "disableUser": "Disable user | Disable users",
         "editUser": "Edit user",
@@ -638,6 +639,7 @@
             "clickSaveToUnlockAccount": "Click \"Save\" to unlock account",
             "confirmUserPassword": "Confirm user password",
             "deleteConfirmMessage": "Are you sure you want to delete user '%{user}'? This action cannot be undone.",
+            "deleteSelfConfirmMessage": "Are you sure you want to delete your account? This action cannot be undone. And you will be logged out.",
             "manual": "Manual",
             "maxFailedLoginAttempts": "Max failed login attempts",
             "noSpecialCharactersExceptUnderscore": "No special characters except underscore",

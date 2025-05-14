@@ -11,8 +11,11 @@
             v-for="(action, index) in actions"
             :key="index"
             :data-test-id="`table-button-${action.value}Selected`"
+            :disabled="!action.enabled"
+            :title="action.hover"
             variant="primary"
             class="d-block"
+            v-b-tooltip.hover
             @click="$emit('batch-action', action.value)"
           >
             {{ action.label }}

@@ -382,6 +382,7 @@ export default {
 
   .dropdown-menu {
     margin-top: 0;
+    z-index: $zindex-dropdown + 10;
 
     @include media-breakpoint-only(md) {
       margin-top: 4px;

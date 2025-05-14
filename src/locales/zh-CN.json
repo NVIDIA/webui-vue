@@ -620,6 +620,7 @@
     "pageUserManagement": {
         "accountPolicySettings": "账户策略设置",
         "addUser": "添加用户",
+        "bootstrapManagerDeletionError": "引导管理器账户或当前用户无法删除",
         "deleteUser": "删除用户| 删除用户",
         "editUser": "编辑用户",
         "viewPrivilegeRoleDescriptions": "查看权限角色描述",
@@ -632,6 +633,7 @@
             "clickSaveToUnlockAccount": "点击\"保存\"解锁账户",
             "confirmUserPassword": "确认用户密码",
             "deleteConfirmMessage": "您确定要删除用户 '%{user}' 吗？此操作无法撤消。",
+            "deleteSelfConfirmMessage": "您确定要删除您的账户吗？此操作无法撤消。并且您将被登出。",
             "manual": "手动",
             "maxFailedLoginAttempts": "最大登录失败次数",
             "noSpecialCharactersExceptUnderscore": "除下划线外没有特殊字符",
