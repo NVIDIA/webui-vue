@@ -181,20 +181,6 @@ export default {
           tdClass: 'text-right text-nowrap',
         },
       ],
-      tableToolbarActions: [
-        {
-          value: 'delete',
-          label: this.$t('global.action.delete'),
-        },
-        {
-          value: 'enable',
-          label: this.$t('global.action.enable'),
-        },
-        {
-          value: 'disable',
-          label: this.$t('global.action.disable'),
-        },
-      ],
       selectedRows: selectedRows,
       tableHeaderCheckboxModel: tableHeaderCheckboxModel,
       tableHeaderCheckboxIndeterminate: tableHeaderCheckboxIndeterminate,
@@ -224,9 +210,7 @@ export default {
             {
               value: 'delete',
               enabled:
-                user.UserName === this.$store.getters['global/username']
-                  ? false
-                  : true && user.UserName === 'root'
+                user.UserName === 'root'
                     ? false
                     : true,
               title: this.$tc('pageUserManagement.deleteUser'),
@@ -235,6 +219,34 @@ export default {
           ...user,
         };
       });
+    },
+    tableToolbarActions() {
+      const deleteEnabled = this.selectedRows.length > 0 &&
+        this.selectedRows.every(row => {
+          const deleteAction = row.actions.find(action => action.value === 'delete');
+          return deleteAction && deleteAction.enabled;
+        });
+
+      return [
+        {
+          value: 'delete',
+          label: this.$t('global.action.delete'),
+          enabled: deleteEnabled,
+          hover: deleteEnabled ? null : this.$t('pageUserManagement.bootstrapManagerDeletionError'),
+        },
+        {
+          value: 'enable',
+          label: this.$t('global.action.enable'),
+          enabled: true,
+          hover: null,
+        },
+        {
+          value: 'disable',
+          label: this.$t('global.action.disable'),
+          enabled: true,
+          hover: null,
+        },
+      ];
     },
     settings() {
       return this.$store.getters['userManagement/accountSettings'];
@@ -268,11 +280,17 @@ export default {
       this.$bvModal.show('modal-user');
     },
     initModalDelete(user) {
+      const deleteText = user.UserName === this.$store.getters['global/username']
+        ? this.$t('pageUserManagement.modal.deleteSelfConfirmMessage', {
+            user: user.username,
+          })
+        : this.$t('pageUserManagement.modal.deleteConfirmMessage', {
+            user: user.username,
+          });
+
       this.$bvModal
         .msgBoxConfirm(
-          this.$t('pageUserManagement.modal.deleteConfirmMessage', {
-            user: user.username,
-          }),
+          deleteText,
           {
             title: this.$tc('pageUserManagement.deleteUser'),
             okTitle: this.$tc('pageUserManagement.deleteUser'),
@@ -311,7 +329,13 @@ export default {
       this.$store
         .dispatch('userManagement/deleteUser', username)
         .then((success) => this.successToast(success))
-        .catch(({ message }) => this.errorToast(message))
+        .catch(({ message }) => {
+          if (username === this.$store.getters['global/username']) {
+            this.$store.dispatch('authentication/logout');
+          } else {
+            this.errorToast(message);
+          }
+        })
         .finally(() => this.endLoader());
     },
     onBatchAction(action) {
