@@ -207,8 +207,11 @@
         "changePassword": "更改密码",
         "changePasswordAlertMessage": "密码已过期，必须更改。",
         "changePasswordError": "更改密码时发生错误。",
+        "savePasswordWarning": "您是否记住并安全保存了密码?",
+        "passwordChangedSuccess":"密码修改成功",
         "confirmNewPassword": "确认新密码",
         "goBack": "返回",
+        "continue": "继续",
         "newPassword": "新密码",
         "username": "用户名"
     },
