@@ -2,6 +2,7 @@
   "global": {
       "action": {
         "add": "添加",
+        "absent": "Absent",
         "cancel": "取消",
         "clearAll": "清除所有",
         "confirm": "确认",
@@ -1013,6 +1014,7 @@
             "lowerCritical": "下限严重",
             "name": "名称",
             "status": "状态",
+            "state": "启用状态",
             "upperWarning": "上限告警",
             "upperCritical": "上限严重",
             "assertionsEnabled": "启用断言",

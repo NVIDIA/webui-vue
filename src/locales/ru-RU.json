@@ -2,6 +2,7 @@
     "global": {
         "action": {
             "add": "Добавить",
+            "absent": "Absent",
             "cancel": "Отменить",
             "clearAll": "Очистить всё",
             "confirm": "Подтвердить",
@@ -1009,6 +1010,7 @@
             "lowerCritical": "Мин. крит. значение",
             "name": "Имя",
             "status": "Статус",
+            "state": "Состояние",
             "upperWarning": "Макс. значение",
             "upperCritical": "Макс. крит. значение",
             "assertionsEnabled": "Включены уведомления",
