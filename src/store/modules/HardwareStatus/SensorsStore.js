@@ -64,6 +64,7 @@ const SensorsStore = {
               id: response.data.Id,
               name: response.data.Name,
               status: response.data.Status?.Health,
+              state: response.data.Status?.State,
               currentValue: response.data.Reading,
               lowerCaution: response.data.Thresholds?.LowerCaution?.Reading,
               upperCaution: response.data.Thresholds?.UpperCaution?.Reading,

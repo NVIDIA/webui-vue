@@ -1,7 +1,15 @@
 <template>
   <b-container fluid="xl">
     <page-title />
-    <b-row class="align-items-end">
+    <b-row v-if="isBusy" class="justify-content-center mb-3">
+      <b-spinner 
+        label="Spinning"
+        aria-label="Loading dump type options"
+      >
+        SPINNER
+      </b-spinner>
+    </b-row>
+    <b-row v-else class="align-items-end">
       <b-col sm="6" md="5" xl="4">
         <search
           :placeholder="$t('pageSensors.searchForSensors')"
@@ -40,7 +48,7 @@
             />
           </template>
         </table-toolbar>
-        <b-table
+        <b-table v-if="allSensors.length" 
           ref="table"
           responsive="md"
           selectable
@@ -63,7 +71,7 @@
           @filtered="onFiltered"
           @row-selected="onRowSelected($event, filteredSensors.length)"
         >
-          <!-- Checkbox column -->
+          <!-- Checkbox header -->
           <template #head(checkbox)>
             <b-form-checkbox
               v-model="tableHeaderCheckboxModel"
@@ -73,38 +81,38 @@
               <span class="sr-only">{{ $t('global.table.selectAll') }}</span>
             </b-form-checkbox>
           </template>
-          <template #cell(checkbox)="row">
+
+          <!-- Checkbox column -->
+          <template #cell(checkbox)="data">
             <b-form-checkbox
-              v-model="row.rowSelected"
-              @change="toggleSelectRow($refs.table, row.index)"
+              v-model="data.rowSelected"
+              @change="toggleSelectRow($refs.table, data.index)"
             >
               <span class="sr-only">{{ $t('global.table.selectItem') }}</span>
             </b-form-checkbox>
           </template>
 
-          <template #cell(status)="{ value }">
-            <status-icon :status="statusIcon(value)" /> {{ value }}
+          <!-- Name column -->
+          <template #cell(name)="data">
+            {{ data.value }}
           </template>
-          <template #cell(currentValue)="data">
-            {{ data.value }} {{ data.item.units }}
+
+          <!-- Status column -->
+          <template #cell(status)="data">
+            <template v-if="data.item.state === 'Absent'">
+              <status-icon status="secondary" /> {{ data.item.state }}
+            </template>
+            <template v-else>
+              <status-icon :status="statusIcon(data.value)" /> {{ data.value }}
+            </template>
           </template>
-          <template #cell(lowerCaution)="data">
-            {{ data.value }} {{ data.item.units }}
-          </template>
-          <template #cell(upperCaution)="data">
-            {{ data.value }} {{ data.item.units }}
-          </template>
-          <template #cell(lowerCritical)="data">
-            {{ data.value }} {{ data.item.units }}
-          </template>
-          <template #cell(upperCritical)="data">
-            {{ data.value }} {{ data.item.units }}
-          </template>
-          <template #cell(lowerFatal)="data">
-            {{ data.value }} {{ data.item.units }}
-          </template>
-          <template #cell(upperFatal)="data">
-            {{ data.value }} {{ data.item.units }}
+
+          <!-- Value columns (except name) -->
+          <template #cell()="data">
+            <template v-if="data.item.state === 'Absent'">--</template>
+            <template v-else>
+              {{ data.value }} {{ data.item.units }}
+            </template>
           </template>
         </b-table>
       </b-col>
@@ -135,6 +143,7 @@ import SearchFilterMixin, {
 } from '@/components/Mixins/SearchFilterMixin';
 import { useI18n } from 'vue-i18n';
 import i18n from '@/i18n';
+import { BSpinner } from 'bootstrap-vue';
 
 export default {
   name: 'Sensors',
@@ -146,6 +155,7 @@ export default {
     TableFilter,
     TableToolbar,
     TableToolbarExport,
+    'b-spinner': BSpinner,
   },
   mixins: [
     TableFilterMixin,
@@ -173,6 +183,13 @@ export default {
             i18n.global.t('global.action.ok'),
             i18n.global.t('global.action.warning'),
             i18n.global.t('global.action.critical'),
+          ],
+        },
+        {
+          key: 'state',
+          label: i18n.global.t('pageSensors.table.state'),
+          values: [
+            i18n.global.t('global.action.absent')
           ],
         },
       ],
@@ -224,7 +241,6 @@ export default {
             formatter: this.dataFormatter,
             label: i18n.global.t('pageSensors.table.lowerWarning'),
           },
-
           {
             key: 'currentValue',
             formatter: this.dataFormatter,
@@ -302,10 +318,21 @@ export default {
         : this.filteredSensors.length;
     },
     filteredSensors() {
-      return this.getFilteredTableData(this.allSensors, this.activeFilters);
+      // First filter out absent sensors unless explicitly included in filters
+      const showAbsent = this.activeFilters.some(filter => 
+        filter.key === 'state' && filter.values.includes(i18n.global.t('global.action.absent'))
+      );
+      
+      const nonAbsentSensors = showAbsent 
+        ? this.allSensors 
+        : this.allSensors.filter(sensor => sensor.state !== i18n.global.t('global.action.absent'));
+      
+      // Then apply any other active filters
+      return this.getFilteredTableData(nonAbsentSensors, this.activeFilters);
     },
   },
   created() {
+    this.isBusy = true;
     this.startLoader();
     this.$store.dispatch('sensors/getAllSensors').finally(() => {
       this.endLoader();

@@ -2,6 +2,7 @@
     "global": {
         "action": {
             "add": "Add",
+            "absent": "Absent",
             "cancel": "Cancel",
             "clearAll": "Clear all",
             "confirm": "Confirm",
@@ -949,6 +950,7 @@
             "lowerCritical": "Lower critical",
             "name": "Name",
             "status": "Status",
+            "state": "State",
             "upperFatal": "Upper non-recoverable",
             "upperWarning": "Upper warning",
             "upperCritical": "Upper critical"
