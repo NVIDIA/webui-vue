@@ -368,7 +368,8 @@
             "serverMustBePoweredOffToUpdateFirmware": "服务器必须关闭以更新固件",
             "switchRunningAndBackupImages": "切换运行和备份映像",
             "updateFirmware": "更新固件",
-            "viewServerPowerOperations": "查看服务器电源操作"
+            "viewServerPowerOperations": "查看服务器电源操作",
+            "recommendPowerOnNote": "注意：某些组件（例如 GPU 和 CPLD）需要服务器开启才能更新。"
         },
         "form": {
             "updateFirmware": {

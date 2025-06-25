@@ -369,7 +369,8 @@
             "serverMustBePoweredOffToUpdateFirmware": "Сервер должен быть выключен, чтобы обновить встроенное ПО",
             "switchRunningAndBackupImages": "Переключение между рабочим и резервным образом",
             "updateFirmware": "Обновление встроенного ПО",
-            "viewServerPowerOperations": "Просмотр операций управления питанием сервера"
+            "viewServerPowerOperations": "Просмотр операций управления питанием сервера",
+            "recommendPowerOnNote": "Примечание: для обновления некоторых компонентов (например, GPU и CPLD) необходимо включить сервер."
         },
         "form": {
             "updateFirmware": {

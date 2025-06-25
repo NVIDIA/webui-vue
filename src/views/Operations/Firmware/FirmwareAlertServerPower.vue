@@ -9,19 +9,12 @@
       </alert>
       <!-- Power on/off server warning alert -->
       <alert
-        v-else-if="
-          (isServerPowerOffRequired && !isServerOff) ||
-          (isServerPowerOnRequired && isServerOff)
-        "
+        v-else-if="isServerPowerOffRequired && !isServerOff"
         variant="warning"
         class="mb-5"
       >
         <p class="mb-0">
-          {{
-            isServerPowerOffRequired && !isServerOff
-              ? $t('pageFirmware.alert.serverMustBePoweredOffTo')
-              : $t('pageFirmware.alert.serverMustBePoweredOnTo')
-          }}
+          {{ $t('pageFirmware.alert.serverMustBePoweredOffTo') }}
         </p>
         <ul class="m-0">
           <li v-if="supportsBackupImages">
@@ -31,6 +24,20 @@
             {{ $t('pageFirmware.alert.updateFirmware') }}
           </li>
         </ul>
+        <template #action>
+          <b-link to="/operations/server-power-operations">
+            {{ $t('pageFirmware.alert.viewServerPowerOperations') }}
+          </b-link>
+        </template>
+      </alert>
+      <alert
+        v-else-if="isServerPowerOnRequired && isServerOff"
+        variant="warning"
+        class="mb-5"
+      >
+        <p class="mb-0">
+            {{ $t('pageFirmware.alert.recommendPowerOnNote') }}
+        </p>
         <template #action>
           <b-link to="/operations/server-power-operations">
             {{ $t('pageFirmware.alert.viewServerPowerOperations') }}

@@ -374,7 +374,8 @@
             "serverMustBePoweredOffToUpdateFirmware": "Server must be powered off to update firmware",
             "switchRunningAndBackupImages": "Switch running and backup images",
             "updateFirmware": "Update firmware",
-            "viewServerPowerOperations": "View server power operations"
+            "viewServerPowerOperations": "View server power operations",
+            "recommendPowerOnNote": "Note: Some components (e.g., GPU and CPLD) require the server to be powered on in order to update."
         },
         "form": {
             "updateFirmware": {
