@@ -97,9 +97,6 @@ export default {
       if (this.isServerPowerOffRequired) {
         return !this.isServerOff || this.loading || this.isOperationInProgress;
       }
-      if (this.isServerPowerOnRequired) {
-        return this.isServerOff || this.loading || this.isOperationInProgress;
-      }
       return this.loading || this.isOperationInProgress;
     },
     isBiosFirmwareAvailable() {
