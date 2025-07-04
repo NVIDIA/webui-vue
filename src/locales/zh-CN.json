@@ -252,6 +252,7 @@
             "dateAndTime": "日期和时间",
             "dumpType": "Dump类型",
             "id": "ID",
+            "originatorType": "触发类型",
             "searchDumps": "搜索Dumps",
             "size": "大小"
         },

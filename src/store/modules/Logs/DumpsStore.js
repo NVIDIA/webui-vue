@@ -198,6 +198,7 @@ const DumpsStore = {
             id: dump.Id,
             location: dump['@odata.id'],
             size: dump.AdditionalDataSizeBytes,
+            originatorType: dump.OriginatorType,
             diagnosticDataType: dump.DiagnosticDataType,
             entryType: dump.EntryType,
           }));

@@ -251,6 +251,11 @@ export default {
           sortable: true,
         },
         {
+          key: 'originatorType',
+          label: i18n.global.t('pageDumps.table.originatorType'),
+          sortable: true,
+        },
+        {
           key: 'size',
           label: i18n.global.t('pageDumps.table.size'),
           sortable: true,

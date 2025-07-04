@@ -256,6 +256,7 @@
             "dateAndTime": "Date and time",
             "dumpType": "Dump type",
             "id": "ID",
+            "originatorType": "Originator Type",
             "searchDumps": "Search dumps",
             "size": "Size"
         },
