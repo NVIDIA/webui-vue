@@ -248,6 +248,11 @@ export default {
           sortable: true,
         },
         {
+          key: 'originatorType',
+          label: this.$t('pageDumps.table.originatorType'),
+          sortable: true,
+        },
+        {
           key: 'size',
           label: this.$t('pageDumps.table.size'),
           sortable: true,
