@@ -1,5 +1,32 @@
 <template>
   <div :class="isFullWindow ? 'full-window-container' : 'terminal-container'">
+    <b-row class="mb-4">
+      <b-col md="8" xl="6">
+        <page-section
+          :section-title="$t('pageServerPowerOperations.currentStatus')"
+        >
+          <b-row>
+            <b-col>
+              <dl>
+                <dt>{{ $t('pageServerPowerOperations.systemStatus') }}</dt>
+                <dd data-test-id="powerServerOps-text-hostStatus">
+                  {{ serverStatus ? $t(`global.statusState.${serverStatus.State}`) : '' }}
+                </dd>
+              </dl>
+            </b-col>
+            <b-col>
+              <dl>
+                <dt>{{ $t('pageServerPowerOperations.powerState') }}</dt>
+                <dd data-test-id="powerServerOps-text-powerState">
+                  {{ powerState ? $t(`global.powerState.${powerState}`) : '' }}
+                </dd>
+              </dl>
+            </b-col>
+          </b-row>
+        </page-section>
+      </b-col>
+    </b-row>
+
     <b-row class="d-flex">
       <b-col sm="4" md="6">
         <alert
@@ -23,6 +50,9 @@
         >
           <p class="col-form-label">
             {{ $t('pageSerialOverLan.alert.disconnectedAlertMessage') }}
+            <b-link to="/operations/server-power-operations">
+              {{ $t('pageFirmware.alert.viewServerPowerOperations') }}
+            </b-link>
           </p>
         </alert>
       </b-col>
@@ -31,7 +61,7 @@
       <b-col class="d-flex flex-column justify-content-end">
         <dl class="mb-2" sm="6" md="6">
           <dt class="d-inline font-weight-bold mr-1">
-            {{ $t('pageSerialOverLan.status') }}:
+            SOL {{ $t('pageSerialOverLan.status') }}:
           </dt>
           <dd class="d-inline">
             <status-icon :status="connectionStateIcon" />
@@ -62,6 +92,7 @@
 
 <script>
 import Alert from '@/components/Global/Alert';
+import PageSection from '@/components/Global/PageSection';
 import { AttachAddon } from 'xterm-addon-attach';
 import { FitAddon } from 'xterm-addon-fit';
 import { Terminal } from 'xterm';
@@ -82,6 +113,7 @@ export default {
   name: 'SerialOverLanConsole',
   components: {
     Alert,
+    PageSection,
     IconLaunch,
     StatusIcon,
   },
@@ -98,10 +130,14 @@ export default {
       resizeConsoleWindow: null,
       terminalClass: this.isFullWindow ? 'full-window' : '',
       connectionState: ConnectionState.CLOSED,
-      connectionError: null
+      connectionError: null,
+      powerStateTimer: null
     };
   },
   computed: {
+    serverStatus() {
+      return this.$store.getters['global/serverStatus'];
+    },
     powerState() {
       return this.$store.getters['global/powerState'];
     },
@@ -136,6 +172,15 @@ export default {
   },
   created() {
     this.$store.dispatch('global/getSystemInfo');
+    this.powerStateTimer = setInterval(() => {
+      this.$store.dispatch('global/getSystemInfo');
+    }, 5000);
+  },
+  beforeDestroy() {
+    if (this.powerStateTimer) {
+      clearInterval(this.powerStateTimer);
+      this.powerStateTimer = null;
+    }
   },
   mounted() {
     this.openTerminal();
