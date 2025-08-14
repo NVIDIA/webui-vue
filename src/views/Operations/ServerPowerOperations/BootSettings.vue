@@ -88,7 +88,7 @@ export default {
         oneTimeBoot: this.$store.getters['serverBootSettings/overrideEnabled'],
         tpmPolicyOn: this.$store.getters['serverBootSettings/tpmEnabled'],
       },
-      showTpm: process.env.VUE_APP_ENV_NAME !== 'nvidia-bluefield',
+      showTpm: process.env.VUE_APP_SHOW_TPM === 'true',
     };
   },
   computed: {
