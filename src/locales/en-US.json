@@ -1057,7 +1057,7 @@
         "gracefulRestart": "Graceful Restart",
         "gracefulRestartInfo": "Shut down gracefully and restart the unit",
         "gracefulShutdown": "Graceful Shutdown",
-        "gracefulShutdownInfo": "System power operations will be according to the host OS setting ( Ignore, power off, reboot, halt ... etc. )",
+        "gracefulShutdownInfo": "Shut down gracefully and power off",
         "nmi": "NMI",
         "nmiInfo": "Generate a diagnostic interrupt (Non-Maskable Interrupt)",
         "otherOperations": "Other Operations",

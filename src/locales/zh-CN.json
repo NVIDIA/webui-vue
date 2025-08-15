@@ -1067,7 +1067,7 @@
         "gracefulRestart": "优雅重启",
         "gracefulRestartInfo": "正常关闭并重新启动设备",
         "gracefulShutdown": "优雅关机",
-        "gracefulShutdownInfo": "系统电源操作将根据主机操作系统设置（ 忽略、断电、重启、停机等 ）",
+        "gracefulShutdownInfo": "优雅关闭并断电",
         "nmi": "NMI",
         "nmiInfo": "生成诊断中断（不可屏蔽中断）",
         "otherOperations": "其他操作",
