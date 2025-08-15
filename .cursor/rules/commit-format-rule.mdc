@@ -12,19 +12,29 @@ This rule defines the format for all commit messages in the repository.
 Name: "Commit Message Format"
 Pattern: \.git/COMMIT_EDITMSG$
 Description: "Follow the 50/72 rule for commit messages with specific required sections"
-Severity: Warning
+Severity: Error
 
 ## Format Rules
 
 1. The first line should be a concise summary of 50 characters or less
 2. The second line should be blank
-3. The main body should wrap at 72 characters
-4. The body must include the following sections:
+3. The main body should not have any lines greater than 72 characters
+4. Put logs or shell script in a quoted section with triple quotes (''') before and after the section
+5. Message must past codespell-dictionary and generic-dictionary check with misspelling count == 0
+6. The body must include the following sections:
    - **Changes added:** Brief description of what was added or changed
    - **Problem:** Description of the issue being addressed
    - **Solution:** Explanation of how the changes solve the problem
    - **Testing:** Description of testing performed to verify the changes
    - **Fixes** Reference to JIRA or nvbug issue, or other tracking ID (if applicable)
+7. Double-check No line can be greater than 72 characters in length!
+
+
+## Command Line requirements
+
+1. When working in an existing branch with commit history, use --amend
+2. Add -s to add signature to message
+3. Add --no-verify to bypass out-of-date unit tests (fix pending upstream)
 
 ## Benefits
 
