@@ -70,7 +70,6 @@ import OverviewQuickLinks from './OverviewQuickLinks';
 import OverviewServer from './OverviewServer';
 import PageSection from '@/components/Global/PageSection';
 import PageTitle from '@/components/Global/PageTitle';
-import { useI18n } from 'vue-i18n';
 
 export default {
   name: 'Overview',
@@ -89,7 +88,6 @@ export default {
   mixins: [LoadingBarMixin],
   data() {
     return {
-      $t: useI18n().t,
       showDumps: process.env.VUE_APP_ENV_NAME === 'ibm',
       showPower: !['nvidia-bluefield', 'nvidia-igx', 'nvidia-gb'].includes(
         process.env.VUE_APP_ENV_NAME,

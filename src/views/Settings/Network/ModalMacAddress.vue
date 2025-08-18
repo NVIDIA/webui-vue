@@ -52,7 +52,6 @@
 import VuelidateMixin from '@/components/Mixins/VuelidateMixin.js';
 import { useVuelidate } from '@vuelidate/core';
 import { required, helpers } from '@vuelidate/validators';
-import { useI18n } from 'vue-i18n';
 
 const macAddressValidator = helpers.regex(
   /^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$/,
@@ -78,7 +77,6 @@ export default {
   },
   data() {
     return {
-      $t: useI18n().t,
       form: {
         macAddress: '',
       },

@@ -74,7 +74,6 @@ import LoadingBarMixin from '@/components/Mixins/LoadingBarMixin';
 import ModalReset from './FactoryResetModal';
 import { mapGetters } from 'vuex';
 
-
 export default {
   name: 'FactoryReset',
   components: { PageTitle, ModalReset },

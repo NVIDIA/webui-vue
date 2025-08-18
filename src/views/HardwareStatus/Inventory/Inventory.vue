@@ -108,7 +108,7 @@ export default {
         process.env.VUE_APP_HIDE_INVENTORY_LED !== 'true',
       observer: null,
       validLinks: [],
-            links: [
+      links: [
         {
           id: 'system',
           dataRef: 'system',

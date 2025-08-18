@@ -217,7 +217,7 @@ export default {
       items.push(item);
     }
     return {
-            locale: this.$store.getters['global/languagePreference'],
+      locale: this.$store.getters['global/languagePreference'],
       form: {
         configurationSelected: 'manual',
         manual: {

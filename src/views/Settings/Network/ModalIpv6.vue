@@ -93,7 +93,6 @@ export default {
   },
   data() {
     return {
-      $t: useI18n().t,
       form: {
         ipAddress: '',
         prefixLength: '',

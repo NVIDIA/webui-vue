@@ -96,7 +96,6 @@ import DataFormatterMixin from '@/components/Mixins/DataFormatterMixin';
 import ModalIpv6 from './ModalIpv6.vue';
 import { mapState } from 'vuex';
 import i18n from '@/i18n';
-import { useI18n } from 'vue-i18n';
 
 export default {
   name: 'Ipv6Table',
@@ -117,7 +116,6 @@ export default {
   },
   data() {
     return {
-      $t: useI18n().t,
       showAddIpv6: false,
       form: {
         ipv6TableItems: [],

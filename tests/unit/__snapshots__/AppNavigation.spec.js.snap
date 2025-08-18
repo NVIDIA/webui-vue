@@ -667,7 +667,7 @@ exports[`AppNavigation.vue should render correctly 1`] = `
           <span
             class="version-info"
           >
-            global.footer.version: db0ae939042
+            global.footer.version: f6ea7db2
           </span>
         </div>
       </footer>
@@ -1351,7 +1351,7 @@ exports[`AppNavigation.vue should render with nav-container open 1`] = `
           <span
             class="version-info"
           >
-            global.footer.version: db0ae939042
+            global.footer.version: f6ea7db2
           </span>
         </div>
       </footer>

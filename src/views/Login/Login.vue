@@ -95,7 +95,6 @@ export default {
   },
   data() {
     return {
-      $t: useI18n().t,
       userInfo: {
         username: null,
         password: null,

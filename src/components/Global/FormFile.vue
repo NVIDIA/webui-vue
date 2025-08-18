@@ -45,6 +45,7 @@
 <script>
 import { BFormFile } from 'bootstrap-vue-next';
 import IconClose from '@carbon/icons-vue/es/close/20';
+
 export default {
   name: 'FormFile',
   components: { BFormFile, IconClose },

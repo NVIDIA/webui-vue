@@ -1,8 +1,11 @@
 import { mount } from '@vue/test-utils';
 import { createStore } from 'vuex';
-import { createI18n } from 'vue-i18n';
 import ModalUser from '@/views/SecurityAndAccess/UserManagement/ModalUser';
-import { bootstrapStubs, createModalStub } from '../../../testUtils';
+import {
+  bootstrapStubs,
+  createModalStub,
+  createTestI18n,
+} from '../../../testUtils';
 
 describe('ModalUser.vue', () => {
   let wrapper;
@@ -15,13 +18,7 @@ describe('ModalUser.vue', () => {
   };
 
   beforeEach(() => {
-    i18n = createI18n({
-      legacy: false,
-      locale: 'en-US',
-      fallbackLocale: 'en-US',
-      silentFallbackWarn: true,
-      messages: { 'en-US': {} },
-    });
+    i18n = createTestI18n();
 
     store = createStore({
       modules: {
@@ -54,9 +51,6 @@ describe('ModalUser.vue', () => {
       },
       global: {
         plugins: [store, i18n],
-        mocks: {
-          $t: (key) => key,
-        },
         stubs: {
           ...bootstrapStubs,
           'b-modal': createModalStub(),

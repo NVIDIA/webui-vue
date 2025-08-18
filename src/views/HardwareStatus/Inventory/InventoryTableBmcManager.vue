@@ -162,7 +162,6 @@ import TableRowExpandMixin, {
   expandRowLabel,
 } from '@/components/Mixins/TableRowExpandMixin';
 import DataFormatterMixin from '@/components/Mixins/DataFormatterMixin';
-import { useI18n } from 'vue-i18n';
 import i18n from '@/i18n';
 
 export default {
@@ -171,7 +170,6 @@ export default {
   props: ['showLeds'],
   data() {
     return {
-      $t: useI18n().t,
       isBusy: true,
       fields: [
         {
