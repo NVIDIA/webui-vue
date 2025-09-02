@@ -58,7 +58,7 @@
             {{ data.item.name }}
           </template>
           <template #cell(version)="data">
-            {{ data.item.version }}
+            {{ dataFormatter(data.item.version) }}
           </template>
           <template #cell(health)="data">
             <status-icon :status="statusIcon(data.item.status)" />

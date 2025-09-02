@@ -190,9 +190,6 @@ const FirmwareStore = {
             if (!item.name) {
               item.name = data?.['@odata.id']?.split('/').pop();
             }
-            if (!item.version) {
-              item.version = data?.Status?.State;
-            }
             firmwareInventory.push(item);
 
             if (state.bmcSoftwareImageIds.includes(item.id)) {
