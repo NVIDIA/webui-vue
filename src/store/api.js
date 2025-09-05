@@ -27,7 +27,8 @@ const api = setupCache(axiosInstance, {
 
 api.interceptors.response.use(undefined, (error) => {
   let response = error.response;
-  if (error.code === 'ECONNABORTED' && error.message.includes('timeout')) {
+  if ((error.code === 'ECONNABORTED' && error.message.includes('timeout')) 
+    || (error.code === 'ERR_NETWORK')) {
     console.log('Request timed out');
     return Promise.reject(error);
   }

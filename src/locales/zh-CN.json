@@ -1073,6 +1073,8 @@
         "start": "开始",
         "stop": "停止",
         "inserted": "已插入",
+        "eject": "弹出",
+        "websocketVMinUse": "另一个用户正在使用此设备，弹出按钮将强制弹出。",
         "virtualMediaSubTitleFirst": "从 Web 浏览器加载映像",
         "virtualMediaSubTitleSecond": "从外部服务器加载映像",
         "modal": {
