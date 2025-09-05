@@ -48,16 +48,16 @@ const SystemStore = {
     async getSystem({ state, commit }) {
       return await api
         .get('/redfish/v1/Systems')
-        .then(({ data: { Members = [] } }) =>
-          Members.map((member, idx) =>
+        .then(({ data: { Members = [] } }) => {
+          const promises = Members.map((member, idx) =>
             api.get(member['@odata.id']).then(({ data }) => {
               commit('setSystemInfo', { ...data, index: idx });
-              state.redfish_systems.splice(idx, 1, data);
+              Vue.set(state.redfish_systems, idx, data)
               return data;
             }),
-          ),
-        )
-        .then((promises) => api.allSettled(promises))
+          );
+          return api.allSettled(promises);
+        })
         .then(() => {
           commit('updateIsLoaded', true);
           return state.redfish_systems;
@@ -104,7 +104,7 @@ const SystemStore = {
     async getSystemsWithProp({ getters, dispatch }, { prop }) {
       if (!getters.isLoaded) await dispatch('getSystem');
       let Systems = getters.redfish_systems;
-      return Systems.filter(system => system.hasOwnProperty(prop));
+      return Systems.filter((system) => system.hasOwnProperty(prop));
     },
     async changeIdentifyLedState({ commit }, ledState) {
       return await api

@@ -25,8 +25,8 @@ const BmcStore = {
       bmc.graphicalConsoleEnabled = data?.GraphicalConsole?.ServiceEnabled;
       bmc.graphicalConsoleMaxSessions =
         data?.GraphicalConsole?.MaxConcurrentSessions;
-      bmc.health = data.Status.Health;
-      bmc.healthRollup = data.Status.HealthRollup;
+      bmc.health = data?.Status?.Health ?? null;
+      bmc.healthRollup = data?.Status?.HealthRollup ?? null;
       bmc.id = data.Id;
       bmc.lastResetTime = new Date(data.LastResetTime);
       bmc.identifyLed = data.LocationIndicatorActive;

@@ -1,0 +1,12 @@
+{
+    "pageDumps": {
+        "dumpTypes": {
+            "hmcDump": "HMC dump",
+            "bmcDump": "BMC dump",
+            "systemBmcDump": "System [BMC] dump (disruptive)",
+            "systemHgxDump": "System [HGX] dump (disruptive)"
+        }
+    }
+}
+
+

@@ -54,7 +54,8 @@
         "required": "必需",
         "search": "搜索",
         "selectAnOption": "选择一个选项",
-        "valueMustBeBetween": "值必须在 %{min} – %{max} 之间"
+        "valueMustBeBetween": "值必须在 %{min} – %{max} 之间",
+        "submitting": "提交中..."
       },
       "status": {
         "copied": "已复制",
@@ -225,20 +226,20 @@
         "dumpsAvailableOnBmc": "BMC上可用的Dumps",
         "initiateDump": "启动Dump",
         "form": {
-            "bmcDump": "BMC Dump",
-            "initiateDump": "启动Dump",
-            "selectDumpType": "选择Dump类型",
-            "systemDump": "系统Dump（中断性）",
-            "systemDumpInfo": "系统Dumps将被卸载到操作系统，不会出现在下面的表格中。"
+            "bmcDump": "BMC 转储",
+            "initiateDump": "启动转储",
+            "selectDumpType": "选择转储类型",
+            "systemDump": "系统转储（破坏性）",
+            "systemDumpInfo": "系统转储将被卸载到操作系统，不会出现在下面的表格中。"
         },
         "modal": {
             "deleteDump": "删除Dump| 删除Dumps",
             "deleteDumpConfirmation": "您确定要删除 %{count} 个Dump吗？此操作无法撤消。| 您确定要删除 %{count} 个Dumps吗？此操作无法撤消。",
-            "initiateSystemDump": "启动系统Dump",
+            "initiateSystemDump": "启动系统转储",
             "initiateSystemDumpMessage1": "您确定吗？",
-            "initiateSystemDumpMessage2": "系统Dump正在进行时，您将无法启动任何其他Dumps。",
-            "initiateSystemDumpMessage3": "启动系统Dump将异常终止所有活动的系统分区。",
-            "initiateSystemDumpMessage4": "继续启动Dump"
+            "initiateSystemDumpMessage2": "系统转储正在进行时，您将无法启动任何其他转储。",
+            "initiateSystemDumpMessage3": "启动系统转储将异常终止所有活动的系统分区。",
+            "initiateSystemDumpMessage4": "继续启动转储"
         },
         "table": {
             "dateAndTime": "日期和时间",
@@ -252,11 +253,10 @@
             "errorStartBmcDump": "启动新的 BMC Dump时出错。",
             "errorStartSystemDump": "启动新的系统Dump时出错。",
             "successDeleteDump": "成功删除 %{count} 个Dump。| 成功删除 %{count} 个Dumps。",
-            "successStartBmcDump": "Dump需要一些时间才能完成。刷新应用程序以在表格中看到完成的Dump。",
             "successStartBmcDumpTitle": "已启动 BMC Dump",
-            "successStartSystemDump": "Dump需要一些时间才能完成。Dump将被卸载到操作系统。",
             "successStartSystemDumpTitle": "已启动系统Dump"
-        }
+        },
+        "dumpTypes": {}
     },
     "pageEventLogs": {
         "additionalDataUri": "下载附加数据",
@@ -351,8 +351,8 @@
         "viewLess": "查看更少",
         "expand": "展开",
         "collapse": "收合",
-        "showAdvanced": "显示高级选项",
-        "hideAdvanced": "隐藏高级选项",
+        "showAdvanced": "显示高级设置",
+        "hideAdvanced": "隐藏高级设置",
         "alert": {
             "operationInProgress": "服务器电源操作正在进行中。",
             "serverMustBePoweredOffTo": "服务器必须关闭以进行：",
@@ -379,7 +379,9 @@
                 "apiErrorResponse": "API错误回应",
                 "clickToViewApiResponse": "点此检视API错误讯息",
                 "invalidFileAddress": "不合法的档案位址",
-                "invalidTargetSelection": "选择了错误的目标"
+                "invalidTargetSelection": "选择了错误的目标",
+                "targetBmc": "BMC",
+                "targetBios": "BIOS"
             }
         },
         "modal": {
@@ -392,7 +394,7 @@
             "switchRunningImage": "切换运行映像",
             "switchRunningImageInfo": "需要重启 BMC 才能运行备份映像。在此期间，应用程序可能会无响应。",
             "switchRunningImageInfo2": "您确定要切换到备份映像 (%{backup}) 吗？",
-            "updateFirmwareInfoDefault1": "根据固件类型，在更新过程中，BMC 可能会重新启动，或者主机电源可能会重新启动。在更新完成之前，请勿打开/关闭设备电源。",
+            "updateFirmwareInfo": "根据固件类型，在更新过程中，BMC 可能会重新启动，或者主机电源可能会重新启动。在更新完成之前，请勿打开/关闭设备电源。",
             "updateFirmwareInfoTargetBackup": "正在运行的映像 (%{running}) 将被复制到备份。备份映像将被删除。",
             "updateFirmwareInfoBackup": "如果此镜像有备份，则运行镜像将被复制到备份并替换当前备份镜像。",
             "updateFirmwareInfoDefault2": "您确定要继续更新吗？"
@@ -876,7 +878,9 @@
             "enableMessage": {
                 "ipmi": "您确定要启用 @:pagePolicies.ipmi 吗？",
                 "ssh": "您确定要启用 @:pagePolicies.ssh 吗？"
-            }
+            },
+            "removePasswordPolicy": "删除密码策略",
+            "removePasswordPolicyMessage": "您确定要删除密码策略吗？此操作无法撤消。"
         },
         "toast": {
             "errorIpmiDisabled": "禁用 IPMI 安全设置时出错。",
@@ -909,7 +913,14 @@
         "vtpm": "VirtualTPM",
         "vtpmDescription": "启用 vTPM 使 TPM 可用于来宾操作系统。",
         "webSessionTimeOut": "WEB 会话超时",
-        "webSessionTimeOutDescription": "在给定选项中更改 Web 会话超时"
+        "webSessionTimeOutDescription": "在给定选项中更改 Web 会话超时",
+        "form": {
+            "passwordRules": {
+                "minDifferentChars": "最小不同字符数",
+                "minPassphraseLength": "最小密码短语长度",
+                "maxFailedAttempts": "最大失败尝试次数"
+            }
+        }
     },
     "pagePower": {
         "description": "设置功率上限，以保持功耗在指定的瓦特值以下或等于该值",
@@ -932,7 +943,9 @@
             "name": "名称",
             "status": "状态",
             "upperWarning": "上限告警",
-            "upperCritical": "上限严重"
+            "upperCritical": "上限严重",
+            "assertionsEnabled": "启用断言",
+            "deassertionsEnabled": "启用取消断言"
         }
     },
     "pageSerialOverLan": {

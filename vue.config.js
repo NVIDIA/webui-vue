@@ -16,6 +16,14 @@ module.exports = {
           delete proxyRes.headers['strict-transport-security'];
         },
       },
+      '/styles/redfish.css': {
+        target: process.env.BASE_URL,
+        onProxyRes: (proxyRes) => {
+          // This header is ignored in the browser so removing
+          // it so we don't see warnings in the browser console
+          delete proxyRes.headers['strict-transport-security'];
+        },
+      }
     },
     port: 8000,
   },

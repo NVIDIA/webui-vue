@@ -1,0 +1,12 @@
+{
+    "pageDumps": {
+        "dumpTypes": {
+            "hmcDump": "HMC дамп",
+            "bmcDump": "Дамп BMC",
+            "systemBmcDump": "Системный [BMC] дамп (разрушительный)",
+            "systemHgxDump": "Системный [HGX] дамп (разрушительный)"
+        }
+    }
+}
+
+

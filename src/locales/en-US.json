@@ -23,7 +23,8 @@
             "selected": "Selected",
             "ok": "OK",
             "warning": "Warning",
-            "critical": "Critical"
+            "critical": "Critical",
+            "submitting": "Submitting..."
         },
         "ariaLabel": {
             "clearSearch": "Clear search input",
@@ -54,7 +55,8 @@
             "required": "Required",
             "search": "Search",
             "selectAnOption": "Select an option",
-            "valueMustBeBetween": "Value must be between %{min} – %{max}"
+            "valueMustBeBetween": "Value must be between %{min} – %{max}",
+            "submitting": "Submitting..."
         },
         "status": {
             "copied": "Copied",
@@ -256,7 +258,8 @@
             "successStartBmcDumpTitle": "BMC dump started",
             "successStartSystemDump": "The dump will take some time to complete. The dump will be offloaded to the operating system.",
             "successStartSystemDumpTitle": "System dump started"
-        }
+        },
+        "dumpTypes": {}
     },
     "pageEventLogs": {
         "additionalDataUri": "Download additional data",
