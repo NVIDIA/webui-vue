@@ -390,8 +390,8 @@ export default {
     },
     requirePassword() {
       if (this.newUser) return true;
-      if (this.v$.form.password.$dirty) return true;
-      if (this.v$.form.passwordConfirmation.$dirty) return true;
+      if (this.form.password?.length > 0) return true;
+      if (this.form.passwordConfirmation?.length > 0) return true;
       return false;
     },
     onOk(bvModalEvt) {
