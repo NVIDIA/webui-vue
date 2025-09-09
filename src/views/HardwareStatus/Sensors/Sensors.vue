@@ -92,6 +92,11 @@
             </b-form-checkbox>
           </template>
 
+          <!-- Id column -->
+          <template #cell(id)="data">
+            {{ data.value }}
+          </template>
+
           <!-- Name column -->
           <template #cell(name)="data">
             {{ data.value }}
