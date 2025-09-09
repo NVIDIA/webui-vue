@@ -92,6 +92,11 @@
             </b-form-checkbox>
           </template>
 
+          <!-- Id column -->
+          <template #cell(id)="data">
+            {{ data.value }}
+          </template>
+
           <!-- Name column -->
           <template #cell(name)="data">
             {{ data.value }}
@@ -362,9 +367,6 @@ export default {
         '_' +
         date.toString().split(':').join('-').split(' ')[4];
       return i18n.global.t('pageSensors.exportFilePrefix') + date;
-    },
-    toggleShowMore() {
-      this.showMore = !this.showMore;
     },
     toggleShowMore() {
       this.showMore = !this.showMore;
