@@ -133,9 +133,7 @@ const CommonLogStore = {
       return await api
         .get(entries)
         .then(({ data: { Members = [] } = {} }) => {
-          if (Members.length > 0) {
-            commit('setAllEvents', { Members: Members, value: LogService.value });
-          }
+          commit('setAllEvents', { Members: Members, value: LogService.value });
         })
         .catch((error) => {
           console.log('Event Log Data:', error);
