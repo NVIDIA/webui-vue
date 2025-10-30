@@ -321,7 +321,10 @@ export default {
     },
     isInitialized() {
       return this.$store.getters['dumps/isInitialized'];
-    }
+    },
+    fileExtension() {
+      return this.$store.getters['dumps/fileExtension'];
+    },
   },
   async created() {
     this.startLoader();  
@@ -412,7 +415,7 @@ export default {
       }
     },
     exportFileName(row) {
-      let filename = row.item.dumpType + '_' + row.item.id + '.tar.xz';
+      let filename = row.item.dumpType + '_' + row.item.id + '.' + this.fileExtension;
       filename = filename.replace(RegExp(' ', 'g'), '_');
       return filename;
     },
@@ -422,7 +425,7 @@ export default {
         : this.getFilteredDumps(index).length;
     },
     downloadEntry(uri) {
-      let filename = uri?.split('LogServices/')?.[1]+ '.tar.xz';
+      let filename = uri?.split('LogServices/')?.[1]+ '.' + this.fileExtension;
       filename.replace(RegExp('/', 'g'), '_');
       this.$store
         .dispatch('dumps/downloadEntry', uri)

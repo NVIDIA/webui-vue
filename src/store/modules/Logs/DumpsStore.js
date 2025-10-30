@@ -9,10 +9,12 @@ const DumpsStore = {
     dumpTypeOptions: [],
     dumpServices: [],
     isInitialized: false,
+    fileExtension: process.env.VUE_APP_DUMP_FILE_EXTENSION || 'tar.xz',
   },
   getters: {
     allDumps: (state) => state.allDumps,
     isInitialized: (state) => state.isInitialized,
+    fileExtension: (state) => state.fileExtension,
   },
   mutations: {
     setAllDumps: (state, dumps) => {
