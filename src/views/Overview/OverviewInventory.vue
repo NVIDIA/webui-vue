@@ -41,7 +41,7 @@ export default {
     return {
       showLeds:
         process.env.VUE_APP_HIDE_INVENTORY_LED !== 'true',
-    }
+    };
   },
   computed: {
     systems() {
@@ -51,7 +51,7 @@ export default {
   },
   created() {
     this.$store.dispatch('system/getSystem').finally(() => {
-      this.$root.$emit('overview-inventory-complete');
+      this.$eventBus.$emit('overview-inventory-complete');
     });
   },
   methods: {

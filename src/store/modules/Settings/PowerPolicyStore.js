@@ -31,7 +31,7 @@ const PowerPolicyStore = {
       };
       const powerPoliciesData = PowerTypes.enum.map(
         (powerState) => {
-          let desc = `${i18n.t(
+          let desc = `${i18n.global.t(
             `pagePowerRestorePolicy.policies.${powerState}`,
           )} - ${PowerTypes.enumDescriptions[powerState]}`;
           return {
@@ -81,12 +81,14 @@ const PowerPolicyStore = {
         .patch(`${await this.dispatch('global/getSystemPath')}`, data)
         .then(() => {
           dispatch('getPowerRestoreCurrentPolicy');
-          return i18n.t('pagePowerRestorePolicy.toast.successSaveSettings');
+          return i18n.global.t(
+            'pagePowerRestorePolicy.toast.successSaveSettings',
+          );
         })
         .catch((error) => {
           console.log(error);
           throw new Error(
-            i18n.t('pagePowerRestorePolicy.toast.errorSaveSettings'),
+            i18n.global.t('pagePowerRestorePolicy.toast.errorSaveSettings'),
           );
         });
     },

@@ -64,6 +64,7 @@ import TableIpv4 from './TableIpv4.vue';
 import TableIpv6 from './TableIpv6.vue';
 import TableDns from './TableDns.vue';
 import { mapState } from 'vuex';
+import { useI18n } from 'vue-i18n';
 
 export default {
   name: 'Network',
@@ -89,6 +90,7 @@ export default {
   },
   data() {
     return {
+      $t: useI18n().t,
       currentHostname: '',
       currentMacAddress: '',
       defaultGateway: '',
@@ -108,19 +110,19 @@ export default {
   created() {
     this.startLoader();
     const globalSettings = new Promise((resolve) => {
-      this.$root.$on('network-global-settings-complete', () => resolve());
+      this.$eventBus.$on('network-global-settings-complete', () => resolve());
     });
     const interfaceSettings = new Promise((resolve) => {
-      this.$root.$on('network-interface-settings-complete', () => resolve());
+      this.$eventBus.$on('network-interface-settings-complete', () => resolve());
     });
     const networkTableDns = new Promise((resolve) => {
-      this.$root.$on('network-table-dns-complete', () => resolve());
+      this.$eventBus.$on('network-table-dns-complete', () => resolve());
     });
     const networkTableIpv4 = new Promise((resolve) => {
-      this.$root.$on('network-table-ipv4-complete', () => resolve());
+      this.$eventBus.$on('network-table-ipv4-complete', () => resolve());
     });
     const networkTableIpv6 = new Promise((resolve) => {
-      this.$root.$on('network-table-ipv6-complete', () => resolve());
+      this.$eventBus.$on('network-table-ipv6-complete', () => resolve());
     });
     // Combine all child component Promises to indicate
     // when page data load complete

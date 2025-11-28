@@ -1,6 +1,5 @@
 import api from '@/store/api';
 import i18n from '@/i18n';
-import Vue from 'vue';
 
 // Helper function to format uptime seconds into a human-readable string
 const formatUptime = (seconds) => {
@@ -75,7 +74,7 @@ const BmcStore = {
       bmc.statusState = data.Status?.State;
       bmc.uuid = data.UUID;
       bmc.uri = data['@odata.id'];
-      Vue.set(state.bmc, data.index, bmc);
+      state.bmc[data.index] = bmc;
     },
     setManagerReady: (state, ready) => {
       state.isManagerReady = ready;
@@ -151,7 +150,7 @@ const BmcStore = {
               commit('setBmcTime', upTimeData.date);
               commit('setBmcUpTime', upTimeData.upTime);
             }
-            Vue.set(state.Managers, idx, data);
+            state.Managers[idx] = data;
             return data;
           })
         );
@@ -184,9 +183,13 @@ const BmcStore = {
         .then(() => {
           dispatch('getBmcInfo');
           if (led.identifyLed) {
-            return i18n.t('pageInventory.toast.successEnableIdentifyLed');
+            return i18n.global.t(
+              'pageInventory.toast.successEnableIdentifyLed',
+            );
           } else {
-            return i18n.t('pageInventory.toast.successDisableIdentifyLed');
+            return i18n.global.t(
+              'pageInventory.toast.successDisableIdentifyLed',
+            );
           }
         })
         .catch((error) => {
@@ -194,11 +197,11 @@ const BmcStore = {
           console.log('error', error);
           if (led.identifyLed) {
             throw new Error(
-              i18n.t('pageInventory.toast.errorEnableIdentifyLed'),
+              i18n.global.t('pageInventory.toast.errorEnableIdentifyLed'),
             );
           } else {
             throw new Error(
-              i18n.t('pageInventory.toast.errorDisableIdentifyLed'),
+              i18n.global.t('pageInventory.toast.errorDisableIdentifyLed'),
             );
           }
         });

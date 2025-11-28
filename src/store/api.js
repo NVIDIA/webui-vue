@@ -5,7 +5,7 @@ import { setupCache, buildWebStorage } from 'axios-cache-interceptor';
 //Do not change store import.
 //Exact match alias set to support
 //dotenv customizations.
-import store from '../store';
+import store from '.';
 
 Axios.defaults.headers.common['Accept'] = 'application/json';
 Axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
@@ -56,7 +56,7 @@ api.interceptors.response.use(undefined, (error) => {
     // what HTTP status code should we expect if the BMC aggregated a response from other BMCs, but at least one was non-responsive?
     // 206 Partial seems appropriate, but unfortunately 206 isn't in the Redfish spec explicitly, and 206 should be in response to the "Content-Range" header on the request
     // For now, handle the 500->206 if it has a valid data payload, (a 500 does put a nasty line on the JavaScript console for each call)
-    if (response?.data && !response?.data?.error) {
+    if (response && response.data && !response.data.error) {
       //console.log('500 -> 206 Partial: ', error);
       response.status = 206;
       return Promise.resolve(response);
@@ -114,6 +114,7 @@ export const getResponseCount = (responses) => {
 export const isPasswordExpired = (data) => {
   return !!findMessageId(data, 'PasswordChangeRequired');
 };
+
 /**
  * Returns the first ExtendedInfo.Message to start with the
  * Registry Name (Default: "Base") and end with the given key

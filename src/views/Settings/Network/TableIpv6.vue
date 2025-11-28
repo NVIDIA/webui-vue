@@ -187,7 +187,7 @@ export default {
     this.getDefaultGateway();
     this.$store.dispatch('network/getEthernetData').finally(() => {
       // Emit initial data fetch complete to parent component
-      this.$root.$emit('network-table-ipv6-complete');
+      this.$eventBus.$emit('network-table-ipv6-complete');
     });
   },
   methods: {

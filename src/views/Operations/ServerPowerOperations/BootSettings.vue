@@ -35,7 +35,7 @@
         v-model="form.oneTimeBoot"
         class="mb-4"
         :disabled="form.bootSourceOption === 'None'"
-        @change="$v.form.oneTimeBoot.$touch()"
+        @change="v$.form.oneTimeBoot.$touch()"
       >
         {{ $t('pageServerPowerOperations.bootSettings.enableOneTimeBoot') }}
       </b-form-checkbox>
@@ -50,10 +50,16 @@
 import { mapState } from 'vuex';
 import BVToastMixin from '@/components/Mixins/BVToastMixin';
 import LoadingBarMixin from '@/components/Mixins/LoadingBarMixin';
+import { useVuelidate } from '@vuelidate/core';
 
 export default {
   name: 'BootSettings',
   mixins: [BVToastMixin, LoadingBarMixin],
+  setup() {
+    return {
+      v$: useVuelidate(),
+    };
+  },
   data() {
     return {
       form: {
@@ -108,6 +114,7 @@ export default {
   methods: {
     handleSubmit() {
       this.startLoader();
+
       let settings;
       let bootOption = this.form.bootOption;
       let overrideEnabled = this.form.oneTimeBoot;
@@ -120,12 +127,12 @@ export default {
         .then((message) => this.successToast(message))
         .catch(({ message }) => this.errorToast(message))
         .finally(() => {
-          this.$v.form.$reset();
+          this.v$.form.$reset();
           this.endLoader();
         });
     },
     onChangeSelect(selectedOption) {
-      this.$v.form.bootSourceOption.$touch();
+      this.v$.form.bootSourceOption.$touch();
       // Disable one time boot if selected boot option is 'None'
       if (selectedOption === 'None') this.form.oneTimeBoot = false;
     },

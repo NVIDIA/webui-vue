@@ -16,14 +16,14 @@
               id="hostname"
               v-model="form.hostname"
               type="text"
-              :state="getValidationState($v.form.hostname)"
-              @input="$v.form.hostname.$touch()"
+              :state="getValidationState(v$.form.hostname)"
+              @input="v$.form.hostname.$touch()"
             />
             <b-form-invalid-feedback role="alert">
-              <template v-if="!$v.form.hostname.required">
+              <template v-if="v$.form.hostname.required.$invalid">
                 {{ $t('global.form.fieldRequired') }}
               </template>
-              <template v-if="!$v.form.hostname.validateHostname">
+              <template v-if="v$.form.hostname.validateHostname.$invalid">
                 {{ $t('global.form.lengthMustBeBetween', { min: 1, max: 64 }) }}
               </template>
             </b-form-invalid-feedback>
@@ -49,7 +49,10 @@
 
 <script>
 import VuelidateMixin from '@/components/Mixins/VuelidateMixin.js';
-import { required, helpers } from 'vuelidate/lib/validators';
+import { useVuelidate } from '@vuelidate/core';
+import { helpers } from 'vuelidate/lib/validators';
+import { required } from '@vuelidate/validators';
+import { useI18n } from 'vue-i18n';
 
 const validateHostname = helpers.regex('validateHostname', /^\S{0,64}$/);
 
@@ -61,8 +64,14 @@ export default {
       default: '',
     },
   },
+  setup() {
+    return {
+      v$: useVuelidate(),
+    };
+  },
   data() {
     return {
+      $t: useI18n().t,
       form: {
         hostname: '',
       },
@@ -85,8 +94,8 @@ export default {
   },
   methods: {
     handleSubmit() {
-      this.$v.$touch();
-      if (this.$v.$invalid) return;
+      this.v$.$touch();
+      if (this.v$.$invalid) return;
       this.$emit('ok', { HostName: this.form.hostname });
       this.closeModal();
     },
@@ -97,7 +106,7 @@ export default {
     },
     resetForm() {
       this.form.hostname = this.hostname;
-      this.$v.$reset();
+      this.v$.$reset();
       this.$emit('hidden');
     },
     onOk(bvModalEvt) {

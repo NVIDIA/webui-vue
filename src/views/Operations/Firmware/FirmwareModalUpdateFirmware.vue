@@ -56,15 +56,15 @@ export default {
       return this.$store.getters['firmware/backupBiosFirmware'];
     },
     runningBmcVersion() {
-      return this.activeBmcFirmware?.version || '--';
+      return this.activeBmcFirmware && this.activeBmcFirmware.version ? this.activeBmcFirmware.version : '--';
     },
     runningBiosVersion() {
-      return this.activeBiosFirmware?.version || '--';
+      return this.activeBiosFirmware && this.activeBiosFirmware.version ? this.activeBiosFirmware.version : '--';
     },
     showBackup() {
       if (
-        this.backupBmcFirmware?.length > 0 ||
-          this.backupBiosFirmware?.length > 0
+        (this.backupBmcFirmware && this.backupBmcFirmware.length > 0) ||
+        (this.backupBiosFirmware && this.backupBiosFirmware.length > 0)
       )
         return true;
       else return false;
@@ -72,9 +72,9 @@ export default {
     showBackupBmcMessage() {
       // Only show the backup message when BMC(which has backup) is in targets
       if (
-        this.targets?.includes(this.activeBmcFirmware?.id) &&
-          this.backupBmcFirmware != null &&
-          this.backupBmcFirmware?.length > 0
+        this.targets && this.activeBmcFirmware && this.targets.includes(this.activeBmcFirmware.id) &&
+        this.backupBmcFirmware != null &&
+        this.backupBmcFirmware && this.backupBmcFirmware.length > 0
       )
         return true;
       else return false;
@@ -82,9 +82,9 @@ export default {
     showBackupBiosMessage() {
       // Only show the backup message when BIOS(which has backup) is in targets
       if (
-        this.targets?.includes(this.activeBiosFirmware?.id) &&
-          this.backupBiosFirmware != null &&
-          this.backupBiosFirmware?.length > 0
+        this.targets && this.activeBiosFirmware && this.targets.includes(this.activeBiosFirmware.id) &&
+        this.backupBiosFirmware != null &&
+        this.backupBiosFirmware && this.backupBiosFirmware.length > 0
       )
         return true;
       else return false;

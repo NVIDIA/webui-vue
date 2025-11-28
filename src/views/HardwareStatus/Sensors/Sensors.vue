@@ -180,11 +180,11 @@ export default {
       tableFilters: [
         {
           key: 'status',
-          label: this.$t('pageSensors.table.status'),
+          label: i18n.global.t('pageSensors.table.status'),
           values: [
-            this.$t('global.action.ok'),
-            this.$t('global.action.warning'),
-            this.$t('global.action.critical'),
+            i18n.global.t('global.action.ok'),
+            i18n.global.t('global.action.warning'),
+            i18n.global.t('global.action.critical'),
           ],
         },
         {
@@ -363,7 +363,7 @@ export default {
         date.toISOString().slice(0, 10) +
         '_' +
         date.toString().split(':').join('-').split(' ')[4];
-      return this.$t('pageSensors.exportFilePrefix') + date;
+      return i18n.global.t('pageSensors.exportFilePrefix') + date;
     },
     toggleShowMore() {
       this.showMore = !this.showMore;

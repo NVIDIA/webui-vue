@@ -44,13 +44,13 @@
               v-model="form.password"
               autofocus="autofocus"
               type="password"
-              :state="getValidationState($v.form.password)"
+              :state="getValidationState(v$.form.password)"
               class="form-control-with-button"
-              @change="$v.form.password.$touch()"
+              @change="v$.form.password.$touch()"
             >
             </b-form-input>
             <b-form-invalid-feedback role="alert">
-              <template v-if="!$v.form.password.required">
+              <template v-if="v$.form.password.required.$invalid">
                 {{ $t('global.form.fieldRequired') }}
               </template>
             </b-form-invalid-feedback>
@@ -66,16 +66,18 @@
               autocomplete="new-password"
               v-model="form.passwordConfirm"
               type="password"
-              :state="getValidationState($v.form.passwordConfirm)"
+              :state="getValidationState(v$.form.passwordConfirm)"
               class="form-control-with-button"
-              @change="$v.form.passwordConfirm.$touch()"
+              @change="v$.form.passwordConfirm.$touch()"
             >
             </b-form-input>
             <b-form-invalid-feedback role="alert">
-              <template v-if="!$v.form.passwordConfirm.required">
+              <template v-if="v$.form.passwordConfirm.required.$invalid">
                 {{ $t('global.form.fieldRequired') }}
               </template>
-              <template v-else-if="!$v.form.passwordConfirm.sameAsPassword">
+              <template
+                v-else-if="v$.form.passwordConfirm.sameAsPassword.$invalid"
+              >
                 {{ $t('global.form.passwordsDoNotMatch') }}
               </template>
             </b-form-invalid-feedback>
@@ -95,22 +97,29 @@
       </b-form>
      </div>
     </div>
-  </div>
 </template>
 
 <script>
-import { required, sameAs } from 'vuelidate/lib/validators';
+import { required, sameAs } from '@vuelidate/validators';
 import Alert from '@/components/Global/Alert';
 import VuelidateMixin from '@/components/Mixins/VuelidateMixin';
 import InputPasswordToggle from '@/components/Global/InputPasswordToggle';
 import BVToastMixin from '@/components/Mixins/BVToastMixin';
+import { useVuelidate } from '@vuelidate/core';
+import { useI18n } from 'vue-i18n';
 
 export default {
   name: 'ChangePassword',
   components: { Alert, InputPasswordToggle },
   mixins: [VuelidateMixin, BVToastMixin],
+  setup() {
+    return {
+      v$: useVuelidate(),
+    };
+  },
   data() {
     return {
+      $t: useI18n().t,
       form: {
         password: null,
         passwordConfirm: null,
@@ -126,7 +135,7 @@ export default {
         password: { required },
         passwordConfirm: {
           required,
-          sameAsPassword: sameAs('password'),
+          sameAsPassword: sameAs(this.form.password),
         },
       },
     };
@@ -134,8 +143,8 @@ export default {
   methods: {
 
     changePassword() {
-      this.$v.$touch();
-      if (this.$v.$invalid) return;
+      this.v$.$touch();
+      if (this.v$.$invalid) return;
       let data = {
         originalUsername: this.username,
         password: this.form.password,

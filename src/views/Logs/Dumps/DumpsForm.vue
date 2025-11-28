@@ -32,8 +32,8 @@
         <b-form-select
           id="selectDumpType"
           v-model="selectedDumpType"
-          :state="getValidationState($v.selectedDumpType)"
-          :aria-invalid="$v.selectedDumpType.$error"
+          :state="getValidationState(v$.selectedDumpType)"
+          :aria-invalid="v$.selectedDumpType.$error"
           aria-required="true"
         >
           <template #first>
@@ -71,7 +71,7 @@
               :id="`param-${param.Name}`"
               v-model="parameterValues[param.Name]"
               :options="param.AllowableValues"
-              :state="getValidationState($v.parameterValues[param.Name])"
+              :state="getValidationState(v$.parameterValues[param.Name])"
               @change="resetParameterValidation(param.Name)"
               :aria-required="param.Required"
             >
@@ -120,7 +120,7 @@
 </template>
 
 <script>
-import { required } from 'vuelidate/lib/validators';
+import { required } from '@vuelidate/validators';
 import ModalConfirmation from './DumpsModalConfirmation';
 import Alert from '@/components/Global/Alert';
 import BVToastMixin from '@/components/Mixins/BVToastMixin';
@@ -225,8 +225,8 @@ export default {
   methods: {
     // Public methods
     handleSubmit() {
-      this.$v.$touch();
-      if (this.$v.$invalid) return;
+      this.v$.$touch();
+      if (this.v$.$invalid) return;
 
       this.isSubmitting = true;
       this.formError = null;
@@ -296,8 +296,8 @@ export default {
 
     /** @group Validation */
     resetParameterValidation(paramName) {
-      if (this.$v.parameterValues[paramName]) {
-        this.$v.parameterValues[paramName].$reset();
+      if (this.v$.parameterValues[paramName]) {
+        this.v$.parameterValues[paramName].$reset();
       }
     },
 
@@ -331,15 +331,9 @@ export default {
     resetForm() {
       this.selectedDumpType = null;
       this.parameterValues = {};
-      this.$v.$reset();
+      this.v$.$reset();
     },
 
-    // Private methods (prefixed with _)
-    _resetParameterValidation(paramName) {
-      if (this.$v.parameterValues[paramName]) {
-        this.$v.parameterValues[paramName].$reset();
-      }
-    },
   },
 
   /**
@@ -354,12 +348,12 @@ export default {
         this.isSubmitting = false;
       }
     };
-    this.$root.$on('bv::modal::hide', this.modalListener);
+    this.$eventBus.$on('bv::modal::hide', this.modalListener);
   },
 
   beforeDestroy() {
     // Clean up listener
-    this.$root.$off('bv::modal::hide', this.modalListener);
+    this.$eventBus.$off('bv::modal::hide', this.modalListener);
   },
 
   props: {

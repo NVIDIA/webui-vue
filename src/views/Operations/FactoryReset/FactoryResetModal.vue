@@ -33,13 +33,13 @@
       <b-form-checkbox
         v-model="confirm"
         aria-describedby="reset-to-default-warning"
-        @input="$v.confirm.$touch()"
+        @input="v$.confirm.$touch()"
       >
         {{ $t(`pageFactoryReset.modal.resetWarningCheckLabel`) }}
       </b-form-checkbox>
       <b-form-invalid-feedback
         role="alert"
-        :state="getValidationState($v.confirm)"
+        :state="getValidationState(v$.confirm)"
       >
         {{ $t('global.form.fieldRequired') }}
       </b-form-invalid-feedback>
@@ -67,6 +67,7 @@
 <script>
 import StatusIcon from '@/components/Global/StatusIcon';
 import VuelidateMixin from '@/components/Mixins/VuelidateMixin';
+import { useVuelidate } from '@vuelidate/core';
 
 export default {
   components: { StatusIcon },
@@ -76,6 +77,11 @@ export default {
       type: String,
       default: null,
     },
+  },
+  setup() {
+    return {
+      v$: useVuelidate(),
+    };
   },
   data() {
     return {
@@ -100,15 +106,15 @@ export default {
   },
   methods: {
     handleConfirm() {
-      this.$v.$touch();
-      if (this.$v.$invalid && this.showWarning) return;
+      this.v$.$touch();
+      if (this.v$.$invalid && this.showWarning) return;
       this.$emit('okConfirm');
       this.$nextTick(() => this.$refs.modal.hide());
       this.resetConfirm();
     },
     resetConfirm() {
       this.confirm = false;
-      this.$v.$reset();
+      this.v$.$reset();
     },
   },
 };

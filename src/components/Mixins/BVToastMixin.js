@@ -37,7 +37,7 @@ const BVToastMixin = {
       }
     },
     $_BVToastMixin_createTimestamp() {
-      const timestamp = this.$options.filters.formatTime(new Date());
+      const timestamp = this.$filters.formatTime(new Date());
       return this.$createElement('p', { class: 'mt-3 mb-0' }, timestamp);
     },
     $_BVToastMixin_createRefreshAction() {
@@ -47,11 +47,11 @@ const BVToastMixin = {
           class: 'd-inline-block mt-3',
           on: {
             click: () => {
-              this.$root.$emit('refresh-application');
+              this.$eventBus.$emit('refresh-application');
             },
           },
         },
-        this.$t('global.action.refresh'),
+        i18n.global.t('global.action.refresh'),
       );
     },
     $_BVToastMixin_initToast(body, title, variant) {
@@ -67,7 +67,7 @@ const BVToastMixin = {
     successToast(
       message,
       {
-        title: t = this.$t('global.status.success'),
+        title: t = i18n.global.t('global.status.success'),
         timestamp,
         refreshAction,
       } = {},
@@ -81,7 +81,7 @@ const BVToastMixin = {
     errorToast(
       message,
       {
-        title: t = this.$t('global.status.error'),
+        title: t = i18n.global.t('global.status.error'),
         timestamp,
         refreshAction,
         redfishError,
@@ -125,7 +125,7 @@ const BVToastMixin = {
     warningToast(
       message,
       {
-        title: t = this.$t('global.status.warning'),
+        title: t = i18n.global.t('global.status.warning'),
         timestamp,
         refreshAction,
       } = {},
@@ -139,7 +139,7 @@ const BVToastMixin = {
     infoToast(
       message,
       {
-        title: t = this.$t('global.status.informational'),
+        title: t = i18n.global.t('global.status.informational'),
         timestamp,
         refreshAction,
       } = {},
@@ -173,7 +173,7 @@ const BVToastMixin = {
           
           // Use msgBoxOk with the VNode as content
           this.$root.$bvModal.msgBoxOk([preNode], {
-            title: i18n.t('global.message.errorDetails'),
+            title: i18n.global.t('global.message.errorDetails'),
             size: 'lg',
             centered: true,
             headerBgVariant: 'danger',
@@ -184,12 +184,12 @@ const BVToastMixin = {
           });
         } else {
           // If $bvModal isn't available, fall back to alert
-          alert(i18n.t('global.message.errorDetails') + ':\n\n' + formattedJson);
+          alert(i18n.global.t('global.message.errorDetails') + ':\n\n' + formattedJson);
         }
       } catch (error) {
         console.error('Error showing error details:', error);
         // Fall back to alert
-        alert(i18n.t('global.message.errorDetails') + ':\n\n' + formattedJson);
+        alert(i18n.global.t('global.message.errorDetails') + ':\n\n' + formattedJson);
       }
     },
   },

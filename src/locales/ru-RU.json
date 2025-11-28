@@ -52,13 +52,13 @@
             "clearSelectedFile": "Очистить поле"
         },
         "form": {
-            "dateMustBeAfter": "Дата должна быть после %{date}",
-            "dateMustBeBefore": "Дата должна быть до %{date}",
+            "dateMustBeAfter": "Дата должна быть после {date}",
+            "dateMustBeBefore": "Дата должна быть до {date}",
             "fieldRequired": "Обязательное поле",
             "invalidFormat": "Некорректный формат",
             "invalidValue": "Некорректное значение",
-            "lengthMustBeBetween": "Длина в символах должна быть от %{min} до %{max}",
-            "mustBeAtLeast": "Должно быть не менее %{value}",
+            "lengthMustBeBetween": "Длина в символах должна быть от {min} до {max}",
+            "mustBeAtLeast": "Должно быть не менее {value}",
             "optional": "Не обязательно",
             "passwordsDoNotMatch": "Пароли не совпадают",
             "required": "Обязательно",
@@ -109,11 +109,11 @@
             "emptySearchMessage": "Нет объектов, соответствующих поиску",
             "expandTableRow": "Развернуть",
             "fromDate": "Начиная с даты",
-            "items": "Всего объектов: %{count}",
+            "items": "Всего объектов: {count}",
             "itemsPerPage": "Объектов на странице",
             "selectAll": "Выбрать всё",
             "selectItem": "Выбрать объект",
-            "selectedItems": "%{filterCount} из %{count} объектов",
+            "selectedItems": "{filterCount} из {count} объектов",
             "toDate": "Заканчивая датой",
             "viewAll": "Смотреть всё"
         },
@@ -222,7 +222,7 @@
         },
         "modal": {
             "disconnectTitle": "Отключить сессию| Отключить сессии",
-            "disconnectMessage": "Вы уверены что хотите отключить %{count} сессию? Действие не может быть отменено. | Вы уверены что хотите отключить все %{count} сессии? Действие не может быть отменено."
+            "disconnectMessage": "Вы уверены что хотите отключить {count} сессию? Действие не может быть отменено. | Вы уверены что хотите отключить все {count} сессии? Действие не может быть отменено."
         },
         "table": {
             "sessionID": "Идентификатор сессии",
@@ -232,8 +232,8 @@
             "searchSessions": "Поиск сессий"
         },
         "toast": {
-            "errorDelete": "Ошибка отключения %{count} сессии. | Ошибка отключения %{count} сессий.",
-            "successDelete": "Успешно отключена %{count} сессия. | Успешно отключены %{count} сессии."
+            "errorDelete": "Ошибка отключения {count} сессии. | Ошибка отключения {count} сессий.",
+            "successDelete": "Успешно отключена {count} сессия. | Успешно отключены {count} сессии."
         }
     },
     "pageDateTime": {
@@ -247,7 +247,7 @@
             "manual": "Ручное",
             "time": {
                 "label": "24-х часовой формат",
-                "timezone": "@:pageDateTime.form.time.label (%{timezone})"
+                "timezone": "@:pageDateTime.form.time.label ({timezone})"
             },
             "ntpServers": {
                 "server1": "Сервер %{index}",
@@ -290,10 +290,10 @@
             "size": "Размер"
         },
         "toast": {
-            "errorDeleteDump": "Ошибка удаления %{count} дампа. | Ошибка удаления %{count} дампов.",
+            "errorDeleteDump": "Ошибка удаления {count} дампа. | Ошибка удаления {count} дампов.",
             "errorStartBmcDump": "Ошибка старта нового BMC дампа.",
             "errorStartSystemDump": "Ошибка старта нового системного дампа.",
-            "successDeleteDump": "Успешное удаление %{count} дампа. | Успешное удаление всех %{count} дампов.",
+            "successDeleteDump": "Успешное удаление {count} дампа. | Успешное удаление всех {count} дампов.",
             "successStartBmcDump": "Создание дампа займёт некоторое время. Обновите страницу, чтобы увидеть дамп в таблице",
             "successStartBmcDumpTitle": "Начало создания дампа BMC",
             "successStartSystemDump": "Создание дампа займёт некоторое время. Дамп будет выгружен в операционную систему.",
@@ -310,7 +310,7 @@
             "deleteAllTitle": "Удалить все логи",
             "deleteAllMessage": "Вы уверены, что хотите удалить все логи? Действие не может быть отменено.",
             "deleteTitle": "Удалить запись из журнала | Удалить записи из журнала",
-            "deleteMessage": "Вы уверены, что хотите удалить %{count} запись? Действие не может быть отменено. | Вы уверены, что хотите удалить %{count} записей? Действие не может быть отменено."
+            "deleteMessage": "Вы уверены, что хотите удалить {count} запись? Действие не может быть отменено. | Вы уверены, что хотите удалить {count} записей? Действие не может быть отменено."
         },
         "table": {
             "date": "Дата",
@@ -326,7 +326,7 @@
             "type": "Тип"
         },
         "toast": {
-            "errorDelete": "Ошибка удаления %{count} записи. | Ошибка уделения %{count} записей.",
+            "errorDelete": "Ошибка удаления {count} записи. | Ошибка уделения {count} записей.",
             "errorLogStatusUpdate": "Ошибка обновления статуса записи.",
             "errorResolveLogs": "Ошибка разрешения %{count} записи. | Ошибка разрешения %{count} записей.",
             "errorUnresolveLogs": "Ошибка снятия разрешения с %{count} записи. | Ошибка снятия разрешения с %{count} записей.",
@@ -643,8 +643,8 @@
         },
         "modal": {
             "addNewRoleGroup": "Добавить новую группу",
-            "deleteRoleGroupBatchConfirmMessage": "Вы уверены, что хотите удалить %{count} группу? Это действие нельзя отменить. | Вы уверены, что хотите удалить %{count} группы? Это действие нельзя отменить.",
-            "deleteRoleGroupConfirmMessage": "Вы уверены, что хотите удалить '%{groupName}'? Это действие нельзя отменить.",
+            "deleteRoleGroupBatchConfirmMessage": "Вы уверены, что хотите удалить {count} группу? Это действие нельзя отменить. | Вы уверены, что хотите удалить {count} группы? Это действие нельзя отменить.",
+            "deleteRoleGroupConfirmMessage": "Вы уверены, что хотите удалить '{groupName}'? Это действие нельзя отменить.",
             "deleteRoleGroup": "Удалить группу",
             "editRoleGroup": "Редактировать группу",
             "groupName": "Имя группы",
@@ -661,11 +661,11 @@
             "errorSaveActiveDirectorySettings": "Ошибка сохранения настроек Active Directory.",
             "errorSaveLdapSettings": "Ошибка сохранения настроек Open LDAP.",
             "errorSaveRoleGroup": "Ошибка сохранения группы.",
-            "successAddRoleGroup": "Успешное добавление группы '%{groupName}'.",
+            "successAddRoleGroup": "Успешное добавление группы '{groupName}'.",
             "successDeleteRoleGroup": "Успешное удаление группы. | Успешное удаление групп.",
             "successSaveActiveDirectorySettings": "Успешное сохранение настроек Active Directory.",
             "successSaveLdapSettings": "Успешное сохранение настроек Open LDAP.",
-            "successSaveRoleGroup": "Успешное сохранение группы '%{groupName}'."
+            "successSaveRoleGroup": "Успешное сохранение группы '{groupName}'."
         }
     },
     "pageUserManagement": {
@@ -673,13 +673,15 @@
         "addUser": "Добавить пользователя",
         "bootstrapManagerDeletionError": "Учетная запись менеджера начальной загрузки или текущего пользователя не может быть удалена",
         "deleteUser": "Удалить пользователя | Удалить пользователей",
+        "disableUser": "Отключить пользователя | Отключить пользователей",
         "editUser": "Редактировать пользователя",
         "viewPrivilegeRoleDescriptions": "Просмотр описаний привилегий ролей",
         "modal": {
             "accountLocked": "Учётная запись заблокирована",
             "accountStatus": "Статус учётной записи",
             "automaticAfterTimeout": "Автоматически после истечения таймаута",
-            "batchDeleteConfirmMessage": "Вы уверены, что хотите удалить %{count} пользователя? Это действие нельзя отменить. | Вы уверены, что хотите удалить %{count} пользователей? Это действие нельзя отменить.",
+            "batchDeleteConfirmMessage": "Вы уверены, что хотите удалить {count} пользователя? Это действие нельзя отменить. | Вы уверены, что хотите удалить {count} пользователей? Это действие нельзя отменить.",
+            "batchDisableConfirmMessage": "Вы уверены, что хотите отключить пользователя {count}? | Вы уверены, что хотите отключить пользователей {count}?",
             "cannotStartWithANumber": "Не может начинаться с цифры",
             "clickSaveToUnlockAccount": "Нажмите \"Сохранить\" для разблокировки учётной записи",
             "confirmUserPassword": "Подтвердите пароль пользователя",
@@ -688,7 +690,7 @@
             "manual": "Ручное",
             "maxFailedLoginAttempts": "Максимальное количество попыток входа",
             "noSpecialCharactersExceptUnderscore": "Никаких специальных символов, кроме знака подчёркивания",
-            "passwordMustBeBetween": "Пароль должен быть от %{min} до %{max} символов",
+            "passwordMustBeBetween": "Пароль должен быть от {min} до {max} символов",
             "passwordsDoNotMatch": "Пароли не совпадают",
             "privilege": "Привилегии",
             "timeoutDurationSeconds": "Продолжительность таймаута (в секундах)",
@@ -715,23 +717,23 @@
             "noAccess": "Нет доступа"
         },
         "toast": {
-            "errorBatchDelete": "Ошибка удаления %{count} пользователя. | Ошибка удаления %{count} пользователей.",
-            "errorBatchDisable": "Ошибка отключения %{count} пользователя. | Ошибка отключения %{count} пользователей.",
-            "errorBatchEnable": "Ошибка включения %{count} пользователя. | Ошибка включения %{count} пользователей.",
-            "errorCreateUser": "Ошибка создания пользователя '%{username}'.",
-            "errorAlreadyExistUser": "имя пользователя '%{username}' уже существует.",
-            "errorDeleteUser": "Ошибка удаления пользователя '%{username}'.",
+            "errorBatchDelete": "Ошибка удаления {count} пользователя. | Ошибка удаления {count} пользователей.",
+            "errorBatchDisable": "Ошибка отключения {count} пользователя. | Ошибка отключения {count} пользователей.",
+            "errorBatchEnable": "Ошибка включения {count} пользователя. | Ошибка включения {count} пользователей.",
+            "errorCreateUser": "Ошибка создания пользователя '{username}'.",
+            "errorAlreadyExistUser": "имя пользователя '{username}' уже существует.",
+            "errorDeleteUser": "Ошибка удаления пользователя '{username}'.",
             "errorLoadAccountSettings": "Ошибка загрузки настроек учётной записи",
             "errorLoadUsers": "Ошибка загрузки учётных записей пользователей.",
             "errorSaveSettings": "Ошибка сохранения настроек учётной записи.",
-            "errorUpdateUser": "Ошибка обновления учётной записи пользователя '%{username}'.",
-            "successBatchDelete": "Успешное удаление %{count} пользователя. | Успешное удаление %{count} пользователей.",
-            "successBatchDisable": "Успешное отключение %{count} пользователя. | Успешное отключение %{count} пользователей.",
-            "successBatchEnable": "Успешное включение %{count} пользователя. | Успешное включение %{count} пользователей.",
-            "successCreateUser": "Пользователь создан '%{username}'.",
-            "successDeleteUser": "Пользователь удален '%{username}'.",
+            "errorUpdateUser": "Ошибка обновления учётной записи пользователя '{username}'.",
+            "successBatchDelete": "Успешное удаление {count} пользователя. | Успешное удаление {count} пользователей.",
+            "successBatchDisable": "Успешное отключение {count} пользователя. | Успешное отключение {count} пользователей.",
+            "successBatchEnable": "Успешное включение {count} пользователя. | Успешное включение {count} пользователей.",
+            "successCreateUser": "Пользователь создан '{username}'.",
+            "successDeleteUser": "Пользователь удален '{username}'.",
             "successSaveSettings": "Успешное сохранение настроек учётной записи.",
-            "successUpdateUser": "Пользователь '%{username}' обновлён."
+            "successUpdateUser": "Пользователь '{username}' обновлён."
         }
     },
     "pageLogin": {
@@ -805,18 +807,18 @@
             "timeStampOffset": "Временная метка"
         },
         "toast": {
-            "errorDelete": "Ошибка удаления %{count} записи. | Ошибка уделения %{count} записей.",
-            "successDelete": "Успешное удаление %{count} записи. | Успешное удаление всех %{count} записей."
+            "errorDelete": "Ошибка удаления {count} записи. | Ошибка уделения {count} записей.",
+            "successDelete": "Успешное удаление {count} записи. | Успешное удаление всех {count} записей."
         }
     },
     "pageProfileSettings": {
-        "browserOffset": "Часовой пояс в браузере (%{timezone})",
+        "browserOffset": "Часовой пояс в браузере ({timezone})",
         "changePassword": "Изменить пароль",
         "confirmPassword": "Подтвердите новый пароль",
         "defaultUTC": "По умолчанию (UTC)",
         "newPassword": "Новый пароль",
         "currentPassword": "Текущий пароль",
-        "newPassLabelTextInfo": "Пароль должен быть от %{min} до %{max} символов",
+        "newPassLabelTextInfo": "Пароль должен быть от {min} до {max} символов",
         "passwordsDoNotMatch": "Пароли не совпадают",
         "profileInfoTitle": "Информация о профиле",
         "timezone": "Часовой пояс",
@@ -830,16 +832,21 @@
     },
     "pageNetwork": {
         "dhcp": "DHCP",
+        "dhcp6": "DHCPv6",
         "domainName": "имя домена",
         "dns": "DNS сервер",
         "fqdn": "FQDN",
         "hostname": "Имя хоста",
+        "ipVersion": "Версия IP",
         "interfaceSection": "Настройки интерфейса",
         "ipv4": "IPv4",
         "ipv4Addresses": "IPv4 адреса",
         "ipv6": "IPv6",
+        "ipv6Addresses": "IPv6 адреса",
         "linkStatus": "Состояние линка",
         "macAddress": "MAC адрес",
+        "gateway": "Шлюз",
+        "ipv6DefaultGateway": "IPv6 шлюз по умолчанию",
         "network": "сеть",
         "networkSettings": "Настройки сети",
         "ntp": "NTP сервер",
@@ -852,10 +859,12 @@
         "modal": {
             "confirmDisableDhcp": "Вы уверены, что хотите выключить DHCP?",
             "confirmEnableDhcp": "Когда DHCP будет включён, статические IP адреса станут недоступны.",
-            "dhcpConfirmTitle": "%{dhcpState} DHCP",
+            "dhcpConfirmTitle": "{dhcpState} DHCP",
             "editHostnameTitle": "Редактировать имя хоста",
             "editMacAddressTitle": "Редактировать MAC адрес",
+            "editIPv6DefaultGatewayTitle": "Редактировать IPv6 шлюз по умолчанию",
             "gateway": "Шлюз",
+            "prefixLength": "Длина префикса",
             "ipAddress": "IP адрес",
             "staticDns": "Статический DNS",
             "subnetMask": "Маска подсети",
@@ -865,11 +874,15 @@
         "table": {
             "addDnsAddress": "Добавить IP адрес",
             "addIpv4Address": "Добавить статический IPv4 адрес",
+            "addIpv6Address": "Добавить статический IPv6 адрес",
             "addressOrigin": "Источник адреса",
+            "prefixLength": "Длина префикса",
             "deleteDns": "Удалить DNS адрес",
             "deleteIpv4": "Удалить IPv4 адрес",
+            "deleteIpv6": "Удалить IPv6 адрес",
             "editDns": "Редактировать DNS адрес",
             "editIpv4": "Редактировать IPv4 адрес",
+            "editIpv6": "Редактировать IPv6 адрес",
             "gateway": "Шлюз",
             "ipAddress": "IP адрес",
             "subnet": "Маска подсети",
@@ -878,8 +891,8 @@
             "editIpv6": "Редактировать IPv6 адрес"
         },
         "toast": {
-            "errorSaveNetworkSettings": "Ошибка обновления %{setting} настроек.",
-            "successSaveNetworkSettings": "Успешное обновление %{setting} настроек."
+            "errorSaveNetworkSettings": "Ошибка обновления {setting} настроек.",
+            "successSaveNetworkSettings": "Успешное обновление {setting} настроек."
         }
     },
     "pagePageNotFound": {
@@ -996,7 +1009,7 @@
     "pagePower": {
         "description": "Задайте порог мощности, чтобы ограничить потребление питания не превышающее заданное значение в Ваттах",
         "powerCapLabel": "Значение порога мощности (в ваттах)",
-        "powerCapLabelTextInfo": " Значение должно быть между %{min} и %{max}",
+        "powerCapLabelTextInfo": " Значение должно быть между {min} и {max}",
         "powerCapSettingData": "Применить ограничение мощности",
         "powerCapSettingLabel": "Настройки порога электропитания",
         "powerConsumption": "Текущее энергопотребление",
@@ -1121,7 +1134,7 @@
         "pageDescription": "Настройка IP адреса и порта для Simple Network Management Protocol (SNMP) ловушек.",
         "modal": {
             "addSnmpDestinationTitle": "Добавить получателя SNMP оповещения",
-            "batchDeleteConfirmMessage": "Вы уверены, что хотите удалить получателя SNMP оповещения? Действие не может быть отменено. | Вы уверены, что хотите удалить %{count} получателей SNMP оповещений? Действие не может быть отменено.",
+            "batchDeleteConfirmMessage": "Вы уверены, что хотите удалить получателя SNMP оповещения? Действие не может быть отменено. | Вы уверены, что хотите удалить {count} получателей SNMP оповещений? Действие не может быть отменено.",
             "deleteConfirmMessage": "Вы уверены, что хотите удалить получателя SNMP оповещения? Действие не может быть отменено.",
             "deleteSnmpDestinationTitle": "Удаление получателя SNMP оповещения | Удаление получателей SNMP оповещений",
             "ipaddress": "IP адрес",
@@ -1137,7 +1150,7 @@
             "errorDeleteDestination": "Ошибка удаления получателя SNMP оповещения.",
             "errorLoadSnmpDetails": "Ошибка загрузки информации о получателе SNMP оповещения.",
             "successAddDestination": "Успешное добавление получателя SNMP оповещения.",
-            "successBatchDelete": "Успешное удаление получателя SNMP оповещения. | Успешное удаление %{count} получателей SNMP оповещений.",
+            "successBatchDelete": "Успешное удаление получателя SNMP оповещения. | Успешное удаление {count} получателей SNMP оповещений.",
             "successDeleteDestination": "Успешное удаление получателя SNMP оповещения."
         }
     },
@@ -1150,8 +1163,8 @@
         "ldapCertificate": "Сертификат LDAP",
         "replaceCertificate": "Заменить сертификат",
         "alert": {
-            "certificateExpiredMessage": "%{certificate} истёк. Рассмотрите вопрос о замене его новым сертификатом.",
-            "certificateExpiringMessage": "%{certificate} скоро истекает. Рассмотрите вопрос о замене его новым сертификатом.",
+            "certificateExpiredMessage": "{certificate} истёк. Рассмотрите вопрос о замене его новым сертификатом.",
+            "certificateExpiringMessage": "{certificate} скоро истекает. Рассмотрите вопрос о замене его новым сертификатом.",
             "certificatesExpiredMessage": "Некоторые сертификаты истекли. Рассмотрите вопрос о замене их новыми сертификатами.",
             "certificatesExpiringMessage": "Некоторые сертификаты истекают. Рассмотрите вопрос о замене их новыми сертификатами.",
             "incorrectCertificateFileType": "Файл не является сертификатом корректного типа"
@@ -1169,7 +1182,7 @@
             "companyUnit": "Подразделение компании",
             "contactPerson": "Контактное лицо",
             "country": "Страна",
-            "deleteConfirmMessage": "Вы уверены, что хотите удалить '%{certificate}' изданный %{issuedBy}? Это действие нельзя отменить.",
+            "deleteConfirmMessage": "Вы уверены, что хотите удалить '{certificate}' изданный {issuedBy}? Это действие нельзя отменить.",
             "duplicateAlternateName": "Дублировать альтернативное имя",
             "emailAddress": "Email адрес",
             "generateACertificateSigningRequest": "Сгенерировать запрос на подписание сертификата (CSR)",
@@ -1190,9 +1203,9 @@
             "errorAddCertificate": "Ошибка добавления сертификата.",
             "errorDeleteCertificate": "Ошибка удаления сертификата.",
             "errorReplaceCertificate": "Ошибка замены сертификата.",
-            "successAddCertificate": "Успешное добавление %{certificate}.",
-            "successDeleteCertificate": "Успешное удаление %{certificate}.",
-            "successReplaceCertificate": "Успешная замена %{certificate}."
+            "successAddCertificate": "Успешное добавление {certificate}.",
+            "successDeleteCertificate": "Успешное удаление {certificate}.",
+            "successReplaceCertificate": "Успешная замена {certificate}."
         }
     },
     "pageVirtualMedia": {

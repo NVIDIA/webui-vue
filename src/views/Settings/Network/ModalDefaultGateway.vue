@@ -17,14 +17,14 @@
               v-model.trim="form.defaultGateway"
               data-test-id="network-input-gateway"
               type="text"
-              :state="getValidationState($v.form.defaultGateway)"
-              @change="$v.form.defaultGateway.$touch()"
+              :state="getValidationState(v$.form.defaultGateway)"
+              @change="v$.form.defaultGateway.$touch()"
             />
             <b-form-invalid-feedback role="alert">
-              <div v-if="!$v.form.defaultGateway.required">
+              <div v-if="!v$.form.defaultGateway.required">
                 {{ $t('global.form.fieldRequired') }}
               </div>
-              <div v-if="!$v.form.defaultGateway.validateGateway">
+              <div v-if="!v$.form.defaultGateway.validateGateway">
                 {{ $t('global.form.invalidFormat') }}
               </div>
             </b-form-invalid-feedback>
@@ -89,8 +89,8 @@ export default {
   },
   methods: {
     handleSubmit() {
-      this.$v.$touch();
-      if (this.$v.$invalid) return;
+      this.v$.$touch();
+      if (this.v$.$invalid) return;
       this.$emit('ok', { IPv6DefaultGateway: this.form.defaultGateway });
       this.closeModal();
     },
@@ -101,7 +101,7 @@ export default {
     },
     resetForm() {
       this.form.defaultGateway = this.defaultGateway;
-      this.$v.$reset();
+      this.v$.$reset();
       this.$emit('hidden');
     },
     onOk(bvModalEvt) {

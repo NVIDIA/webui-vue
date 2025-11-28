@@ -99,7 +99,7 @@
             <form-file
               id="image-file"
               :disabled="isPageDisabled || isFirmwareUpdateInProgress"
-              :state="getValidationState($v.file)"
+              :state="getValidationState(v$.file)"
               aria-describedby="image-file-help-block"
               @input="onFileUpload($event)"
             >
@@ -138,13 +138,13 @@
               id="file-address"
               v-model="form.ImageURI"
               type="text"
-              :state="!$v.form.ImageURI.$invalid && !serverError"
+              :state="!v$.form.ImageURI.$invalid && !serverError"
               :disabled="isPageDisabled || isFirmwareUpdateInProgress"
-              @blur="$v.form.ImageURI.$touch()"
+              @blur="v$.form.ImageURI.$touch()"
               @input="clearServerError"
             />
-            <b-form-invalid-feedback role="alert" v-if="$v.form.ImageURI.$error">
-              <span v-if="!$v.form.ImageURI.serverError">
+            <b-form-invalid-feedback role="alert" v-if="v$.form.ImageURI.$error">
+              <span v-if="!v$.form.ImageURI.serverError">
                 <a href="#"
                   @click.prevent="showDetailServerError"
                   :title="$t('pageFirmware.form.updateFirmware.clickToViewApiResponse')"
@@ -164,9 +164,9 @@
               id="username"
               v-model="form.username"
               type="text"
-              :state="getValidationState($v.form.username)"
+              :state="getValidationState(v$.form.username)"
               :disabled="isPageDisabled || isFirmwareUpdateInProgress"
-              @input="$v.form.username.$touch()"
+              @input="v$.form.username.$touch()"
             />
             <b-form-invalid-feedback role="alert">
               {{ $t('global.form.fieldRequired') }}
@@ -189,13 +189,13 @@
           </b-progress>
         </div>
         <div class="mb-3">
-          <b-form-invalid-feedback role="alert" :state="false" v-if="$v.form.ImageURI.$error">
-            <span v-if="!$v.form.ImageURI.required">
+          <b-form-invalid-feedback role="alert" :state="false" v-if="v$.form.ImageURI.$error">
+            <span v-if="!v$.form.ImageURI.required">
               {{ $t('global.form.fieldRequired') }}
             </span>
           </b-form-invalid-feedback>
-          <b-form-invalid-feedback role="alert" :state="false" v-if="$v.form.Target.$error">
-            <span v-if="!$v.form.Target.serverError">
+          <b-form-invalid-feedback role="alert" :state="false" v-if="v$.form.Target.$error">
+            <span v-if="!v$.form.Target.serverError">
               <a href="#"
                 @click.prevent="showDetailServerError"
                 :title="$t('pageFirmware.form.updateFirmware.clickToViewApiResponse')"
@@ -240,11 +240,12 @@
 </template>
 
 <script>
-import { requiredIf } from 'vuelidate/lib/validators';
+import { required, requiredIf } from '@vuelidate/validators';
 
 import BVToastMixin from '@/components/Mixins/BVToastMixin';
 import LoadingBarMixin, { loading } from '@/components/Mixins/LoadingBarMixin';
 import VuelidateMixin from '@/components/Mixins/VuelidateMixin.js';
+import { useVuelidate } from '@vuelidate/core';
 
 import FormFile from '@/components/Global/FormFile';
 import ModalUpdateFirmware from './FirmwareModalUpdateFirmware';
@@ -265,6 +266,11 @@ export default {
       required: true,
       type: Boolean,
     },
+  },
+  setup() {
+    return {
+      v$: useVuelidate(),
+    };
   },
   data() {
     return {
@@ -373,12 +379,12 @@ export default {
       return this.$store.getters['firmware/getFirmwareUploadProgress'];
     },
     hasFormError() {
-      return this.serverError && !this.$v.$dirty && !this.$v.$anyError;
+      return this.serverError && !this.v$.$dirty && !this.v$.$anyError;
     },
   },
   watch: {
     fileSource: function () {
-      this.$v.$reset();
+      this.v$.$reset();
       this.file = null;
       this.form.ImageURI = null;
       this.form.username = null;
@@ -414,7 +420,7 @@ export default {
     'form.Target': {
       handler() {
         this.clearServerError();
-        this.$v.form.Target.$touch();
+        this.v$.form.Target.$touch();
       }
     },
   },
@@ -479,7 +485,7 @@ export default {
         })
         .catch(({ message, cause }) => {
           this.serverError = cause?.response?.data?.error || null;
-          this.$v.$touch();
+          this.v$.$touch();
           this.validateRedfishError();
           const lastToast = document.querySelector('.toast');
           this.$bvToast.hide(lastToast.id);
@@ -539,7 +545,7 @@ export default {
         this.endLoader();
         if (oldInitiator) {
           this.serverError = jsonErrMsg || null;
-          this.$v.$touch();
+          this.v$.$touch();
           this.validateRedfishError(errMsg);
           const lastToast = document.querySelector('.toast');
           this.$bvToast.hide(lastToast.id);
@@ -550,8 +556,8 @@ export default {
       this.$bvModal.show('modal-confirm-identity');
     },
     onSubmitUpload() {
-      this.$v.$touch();
-      if (this.$v.$invalid) return;
+      this.v$.$touch();
+      if (this.v$.$invalid) return;
       if (this.hasCheckedTargets) {
         this.$bvModal.msgBoxConfirm(
           this.$t('pageFirmware.form.updateFirmware.confirmCheckedMessage'),
@@ -573,7 +579,7 @@ export default {
     },
     onFileUpload(file) {
       this.file = file;
-      this.$v.file.$touch();
+      this.v$.file.$touch();
     },
   },
 };

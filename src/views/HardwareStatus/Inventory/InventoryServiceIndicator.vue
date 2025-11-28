@@ -60,7 +60,7 @@ export default {
   created() {
     this.$store.dispatch('global/getSystemInfo').finally(() => {
       // Emit initial data fetch complete to parent component
-      this.$root.$emit('hardware-status-service-complete');
+      this.$eventBus.$emit('hardware-status-service-complete');
     });
   },
   methods: {

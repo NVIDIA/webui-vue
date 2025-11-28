@@ -243,7 +243,7 @@ const CommonLogStore = {
         })
         .catch((error) => {
           console.log(error);
-          throw new Error(i18n.t('pageEventLogs.toast.errorLogStatusUpdate'));
+          throw new Error(i18n.global.t('pageEventLogs.toast.errorLogStatusUpdate'));
         });
     },
     async downloadEntry(_, uri) {
@@ -262,7 +262,7 @@ const CommonLogStore = {
         .catch((error) => {
           console.log(error);
           throw new Error(
-            i18n.t('pageEventLogs.toast.errorDownloadEventEntry'),
+            i18n.global.t('pageEventLogs.toast.errorDownloadEventEntry'),
           );
         });
     },

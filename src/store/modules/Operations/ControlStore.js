@@ -131,11 +131,14 @@ const ControlStore = {
               console.log(error);
             }
           }, 5000);
-          return i18n.t('pageRebootBmc.toast.successRebootStart')
+          return i18n.global.t('pageRebootBmc.toast.successRebootStart')
         })
+
         .catch((error) => {
           console.log(error);
-          throw new Error(i18n.t('pageRebootBmc.toast.errorRebootStart'));
+          throw new Error(
+            i18n.global.t('pageRebootBmc.toast.errorRebootStart'),
+          );
         });
     },
     async executeSystemAction({ state, commit, dispatch, rootGetters }, { actionName, parameters, waitForState }) {
@@ -144,7 +147,7 @@ const ControlStore = {
       try {
         // Check if the action exists in systemActions
         if (!state.systemActions || !state.systemActions[actionName]) {
-          throw new Error(i18n.t('global.error.paramValueNotAllowed', { param: 'action', value: actionName }));
+          throw new Error(i18n.global.t('global.error.paramValueNotAllowed', { param: 'action', value: actionName }));
         }
 
         // Execute the action - trust the provided parameters without verification
@@ -207,7 +210,7 @@ const ControlStore = {
         
         // Set error state
         commit('setSystemActionsError', {
-          message: i18n.t('pageServerPowerOperations.error.failedToLoadActions'),
+          message: i18n.global.t('pageServerPowerOperations.error.failedToLoadActions'),
           details: error.message,
           timestamp: new Date()
         });
@@ -287,7 +290,7 @@ const ControlStore = {
         
         // Set an error state that the UI can display
         commit('setManagersError', {
-          message: i18n.t('pageRebootBmc.error.failedToLoadManagers'),
+          message: i18n.global.t('pageRebootBmc.error.failedToLoadManagers'),
           details: error.message,
           timestamp: new Date()
         });

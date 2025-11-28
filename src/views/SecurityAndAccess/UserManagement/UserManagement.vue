@@ -133,6 +133,7 @@ import BVTableSelectableMixin, {
 } from '@/components/Mixins/BVTableSelectableMixin';
 import BVToastMixin from '@/components/Mixins/BVToastMixin';
 import LoadingBarMixin from '@/components/Mixins/LoadingBarMixin';
+import i18n from '@/i18n';
 
 export default {
   name: 'UserManagement',
@@ -165,15 +166,15 @@ export default {
         },
         {
           key: 'username',
-          label: this.$t('pageUserManagement.table.username'),
+          label: i18n.global.t('pageUserManagement.table.username'),
         },
         {
           key: 'privilege',
-          label: this.$t('pageUserManagement.table.privilege'),
+          label: i18n.global.t('pageUserManagement.table.privilege'),
         },
         {
           key: 'status',
-          label: this.$t('pageUserManagement.table.status'),
+          label: i18n.global.t('pageUserManagement.table.status'),
         },
         {
           key: 'actions',
@@ -181,6 +182,7 @@ export default {
           tdClass: 'text-right text-nowrap',
         },
       ],
+
       selectedRows: selectedRows,
       tableHeaderCheckboxModel: tableHeaderCheckboxModel,
       tableHeaderCheckboxIndeterminate: tableHeaderCheckboxIndeterminate,
@@ -205,7 +207,7 @@ export default {
             {
               value: 'edit',
               enabled: this.editEnable(user),
-              title: this.$t('pageUserManagement.editUser'),
+              title: i18n.global.t('pageUserManagement.editUser'),
             },
             {
               value: 'delete',
@@ -213,7 +215,7 @@ export default {
                 user.UserName === 'root'
                     ? false
                     : true,
-              title: this.$tc('pageUserManagement.deleteUser'),
+              title: i18n.global.t('pageUserManagement.deleteUser'),
             },
           ],
           ...user,
@@ -292,9 +294,9 @@ export default {
         .msgBoxConfirm(
           deleteText,
           {
-            title: this.$tc('pageUserManagement.deleteUser'),
-            okTitle: this.$tc('pageUserManagement.deleteUser'),
-            cancelTitle: this.$t('global.action.cancel'),
+            title: i18n.global.t('pageUserManagement.deleteUser'),
+            okTitle: i18n.global.t('pageUserManagement.deleteUser'),
+            cancelTitle: i18n.global.t('global.action.cancel'),
             autoFocusButton: 'ok',
           },
         )
@@ -343,20 +345,20 @@ export default {
         case 'delete':
           this.$bvModal
             .msgBoxConfirm(
-              this.$tc(
+              i18n.global.t(
                 'pageUserManagement.modal.batchDeleteConfirmMessage',
                 this.selectedRows.length,
               ),
               {
-                title: this.$tc(
+                title: i18n.global.t(
                   'pageUserManagement.deleteUser',
                   this.selectedRows.length,
                 ),
-                okTitle: this.$tc(
+                okTitle: i18n.global.t(
                   'pageUserManagement.deleteUser',
                   this.selectedRows.length,
                 ),
-                cancelTitle: this.$t('global.action.cancel'),
+                cancelTitle: i18n.global.t('global.action.cancel'),
                 autoFocusButton: 'ok',
               },
             )

@@ -32,7 +32,7 @@ export default {
         );
         i++;
       }
-      this.title = i18n.t('appPageTitle.' + title);
+      this.title = i18n.global.t('appPageTitle.' + title);
     }
   },
 };

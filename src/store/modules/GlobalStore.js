@@ -68,7 +68,7 @@ const GlobalStore = {
   actions: {
     async fetchServiceRoot({ commit }) {
       try {
-        commit('setServiceRoot', await api.get('/redfish/v1'), {timeout: 60 * 1000});
+        commit('setServiceRoot', await api.get('/redfish/v1', {timeout: 60 * 1000}));
       } catch (error) {
         console.log(error);
       }
@@ -153,15 +153,15 @@ const GlobalStore = {
       if (!state.serviceRoot) await dispatch('fetchServiceRoot');
       if (state.systemPath) return state.systemPath;
       if (!state.bmcPath) await dispatch('getBmcPath');
-      if (!state.ManagerProvidingService) state.ManagerProvidingService = (await api.get(state.bmcPath))?.data;
+      if (!state.ManagerProvidingService) state.ManagerProvidingService = (await api.get(state.bmcPath)).data;
       if (!state.ManagerProvidingService) throw new Error('BMC not found');
-      let systemPath = state.ManagerProvidingService?.Links?.ManagerForServers?.[0]?.['@odata.id'];
+      let systemPath = state.ManagerProvidingService && state.ManagerProvidingService.Links && state.ManagerProvidingService.Links.ManagerForServers && state.ManagerProvidingService.Links.ManagerForServers[0] ? state.ManagerProvidingService.Links.ManagerForServers[0]['@odata.id'] : null;
       if (!systemPath) {
         const systems = await api
           .get('/redfish/v1/Systems')
           .catch((error) => console.log(error));
         // Note: This is only set here if ManagerForServers is not found in the ManagerProvidingService
-        systemPath = systems?.data?.Members?.[0]?.['@odata.id'];
+        systemPath = systems && systems.data && systems.data.Members && systems.data.Members[0] ? systems.data.Members[0]['@odata.id'] : null;
       }
       
       commit('setSystemPath', systemPath);
@@ -170,15 +170,15 @@ const GlobalStore = {
     async getChassisPath({ state, commit, dispatch }) {
       if (state.chassisPath) return state.chassisPath;
       if (!state.bmcPath) await dispatch('getBmcPath');
-      if (!state.ManagerProvidingService) state.ManagerProvidingService = (await api.get(state.bmcPath))?.data;
+      if (!state.ManagerProvidingService) state.ManagerProvidingService = (await api.get(state.bmcPath)).data;
       if (!state.ManagerProvidingService) throw new Error('BMC not found');
-      let chassisPath = state.ManagerProvidingService?.Links?.ManagerForChassis?.[0]?.['@odata.id'];
+      let chassisPath = state.ManagerProvidingService && state.ManagerProvidingService.Links && state.ManagerProvidingService.Links.ManagerForChassis && state.ManagerProvidingService.Links.ManagerForChassis[0] ? state.ManagerProvidingService.Links.ManagerForChassis[0]['@odata.id'] : null;
       if (!chassisPath) {
         const chassis = await api
           .get('/redfish/v1/Chassis')
           .catch((error) => console.log(error));
         // Note: This is only set here if ManagerForChassis is not found in the ManagerProvidingService
-        chassisPath = chassis?.data?.Members?.[0]?.['@odata.id'];
+        chassisPath = chassis && chassis.data && chassis.data.Members && chassis.data.Members[0] ? chassis.data.Members[0]['@odata.id'] : null;
       }
       commit('setChassisPath', chassisPath);
       return chassisPath;
@@ -190,12 +190,12 @@ const GlobalStore = {
         .then(({ data }) => {
           commit('setSystem', data);
           // See if the root system has a valid Status.healthRollup property
-          const healthRollup = data?.Status?.HealthRollup;
+          const healthRollup = data && data.Status && data.Status.HealthRollup ? data.Status.HealthRollup : null;
           if (healthRollup) {
             commit('setHealthStatus', healthRollup);
           }
           // See if the root system has a valid LastResetTime property
-          const lastReset = data?.LastResetTime;
+          const lastReset = data && data.LastResetTime ? data.LastResetTime : null;
           if (lastReset) {
             const lastPowerOperationTime = new Date(lastReset);
             commit('setLastPowerOperationTime', lastPowerOperationTime);

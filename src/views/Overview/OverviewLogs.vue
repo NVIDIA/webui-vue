@@ -112,13 +112,13 @@ export default {
       // Only call finally if lastCall exists
       if (lastCall) {
         lastCall.finally(() => {
-          this.$root.$emit(this.omitEvent);
+          this.$eventBus.$emit(this.omitEvent);
         });
       } else {
-        this.$root.$emit(this.omitEvent);
+        this.$eventBus.$emit(this.omitEvent);
       }
     } else {
-      this.$root.$emit(this.omitEvent);
+      this.$eventBus.$emit(this.omitEvent);
     }
   },
   methods: {

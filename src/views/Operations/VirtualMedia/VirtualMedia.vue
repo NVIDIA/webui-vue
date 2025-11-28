@@ -139,6 +139,7 @@ import LoadingBarMixin from '@/components/Mixins/LoadingBarMixin';
 import ModalConfigureConnection from './ModalConfigureConnection';
 import NbdServer from '@/utilities/NBDServer';
 import FormFile from '@/components/Global/FormFile';
+import i18n from '@/i18n';
 
 /**
  * @component VirtualMedia
@@ -161,7 +162,7 @@ export default {
   data() {
     return {
       modalConfigureConnection: null,
-    }
+    };
   },
 
   computed: {
@@ -219,17 +220,21 @@ export default {
         token,
       );
       device.nbd.socketStarted = () =>
-        this.successToast(this.$t('pageVirtualMedia.toast.serverRunning'));
+        this.successToast(
+          i18n.global.t('pageVirtualMedia.toast.serverRunning'),
+        );
       device.nbd.errorReadingFile = () =>
-        this.errorToast(this.$t('pageVirtualMedia.toast.errorReadingFile'));
+        this.errorToast(
+          i18n.global.t('pageVirtualMedia.toast.errorReadingFile'),
+        );
       device.nbd.socketClosed = (code) => {
         if (code === 1000)
           this.successToast(
-            this.$t('pageVirtualMedia.toast.serverClosedSuccessfully'),
+            i18n.global.t('pageVirtualMedia.toast.serverClosedSuccessfully'),
           );
         else
           this.errorToast(
-            this.$t('pageVirtualMedia.toast.serverClosedWithErrors'),
+            i18n.global.t('pageVirtualMedia.toast.serverClosedWithErrors'),
           );
         device.file = null;
         device.Inserted = false;
@@ -287,7 +292,7 @@ export default {
         })
         .then(() => {
           this.successToast(
-            this.$t('pageVirtualMedia.toast.serverConnectionEstablished'),
+            i18n.global.t('pageVirtualMedia.toast.serverConnectionEstablished'),
           );
           connectionData.Inserted = true;
         })
@@ -309,7 +314,7 @@ export default {
         .dispatch('virtualMedia/ejectMedia', connectionData)
         .then(() => {
           this.successToast(
-            this.$t('pageVirtualMedia.toast.serverClosedSuccessfully'),
+            i18n.global.t('pageVirtualMedia.toast.serverClosedSuccessfully'),
           );
           connectionData.Inserted = false;
         })
@@ -318,6 +323,7 @@ export default {
             title: this.$t('pageVirtualMedia.toast.errorUnmounting'),
           });
         })
+
         .finally(() => this.endLoader());
     },
     /**

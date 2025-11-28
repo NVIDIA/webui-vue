@@ -34,8 +34,8 @@
                   v-if="lastPowerOperationTime"
                   data-test-id="powerServerOps-text-lastPowerOp"
                 >
-                  {{ lastPowerOperationTime | formatDate }}
-                  {{ lastPowerOperationTime | formatTime }}
+                  {{ $filters.formatDate(lastPowerOperationTime) }}
+                  {{ $filters.formatTime(lastPowerOperationTime) }}
                 </dd>
                 <dd v-else>--</dd>
               </dl>
@@ -224,6 +224,7 @@ import LoadingBarMixin from '@/components/Mixins/LoadingBarMixin';
 import Alert from '@/components/Global/Alert';
 import InfoTooltip from '@/components/Global/InfoTooltip';
 
+
 export default {
   name: 'ServerPowerOperations',
   components: { PageTitle, PageSection, BootSettings, Alert, InfoTooltip },
@@ -236,7 +237,7 @@ export default {
     return {
       selectedResetType: null,
       selectedAutomatically: false,
-      isBluefield: process.env.VUE_APP_ENV_NAME === 'nvidia-bluefield'
+      isBluefield: process.env.VUE_APP_ENV_NAME === 'nvidia-bluefield',
     };
   },
   computed: {

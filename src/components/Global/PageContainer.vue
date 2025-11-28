@@ -27,7 +27,7 @@ export default {
   },
   created() {
     this.managerStatusIntervalId = startManagerStatusCheck();
-    this.$root.$on('skip-navigation', () => {
+    this.$eventBus.$on('skip-navigation', () => {
       this.setFocus(this.$el);
     });
   },

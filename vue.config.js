@@ -6,35 +6,23 @@ module.exports = {
   css: {
     loaderOptions: {
       sass: {
-        prependData: () => {
+        additionalData: (() => {
           const envName = process.env.VUE_APP_ENV_NAME;
           const hasCustomStyles =
             process.env.CUSTOM_STYLES === 'true' ? true : false;
           if (hasCustomStyles && envName !== undefined) {
-            // If there is an env name defined, import Sass
-            // overrides.
-            // It is important that these imports stay in this
-            // order to make sure enviroment overrides
-            // take precedence over the default BMC styles
             return `
               @import "@/assets/styles/bmc/helpers";
               @import "@/env/assets/styles/_${envName}";
               @import "@/assets/styles/bootstrap/_helpers";
             `;
           } else {
-            // Include helper imports so single file components
-            // do not need to include helper imports
-
-            // BMC Helpers must be imported before Bootstrap helpers to
-            // take advantage of Bootstrap's use of the Sass !default
-            // statement. Moving this helper after results in Bootstrap
-            // variables taking precedence over BMC's
             return `
               @import "@/assets/styles/bmc/helpers";
               @import "@/assets/styles/bootstrap/_helpers";
             `;
           }
-        },
+        })(), // immediately invoked function expression (IIFE)
       },
     },
   },
@@ -44,8 +32,6 @@ module.exports = {
       '/': {
         target: process.env.BASE_URL,
         onProxyRes: (proxyRes) => {
-          // This header is ignored in the browser so removing
-          // it so we don't see warnings in the browser console
           delete proxyRes.headers['strict-transport-security'];
         },
       },
@@ -62,6 +48,14 @@ module.exports = {
   },
   productionSourceMap: false,
   chainWebpack: (config) => {
+    config.resolve.alias.set('vue', '@vue/compat');
+    config.module
+      .rule('vue')
+      .use('vue-loader')
+      .tap((options) => {
+        options['compilerOptions'] = { compatConfig: { MODE: 2 } };
+        return options;
+      });
     config.module
       .rule('vue')
       .use('vue-svg-inline-loader')

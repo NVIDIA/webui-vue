@@ -234,17 +234,17 @@ export default {
         },
         {
           key: 'dateTime',
-          label: this.$t('pageDumps.table.dateAndTime'),
+          label: i18n.global.t('pageDumps.table.dateAndTime'),
           sortable: true,
         },
         {
           key: 'dumpType',
-          label: this.$t('pageDumps.table.dumpType'),
+          label: i18n.global.t('pageDumps.table.dumpType'),
           sortable: true,
         },
         {
           key: 'id',
-          label: this.$t('pageDumps.table.id'),
+          label: i18n.global.t('pageDumps.table.id'),
           sortable: true,
         },
         {
@@ -254,7 +254,7 @@ export default {
         },
         {
           key: 'size',
-          label: this.$t('pageDumps.table.size'),
+          label: i18n.global.t('pageDumps.table.size'),
           sortable: true,
         },
         {
@@ -267,13 +267,13 @@ export default {
       batchActions: [
         {
           value: 'delete',
-          label: this.$t('global.action.delete'),
+          label: i18n.global.t('global.action.delete'),
         },
       ],
       tableFilters: [
         {
           key: 'dumpType',
-          label: this.$t('pageDumps.table.dumpType'),
+          label: i18n.global.t('pageDumps.table.dumpType'),
           values: [
             'BMC Dump Entry',
             'Hostboot Dump Entry',
@@ -327,7 +327,7 @@ export default {
     },
   },
   async created() {
-    this.startLoader();  
+    this.startLoader();
     this.$store.dispatch('dumps/getAllDumps').finally(() => {
       this.endLoader();
       this.isBusy = false;
@@ -350,12 +350,15 @@ export default {
     onTableRowAction(action, dump) {
       if (action === 'delete') {
         this.$bvModal
-          .msgBoxConfirm(this.$tc('pageDumps.modal.deleteDumpConfirmation'), {
-            title: this.$tc('pageDumps.modal.deleteDump'),
-            okTitle: this.$tc('pageDumps.modal.deleteDump'),
-            cancelTitle: this.$t('global.action.cancel'),
-            autoFocusButton: 'ok',
-          })
+          .msgBoxConfirm(
+            i18n.global.t('pageDumps.modal.deleteDumpConfirmation'),
+            {
+              title: i18n.global.t('pageDumps.modal.deleteDump'),
+              okTitle: i18n.global.t('pageDumps.modal.deleteDump'),
+              cancelTitle: i18n.global.t('global.action.cancel'),
+              autoFocusButton: 'ok',
+            },
+          )
           .then((deleteConfrimed) => {
             if (deleteConfrimed) {
               this.$store

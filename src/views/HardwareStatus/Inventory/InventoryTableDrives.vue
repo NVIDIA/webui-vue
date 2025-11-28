@@ -266,7 +266,7 @@ export default {
         this.isBusy = false;
     });
     // Emit that initialization is complete immediately
-    this.$root.$emit('hardware-status-drives-complete');
+    this.$eventBus.$emit('hardware-status-drives-complete');
   },
   methods: {
     sortCompare(a, b, key) {

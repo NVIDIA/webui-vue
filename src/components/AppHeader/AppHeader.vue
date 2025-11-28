@@ -136,6 +136,7 @@ import StatusIcon from '@/components/Global/StatusIcon';
 import PowerIcon from '@/components/Global/PowerIcon';
 import LoadingBar from '@/components/Global/LoadingBar';
 import { mapState, mapGetters } from 'vuex';
+import i18n from '@/i18n';
 
 export default {
   name: 'AppHeader',
@@ -199,13 +200,14 @@ export default {
   },
   watch: {
     consoleWindow() {
-      if (this.consoleWindow === false)
-        this?.$eventBus?.$consoleWindow?.close();
+      if (this.consoleWindow === false && this.$eventBus && this.$eventBus.$consoleWindow) {
+        this.$eventBus.$consoleWindow.close();
+      }
     },
     isAuthorized(value) {
       if (value === false) {
-        this.errorToast(this.$t('global.toast.unAuthDescription'), {
-          title: this.$t('global.toast.unAuthTitle'),
+        this.errorToast(i18n.global.t('global.toast.unAuthDescription'), {
+          title: i18n.global.t('global.toast.unAuthTitle'),
         });
       }
     },
@@ -220,10 +222,15 @@ export default {
 
   },
   mounted() {
-    this.$root.$on(
-      'change-is-navigation-open',
-      (isNavigationOpen) => (this.isNavigationOpen = isNavigationOpen),
-    );
+    if (this.$eventBus) {
+      this.navigationOpenHandler = (isNavigationOpen) => (this.isNavigationOpen = isNavigationOpen);
+      this.$eventBus.$on('change-is-navigation-open', this.navigationOpenHandler);
+    }
+  },
+  beforeUnmount() {
+    if (this.$eventBus) {
+      this.$eventBus.$off('change-is-navigation-open', this.navigationOpenHandler);
+    }
   },
   methods: {
     getHealthStatus() {
@@ -242,11 +249,15 @@ export default {
       this.$store.dispatch('authentication/logout');
     },
     toggleNavigation() {
-      this.$root.$emit('toggle-navigation');
+      if (this.$eventBus) {
+        this.$eventBus.$emit('toggle-navigation');
+      }
     },
     setFocus(event) {
       event.preventDefault();
-      this.$root.$emit('skip-navigation');
+      if (this.$eventBus) {
+        this.$eventBus.$emit('skip-navigation');
+      }
     },
   },
 };

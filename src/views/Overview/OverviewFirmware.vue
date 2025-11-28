@@ -39,42 +39,42 @@ export default {
     return {
       showBackup:
         process.env.VUE_APP_ENV_NAME !== 'nvidia-bluefield' &&
-        this.backupVersion,
+          this.backupVersion,
       showBios: this.firmwareVersion,
     };
   },
   computed: {
     ...mapState({
       server: (state) => state.system.systems[0],
-      // TODO: Update the template to show an array of bmc images
-      backupBmcFirmware() {
-        const backupFirmwares =
-          this.$store.getters['firmware/backupBmcFirmware'];
-        return backupFirmwares?.[0] ?? null;
-      },
-      backupVersion() {
-        return this.backupBmcFirmware?.version;
-      },
-      activeBmcFirmware() {
-        return this.$store.getters[`firmware/activeBmcFirmware`];
-      },
-      activeBiosFirmware() {
-        return this.$store.getters[`firmware/activeBiosFirmware`];
-      },
-      firmwareVersion() {
-        if (process.env.VUE_APP_ENV_NAME === 'nvidia-bluefield') {
-          return this.activeBiosFirmware?.version;
-        }
-        return this.activeBiosFirmware?.version;
-      },
-      runningVersion() {
-        return this.activeBmcFirmware?.version;
-      },
     }),
+    // TODO: Update the template to show an array of bmc images
+    backupBmcFirmware() {
+      const backupFirmwares =
+        this.$store.getters['firmware/backupBmcFirmware'];
+      return backupFirmwares && backupFirmwares[0] ? backupFirmwares[0] : null;
+    },
+    backupVersion() {
+      return this.backupBmcFirmware && this.backupBmcFirmware.version ? this.backupBmcFirmware.version : null;
+    },
+    activeBmcFirmware() {
+      return this.$store.getters['firmware/activeBmcFirmware'];
+    },
+    activeBiosFirmware() {
+      return this.$store.getters['firmware/activeBiosFirmware'];
+    },
+    firmwareVersion() {
+      if (process.env.VUE_APP_ENV_NAME === 'nvidia-bluefield') {
+        return this.activeBiosFirmware?.version;
+      }
+      return this.activeBiosFirmware?.version;
+    },
+    runningVersion() {
+      return this.activeBmcFirmware && this.activeBmcFirmware.version ? this.activeBmcFirmware.version : null;
+    },
   },
   created() {
     this.$store.dispatch('firmware/getFirmwareInformation').finally(() => {
-      this.$root.$emit('overview-firmware-complete');
+      this.$eventBus.$emit('overview-firmware-complete');
     });
   },
 };

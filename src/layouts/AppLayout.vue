@@ -34,6 +34,7 @@ export default {
   data() {
     return {
       routerKey: 0,
+      sessionCheckInterval: null,
     };
   },
   watch: {
@@ -44,13 +45,24 @@ export default {
     },
   },
   mounted() {
-    this.$root.$on('refresh-application', () => this.refresh());
-    setInterval(() => {
+    this.refreshHandler = () => this.refresh();
+    this.$eventBus.$on('refresh-application', this.refreshHandler);
+    this.sessionCheckInterval = setInterval(() => {
       if (!localStorage.getItem('storedUsername')) {
-        this?.$eventBus?.$consoleWindow?.close();
-        if (this?.$eventBus?.$consoleWindow) this.refresh();
+        if (this.$eventBus && this.$eventBus.$consoleWindow) {
+          this.$eventBus.$consoleWindow.close();
+        }
+        if (this.$eventBus && this.$eventBus.$consoleWindow) {
+          this.refresh();
+        }
       }
     }, 10000);
+  },
+  beforeUnmount() {
+    if (this.sessionCheckInterval) {
+      clearInterval(this.sessionCheckInterval);
+    }
+    this.$eventBus.$off('refresh-application', this.refreshHandler);
   },
   methods: {
     refresh() {

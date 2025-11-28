@@ -57,7 +57,7 @@ export default {
   created() {
     this.$store.dispatch('networkAdapters/getNetworkAdapters').finally(() => {
       // Emit initial data fetch complete to parent component
-      this.$root.$emit('hardware-status-network-adapter-complete');
+      this.$eventBus.$emit('hardware-status-network-adapter-complete');
       this.isBusy = false;
     });
   },

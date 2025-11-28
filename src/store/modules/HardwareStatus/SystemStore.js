@@ -1,6 +1,5 @@
 import api from '@/store/api';
 import i18n from '@/i18n';
-import Vue from 'vue';
 
 const SystemStore = {
   namespaced: true,
@@ -16,7 +15,7 @@ const SystemStore = {
   },
   mutations: {
     updateIsLoaded(state, bool) {
-      Vue.set(state, 'isLoaded', bool);
+      state.isLoaded = bool;
     },
     setSystemInfo: (state, data) => {
       const system = {};
@@ -41,7 +40,6 @@ const SystemStore = {
       system.statusState = data.Status?.State;
       system.systemType = data.SystemType;
       state.systems[data.index] = system;
-      Vue.set(state.systems, data.index, system);
     },
   },
   actions: {
@@ -52,7 +50,7 @@ const SystemStore = {
           const promises = Members.map((member, idx) =>
             api.get(member['@odata.id']).then(({ data }) => {
               commit('setSystemInfo', { ...data, index: idx });
-              Vue.set(state.redfish_systems, idx, data)
+              state.redfish_systems[idx] = data;
               return data;
             }),
           );
@@ -131,9 +129,13 @@ const SystemStore = {
         })
         .then(() => {
           if (ledState) {
-            return i18n.t('pageInventory.toast.successEnableIdentifyLed');
+            return i18n.global.t(
+              'pageInventory.toast.successEnableIdentifyLed',
+            );
           } else {
-            return i18n.t('pageInventory.toast.successDisableIdentifyLed');
+            return i18n.global.t(
+              'pageInventory.toast.successDisableIdentifyLed',
+            );
           }
         })
         .catch((error) => {
@@ -141,11 +143,11 @@ const SystemStore = {
           console.log('error', error);
           if (ledState) {
             throw new Error(
-              i18n.t('pageInventory.toast.errorEnableIdentifyLed'),
+              i18n.global.t('pageInventory.toast.errorEnableIdentifyLed'),
             );
           } else {
             throw new Error(
-              i18n.t('pageInventory.toast.errorDisableIdentifyLed'),
+              i18n.global.t('pageInventory.toast.errorDisableIdentifyLed'),
             );
           }
         });

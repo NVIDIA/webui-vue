@@ -16,14 +16,14 @@
               id="ipAddress"
               v-model="form.ipAddress"
               type="text"
-              :state="getValidationState($v.form.ipAddress)"
-              @input="$v.form.ipAddress.$touch()"
+              :state="getValidationState(v$.form.ipAddress)"
+              @input="v$.form.ipAddress.$touch()"
             />
             <b-form-invalid-feedback role="alert">
-              <template v-if="!$v.form.ipAddress.required">
+              <template v-if="!v$.form.ipAddress.required">
                 {{ $t('global.form.fieldRequired') }}
               </template>
-              <template v-if="!$v.form.ipAddress.validateIpv6">
+              <template v-if="!v$.form.ipAddress.validateIpv6">
                 {{ $t('global.form.invalidFormat') }}
               </template>
             </b-form-invalid-feedback>
@@ -38,14 +38,14 @@
               id="prefixLength"
               v-model="form.prefixLength"
               type="text"
-              :state="getValidationState($v.form.prefixLength)"
-              @input="$v.form.prefixLength.$touch()"
+              :state="getValidationState(v$.form.prefixLength)"
+              @input="v$.form.prefixLength.$touch()"
             />
             <b-form-invalid-feedback role="alert">
-              <template v-if="!$v.form.prefixLength.required">
+              <template v-if="!v$.form.prefixLength.required">
                 {{ $t('global.form.fieldRequired') }}
               </template>
-              <template v-if="!$v.form.prefixLength.validatePrefixLength">
+              <template v-if="!v$.form.prefixLength.validatePrefixLength">
                 {{ $t('global.form.invalidFormat') }}
               </template>
             </b-form-invalid-feedback>
@@ -104,8 +104,8 @@ export default {
   },
   methods: {
     handleSubmit() {
-      this.$v.$touch();
-      if (this.$v.$invalid) return;
+      this.v$.$touch();
+      if (this.v$.$invalid) return;
       this.$emit('ok', {
         Address: this.form.ipAddress,
         PrefixLength: parseInt(this.form.prefixLength),
@@ -120,7 +120,7 @@ export default {
     resetForm() {
       this.form.ipAddress = null;
       this.form.prefixLength = null;
-      this.$v.$reset();
+      this.v$.$reset();
       this.$emit('hidden');
     },
     onOk(bvModalEvt) {

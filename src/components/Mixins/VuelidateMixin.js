@@ -7,7 +7,7 @@ const VuelidateMixin = {
       return $dirty ? !$error : null;
     },
     validateRedfishError(customErrorMessage = null) {
-      if (this.serverError && !this.$v.$anyError) {
+      if (this.serverError && !this.v$.$anyError) {
         const result = redfishAction(this.serverError, null, null);
         if (!result.isValid) {
           this.redfishCommonError = true;

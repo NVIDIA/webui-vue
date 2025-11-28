@@ -73,6 +73,7 @@ import PageSection from '@/components/Global/PageSection';
 import JumpLink16 from '@carbon/icons-vue/es/jump-link/16';
 import JumpLinkMixin from '@/components/Mixins/JumpLinkMixin';
 import { chunk } from 'lodash';
+import i18n from '@/i18n';
 
 export default {
   components: {
@@ -107,54 +108,54 @@ export default {
         process.env.VUE_APP_HIDE_INVENTORY_LED !== 'true',
       observer: null,
       validLinks: [],
-      links: [
+            links: [
         {
           id: 'system',
           dataRef: 'system',
           href: '#system',
-          linkText: this.$t('pageInventory.system'),
-        },
+          linkText: i18n.global.t('pageInventory.system'),
+    },
         {
           id: 'bmc',
           dataRef: 'bmc',
           href: '#bmc',
-          linkText: this.$t('pageInventory.bmcManager'),
+          linkText: i18n.global.t('pageInventory.bmcManager'),
         },
         {
           id: 'chassis',
           dataRef: 'chassis',
           href: '#chassis',
-          linkText: this.$t('pageInventory.chassis'),
+          linkText: i18n.global.t('pageInventory.chassis'),
         },
         {
           id: 'dimms',
           dataRef: 'dimms',
           href: '#dimms',
-          linkText: this.$t('pageInventory.dimmSlot'),
+          linkText: i18n.global.t('pageInventory.dimmSlot'),
         },
         {
           id: 'fans',
           dataRef: 'fans',
           href: '#fans',
-          linkText: this.$t('pageInventory.fans'),
+          linkText: i18n.global.t('pageInventory.fans'),
         },
         {
           id: 'powerSupply',
           dataRef: 'powerSupply',
           href: '#powerSupply',
-          linkText: this.$t('pageInventory.powerSupplies'),
+          linkText: i18n.global.t('pageInventory.powerSupplies'),
         },
         {
           id: 'processors',
           dataRef: 'processors',
           href: '#processors',
-          linkText: this.$t('pageInventory.processors'),
+          linkText: i18n.global.t('pageInventory.processors'),
         },
         {
           id: 'assembly',
           dataRef: 'assembly',
           href: '#assembly',
-          linkText: this.$t('pageInventory.assemblies'),
+          linkText: i18n.global.t('pageInventory.assemblies'),
         },
         {
           id: 'networkAdapter',
@@ -206,42 +207,64 @@ export default {
   created() {
     this.startLoader();
 
+    // Store event handlers for cleanup
+    this.eventHandlers = {
+      bmcManager: () => this.bmcManagerResolve?.(),
+      chassis: () => this.chassisResolve?.(),
+      dimmSlot: () => this.dimmSlotResolve?.(),
+      fans: () => this.fansResolve?.(),
+      powerSupplies: () => this.powerSuppliesResolve?.(),
+      processors: () => this.processorsResolve?.(),
+      service: () => this.serviceResolve?.(),
+      system: () => this.systemResolve?.(),
+      assembly: () => this.assemblyResolve?.(),
+      networkAdapter: () => this.networkAdapterResolve?.(),
+      drives: () => this.drivesResolve?.(),
+    };
+
     const bmcManagerTablePromise = new Promise((resolve) => {
-      this.$root.$on('hardware-status-bmc-manager-complete', () => resolve());
+      this.bmcManagerResolve = resolve;
+      this.$eventBus.$on('hardware-status-bmc-manager-complete', this.eventHandlers.bmcManager);
     });
     const chassisTablePromise = new Promise((resolve) => {
-      this.$root.$on('hardware-status-chassis-complete', () => resolve());
+      this.chassisResolve = resolve;
+      this.$eventBus.$on('hardware-status-chassis-complete', this.eventHandlers.chassis);
     });
     const dimmSlotTablePromise = new Promise((resolve) => {
-      this.$root.$on('hardware-status-dimm-slot-complete', () => resolve());
+      this.dimmSlotResolve = resolve;
+      this.$eventBus.$on('hardware-status-dimm-slot-complete', this.eventHandlers.dimmSlot);
     });
     const fansTablePromise = new Promise((resolve) => {
-      this.$root.$on('hardware-status-fans-complete', () => resolve());
+      this.fansResolve = resolve;
+      this.$eventBus.$on('hardware-status-fans-complete', this.eventHandlers.fans);
     });
     const powerSuppliesTablePromise = new Promise((resolve) => {
-      this.$root.$on('hardware-status-power-supplies-complete', () =>
-        resolve(),
-      );
+      this.powerSuppliesResolve = resolve;
+      this.$eventBus.$on('hardware-status-power-supplies-complete', this.eventHandlers.powerSupplies);
     });
     const processorsTablePromise = new Promise((resolve) => {
-      this.$root.$on('hardware-status-processors-complete', () => resolve());
+      this.processorsResolve = resolve;
+      this.$eventBus.$on('hardware-status-processors-complete', this.eventHandlers.processors);
     });
     const serviceIndicatorPromise = new Promise((resolve) => {
-      this.$root.$on('hardware-status-service-complete', () => resolve());
+      this.serviceResolve = resolve;
+      this.$eventBus.$on('hardware-status-service-complete', this.eventHandlers.service);
     });
     const systemTablePromise = new Promise((resolve) => {
-      this.$root.$on('hardware-status-system-complete', () => resolve());
+      this.systemResolve = resolve;
+      this.$eventBus.$on('hardware-status-system-complete', this.eventHandlers.system);
     });
     const assemblyTablePromise = new Promise((resolve) => {
-      this.$root.$on('hardware-status-assembly-complete', () => resolve());
+      this.assemblyResolve = resolve;
+      this.$eventBus.$on('hardware-status-assembly-complete', this.eventHandlers.assembly);
     });
     const networkAdapterTablePromise = new Promise((resolve) => {
-      this.$root.$on('hardware-status-network-adapter-complete', () =>
-        resolve(),
-      );
+      this.networkAdapterResolve = resolve;
+      this.$eventBus.$on('hardware-status-network-adapter-complete', this.eventHandlers.networkAdapter);
     });
     const drivesTablePromise = new Promise((resolve) => {
-      this.$root.$on('hardware-status-drives-complete', () => resolve());
+      this.drivesResolve = resolve;
+      this.$eventBus.$on('hardware-status-drives-complete', this.eventHandlers.drives);
     });
     // Combine all child component Promises to indicate
     // when page data load complete
@@ -262,8 +285,20 @@ export default {
       this.validateLinks();
     });
   },
-  beforeDestroy() {
+  beforeUnmount() {
     this.observer.disconnect();
+    // Clean up all event listeners
+    this.$eventBus.$off('hardware-status-bmc-manager-complete', this.eventHandlers.bmcManager);
+    this.$eventBus.$off('hardware-status-chassis-complete', this.eventHandlers.chassis);
+    this.$eventBus.$off('hardware-status-dimm-slot-complete', this.eventHandlers.dimmSlot);
+    this.$eventBus.$off('hardware-status-fans-complete', this.eventHandlers.fans);
+    this.$eventBus.$off('hardware-status-power-supplies-complete', this.eventHandlers.powerSupplies);
+    this.$eventBus.$off('hardware-status-processors-complete', this.eventHandlers.processors);
+    this.$eventBus.$off('hardware-status-service-complete', this.eventHandlers.service);
+    this.$eventBus.$off('hardware-status-system-complete', this.eventHandlers.system);
+    this.$eventBus.$off('hardware-status-assembly-complete', this.eventHandlers.assembly);
+    this.$eventBus.$off('hardware-status-network-adapter-complete', this.eventHandlers.networkAdapter);
+    this.$eventBus.$off('hardware-status-drives-complete', this.eventHandlers.drives);
   },
   methods: {
     validateLinks() {

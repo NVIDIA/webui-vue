@@ -58,6 +58,7 @@ import LoadingBarMixin, { loading } from '@/components/Mixins/LoadingBarMixin';
 import BVToastMixin from '@/components/Mixins/BVToastMixin';
 
 import ModalSwitchToRunning from './FirmwareModalSwitchToRunning';
+import i18n from '@/i18n';
 
 export default {
   components: { IconSwitch, ModalSwitchToRunning, PageSection },
@@ -120,10 +121,13 @@ export default {
       this.startLoader();
       const timerId = setTimeout(() => {
         this.endLoader();
-        this.infoToast(this.$t('pageFirmware.toast.verifySwitchMessage'), {
-          title: this.$t('pageFirmware.toast.verifySwitch'),
-          refreshAction: true,
-        });
+        this.infoToast(
+          i18n.global.t('pageFirmware.toast.verifySwitchMessage'),
+          {
+            title: i18n.global.t('pageFirmware.toast.verifySwitch'),
+            refreshAction: true,
+          },
+        );
       }, 60000);
 
       const backupFirmwares = this.$store.getters['firmware/backupBmcFirmware'];
@@ -137,9 +141,12 @@ export default {
       this.$store
         .dispatch('firmware/switchBmcFirmwareAndReboot', backupLocation)
         .then(() =>
-          this.infoToast(this.$t('pageFirmware.toast.rebootStartedMessage'), {
-            title: this.$t('pageFirmware.toast.rebootStarted'),
-          }),
+          this.infoToast(
+            i18n.global.t('pageFirmware.toast.rebootStartedMessage'),
+            {
+              title: i18n.global.t('pageFirmware.toast.rebootStarted'),
+            },
+          ),
         )
         .catch(({ message }) => {
           this.errorToast(message);

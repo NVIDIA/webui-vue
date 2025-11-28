@@ -48,16 +48,16 @@ export default {
     // TODO: Update the template to show an array of bmc images
     backup() {
       const biosFirmwares = this.$store.getters['firmware/backupBiosFirmware'];
-      return biosFirmwares?.[0] ?? null;
+      return biosFirmwares && biosFirmwares[0] ? biosFirmwares[0] : null;
     },
     runningVersion() {
-      return this.running?.version || '--';
+      return this.running && this.running.version ? this.running.version : '--';
     },
     backupVersion() {
-      return this.backup?.version || '--';
+      return this.backup && this.backup.version ? this.backup.version : '--';
     },
     backupStatus() {
-      return this.backup?.status || null;
+      return this.backup && this.backup.status ? this.backup.status : null;
     },
     showBackupImageStatus() {
       return (

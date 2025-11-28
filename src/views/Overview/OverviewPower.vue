@@ -29,6 +29,7 @@
 import OverviewCard from './OverviewCard';
 import DataFormatterMixin from '@/components/Mixins/DataFormatterMixin';
 import { mapGetters } from 'vuex';
+import { useI18n } from 'vue-i18n';
 
 export default {
   name: 'Power',
@@ -36,6 +37,11 @@ export default {
     OverviewCard,
   },
   mixins: [DataFormatterMixin],
+  data() {
+    return {
+      $t: useI18n().t,
+    };
+  },
   computed: {
     ...mapGetters({
       powerCapValue: 'powerControl/powerCapValue',
@@ -45,7 +51,7 @@ export default {
   },
   created() {
     this.$store.dispatch('powerControl/getPowerControl').finally(() => {
-      this.$root.$emit('overview-power-complete');
+      this.$eventBus.$emit('overview-power-complete');
     });
   },
 };

@@ -81,7 +81,9 @@ const UserManagementStore = {
         })
         .catch((error) => {
           console.log(error);
-          const message = i18n.t('pageUserManagement.toast.errorLoadUsers');
+          const message = i18n.global.t(
+            'pageUserManagement.toast.errorLoadUsers',
+          );
           throw new Error(message);
         });
     },
@@ -96,7 +98,7 @@ const UserManagementStore = {
         })
         .catch((error) => {
           console.log(error);
-          const message = i18n.t(
+          const message = i18n.global.t(
             'pageUserManagement.toast.errorLoadAccountSettings',
           );
           throw new Error(message);
@@ -124,7 +126,7 @@ const UserManagementStore = {
         .post('/redfish/v1/AccountService/Accounts', data)
         .then(() => dispatch('getUsers'))
         .then(() =>
-          i18n.t('pageUserManagement.toast.successCreateUser', {
+          i18n.global.t('pageUserManagement.toast.successCreateUser', {
             username,
           }),
         )
@@ -133,7 +135,7 @@ const UserManagementStore = {
           let message =
             serverMessages.length > 0
               ? serverMessages.join(' ')
-              : i18n.t('pageUserManagement.toast.errorCreateUser', {
+              : i18n.global.t('pageUserManagement.toast.errorCreateUser', {
                   username: username,
                 });
                 // FIXME:  Don't toast here
@@ -156,7 +158,7 @@ const UserManagementStore = {
         .patch(`/redfish/v1/AccountService/Accounts/${originalUsername}`, data)
         .then(() => dispatch('getUsers'))
         .then(() =>
-          i18n.t('pageUserManagement.toast.successUpdateUser', {
+          i18n.global.t('pageUserManagement.toast.successUpdateUser', {
             username: originalUsername,
           }),
         )
@@ -166,7 +168,7 @@ const UserManagementStore = {
           const message =
             serverMessages.length > 0
               ? serverMessages.join(' ')
-              : i18n.t('pageUserManagement.toast.errorUpdateUser', {
+              : i18n.global.t('pageUserManagement.toast.errorUpdateUser', {
                   username: originalUsername,
                 });
           throw new Error(message);
@@ -177,15 +179,18 @@ const UserManagementStore = {
         .delete(`/redfish/v1/AccountService/Accounts/${username}`)
         .then(() => dispatch('getUsers'))
         .then(() =>
-          i18n.t('pageUserManagement.toast.successDeleteUser', {
+          i18n.global.t('pageUserManagement.toast.successDeleteUser', {
             username,
           }),
         )
         .catch((error) => {
           console.log(error);
-          const message = i18n.t('pageUserManagement.toast.errorDeleteUser', {
-            username,
-          });
+          const message = i18n.global.t(
+            'pageUserManagement.toast.errorDeleteUser',
+            {
+              username,
+            },
+          );
           throw new Error(message);
         });
     },
@@ -267,10 +272,14 @@ const UserManagementStore = {
         .patch('/redfish/v1/AccountService', data)
         //GET new settings to update view
         .then(() => dispatch('getAccountSettings'))
-        .then(() => i18n.t('pageUserManagement.toast.successSaveSettings'))
+        .then(() =>
+          i18n.global.t('pageUserManagement.toast.successSaveSettings'),
+        )
         .catch((error) => {
           console.log(error);
-          const message = i18n.t('pageUserManagement.toast.errorSaveSettings');
+          const message = i18n.global.t(
+            'pageUserManagement.toast.errorSaveSettings',
+          );
           throw new Error(message);
         });
     },

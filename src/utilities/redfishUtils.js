@@ -232,7 +232,7 @@ const redfishUtils = {
       if (allowableValues.length > 0 && !allowableValues.includes(paramValue)) {
         console.error(`Parameter ${paramName} value "${paramValue}" is not in the list of allowable values:`, 
           allowableValues);
-        throw new Error(i18n.t('global.error.paramValueNotAllowed', 
+        throw new Error(i18n.global.t('global.error.paramValueNotAllowed', 
           { param: paramName, value: paramValue }));
       }
     }

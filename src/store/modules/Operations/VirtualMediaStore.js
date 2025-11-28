@@ -27,7 +27,7 @@ const transferProtocolType = Object.freeze({
  * @type {VirtualMediaDevice}
  */
 const defaultDevice = {
-  Id: i18n.t('pageVirtualMedia.defaultDeviceName'),
+  Id: i18n.global.t('pageVirtualMedia.defaultDeviceName'),
   WebSocketEndpoint: '/vm/0/0',
   file: null,
   TransferProtocolType: transferProtocolType.OEM,
@@ -147,7 +147,7 @@ const VirtualMediaStore = {
         commit('setLegacyDevicesData', legacyDevices.sort((a, b) => a.Id.localeCompare(b.Id)));
       } catch (error) {
         console.error('Virtual Media Error:', error);
-        throw new Error(i18n.t('pageVirtualMedia.toast.errorLoadingData'));
+        throw new Error(i18n.global.t('pageVirtualMedia.toast.errorLoadingData'));
       }
     },
 
@@ -184,7 +184,7 @@ const VirtualMediaStore = {
       return await context.dispatch('executeMediaAction',
         { device: device,
         action: '#VirtualMedia.EjectMedia',
-        errorMessage: i18n.t('pageVirtualMedia.toast.errorUnmounting') })
+        errorMessage: i18n.global.t('pageVirtualMedia.toast.errorUnmounting') })
     },
 
     /**
@@ -199,7 +199,7 @@ const VirtualMediaStore = {
       return await context.dispatch('executeMediaAction', {
         device,
         action: '#VirtualMedia.InsertMedia',
-        errorMessage: i18n.t('pageVirtualMedia.toast.errorMounting'),
+        errorMessage: i18n.global.t('pageVirtualMedia.toast.errorMounting'),
         data
       });
     },

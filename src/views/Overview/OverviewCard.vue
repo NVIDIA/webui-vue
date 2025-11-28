@@ -26,6 +26,7 @@
 
 <script>
 import { TextLogHandler } from '@/store/modules/Logs/TextLogHandler';
+
 export default {
   name: 'OverviewCard',
   props: {

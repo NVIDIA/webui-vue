@@ -59,11 +59,11 @@ A complete form will look like this.
         v-model="form.input"
         type="text"
         aria-describedby="form-input-helper-text"
-        :state="getValidationState($v.form.input)"
-        @change="$v.form.input.$touch()"
+        :state="getValidationState(v$.form.input)"
+        @change="v$.form.input.$touch()"
       />
       <b-form-invalid-feedback role="alert">
-        <div v-if="!$v.form.input.required">
+        <div v-if="!v$.form.input.required">
           {{ $t("global.form.fieldRequired") }}
         </div>
       </b-form-invalid-feedback>
@@ -104,8 +104,8 @@ export default {
   },
   methods:{
     handleSubmit() {
-      this.$v.$touch();
-      if (this.$v.$invalid) return;
+      this.v$.$touch();
+      if (this.v$.$invalid) return;
       this.$store
         .dispatch(
           'pageName/updateFormData',
@@ -116,7 +116,7 @@ export default {
         })
         .catch(({ message }) => this.errorToast(message))
         .finally(() => {
-          this.$v.form.$reset();
+          this.v$.form.$reset();
           this.endLoader();
         });
     },

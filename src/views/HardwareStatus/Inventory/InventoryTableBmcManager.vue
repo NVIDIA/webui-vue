@@ -88,14 +88,14 @@
                 <!-- BMC date and time -->
                 <dt>{{ $t('pageInventory.table.bmcDateTime') }}:</dt>
                 <dd>
-                  {{ item.dateTime | formatDate }}
-                  {{ item.dateTime | formatTime }}
+                  {{ $filters.formatDate(item.dateTime) }}
+                  {{ $filters.formatTime(item.dateTime) }}
                 </dd>
                 <!-- Reset date and time -->
                 <dt>{{ $t('pageInventory.table.lastResetTime') }}:</dt>
                 <dd>
-                  {{ item.lastResetTime | formatDate }}
-                  {{ item.lastResetTime | formatTime }}
+                  {{ $filters.formatDate(item.lastResetTime) }}
+                  {{ $filters.formatTime(item.lastResetTime) }}
                 </dd>
               </dl>
             </b-col>
@@ -139,20 +139,6 @@
                   {{ dataFormatter(item.graphicalConsoleEnabled) }}
                 </dd>
               </dl>
-              <!-- Serial console -->
-              <p class="mt-1 mb-2 h6 float-none m-0">
-                {{ $t('pageInventory.table.serialConsole') }}
-              </p>
-              <dl class="ml-4">
-                <dt>{{ $t('pageInventory.table.connectTypesSupported') }}:</dt>
-                <dd>
-                  {{ dataFormatterArray(item.serialConsoleConnectTypes) }}
-                </dd>
-                <dt>{{ $t('pageInventory.table.maxConcurrentSessions') }}:</dt>
-                <dd>{{ dataFormatter(item.serialConsoleMaxSessions) }}</dd>
-                <dt>{{ $t('pageInventory.table.serviceEnabled') }}:</dt>
-                <dd>{{ dataFormatter(item.serialConsoleEnabled) }}</dd>
-              </dl>
             </b-col>
           </b-row>
         </b-container>
@@ -170,6 +156,8 @@ import TableRowExpandMixin, {
   expandRowLabel,
 } from '@/components/Mixins/TableRowExpandMixin';
 import DataFormatterMixin from '@/components/Mixins/DataFormatterMixin';
+import { useI18n } from 'vue-i18n';
+import i18n from '@/i18n';
 
 export default {
   components: { IconChevron, PageSection, StatusIcon },
@@ -177,6 +165,7 @@ export default {
   props: ['showLeds'],
   data() {
     return {
+      $t: useI18n().t,
       isBusy: true,
       fields: [
         {
@@ -186,22 +175,22 @@ export default {
         },
         {
           key: 'id',
-          label: this.$t('pageInventory.table.id'),
+          label: i18n.global.t('pageInventory.table.id'),
           formatter: this.dataFormatter,
         },
         {
           key: 'health',
-          label: this.$t('pageInventory.table.health'),
+          label: i18n.global.t('pageInventory.table.health'),
           formatter: this.dataFormatter,
         },
         {
           key: 'locationNumber',
-          label: this.$t('pageInventory.table.locationNumber'),
+          label: i18n.global.t('pageInventory.table.locationNumber'),
           formatter: this.dataFormatter,
         },
         this.showLeds ? {
           key: 'identifyLed',
-          label: this.$t('pageInventory.table.identifyLed'),
+          label: i18n.global.t('pageInventory.table.identifyLed'),
           formatter: this.dataFormatter,
         }:{},
       ],
@@ -223,7 +212,7 @@ export default {
   created() {
     this.$store.dispatch('bmc/getBmcInfo').finally(() => {
       // Emit initial data fetch complete to parent component
-      this.$root.$emit('hardware-status-bmc-manager-complete');
+      this.$eventBus.$emit('hardware-status-bmc-manager-complete');
       this.isBusy = false;
     });
   },

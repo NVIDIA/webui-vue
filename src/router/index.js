@@ -1,5 +1,4 @@
-import Vue from 'vue';
-import VueRouter from 'vue-router';
+import { createRouter, createWebHashHistory } from 'vue-router';
 
 //Do not change store or routes import.
 //Exact match alias set to support
@@ -7,9 +6,8 @@ import VueRouter from 'vue-router';
 import store from '../store';
 import routes from './routes';
 
-Vue.use(VueRouter);
-const router = new VueRouter({
-  base: process.env.BASE_URL,
+const router = createRouter({
+  history: createWebHashHistory(),
   routes,
   linkExactActiveClass: 'nav-link--current',
   scrollBehavior() {
@@ -47,12 +45,18 @@ router.beforeEach((to, from, next) => {
     let username = localStorage.getItem('storedUsername');
     store
       .dispatch('authentication/getUserInfo', username)
-      .then(({ PasswordChangeRequired }) => {
+      .then((userInfo) => {
+        const { PasswordChangeRequired } = userInfo || {};
         if (PasswordChangeRequired) {
           next('/login');
         }
         let currentUserRole = store.getters['global/userPrivilege'];
         allowRouterToNavigate(to, next, currentUserRole);
+      })
+      // our store got out of sync, start afresh
+      .catch(() => {
+        console.log('Failed to obtain current Roles, logging out.');
+        store.dispatch('authentication/logout');
       });
   } else {
     allowRouterToNavigate(to, next, currentUserRole);

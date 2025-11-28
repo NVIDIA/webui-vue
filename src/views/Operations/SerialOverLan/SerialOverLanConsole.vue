@@ -176,16 +176,14 @@ export default {
       this.$store.dispatch('global/getSystemInfo');
     }, 5000);
   },
-  beforeDestroy() {
+  mounted() {
+    this.openTerminal();
+  },
+  beforeUnmount() {
     if (this.powerStateTimer) {
       clearInterval(this.powerStateTimer);
       this.powerStateTimer = null;
     }
-  },
-  mounted() {
-    this.openTerminal();
-  },
-  beforeDestroy() {
     window.removeEventListener('resize', this.resizeConsoleWindow);
     this.closeTerminal();
   },

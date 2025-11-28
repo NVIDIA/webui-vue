@@ -16,14 +16,14 @@
               id="ipAddress"
               v-model="form.ipAddress"
               type="text"
-              :state="getValidationState($v.form.ipAddress)"
-              @input="$v.form.ipAddress.$touch()"
+              :state="getValidationState(v$.form.ipAddress)"
+              @input="v$.form.ipAddress.$touch()"
             />
             <b-form-invalid-feedback role="alert">
-              <template v-if="!$v.form.ipAddress.required">
+              <template v-if="v$.form.ipAddress.required.$invalid">
                 {{ $t('global.form.fieldRequired') }}
               </template>
-              <template v-if="!$v.form.ipAddress.ipAddress">
+              <template v-if="v$.form.ipAddress.ipAddress.$invalid">
                 {{ $t('global.form.invalidFormat') }}
               </template>
             </b-form-invalid-feedback>
@@ -38,14 +38,14 @@
               id="gateway"
               v-model="form.gateway"
               type="text"
-              :state="getValidationState($v.form.gateway)"
-              @input="$v.form.gateway.$touch()"
+              :state="getValidationState(v$.form.gateway)"
+              @input="v$.form.gateway.$touch()"
             />
             <b-form-invalid-feedback role="alert">
-              <template v-if="!$v.form.gateway.required">
+              <template v-if="v$.form.gateway.required.$invalid">
                 {{ $t('global.form.fieldRequired') }}
               </template>
-              <template v-if="!$v.form.gateway.ipAddress">
+              <template v-if="v$.form.gateway.ipAddress.$invalid">
                 {{ $t('global.form.invalidFormat') }}
               </template>
             </b-form-invalid-feedback>
@@ -62,14 +62,14 @@
               id="subnetMask"
               v-model="form.subnetMask"
               type="text"
-              :state="getValidationState($v.form.subnetMask)"
-              @input="$v.form.subnetMask.$touch()"
+              :state="getValidationState(v$.form.subnetMask)"
+              @input="v$.form.subnetMask.$touch()"
             />
             <b-form-invalid-feedback role="alert">
-              <template v-if="!$v.form.subnetMask.required">
+              <template v-if="v$.form.subnetMask.required.$invalid">
                 {{ $t('global.form.fieldRequired') }}
               </template>
-              <template v-if="!$v.form.subnetMask.ipAddress">
+              <template v-if="v$.form.subnetMask.ipAddress.$invalid">
                 {{ $t('global.form.invalidFormat') }}
               </template>
             </b-form-invalid-feedback>
@@ -90,7 +90,10 @@
 
 <script>
 import VuelidateMixin from '@/components/Mixins/VuelidateMixin.js';
-import { ipAddress, required } from 'vuelidate/lib/validators';
+import { useVuelidate } from '@vuelidate/core';
+
+import { ipAddress, required } from '@vuelidate/validators';
+import { useI18n } from 'vue-i18n';
 
 export default {
   mixins: [VuelidateMixin],
@@ -100,8 +103,14 @@ export default {
       default: '',
     },
   },
+  setup() {
+    return {
+      v$: useVuelidate(),
+    };
+  },
   data() {
     return {
+      $t: useI18n().t,
       form: {
         ipAddress: '',
         gateway: '',
@@ -134,8 +143,8 @@ export default {
   },
   methods: {
     handleSubmit() {
-      this.$v.$touch();
-      if (this.$v.$invalid) return;
+      this.v$.$touch();
+      if (this.v$.$invalid) return;
       this.$emit('ok', {
         Address: this.form.ipAddress,
         Gateway: this.form.gateway,
@@ -152,7 +161,7 @@ export default {
       this.form.ipAddress = null;
       this.form.gateway = this.defaultGateway;
       this.form.subnetMask = null;
-      this.$v.$reset();
+      this.v$.$reset();
       this.$emit('hidden');
     },
     onOk(bvModalEvt) {

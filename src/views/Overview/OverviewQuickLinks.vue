@@ -5,7 +5,8 @@
         <dl>
           <dt>{{ $t('pageOverview.bmcTime') }}</dt>
           <dd v-if="bmcTime" data-test-id="overviewQuickLinks-text-bmcTime">
-            {{ bmcTime | formatDate }} {{ bmcTime | formatTime }}
+            {{ $filters.formatDate(bmcTime) }}
+            {{ $filters.formatTime(bmcTime) }}
           </dd>
           <dd v-else>--</dd>
         </dl>
@@ -51,7 +52,7 @@ export default {
   },
   created() {
     this.$store.dispatch('bmc/getBmcUpTime');
-    this.$root.$emit('overview-quicklinks-complete');
+    this.$eventBus.$emit('overview-quicklinks-complete');
   },
 };
 </script>

@@ -12,9 +12,11 @@
 </template>
 
 <script>
+import { useI18n } from 'vue-i18n';
 export default {
   data() {
     return {
+      $t: useI18n().t,
       loadingIndicatorValue: 0,
       isLoadingComplete: false,
       loadingIntervalId: null,
@@ -22,13 +24,13 @@ export default {
     };
   },
   created() {
-    this.$root.$on('loader-start', (percents) => {
+    this.$eventBus.$on('loader-start', (percents) => {
       this.startLoadingInterval(percents);
     });
-    this.$root.$on('loader-end', () => {
+    this.$eventBus.$on('loader-end', () => {
       this.endLoadingInterval();
     });
-    this.$root.$on('loader-hide', () => {
+    this.$eventBus.$on('loader-hide', () => {
       this.hideLoadingBar();
     });
   },

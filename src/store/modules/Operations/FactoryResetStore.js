@@ -35,21 +35,25 @@ const FactoryResetStore = {
             ResetType: 'ResetAll',
           },
         )
-        .then(() => i18n.t('pageFactoryReset.toast.resetToDefaultsSuccess'))
+        .then(() =>
+          i18n.global.t('pageFactoryReset.toast.resetToDefaultsSuccess'),
+        )
         .catch((error) => {
           console.log('Factory Reset: ', error);
           throw new Error(
-            i18n.t('pageFactoryReset.toast.resetToDefaultsError'),
+            i18n.global.t('pageFactoryReset.toast.resetToDefaultsError'),
           );
         });
     },
     async resetBios(_context, target) {
       return await api
         .post(target)
-        .then(() => i18n.t('pageFactoryReset.toast.resetBiosSuccess'))
+        .then(() => i18n.global.t('pageFactoryReset.toast.resetBiosSuccess'))
         .catch((error) => {
           console.log('Factory Reset: ', error);
-          throw new Error(i18n.t('pageFactoryReset.toast.resetBiosError'));
+          throw new Error(
+            i18n.global.t('pageFactoryReset.toast.resetBiosError'),
+          );
         });
     },
   },

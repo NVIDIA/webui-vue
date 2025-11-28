@@ -213,15 +213,15 @@ const FirmwareStore = {
         .then(async ({ data }) => {
           const applyTime =
             data.HttpPushUriOptions.HttpPushUriApplyTime.ApplyTime;
-          const allowableActions =
-            data?.Actions?.['#UpdateService.SimpleUpdate']?.[
-              'TransferProtocol@Redfish.AllowableValues'
-            ];
           commit('setApplyTime', applyTime);
           const httpPushUri = data.HttpPushUri;
           commit('setHttpPushUri', httpPushUri);
           const multipartHttpPushUri = data.MultipartHttpPushUri;
           commit('setMultipartHttpPushUri', multipartHttpPushUri);
+          const allowableActions =
+            data?.Actions?.['#UpdateService.SimpleUpdate']?.[
+              'TransferProtocol@Redfish.AllowableValues'
+            ];
           if (allowableActions != null)
             commit('setAllowableActions', allowableActions);
           const simpleUpdateUri =
@@ -330,7 +330,7 @@ const FirmwareStore = {
       );
 
       if (resolutions.length > 0) return resolutions;
-      else return i18n.t('pageFirmware.toast.errorUpdateFirmware');
+      else return i18n.global.t('pageFirmware.toast.errorUpdateFirmware');
     },
     initFirmwareUpdate({ commit }, { taskHandle, taskState, initiator }) {
       commit('setFirmwareUpdateTaskHandle', taskHandle);
@@ -546,7 +546,7 @@ const FirmwareStore = {
       });
 
       if (resolutions.length > 0) return resolutions;
-      else return i18n.t('pageFirmware.toast.errorCompleteUpdateFirmware');
+      else return i18n.global.t('pageFirmware.toast.errorCompleteUpdateFirmware');
     },
     // eslint-disable-next-line no-unused-vars
     sleep({ state }, seconds) {
@@ -564,7 +564,9 @@ const FirmwareStore = {
         .patch(`${await this.dispatch('global/getBmcPath')}`, data)
         .catch((error) => {
           console.log(error);
-          throw new Error(i18n.t('pageFirmware.toast.errorSwitchImages'));
+          throw new Error(
+            i18n.global.t('pageFirmware.toast.errorSwitchImages'),
+          );
         });
     },
     async exchangePublicKey(
