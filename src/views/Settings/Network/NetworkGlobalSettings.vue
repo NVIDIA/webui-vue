@@ -33,7 +33,7 @@
               v-model="useDomainNameState"
               data-test-id="networkSettings-switch-useDomainName"
               switch
-              @change="changeDomainNameState"
+              @update:model-value="changeDomainNameState"
             >
               <span v-if="domainState">
                 {{ $t('global.status.enabled') }}
@@ -47,7 +47,7 @@
               v-model="useDomainNameStateIpv6"
               data-test-id="networkSettings-switch-useDomainNameIpv6"
               switch
-              @change="changeDomainNameStateIpv6"
+              @update:model-value="changeDomainNameStateIpv6"
             >
               <span v-if="domainStateIpv6">
                 {{ $t('global.status.enabled') }}
@@ -66,7 +66,7 @@
               v-model="useDnsState"
               data-test-id="networkSettings-switch-useDns"
               switch
-              @change="changeDnsState"
+              @update:model-value="changeDnsState"
             >
               <span v-if="dnsState">
                 {{ $t('global.status.enabled') }}
@@ -80,7 +80,7 @@
               v-model="useDnsStateIpv6"
               data-test-id="networkSettings-switch-useDnsIpv6"
               switch
-              @change="changeDnsStateIpv6"
+              @update:model-value="changeDnsStateIpv6"
             >
               <span v-if="dnsStateIpv6">
                 {{ $t('global.status.enabled') }}
@@ -99,7 +99,7 @@
               v-model="useNtpState"
               data-test-id="networkSettings-switch-useNtp"
               switch
-              @change="changeNtpState"
+              @update:model-value="changeNtpState"
             >
               <span v-if="ntpState">
                 {{ $t('global.status.enabled') }}
@@ -113,7 +113,7 @@
               v-model="useNtpStateIpv6"
               data-test-id="networkSettings-switch-useNtpIpv6"
               switch
-              @change="changeNtpStateIpv6"
+              @update:model-value="changeNtpStateIpv6"
             >
               <span v-if="ntpStateIpv6">
                 {{ $t('global.status.enabled') }}
