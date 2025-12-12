@@ -26,7 +26,7 @@
                 v-model="locationIndicatorActive"
                 data-test-id="inventoryService-toggle-identifyLed"
                 switch
-                @change="toggleIdentifyLedSwitch"
+                @update:model-value="toggleIdentifyLedSwitch"
               >
                 <span v-if="locationIndicatorActive">
                   {{ $t('global.status.on') }}
