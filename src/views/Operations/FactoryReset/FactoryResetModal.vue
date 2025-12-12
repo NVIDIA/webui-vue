@@ -3,7 +3,7 @@
     v-if="resetType"
     id="modal-reset"
     ref="modal"
-    :model-value="modelValue"
+    v-model="isModalVisible"
     :title="modalTitle"
     title-tag="h2"
     @update:model-value="$emit('update:modelValue', $event)"
@@ -46,7 +46,7 @@
       <b-form-checkbox
         v-model="confirm"
         aria-describedby="reset-to-default-warning"
-        @input="v$.confirm.$touch()"
+        @change="v$.confirm.$touch()"
       >
         {{ t(`pageFactoryReset.modal.resetWarningCheckLabel`) }}
       </b-form-checkbox>
@@ -98,18 +98,27 @@ export default {
   },
   emits: ['okConfirm', 'update:modelValue'],
   setup() {
+    const { t } = useI18n();
     return {
+      t,
       v$: useVuelidate(),
     };
   },
   data() {
     return {
-      t: useI18n().t,
       confirm: false,
       showWarning: process.env.VUE_APP_ENV_NAME !== 'nvidia-bluefield',
     };
   },
   computed: {
+    isModalVisible: {
+      get() {
+        return this.modelValue;
+      },
+      set(value) {
+        this.$emit('update:modelValue', value);
+      },
+    },
     powerState() {
       return this.$store.getters['global/powerState'];
     },
@@ -126,12 +135,14 @@ export default {
       return this.t(`pageFactoryReset.modal.${this.resetType}SubmitText`);
     },
   },
-  validations: {
-    confirm: {
-      mustBeTrue: function (value) {
-        return this.isServerOff || value === true;
+  validations() {
+    return {
+      confirm: {
+        mustBeTrue: function (value) {
+          return this.isServerOff || value === true;
+        },
       },
-    },
+    };
   },
   watch: {
     isServerOff: {

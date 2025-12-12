@@ -3,11 +3,13 @@
     <b-form-file
       :id="id"
       ref="fileInput"
-      v-model="file"
+      :model-value="file"
       :accept="accept"
       :disabled="disabled"
       :state="state"
       plain
+      @change="onNativeFileChange"
+      @update:model-value="onFileChange"
     >
     </b-form-file>
     <button
@@ -43,17 +45,10 @@
 <script>
 import { BFormFile } from 'bootstrap-vue-next';
 import IconClose from '@carbon/icons-vue/es/close/20';
-import { useI18n } from 'vue-i18n';
-
 export default {
   name: 'FormFile',
   components: { BFormFile, IconClose },
   props: {
-    // Vue 3 v-model support
-    modelValue: {
-      type: [File, Object],
-      default: null,
-    },
     id: {
       type: String,
       default: '',
@@ -74,30 +69,37 @@ export default {
       type: String,
       default: 'secondary',
     },
+    modelValue: {
+      type: [File, Object, null],
+      default: null,
+    },
   },
   emits: ['update:modelValue', 'input'],
   data() {
     return {
-      $t: useI18n().t,
-      // internal mirror of v-model value
-      file: this.modelValue ?? null,
+      internalFile: this.modelValue ?? null,
     };
   },
   watch: {
     modelValue(newValue) {
       // Keep internal state in sync if parent updates/clears value
-      if (newValue !== this.file) {
-        this.file = newValue ?? null;
+      if (newValue !== this.internalFile) {
+        this.internalFile = newValue ?? null;
       }
-    },
-    file(newFile) {
-      // Vue 3 v-model
-      this.$emit('update:modelValue', newFile);
-      // Back-compat for any legacy listeners expecting @input
-      this.$emit('input', newFile);
     },
   },
   computed: {
+    file: {
+      get() {
+        // Use modelValue if provided, otherwise use internal state
+        return this.modelValue !== null ? this.modelValue : this.internalFile;
+      },
+      set(value) {
+        this.internalFile = value;
+        this.$emit('update:modelValue', value);
+        this.$emit('input', value);
+      },
+    },
     isSecondary() {
       return this.variant === 'secondary';
     },
@@ -105,9 +107,35 @@ export default {
   methods: {
     openFilePicker() {
       // Access the native input element within the BFormFile component
-      const fileInput = document.getElementById(this.id);
-      if (fileInput) {
-        fileInput.click();
+      const refInput = this.$refs.fileInput;
+      if (refInput) {
+        // Try different ways to get the input element
+        let input = null;
+        if (refInput.$el) {
+          // If $el is the input itself
+          if (refInput.$el.tagName === 'INPUT') {
+            input = refInput.$el;
+          } else if (typeof refInput.$el.querySelector === 'function') {
+            // If $el is a wrapper, find the input inside
+            input = refInput.$el.querySelector('input[type="file"]');
+          }
+        }
+        // Fallback to getElementById
+        if (!input && this.id) {
+          input = document.getElementById(this.id);
+        }
+        if (input && typeof input.click === 'function') {
+          input.click();
+        }
+      }
+    },
+    onFileChange(value) {
+      this.file = value;
+    },
+    onNativeFileChange(event) {
+      const files = event?.target?.files;
+      if (files && files.length > 0) {
+        this.file = files[0];
       }
     },
   },

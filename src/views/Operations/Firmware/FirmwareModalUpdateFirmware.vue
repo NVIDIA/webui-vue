@@ -1,6 +1,7 @@
 <template>
   <b-modal
     id="modal-update-firmware"
+    v-model="isModalVisible"
     :title="$t('pageFirmware.sectionTitleUpdateFirmware')"
     :ok-title="$t('pageFirmware.form.updateFirmware.startUpdate')"
     :cancel-title="$t('global.action.cancel')"
@@ -34,14 +35,26 @@
 
 <script>
 export default {
-  emits: ['ok'],
   props: {
     targets: {
       type: Array,
       required: true,
     },
+    modelValue: {
+      type: Boolean,
+      default: false,
+    },
   },
+  emits: ['ok', 'update:modelValue'],
   computed: {
+    isModalVisible: {
+      get() {
+        return this.modelValue;
+      },
+      set(value) {
+        this.$emit('update:modelValue', value);
+      },
+    },
     activeBmcFirmware() {
       return this.$store.getters['firmware/activeBmcFirmware'];
     },
