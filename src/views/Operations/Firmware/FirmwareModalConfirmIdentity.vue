@@ -56,8 +56,9 @@
 </template>
 
 <script>
-import { BFormTextarea } from 'bootstrap-vue';
-import { required } from 'vuelidate/lib/validators';
+import { BFormTextarea } from 'bootstrap-vue-next';
+import { useVuelidate } from '@vuelidate/core';
+import { required } from '@vuelidate/validators';
 import VuelidateMixin from '@/components/Mixins/VuelidateMixin.js';
 import StatusIcon from '@/components/Global/StatusIcon';
 
@@ -67,6 +68,13 @@ export default {
     StatusIcon,
   },
   mixins: [VuelidateMixin],
+  setup() {
+    return {
+      // This modal should not block the parent firmware update form submit.
+      // Prevent nested Vuelidate results from being collected into parent scopes.
+      v$: useVuelidate({ $stopPropagation: true }),
+    };
+  },
   props: {
     defaultRemoteServerIp: {
       type: String,

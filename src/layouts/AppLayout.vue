@@ -46,7 +46,7 @@ export default {
   },
   mounted() {
     this.refreshHandler = () => this.refresh();
-    this.$eventBus.$on('refresh-application', this.refreshHandler);
+    this.$eventBus.on('refresh-application', this.refreshHandler);
     this.sessionCheckInterval = setInterval(() => {
       if (!localStorage.getItem('storedUsername')) {
         if (this.$eventBus && this.$eventBus.$consoleWindow) {
@@ -62,9 +62,14 @@ export default {
     if (this.sessionCheckInterval) {
       clearInterval(this.sessionCheckInterval);
     }
-    this.$eventBus.$off('refresh-application', this.refreshHandler);
+    if (this.refreshHandler) {
+      this.$eventBus.off('refresh-application', this.refreshHandler);
+    }
   },
   methods: {
+    handleRefreshApplication() {
+      this.refresh();
+    },
     refresh() {
       // Clear all toast messages
       document.querySelectorAll('.toast').forEach((toast) => {

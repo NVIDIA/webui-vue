@@ -32,14 +32,15 @@ const PowerControlStore = {
       return await api
         .get(`${await this.dispatch('global/getChassisPath')}`)
         .then((response) => {
-          if (typeof response.data.Power === 'undefined') {
+          const powerUri = response?.data?.Power?.['@odata.id'];
+          if (!powerUri) {
             commit('setHasPowerControl', false);
             throw new Error('noPower');
           }
-          return api.get(response.data.Power['@odata.id']);
+          return api.get(powerUri);
         })
         .then((response) => {
-          const powerControl = response.data.PowerControl;
+          const powerControl = response?.data?.PowerControl;
           if (!powerControl || powerControl.length === 0) return;
           const powerCapUri = response.data['@odata.id'];
           const powerCap = powerControl[0].PowerLimit.LimitInWatts;

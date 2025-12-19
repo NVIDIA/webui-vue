@@ -268,14 +268,21 @@ const FirmwareStore = {
     },
     async uploadFirmwareMultipartHttpPush(
       { state, commit, dispatch },
-      { image, targets, forceUpdate },
+      { image, targets, forceUpdate, applyTime = 'Immediate' },
     ) {
       commit('setFirmwareUploadProgress', 0);
       const formData = new FormData();
       formData.append('UpdateFile', image);
       const params = {};
-      if (targets != null && targets.length > 0) params.Targets = targets;
+      if (targets != null && targets.length > 0) {
+        params.Targets = targets;
+      } else {
+        // TODO: Should be OK to leave Targets out, remove this clause
+        // when bmcweb is updated
+        params.Targets = [`${await this.dispatch('global/getBmcPath')}`];
+      }
       if (forceUpdate) params.ForceUpdate = true;
+      params['@Redfish.OperationApplyTime'] = applyTime;
       formData.append('UpdateParameters', JSON.stringify(params));
       return await api
         .post(state.multipartHttpPushUri, formData, {

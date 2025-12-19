@@ -1,38 +1,50 @@
 <template>
-     <!-- Success state after password change -->
-     <div v-if="passwordChanged">
-       <alert variant="success">
-         {{ $t('pageChangePassword.passwordChangedSuccess') }}
-       </alert>
-
-       <div class="message-spacer"></div>
-
-       <alert variant="warning">
-         {{ $t('pageChangePassword.savePasswordWarning') }}
-       </alert>
-
-       <div class="text-right mt-4">
-         <b-button variant="primary" @click="goToHome">
-           {{ $t('pageChangePassword.continue') }}
-         </b-button>
-       </div>
-     </div>
-
-     <!-- Password change form -->
-     <div v-else>
-       <alert variant="danger" class="mb-4">
-       <p v-if="changePasswordError">
-          {{ $t('pageChangePassword.changePasswordError') }}
-       </p>
-      <p v-else>{{ $t('pageChangePassword.changePasswordAlertMessage') }}</p>
+  <!-- Success state after password change -->
+  <div v-if="passwordChanged">
+    <alert variant="success">
+      {{ $t('pageChangePassword.passwordChangedSuccess') }}
     </alert>
+
+    <div class="message-spacer"></div>
+
+    <alert variant="warning">
+      {{ $t('pageChangePassword.savePasswordWarning') }}
+    </alert>
+
+    <div class="text-end mt-4">
+      <b-button variant="primary" @click="goToHome">
+        {{ $t('pageChangePassword.continue') }}
+      </b-button>
+    </div>
+  </div>
+
+  <!-- Password change form -->
+  <div v-else class="change-password-container">
+    <alert variant="danger" class="mb-4">
+      <p v-if="changePasswordError">
+        {{ $t('pageChangePassword.changePasswordError') }}
+      </p>
+      <p v-else>
+        {{ $t('pageChangePassword.changePasswordAlertMessage') }}
+      </p>
+    </alert>
+
     <div class="change-password__form-container">
       <dl>
         <dt>{{ $t('pageChangePassword.username') }}</dt>
         <dd>{{ username }}</dd>
       </dl>
+
       <b-form novalidate @submit.prevent="changePassword">
-        <input hidden id="username" type="text" autocomplete="username" name="username" :value="username">
+        <input
+          hidden
+          id="username"
+          type="text"
+          autocomplete="username"
+          name="username"
+          :value="username"
+        />
+
         <b-form-group
           label-for="password"
           :label="$t('pageChangePassword.newPassword')"
@@ -40,10 +52,10 @@
           <input-password-toggle>
             <b-form-input
               id="password"
-              autocomplete="new-password"
               v-model="form.password"
               autofocus="autofocus"
               type="password"
+              autocomplete="new-password"
               :state="getValidationState(v$.form.password)"
               class="form-control-with-button"
               @change="v$.form.password.$touch()"
@@ -56,6 +68,7 @@
             </b-form-invalid-feedback>
           </input-password-toggle>
         </b-form-group>
+
         <b-form-group
           label-for="password-confirm"
           :label="$t('pageChangePassword.confirmNewPassword')"
@@ -63,9 +76,9 @@
           <input-password-toggle>
             <b-form-input
               id="password-confirm"
-              autocomplete="new-password"
               v-model="form.passwordConfirm"
               type="password"
+              autocomplete="new-password"
               :state="getValidationState(v$.form.passwordConfirm)"
               class="form-control-with-button"
               @change="v$.form.passwordConfirm.$touch()"
@@ -75,28 +88,31 @@
               <template v-if="v$.form.passwordConfirm.required.$invalid">
                 {{ $t('global.form.fieldRequired') }}
               </template>
-              <template
-                v-else-if="v$.form.passwordConfirm.sameAsPassword.$invalid"
-              >
+              <template v-else-if="v$.form.passwordConfirm.sameAsPassword.$invalid">
                 {{ $t('global.form.passwordsDoNotMatch') }}
               </template>
             </b-form-invalid-feedback>
           </input-password-toggle>
         </b-form-group>
+
         <alert variant="warning" class="mt-4 mb-4">
           <div class="text-center mb-2">
             {{ $t('pageChangePassword.savePasswordAttention') }}
           </div>
           {{ $t('pageChangePassword.savePasswordWarning') }}
         </alert>
-        <div class="text-right">
+
+        <div class="text-end">
+          <b-button type="button" variant="link" @click="goBack">
+            {{ $t('pageChangePassword.goBack') }}
+          </b-button>
           <b-button type="submit" variant="primary">
             {{ $t('pageChangePassword.changePassword') }}
           </b-button>
         </div>
       </b-form>
-     </div>
     </div>
+  </div>
 </template>
 
 <script>

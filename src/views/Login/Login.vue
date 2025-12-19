@@ -16,11 +16,11 @@
     <b-form-group label-for="username" :label="$t('pageLogin.username')">
       <b-form-input
         id="username"
-        autocomplete="on"
         v-model="userInfo.username"
         aria-describedby="login-error-alert username-required"
         :state="getValidationState(v$.userInfo.username)"
         type="text"
+        autocomplete="username"
         autofocus="autofocus"
         data-test-id="login-input-username"
         @input="v$.userInfo.username.$touch()"
@@ -33,7 +33,9 @@
       </b-form-invalid-feedback>
     </b-form-group>
     <div class="login-form__section mb-3">
-      <label for="password">{{ $t('pageLogin.password') }}</label>
+      <label for="password" class="d-block">
+        {{ $t('pageLogin.password') }}
+      </label>
       <input-password-toggle>
         <b-form-input
           id="password"
@@ -41,7 +43,7 @@
           aria-describedby="login-error-alert password-required"
           :state="getValidationState(v$.userInfo.password)"
           type="password"
-          autocomplete="current-password" 
+          autocomplete="current-password"
           data-test-id="login-input-password"
           class="form-control-with-button"
           @input="v$.userInfo.password.$touch()"
@@ -60,8 +62,9 @@
       variant="primary"
       data-test-id="login-button-submit"
       :disabled="disableSubmitButton"
-      >{{ $t('pageLogin.logIn') }}</b-button
     >
+      {{ $t('pageLogin.logIn') }}
+    </b-button>
   </b-form>
 </template>
 
@@ -123,15 +126,17 @@ export default {
       return this.$store.getters['authentication/authError'];
     },
   },
-  validations: {
-    userInfo: {
-      username: {
-        required,
+  validations() {
+    return {
+      userInfo: {
+        username: {
+          required,
+        },
+        password: {
+          required,
+        },
       },
-      password: {
-        required,
-      },
-    },
+    };
   },
   methods: {
     login: function () {

@@ -45,12 +45,12 @@
                   
                   <template #cell(timestamp)="data">
                     <span v-if="data.item.lastRebootTime">
-                      {{ data.item.lastRebootTime | formatDate }}
-                      {{ data.item.lastRebootTime | formatTime }}
+                      {{ $filters.formatDate(data.item.lastRebootTime) }}
+                      {{ $filters.formatTime(data.item.lastRebootTime) }}
                     </span>
                     <span v-else-if="data.item.lastResetTime">
-                      {{ data.item.lastResetTime | formatDate }}
-                      {{ data.item.lastResetTime | formatTime }}
+                      {{ $filters.formatDate(data.item.lastResetTime) }}
+                      {{ $filters.formatTime(data.item.lastResetTime) }}
                     </span>
                     <span v-else class="text-muted">{{ $t('global.unknown') }}</span>
                   </template>
@@ -137,17 +137,11 @@ import PageSection from '@/components/Global/PageSection';
 import Alert from '@/components/Global/Alert';
 import BVToastMixin from '@/components/Mixins/BVToastMixin';
 import LoadingBarMixin from '@/components/Mixins/LoadingBarMixin';
-import { BSpinner } from 'bootstrap-vue'
-import { mapState, mapGetters } from 'vuex';
+import { mapGetters } from 'vuex';
 
 export default {
   name: 'RebootBmc',
-  components: { 
-    PageTitle, 
-    PageSection, 
-    Alert,
-    'b-spinner': BSpinner 
-  },
+  components: { PageTitle, PageSection, Alert },
   mixins: [BVToastMixin, LoadingBarMixin],
   beforeRouteLeave(to, from, next) {
     this.hideLoader();

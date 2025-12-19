@@ -1,13 +1,18 @@
 <template>
   <div id="app">
     <router-view />
+    <confirm-modal />
+    <b-orchestrator />
   </div>
 </template>
 
 <script>
 import { mapGetters } from 'vuex';
+import ConfirmModal from '@/components/Global/ConfirmModal.vue';
+import { BOrchestrator } from 'bootstrap-vue-next';
 export default {
   name: 'App',
+  components: { ConfirmModal, BOrchestrator },
   computed: {
     ...mapGetters('global', ['assetTag', 'modelType', 'serialNumber']),
   },

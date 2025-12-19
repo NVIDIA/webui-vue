@@ -1,8 +1,11 @@
 <template>
-  <b-modal id="add-destination" ref="modal" @ok="onOk" @hidden="resetForm">
-    <template #modal-title>
-      {{ $t('pageSnmpAlerts.modal.addSnmpDestinationTitle') }}
-    </template>
+  <b-modal
+    id="add-destination"
+    ref="modal"
+    :title="$t('pageSnmpAlerts.modal.addSnmpDestinationTitle')"
+    @ok="onOk"
+    @hidden="resetForm"
+  >
     <b-form id="form-destination">
       <b-container>
         <b-row>
@@ -64,7 +67,7 @@
         </b-row>
       </b-container>
     </b-form>
-    <template #modal-footer="{ cancel }">
+    <template #footer="{ cancel }">
       <b-button variant="secondary" @click="cancel()">
         {{ $t('global.action.cancel') }}
       </b-button>
@@ -89,6 +92,7 @@ import { useI18n } from 'vue-i18n';
 
 export default {
   mixins: [VuelidateMixin],
+  emits: ['ok', 'hidden'],
   setup() {
     return {
       v$: useVuelidate(),

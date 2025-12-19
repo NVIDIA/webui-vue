@@ -20,13 +20,15 @@
     </b-row>
     <b-table
       sort-icon-left
-      no-sort-reset
+      must-sort
       hover
       responsive="md"
+      thead-class="table-light"
+      :sort-by="['health']"
       show-empty
       :items="processors"
       :fields="fields"
-      :sort-desc="true"
+      :sort-desc="[true]"
       :filter="searchFilter"
       :empty-text="$t('global.table.emptyMessage')"
       :empty-filtered-text="$t('global.table.emptySearchMessage')"
@@ -40,10 +42,11 @@
           data-test-id="hardwareStatus-button-expandProcessors"
           :title="expandRowLabel"
           class="btn-icon-only"
+          :class="{ collapsed: !row.detailsShowing }"
           @click="toggleRowDetails(row)"
         >
           <icon-chevron />
-          <span class="sr-only">{{ expandRowLabel }}</span>
+          <span class="visually-hidden">{{ expandRowLabel }}</span>
         </b-button>
       </template>
       <!-- Health -->
@@ -89,8 +92,10 @@
                 <dt>{{ $t('pageInventory.table.serialNumber') }}:</dt>
                 <dd>{{ dataFormatter(item.serialNumber) }}</dd>
                 <!-- Spare Part Number -->
-                <dt v-if="item.sparePartNumber">{{ $t('pageInventory.table.sparePartNumber') }}:</dt>
-                <dd v-if="item.sparePartNumber">{{ dataFormatter(item.sparePartNumber) }}</dd>
+                <dt>{{ $t('pageInventory.table.sparePartNumber') }}:</dt>
+                <dd>
+                  {{ dataFormatter(item.sparePartNumber) }}
+                </dd>
                 <!-- Model -->
                 <dt>{{ $t('pageInventory.table.model') }}:</dt>
                 <dd>{{ dataFormatter(item.model) }}</dd>
@@ -121,11 +126,15 @@
                 <dt>{{ $t('pageInventory.table.processorType') }}:</dt>
                 <dd>{{ dataFormatter(item.processorType) }}</dd>
                 <!-- Processor Architecture -->
-                <dt v-if="item.processorArchitecture">{{ $t('pageInventory.table.processorArchitecture') }}:</dt>
-                <dd v-if="item.processorArchitecture">{{ dataFormatter(item.processorArchitecture) }}</dd>
+                <dt>{{ $t('pageInventory.table.processorArchitecture') }}:</dt>
+                <dd>
+                  {{ dataFormatter(item.processorArchitecture) }}
+                </dd>
                 <!-- Instruction Set -->
-                <dt v-if="item.instructionSet">{{ $t('pageInventory.table.instructionSet') }}:</dt>
-                <dd v-if="item.instructionSet">{{ dataFormatter(item.instructionSet) }}</dd>
+                <dt>{{ $t('pageInventory.table.instructionSet') }}:</dt>
+                <dd>
+                  {{ dataFormatter(item.instructionSet) }}
+                </dd>
                 <!-- Version -->
                 <dt>{{ $t('pageInventory.table.version') }}:</dt>
                 <dd>{{ dataFormatter(item.version) }}</dd>
@@ -182,7 +191,13 @@ import { useI18n } from 'vue-i18n';
 import i18n from '@/i18n';
 
 export default {
-  components: { IconChevron, PageSection, StatusIcon, Search, TableCellCount },
+  components: {
+    IconChevron,
+    PageSection,
+    StatusIcon,
+    Search,
+    TableCellCount,
+  },
   mixins: [
     BVToastMixin,
     TableRowExpandMixin,
@@ -234,7 +249,7 @@ export default {
           formatter: this.dataFormatter,
           sortable: false,
         }:{},
-      ],
+      ].filter((field) => field && field.key),
       searchFilter: searchFilter,
       searchTotalFilteredRows: 0,
       expandRowLabel: expandRowLabel,
@@ -253,7 +268,7 @@ export default {
   created() {
     this.$store.dispatch('processors/getProcessorsInfo').finally(() => {
       // Emit initial data fetch complete to parent component
-      this.$eventBus.$emit('hardware-status-processors-complete');
+      this.$eventBus.emit('hardware-status-processors-complete');
       this.isBusy = false;
     });
   },

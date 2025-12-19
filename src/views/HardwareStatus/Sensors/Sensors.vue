@@ -24,7 +24,7 @@
           :total-number-of-cells="allSensors.length"
         ></table-cell-count>
       </b-col>
-      <b-col sm="3" md="4" xl="6" class="text-right">
+      <b-col sm="3" md="4" xl="6" class="text-end">
         <table-filter :filters="tableFilters" @filter-change="onFilterChange" />
         <b-button v-if="supportMore" variant="link" @click="toggleShowMore">
           <span v-if="showMore">
@@ -38,7 +38,9 @@
       <b-col xl="12">
         <table-toolbar
           ref="toolbar"
-          :selected-items-count="selectedRows.length"
+          :selected-items-count="
+            Array.isArray(selectedRows) ? selectedRows.length : 0
+          "
           @clear-selected="clearSelectedRows($refs.table)"
         >
           <template #toolbar-buttons>
@@ -55,15 +57,14 @@
           no-select-on-click
           sort-icon-left
           hover
-          no-sort-reset
+          must-sort
           sticky-header="75vh"
-          sort-by="status"
+          thead-class="table-light"
+          :sort-by="['status']"
           show-empty
-          :no-border-collapse="true"
           :items="filteredSensors"
           :fields="fields"
-          :sort-desc="true"
-          :sort-compare="sortCompare"
+          :sort-desc="[true]"
           :filter="searchFilter"
           :empty-text="$t('global.table.emptyMessage')"
           :empty-filtered-text="$t('global.table.emptySearchMessage')"
@@ -76,9 +77,11 @@
             <b-form-checkbox
               v-model="tableHeaderCheckboxModel"
               :indeterminate="tableHeaderCheckboxIndeterminate"
-              @change="onChangeHeaderCheckbox($refs.table)"
+              @change="onChangeHeaderCheckbox($refs.table, $event)"
             >
-              <span class="sr-only">{{ $t('global.table.selectAll') }}</span>
+              <span class="visually-hidden-focusable">
+                {{ $t('global.table.selectAll') }}
+              </span>
             </b-form-checkbox>
           </template>
 
@@ -88,7 +91,9 @@
               v-model="data.rowSelected"
               @change="toggleSelectRow($refs.table, data.index)"
             >
-              <span class="sr-only">{{ $t('global.table.selectItem') }}</span>
+              <span class="visually-hidden-focusable">
+                {{ $t('global.table.selectItem') }}
+              </span>
             </b-form-checkbox>
           </template>
 
@@ -146,7 +151,8 @@ import TableSortMixin from '@/components/Mixins/TableSortMixin';
 import SearchFilterMixin, {
   searchFilter,
 } from '@/components/Mixins/SearchFilterMixin';
-import { BSpinner } from 'bootstrap-vue';
+import i18n from '@/i18n';
+import { BSpinner } from 'bootstrap-vue-next';
 
 export default {
   name: 'Sensors',
@@ -342,11 +348,6 @@ export default {
     });
   },
   methods: {
-    sortCompare(a, b, key) {
-      if (key === 'status') {
-        return this.sortStatus(a, b, key);
-      }
-    },
     onFilterChange({ activeFilters }) {
       this.activeFilters = activeFilters;
     },

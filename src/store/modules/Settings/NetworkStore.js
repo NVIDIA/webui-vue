@@ -302,7 +302,9 @@ const NetworkStore = {
       return api
         .patch(
           `${await this.dispatch('global/getBmcPath')}/EthernetInterfaces/${state.selectedInterfaceId}`,
-          { IPv4StaticAddresses: originalAddresses.concat(newAddress) },
+          {
+            IPv4StaticAddresses: originalAddresses.concat(newAddress),
+          },
         )
         .then(dispatch('getEthernetData'))
         .then(() => {
@@ -333,7 +335,9 @@ const NetworkStore = {
       return api
         .patch(
           `${await this.dispatch('global/getBmcPath')}/EthernetInterfaces/${state.selectedInterfaceId}`,
-          { IPv6StaticAddresses: originalAddresses.concat(newAddress) },
+          {
+            IPv6StaticAddresses: originalAddresses.concat(newAddress),
+          },
         )
         .then(dispatch('getEthernetData'))
         .then(() => {

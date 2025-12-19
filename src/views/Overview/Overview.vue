@@ -6,35 +6,54 @@
       :section-title="$t('pageOverview.systemInformation')"
       class="mb-1"
     >
-      <b-card-group deck>
-        <overview-server />
-        <overview-firmware />
-      </b-card-group>
-      <b-card-group deck>
-        <overview-network />
-        <overview-power v-if="showPower" />
-      </b-card-group>
+      <b-row class="row-cols-1 row-cols-md-2">
+        <b-col class="mb-3">
+          <overview-server class="h-100" />
+        </b-col>
+        <b-col class="mb-3">
+          <overview-firmware class="h-100" />
+        </b-col>
+      </b-row>
+      <b-row class="row-cols-1 row-cols-md-2">
+        <b-col class="mb-3">
+          <overview-network class="h-100" />
+        </b-col>
+        <b-col v-if="showPower" class="mb-3">
+          <overview-power class="h-100" />
+        </b-col>
+      </b-row>
     </page-section>
     <page-section :section-title="$t('pageOverview.statusInformation')">
-      <b-card-group deck>
-        <overview-logs
-          :title="$t('pageOverview.eventLogs')"
-          :to="`/logs/event-logs`"
-          :log-store="`eventLog`"
-          :omit-event="`overview-events-complete`"
-          :export-file-name="`all_event_logs`"
-        />
-        <overview-logs
-          v-if="showSelLog"
-          :title="$t('pageOverview.selLogs')"
-          :to="`/logs/sel-logs`"
-          :log-store="`selLog`"
-          :omit-event="`overview-sel-complete`"
-          :export-file-name="`all_sel_logs`"
-        />
-        <overview-inventory v-if="showInventory" />
-        <overview-dumps v-if="showDumps" />
-      </b-card-group>
+      <b-row class="row-cols-1 row-cols-md-2">
+        <b-col class="mb-3">
+          <overview-logs
+            class="h-100"
+            :title="$t('pageOverview.eventLogs')"
+            :to="`/logs/event-logs`"
+            :log-store="`eventLog`"
+            :omit-event="`overview-events-complete`"
+            :export-file-name="`all_event_logs`"
+          />
+        </b-col>
+        <b-col v-if="showSelLog" class="mb-3">
+          <overview-logs
+            class="h-100"
+            :title="$t('pageOverview.selLogs')"
+            :to="`/logs/sel-logs`"
+            :log-store="`selLog`"
+            :omit-event="`overview-sel-complete`"
+            :export-file-name="`all_sel_logs`"
+          />
+        </b-col>
+      </b-row>
+      <b-row class="row-cols-1 row-cols-md-2">
+        <b-col v-if="showInventory" class="mb-3">
+          <overview-inventory class="h-100" />
+        </b-col>
+        <b-col v-if="showDumps" class="mb-3">
+          <overview-dumps class="h-100" />
+        </b-col>
+      </b-row>
     </page-section>
   </b-container>
 </template>
@@ -85,46 +104,27 @@ export default {
   },
   created() {
     this.startLoader();
-    const dumpsPromise = new Promise((resolve) => {
-      this.$eventBus.$on('overview-dumps-complete', () => resolve());
-    });
-    const eventsPromise = new Promise((resolve) => {
-      this.$eventBus.$on('overview-events-complete', () => resolve());
-    });
-    const selPromise = new Promise((resolve) => {
-      this.$eventBus.$on('overview-sel-complete', () => resolve());
-    });
-    const firmwarePromise = new Promise((resolve) => {
-      this.$eventBus.$on('overview-firmware-complete', () => resolve());
-    });
-    const inventoryPromise = new Promise((resolve) => {
-      this.$eventBus.$on('overview-inventory-complete', () => resolve());
-    });
-    const networkPromise = new Promise((resolve) => {
-      this.$eventBus.$on('overview-network-complete', () => resolve());
-    });
-    const powerPromise = new Promise((resolve) => {
-      this.$eventBus.$on('overview-power-complete', () => resolve());
-    });
-    const quicklinksPromise = new Promise((resolve) => {
-      this.$eventBus.$on('overview-quicklinks-complete', () => resolve());
-    });
-    const serverPromise = new Promise((resolve) => {
-      this.$eventBus.$on('overview-server-complete', () => resolve());
-    });
+
+    const waitFor = (eventName) =>
+      new Promise((resolve) => {
+        this.$eventBus.$once(eventName, resolve);
+      });
 
     const promises = [
-      eventsPromise,
-      firmwarePromise,
-      networkPromise,
-      quicklinksPromise,
-      serverPromise,
+      waitFor('overview-events-complete'),
+      waitFor('overview-firmware-complete'),
+      waitFor('overview-network-complete'),
+      waitFor('overview-quicklinks-complete'),
+      waitFor('overview-server-complete'),
     ];
-    if (this.showDumps) promises.push(dumpsPromise);
-    if (this.showInventory) promises.push(inventoryPromise);
-    if (this.showPower) promises.push(powerPromise);
-    if (this.showSelLog) promises.push(selPromise);
-    Promise.all(promises).finally(() => this.endLoader());
+    if (this.showDumps) promises.push(waitFor('overview-dumps-complete'));
+    if (this.showInventory) promises.push(waitFor('overview-inventory-complete'));
+    if (this.showPower) promises.push(waitFor('overview-power-complete'));
+    if (this.showSelLog) promises.push(waitFor('overview-sel-complete'));
+
+    Promise.all(promises).finally(() => {
+      this.endLoader();
+    });
   },
 };
 </script>

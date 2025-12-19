@@ -105,27 +105,28 @@
       >
         {{ $t('pageDumps.form.systemDumpInfo') }}
       </alert>
-      <b-button 
-        variant="primary" 
-        type="submit" 
+      <b-button
+        variant="primary"
+        type="submit"
         form="form-new-dump"
+        class="mt-3"
         :aria-busy="isSubmitting"
         :disabled="isSubmitting"
       >
         {{ isSubmitting ? $t('global.form.submitting') : $t('pageDumps.form.initiateDump') }}
       </b-button>
     </b-form>
-    <modal-confirmation @ok="createSystemDump" />
+    <modal-confirmation v-model="showConfirmation" @ok="createSystemDump" />
   </div>
 </template>
 
 <script>
 import { required } from '@vuelidate/validators';
+import { useVuelidate } from '@vuelidate/core';
 import ModalConfirmation from './DumpsModalConfirmation';
 import Alert from '@/components/Global/Alert';
 import BVToastMixin from '@/components/Mixins/BVToastMixin';
 import VuelidateMixin from '@/components/Mixins/VuelidateMixin.js';
-import { BSpinner } from 'bootstrap-vue'
 
 /**
  * @component DumpsForm
@@ -139,22 +140,20 @@ import { BSpinner } from 'bootstrap-vue'
  */
 export default {
   name: 'DumpsForm',
-  components: { Alert, ModalConfirmation, 'b-spinner': BSpinner },
+  components: { Alert, ModalConfirmation },
   mixins: [BVToastMixin, VuelidateMixin],
-  
-  /**
-   * @data {Object}
-   * @property {Object|null} selectedDumpType - Currently selected dump type configuration
-   * @property {Object} parameterValues - Contain the types of diagnostic data to collect.
-   * @property {boolean} isSubmitting - Indicates whether the form is currently submitting
-   * @property {string|null} formError - Stores error messages for form-level validation
-   */
+  setup() {
+    return {
+      v$: useVuelidate(),
+    };
+  },
   data() {
     return {
       selectedDumpType: null,
       parameterValues: {},
       isSubmitting: false,
       formError: null,
+      showConfirmation: false,
     };
   },
 
@@ -208,9 +207,9 @@ export default {
           newVal.Parameters.forEach(param => {
             // Always set single-option parameters immediately
             if (param.AllowableValues.length === 1) {
-              this.$set(this.parameterValues, param.Name, param.AllowableValues[0]);
+              this.parameterValues[param.Name] = param.AllowableValues[0];
             } else {
-              this.$set(this.parameterValues, param.Name, null);
+              this.parameterValues[param.Name] = null;
             }
           });
         }
@@ -268,7 +267,7 @@ export default {
      * @description Shows confirmation modal for System dump creation
      */
     showConfirmationModal() {
-      this.$bvModal.show('modal-confirmation');
+      this.showConfirmation = true;
     },
 
     /** @group Form Submission */
@@ -351,7 +350,7 @@ export default {
     this.$eventBus.$on('bv::modal::hide', this.modalListener);
   },
 
-  beforeDestroy() {
+  beforeUnmount() {
     // Clean up listener
     this.$eventBus.$off('bv::modal::hide', this.modalListener);
   },

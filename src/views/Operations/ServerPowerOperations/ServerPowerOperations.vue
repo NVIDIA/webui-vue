@@ -49,7 +49,7 @@
         <page-section
           :section-title="$t('pageServerPowerOperations.serverBootSettings')"
         >
-          <boot-settings />
+          <boot-settings :is-button-disable="isButtonDisable" />
         </page-section>
       </b-col>
       <b-col sm="8" md="6" xl="7">
@@ -203,7 +203,7 @@
                 variant="primary"
                 type="submit"
                 data-test-id="serverPowerOperations-button-executeReset"
-                :disabled="!selectedResetType"
+                :disabled="isButtonDisable || !selectedResetType"
               >
                 {{ getButtonLabel() }}
               </b-button>
@@ -223,7 +223,8 @@ import BootSettings from './BootSettings';
 import LoadingBarMixin from '@/components/Mixins/LoadingBarMixin';
 import Alert from '@/components/Global/Alert';
 import InfoTooltip from '@/components/Global/InfoTooltip';
-
+import { privilegesId } from '@/store/modules/GlobalStore';
+import { mapGetters } from 'vuex';
 
 export default {
   name: 'ServerPowerOperations',
@@ -241,6 +242,10 @@ export default {
     };
   },
   computed: {
+    ...mapGetters('global', ['userPrivilege']),
+    isButtonDisable() {
+      return this.userPrivilege === privilegesId.readOnly;
+    },
     // Debug property - comment out in production
     /*
     debug() {
@@ -687,6 +692,9 @@ export default {
     },
     onResetTypeChange() {
       this.selectedAutomatically = false;
+    },
+    confirmDialog(message, options = {}) {
+      return this.$confirm({ message, ...options });
     },
   },
 };

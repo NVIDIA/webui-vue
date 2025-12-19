@@ -2,7 +2,7 @@
   <b-container fluid="xl">
     <page-title />
     <b-row>
-      <b-col xl="9" class="text-right">
+      <b-col xl="9" class="text-end">
         <b-button variant="link" @click="initModalSettings">
           <icon-settings />
           {{ $t('pageUserManagement.accountPolicySettings') }}
@@ -21,7 +21,9 @@
       <b-col xl="9">
         <table-toolbar
           ref="toolbar"
-          :selected-items-count="selectedRows.length"
+          :selected-items-count="
+            Array.isArray(selectedRows) ? selectedRows.length : 0
+          "
           :actions="tableToolbarActions"
           @clear-selected="clearSelectedRows($refs.table)"
           @batch-action="onBatchAction"
@@ -33,6 +35,7 @@
           show-empty
           no-select-on-click
           hover
+          thead-class="table-light"
           :busy="isBusy"
           :fields="fields"
           :items="tableItems"
@@ -45,9 +48,11 @@
               v-model="tableHeaderCheckboxModel"
               data-test-id="userManagement-checkbox-tableHeaderCheckbox"
               :indeterminate="tableHeaderCheckboxIndeterminate"
-              @change="onChangeHeaderCheckbox($refs.table)"
+              @change="onChangeHeaderCheckbox($refs.table, $event)"
             >
-              <span class="sr-only">{{ $t('global.table.selectAll') }}</span>
+              <span class="visually-hidden-focusable">
+                {{ $t('global.table.selectAll') }}
+              </span>
             </b-form-checkbox>
           </template>
           <template #cell(checkbox)="row">
@@ -56,7 +61,9 @@
               data-test-id="userManagement-checkbox-toggleSelectRow"
               @change="toggleSelectRow($refs.table, row.index)"
             >
-              <span class="sr-only">{{ $t('global.table.selectItem') }}</span>
+              <span class="visually-hidden-focusable">
+                {{ $t('global.table.selectItem') }}
+              </span>
             </b-form-checkbox>
           </template>
 
@@ -88,22 +95,27 @@
     <b-row>
       <b-col xl="8">
         <b-button
-          v-b-toggle.collapse-role-table
           data-test-id="userManagement-button-viewPrivilegeRoleDescriptions"
           variant="link"
           class="mt-3"
+          @click="showRoles = !showRoles"
         >
           <icon-chevron />
           {{ $t('pageUserManagement.viewPrivilegeRoleDescriptions') }}
         </b-button>
-        <b-collapse id="collapse-role-table" class="mt-3">
+        <b-collapse id="collapse-role-table" :visible="showRoles" class="mt-3">
           <table-roles />
         </b-collapse>
       </b-col>
     </b-row>
     <!-- Modals -->
-    <modal-settings :settings="setting" @ok="saveAccountSettings" />
+    <modal-settings
+      v-model="showSettingsModal"
+      :settings="setting"
+      @ok="saveAccountSettings"
+    />
     <modal-user
+      v-model="showUserModal"
       :user="activeUser"
       :password-requirements="passwordRequirements"
       @ok="saveUser"
@@ -134,6 +146,7 @@ import BVTableSelectableMixin, {
 import BVToastMixin from '@/components/Mixins/BVToastMixin';
 import LoadingBarMixin from '@/components/Mixins/LoadingBarMixin';
 import i18n from '@/i18n';
+import { useModal } from 'bootstrap-vue-next';
 
 export default {
   name: 'UserManagement',
@@ -154,6 +167,10 @@ export default {
   beforeRouteLeave(to, from, next) {
     this.hideLoader();
     next();
+  },
+  setup() {
+    const bvModal = useModal();
+    return { bvModal };
   },
   data() {
     return {
@@ -179,13 +196,16 @@ export default {
         {
           key: 'actions',
           label: '',
-          tdClass: 'text-right text-nowrap',
+          tdClass: 'text-end text-nowrap',
         },
       ],
 
       selectedRows: selectedRows,
       tableHeaderCheckboxModel: tableHeaderCheckboxModel,
       tableHeaderCheckboxIndeterminate: tableHeaderCheckboxIndeterminate,
+      showUserModal: false,
+      showSettingsModal: false,
+      showRoles: false,
     };
   },
   computed: {
@@ -279,7 +299,7 @@ export default {
     },
     initModalUser(user) {
       this.activeUser = user;
-      this.$bvModal.show('modal-user');
+      this.showUserModal = true;
     },
     initModalDelete(user) {
       const deleteText = user.UserName === this.$store.getters['global/username']
@@ -290,25 +310,20 @@ export default {
             user: user.username,
           });
 
-      this.$bvModal
-        .msgBoxConfirm(
-          deleteText,
-          {
-            title: i18n.global.t('pageUserManagement.deleteUser'),
-            okTitle: i18n.global.t('pageUserManagement.deleteUser'),
-            cancelTitle: i18n.global.t('global.action.cancel'),
-            autoFocusButton: 'ok',
-          },
-        )
-        .then((deleteConfirmed) => {
-          if (deleteConfirmed) {
-            this.deleteUser(user);
-          }
-        });
+      this.confirmDialog(deleteText, {
+        title: i18n.global.t('pageUserManagement.deleteUser'),
+        okTitle: i18n.global.t('pageUserManagement.deleteUser'),
+        cancelTitle: i18n.global.t('global.action.cancel'),
+        autoFocusButton: 'ok',
+      }).then((deleteConfirmed) => {
+        if (deleteConfirmed) {
+          this.deleteUser(user);
+        }
+      });
     },
     initModalSettings() {
       this.setting = this.settings;
-      this.$bvModal.show('modal-settings');
+      this.showSettingsModal = true;
     },
     saveUser({ isNewUser, userData }) {
       this.startLoader();
@@ -341,44 +356,37 @@ export default {
         .finally(() => this.endLoader());
     },
     onBatchAction(action) {
+      const count = this.selectedRows.length;
       switch (action) {
         case 'delete':
-          this.$bvModal
-            .msgBoxConfirm(
-              i18n.global.t(
-                'pageUserManagement.modal.batchDeleteConfirmMessage',
-                this.selectedRows.length,
-              ),
-              {
-                title: i18n.global.t(
-                  'pageUserManagement.deleteUser',
-                  this.selectedRows.length,
-                ),
-                okTitle: i18n.global.t(
-                  'pageUserManagement.deleteUser',
-                  this.selectedRows.length,
-                ),
-                cancelTitle: i18n.global.t('global.action.cancel'),
-                autoFocusButton: 'ok',
-              },
-            )
-            .then((deleteConfirmed) => {
-              if (deleteConfirmed) {
-                this.startLoader();
-                this.$store
-                  .dispatch('userManagement/deleteUsers', this.selectedRows)
-                  .then((messages) => {
-                    messages.forEach(({ type, message, errorDetails }) => {
-                      if (type === 'success') {
-                        this.successToast(message);
-                      } else if (type === 'error') {
-                        this.errorToast(message, { redfishError: errorDetails });
-                      }
-                    });
-                  })
-                  .finally(() => this.endLoader());
-              }
-            });
+          this.confirmDialog(
+            i18n.global.t(
+              'pageUserManagement.modal.batchDeleteConfirmMessage',
+              count,
+            ),
+            {
+              title: i18n.global.t('pageUserManagement.deleteUser', count),
+              okTitle: i18n.global.t('pageUserManagement.deleteUser', count),
+              cancelTitle: i18n.global.t('global.action.cancel'),
+              autoFocusButton: 'ok',
+            },
+          ).then((deleteConfirmed) => {
+            if (deleteConfirmed) {
+              this.startLoader();
+              this.$store
+                .dispatch('userManagement/deleteUsers', this.selectedRows)
+                .then((messages) => {
+                  messages.forEach(({ type, message, errorDetails }) => {
+                    if (type === 'success') {
+                      this.successToast(message);
+                    } else if (type === 'error') {
+                      this.errorToast(message, { redfishError: errorDetails });
+                    }
+                  });
+                })
+                .finally(() => this.endLoader());
+            }
+          });
           break;
         case 'enable':
           this.startLoader();
@@ -411,6 +419,9 @@ export default {
             .finally(() => this.endLoader());
           break;
       }
+    },
+    confirmDialog(message, options = {}) {
+      return this.$confirm({ message, ...options });
     },
     onTableRowAction(action, row) {
       switch (action) {

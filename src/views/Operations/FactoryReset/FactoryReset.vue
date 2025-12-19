@@ -23,10 +23,7 @@
                 {{ (resetBiosUris.length < 2) ? $t('pageFactoryReset.form.resetBiosOptionLabel') :
                  $t('pageFactoryReset.form.resetBiosOptionLabel') + ': ['+item.Id+']' }}
               </b-form-radio>
-              <b-form-text
-                :id="'reset-bios-' +index"
-                class="ml-4 mb-3"
-              >
+              <b-form-text id="reset-bios" class="ms-4 mb-3">
                 {{ $t('pageFactoryReset.form.resetBiosOptionHelperText') }}
               </b-form-text>
             </div>
@@ -36,12 +33,12 @@
                 class="mb-1"
                 :value="{ ...item, value: 'resetToDefaults' }"
                 aria-describedby="reset-to-defaults"
-                data-test-id="'factoryReset-radio-resetToDefaults' + index"
+                :data-test-id="'factoryReset-radio-resetToDefaults-' + index"
               >
                 {{ (bmcResetToDefaultsUris.length < 2) ? $t('pageFactoryReset.form.resetToDefaultsOptionLabel') :
                  $t('pageFactoryReset.form.resetToDefaultsOptionLabel') + ': ['+item.Id+']' }}
               </b-form-radio>
-              <b-form-text id="reset-to-defaults" class="ml-4 mb-3">
+              <b-form-text id="reset-to-defaults" class="ms-4 mb-3">
                 {{
                   $t('pageFactoryReset.form.resetToDefaultsOptionHelperText')
                 }}
@@ -62,7 +59,11 @@
     </b-form>
 
     <!-- Modals -->
-    <modal-reset :reset-type="resetOption.value" @okConfirm="onOkConfirm" />
+    <modal-reset
+      v-model="showResetModal"
+      :reset-type="resetOption.value"
+      @ok-confirm="onOkConfirm"
+    />
   </b-container>
 </template>
 
@@ -80,12 +81,13 @@ export default {
   mixins: [LoadingBarMixin, BVToastMixin],
   data() {
     return {
-      resetOption: {value:null},
-          };
+      showResetModal: false,
+      resetOption: { value: null },
+    };
   },
   computed: {
     ...mapGetters('factoryReset', ['resetBiosUris']),
-    ...mapGetters('bmc', {bmcResetToDefaultsUris:'resetToDefaultsUris'}),
+    ...mapGetters('bmc', { bmcResetToDefaultsUris: 'resetToDefaultsUris' }),
   },
   created() {
     this.hideLoader();
@@ -94,7 +96,7 @@ export default {
   },
   methods: {
     onResetSubmit() {
-      this.$bvModal.show('modal-reset');
+      this.showResetModal = true;
     },
     onOkConfirm() {
       if (this.resetOption.value == 'resetBios') {

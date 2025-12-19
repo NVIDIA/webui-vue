@@ -36,7 +36,7 @@
             </b-col>
           </b-row>
 
-          <b-row>
+          <b-row class="mb-3">
             <b-col sm="8" md="6" xl="3">
               <b-form-group
                 id="input-group-1"
@@ -60,13 +60,13 @@
                   type="number"
                   aria-describedby="power-help-text"
                   :state="getValidationState(v$.powerCapValue)"
-                ></b-form-input>
+                />
 
                 <b-form-invalid-feedback id="input-live-feedback" role="alert">
-                  <template v-if="!v$.powerCapValue.required">
+                  <template v-if="v$.powerCapValue.required.$invalid">
                     {{ $t('global.form.fieldRequired') }}
                   </template>
-                  <template v-else-if="!v$.powerCapValue.between">
+                  <template v-else-if="v$.powerCapValue.between.$invalid">
                     {{ $t('global.form.invalidValue') }}
                   </template>
                 </b-form-invalid-feedback>
@@ -78,6 +78,7 @@
             variant="primary"
             type="submit"
             data-test-id="power-button-savePowerCapValue"
+            class="mt-3"
           >
             {{ $t('global.action.save') }}
           </b-button>

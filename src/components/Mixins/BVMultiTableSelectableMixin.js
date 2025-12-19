@@ -14,22 +14,20 @@ const BVMultiTableSelectableMixin = {
           tableRef.unselectRow(rowIndex);
           // Uncheck header checkbox when unselecting a row
           const index = Array.from(this.$refs.tables).indexOf(tableRef);
-          this.$set(this.tableHeaderCheckboxModelMap, index, false);
+          this.tableHeaderCheckboxModelMap[index] = false;
         } else {
           tableRef.selectRow(rowIndex);
         }
       }
     },
     onRowSelected(selectedRows, totalRowsCount, index = 0) {
-      this.$set(this.selectedRowsMap, index, selectedRows);
+      this.selectedRowsMap[index] = selectedRows;
       // Update header checkbox state
       const selectedCount = selectedRows.length;
-      this.$set(this.tableHeaderCheckboxModelMap, index, selectedCount === totalRowsCount);
-      this.$set(
-        this.tableHeaderCheckboxIndeterminateMap,
-        index,
-        selectedCount > 0 && selectedCount < totalRowsCount
-      );
+      this.tableHeaderCheckboxModelMap[index] =
+        selectedCount === totalRowsCount;
+      this.tableHeaderCheckboxIndeterminateMap[index] =
+        selectedCount > 0 && selectedCount < totalRowsCount;
     },
     onChangeHeaderCheckbox(tableRef) {
       const index = Array.from(this.$refs.tables).indexOf(tableRef);
@@ -41,7 +39,7 @@ const BVMultiTableSelectableMixin = {
     },
     getTableIndex(tableRef) {
       return Array.from(this.$refs.tables).indexOf(tableRef);
-    }
+    },
   },
 };
 

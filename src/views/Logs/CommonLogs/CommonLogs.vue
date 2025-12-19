@@ -112,7 +112,7 @@
           no-sort-reset
           sort-desc
           show-empty
-          sort-by="Id"
+          :sort-by="['Id']"
           :fields="fields"
           :items="filteredLogs"
           :sort-compare="onSortCompare"
@@ -179,8 +179,8 @@
                     <!-- Modified date -->
                     <dt>{{ $t('pageEventLogs.table.modifiedDate') }}:</dt>
                     <dd v-if="item.Modified">
-                      {{ new Date(item.Modified) | formatDate }}
-                      {{ new Date(item.Modified) | formatTime }}
+                      {{ $filters.formatDate(new Date(item.Modified)) }}
+                      {{ $filters.formatTime(new Date(item.Modified)) }}
                     </dd>
                     <dd v-else>--</dd>
                   </dl>
@@ -204,8 +204,8 @@
           </template>
           <!-- Date column -->
           <template #cell(date)="{ value }">
-            <p class="mb-0">{{ value | formatDate }}</p>
-            <p class="mb-0">{{ value | formatTime }}</p>
+            <p class="mb-0">{{ $filters.formatDate(value) }}</p>
+            <p class="mb-0">{{ $filters.formatTime(value) }}</p>
           </template>
 
           <!-- Status column -->
@@ -317,7 +317,7 @@ import SearchFilterMixin, {
   searchFilter,
 } from '@/components/Mixins/SearchFilterMixin';
 import { TextLogHandler } from '@/store/modules/Logs/TextLogHandler';
-import { BSpinner } from 'bootstrap-vue'
+import { BSpinner } from 'bootstrap-vue-next';
 export default {
   components: {
     IconDelete,
@@ -440,7 +440,7 @@ export default {
           label: '',
           tdClass: 'text-right text-nowrap',
         },
-      ],
+      ].filter((field) => field && field.key),
       tableFilters:
         process.env.VUE_APP_EVENT_LOGS_TOGGLE_BUTTON_DISABLED === 'true' ||
         this.hideFields.includes('status')

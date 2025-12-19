@@ -51,8 +51,9 @@ export default {
 
   },
   created() {
-    this.$store.dispatch('bmc/getBmcUpTime');
-    this.$eventBus.$emit('overview-quicklinks-complete');
+    Promise.all([this.$store.dispatch('bmc/getBmcUpTime')]).finally(() => {
+      this.$eventBus.emit('overview-quicklinks-complete');
+    });
   },
 };
 </script>

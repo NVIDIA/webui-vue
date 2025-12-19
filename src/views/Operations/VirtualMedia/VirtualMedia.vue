@@ -77,7 +77,7 @@
               v-for="(device, $index) in legacyDevices"
               :key="$index"
               md="5"
-              class="mr-5"
+              class="me-5"
             >
               <b-form-group
                 class="mb-4"
@@ -125,6 +125,7 @@
       </b-col>
     </b-row>
     <modal-configure-connection
+      v-model="showConfigureConnectionModal"
       :connection="modalConfigureConnection"
       @ok="saveConnection"
     />
@@ -158,10 +159,10 @@ export default {
   name: 'VirtualMedia',
   components: { PageTitle, PageSection, ModalConfigureConnection, FormFile },
   mixins: [BVToastMixin, LoadingBarMixin],
-
   data() {
     return {
       modalConfigureConnection: null,
+      showConfigureConnectionModal: false,
     };
   },
 
@@ -339,7 +340,7 @@ export default {
     },
     configureConnection(connectionData) {
       this.modalConfigureConnection = connectionData;
-      this.$bvModal.show('configure-connection');
+      this.showConfigureConnectionModal = true;
     },
     concatId(val) {
       return val.split(' ').join('_').toLowerCase();

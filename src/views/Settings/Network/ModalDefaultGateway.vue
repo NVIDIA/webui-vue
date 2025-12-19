@@ -32,7 +32,7 @@
         </b-col>
       </b-row>
     </b-form>
-    <template #modal-footer="{ cancel }">
+    <template #footer="{ cancel }">
       <b-button variant="secondary" @click="cancel()">
         {{ $t('global.action.cancel') }}
       </b-button>
@@ -50,6 +50,7 @@
 
 <script>
 import VuelidateMixin from '@/components/Mixins/VuelidateMixin.js';
+import { useVuelidate } from '@vuelidate/core';
 import { required, helpers } from 'vuelidate/lib/validators';
 
 const validateGateway = helpers.regex(
@@ -60,10 +61,20 @@ const validateGateway = helpers.regex(
 export default {
   mixins: [VuelidateMixin],
   props: {
+    modelValue: {
+      type: Boolean,
+      default: false,
+    },
     defaultGateway: {
       type: String,
       default: '',
     },
+  },
+  emits: ['ok', 'hidden', 'update:modelValue'],
+  setup() {
+    return {
+      v$: useVuelidate(),
+    };
   },
   data() {
     return {
@@ -75,6 +86,16 @@ export default {
   watch: {
     defaultGateway() {
       this.form.defaultGateway = this.defaultGateway;
+    },
+    modelValue: {
+      handler(newValue) {
+        if (newValue) {
+          this.$nextTick(() => {
+            this.$refs.modal?.show();
+          });
+        }
+      },
+      immediate: true,
     },
   },
   validations() {
@@ -102,6 +123,7 @@ export default {
     resetForm() {
       this.form.defaultGateway = this.defaultGateway;
       this.v$.$reset();
+      this.$emit('update:modelValue', false);
       this.$emit('hidden');
     },
     onOk(bvModalEvt) {

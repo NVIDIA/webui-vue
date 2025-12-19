@@ -4,9 +4,12 @@
 
 <script>
 import CommonLogs from '@/views/Logs/CommonLogs';
+
 export default {
   components: {
     CommonLogs,
   },
 };
 </script>
+
+

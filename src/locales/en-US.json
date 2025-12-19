@@ -23,6 +23,8 @@
             "save": "Save",
             "saveSettings": "Save settings",
             "selected": "Selected",
+            "tryAgain": "Try again",
+            "logOut": "Log out",
             "ok": "OK",
             "warning": "Warning",
             "critical": "Critical",
@@ -123,6 +125,9 @@
             "unAuthTitle": "Unauthorized",
             "unAuthDescription": "The attempted action is not accessible from the logged in account. Contact your system administrator to check your privilege role.",
             "bmcIsNotReady": "BMC is still initializing. Use at your own risk."
+        },
+        "offline": {
+            "okToRetryCancelToLogin": "Click OK to retry connection, Cancel to return to login."
         },
         "message": {
             "errorDetails": "Error Details"
@@ -267,11 +272,13 @@
     "pageDumps": {
         "dumpsAvailableOnBmc": "Dumps available on BMC",
         "initiateDump": "Initiate dump",
-        "form": {
+        "dumpTypes": {
             "bmcDump": "BMC dump",
+            "systemDump": "System dump (disruptive)"
+        },
+        "form": {
             "initiateDump": "Initiate dump",
             "selectDumpType": "Select dump type",
-            "systemDump": "System dump (disruptive)",
             "systemDumpInfo": "System dumps will be offloaded to the operating system and will not appear in the table below."
         },
         "modal": {

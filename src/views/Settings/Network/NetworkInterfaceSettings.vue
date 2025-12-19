@@ -64,6 +64,7 @@ import PageSection from '@/components/Global/PageSection';
 import DataFormatterMixin from '@/components/Mixins/DataFormatterMixin';
 import { mapState } from 'vuex';
 import { useI18n } from 'vue-i18n';
+import { useModal } from 'bootstrap-vue-next';
 
 export default {
   name: 'Ipv4Table',
@@ -78,6 +79,10 @@ export default {
       default: 0,
     },
   },
+  setup() {
+    const bvModal = useModal();
+    return { bvModal };
+  },
   data() {
     return {
       $t: useI18n().t,
@@ -87,6 +92,7 @@ export default {
       fqdn: '',
       macAddress: '',
       macAddressEditable: process.env.VUE_APP_ENV_NAME !== 'nvidia-bluefield',
+      showMacAddressModal: false,
     };
   },
   computed: {
@@ -102,7 +108,7 @@ export default {
     this.getSettings();
     this.$store.dispatch('network/getEthernetData').finally(() => {
       // Emit initial data fetch complete to parent component
-      this.$eventBus.$emit('network-interface-settings-complete');
+      this.$eventBus.emit('network-interface-settings-complete');
     });
   },
   methods: {
@@ -114,7 +120,7 @@ export default {
       this.macAddress = this.ethernetData[this.selectedInterface].MACAddress;
     },
     initMacAddressModal() {
-      this.$bvModal.show('modal-mac-address');
+      this.showMacAddressModal = true;
     },
   },
 };

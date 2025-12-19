@@ -125,7 +125,10 @@ export default {
     getLogData(logService) {
       this.logService = logService;
       return this.$store.dispatch(this.logStore + '/getLogData', this.logServices[logService]).finally(() => {
-        this.$set(this.eventLogData, logService, this.$store.getters[this.logStore + '/getAllEventsByValue'](logService));
+        this.eventLogData[logService] =
+          this.$store.getters[this.logStore + '/getAllEventsByValue'](
+            logService,
+          );
       });
     },
     exportFileNameByDate() {

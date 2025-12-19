@@ -55,20 +55,6 @@
               <span v-else>{{ $t('global.status.disabled') }}</span>
             </b-form-checkbox>
           </dd>
-          <dd>
-            <b-form-checkbox
-              id="useDomainNameSwitchIpv6"
-              v-model="useDomainNameStateIpv6"
-              data-test-id="networkSettings-switch-useDomainNameIpv6"
-              switch
-              @change="changeDomainNameStateIpv6"
-            >
-              <span v-if="useDomainNameStateIpv6">
-                {{ $t('global.status.enabled') }}
-              </span>
-              <span v-else>{{ $t('global.status.disabled') }}</span>
-            </b-form-checkbox>
-          </dd>
         </dl>
       </b-col>
       <b-col md="2">
@@ -97,20 +83,6 @@
               @change="changeDnsStateIpv6"
             >
               <span v-if="dnsStateIpv6">
-                {{ $t('global.status.enabled') }}
-              </span>
-              <span v-else>{{ $t('global.status.disabled') }}</span>
-            </b-form-checkbox>
-          </dd>
-          <dd>
-            <b-form-checkbox
-              id="useDnsSwitchIpv6"
-              v-model="useDnsStateIpv6"
-              data-test-id="networkSettings-switch-useDnsIpv6"
-              switch
-              @change="changeDnsStateIpv6"
-            >
-              <span v-if="useDnsStateIpv6">
                 {{ $t('global.status.enabled') }}
               </span>
               <span v-else>{{ $t('global.status.disabled') }}</span>
@@ -149,20 +121,6 @@
               <span v-else>{{ $t('global.status.disabled') }}</span>
             </b-form-checkbox>
           </dd>
-          <dd>
-            <b-form-checkbox
-              id="useNtpSwitchIpv6"
-              v-model="useNtpStateIpv6"
-              data-test-id="networkSettings-switch-useNtpIpv6"
-              switch
-              @change="changeNtpStateIpv6"
-            >
-              <span v-if="useNtpStateIpv6">
-                {{ $t('global.status.enabled') }}
-              </span>
-              <span v-else>{{ $t('global.status.disabled') }}</span>
-            </b-form-checkbox>
-          </dd>
         </dl>
       </b-col>
     </b-row>
@@ -190,6 +148,7 @@ export default {
       dnsStateIpv6: '',
       ntpStateIpv6: '',
       domainStateIpv6: '',
+      showHostnameModal: false,
     };
   },
   computed: {
@@ -255,7 +214,7 @@ export default {
   created() {
     this.$store.dispatch('network/getEthernetData').finally(() => {
       // Emit initial data fetch complete to parent component
-      this.$eventBus.$emit('network-global-settings-complete');
+      this.$eventBus.emit('network-global-settings-complete');
       const networkSettings =
         this.$store.getters['network/globalNetworkSettings'][0];
       this.dnsState = networkSettings.useDnsEnabled;
@@ -270,7 +229,7 @@ export default {
     changeDomainNameState(state) {
       this.$store
         .dispatch('network/saveDomainNameState', {
-          domainState: state,
+          domainState: !!state,
           ipVersion: 'IPv4',
         })
         .then((success) => {
@@ -282,7 +241,7 @@ export default {
     changeDnsState(state) {
       this.$store
         .dispatch('network/saveDnsState', {
-          dnsState: state,
+          dnsState: !!state,
           ipVersion: 'IPv4',
         })
         .then((message) => {
@@ -294,7 +253,7 @@ export default {
     changeNtpState(state) {
       this.$store
         .dispatch('network/saveNtpState', {
-          ntpState: state,
+          ntpState: !!state,
           ipVersion: 'IPv4',
         })
         .then((message) => {
@@ -306,7 +265,7 @@ export default {
     changeDomainNameStateIpv6(state) {
       this.$store
         .dispatch('network/saveDomainNameState', {
-          domainState: state,
+          domainState: !!state,
           ipVersion: 'IPv6',
         })
         .then((success) => {
@@ -318,7 +277,7 @@ export default {
     changeDnsStateIpv6(state) {
       this.$store
         .dispatch('network/saveDnsState', {
-          dnsState: state,
+          dnsState: !!state,
           ipVersion: 'IPv6',
         })
         .then((message) => {
@@ -330,7 +289,7 @@ export default {
     changeNtpStateIpv6(state) {
       this.$store
         .dispatch('network/saveNtpState', {
-          ntpState: state,
+          ntpState: !!state,
           ipVersion: 'IPv6',
         })
         .then((message) => {
@@ -340,7 +299,7 @@ export default {
         .catch(({ message }) => this.errorToast(message));
     },
     initSettingsModal() {
-      this.$bvModal.show('modal-hostname');
+      this.showHostnameModal = true;
     },
   },
 };

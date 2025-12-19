@@ -29,7 +29,7 @@
                   @change-search="onChangeSearchInput($event, index)"
                   @clear-search="onClearSearchInput($event, index)"
                 />
-                <div class="ml-sm-4">
+                <div class="ms-sm-4">
                   <table-cell-count
                     :filtered-items-count="getFilteredRows(index)"
                     :total-number-of-cells="dumpLog.dumps.length"
@@ -41,7 +41,7 @@
               </b-col>
             </b-row>
             <b-row>
-              <b-col class="text-right">
+              <b-col class="text-end">
                 <table-filter
                   v-if="showTableFilters"
                   :filters="tableFilters"
@@ -65,7 +65,7 @@
               selectable
               no-select-on-click
               responsive="md"
-              sort-by="dateTime"
+              :sort-by="['dateTime']"
               :fields="fields"
               :items="getFilteredDumps(index)"
               :empty-text="$t('global.table.emptyMessage')"
@@ -82,7 +82,9 @@
                   :indeterminate="tableHeaderCheckboxIndeterminateMap[index]"
                   @change="onChangeHeaderCheckbox($refs.tables[index])"
                 >
-                  <span class="sr-only">{{ $t('global.table.selectAll') }}</span>
+                  <span class="visually-hidden-focusable">
+                    {{ $t('global.table.selectAll') }}
+                  </span>
                 </b-form-checkbox>
               </template>
               <template #cell(checkbox)="row">
@@ -90,14 +92,16 @@
                   v-model="row.rowSelected"
                   @change="toggleSelectRow($refs.tables[index], row.index)"
                 >
-                  <span class="sr-only">{{ $t('global.table.selectItem') }}</span>
+                  <span class="visually-hidden-focusable">
+                    {{ $t('global.table.selectItem') }}
+                  </span>
                 </b-form-checkbox>
               </template>
 
             <!-- Date and Time column -->
             <template #cell(dateTime)="{ value }">
-                <p class="mb-0">{{ value | formatDate }}</p>
-                <p class="mb-0">{{ value | formatTime }}</p>
+                <p class="mb-0">{{ $filters.formatDate(value) }}</p>
+                <p class="mb-0">{{ $filters.formatTime(value) }}</p>
               </template>
 
               <!-- Size column -->
@@ -145,7 +149,7 @@
             first-number
             last-number
             :per-page="perPageMap[index]"
-            :total-rows="getTotalRowCount()"
+            :total-rows="getFilteredRows(index)"
             :aria-controls="'table-dump-entries-' + index"
           />
         </b-col>
@@ -185,7 +189,7 @@ import SearchFilterMixin, {
 } from '@/components/Mixins/SearchFilterMixin';
 import TableFilter from '@/components/Global/TableFilter';
 import TableFilterMixin from '@/components/Mixins/TableFilterMixin';
-import { BSpinner } from 'bootstrap-vue'
+import i18n from '@/i18n';
 
 export default {
   name: 'Dumps',
@@ -201,7 +205,6 @@ export default {
     TableRowAction,
     TableToolbar,
     TableFilter,
-    'b-spinner': BSpinner 
   },
   mixins: [
     BVMultiTableSelectableMixin,
@@ -261,7 +264,7 @@ export default {
           key: 'actions',
           sortable: false,
           label: '',
-          tdClass: 'text-right text-nowrap',
+          tdClass: 'text-end text-nowrap',
         },
       ],
       batchActions: [
@@ -300,7 +303,7 @@ export default {
     allDumps() {
       return this.$store.getters['dumps/allDumps'].map((dumpLog, index) => {
             // Initialize perPageMap immediately for each dump
-        this.$set(this.perPageMap, index, this.perPage); // Set explicit default value
+        this.perPageMap[index] = this.perPage; // Set explicit default value
         return {
           title: dumpLog.text,
           dumps: dumpLog.Members.map((item) => ({
@@ -338,84 +341,73 @@ export default {
       return parseFloat((bytes / 1000000).toFixed(3));
     },
     onFilterChange({ activeFilters }, index) {
-      this.$set(this.activeFiltersMap, index, activeFilters);
+      this.activeFiltersMap[index] = activeFilters;
     },
     onFiltered(items, index) {
-      this.$set(this.searchTotalFilteredRowsMap, index, items.length);
+      this.searchTotalFilteredRowsMap[index] = items.length;
     },
     onChangeDateTimeFilter({ fromDate, toDate }, index) {
-      this.$set(this.filterStartDates, index, fromDate);
-      this.$set(this.filterEndDates, index, toDate);
+      this.filterStartDates[index] = fromDate;
+      this.filterEndDates[index] = toDate;
     },
-    onTableRowAction(action, dump) {
+    async onTableRowAction(action, item) {
       if (action === 'delete') {
-        this.$bvModal
-          .msgBoxConfirm(
-            i18n.global.t('pageDumps.modal.deleteDumpConfirmation'),
-            {
-              title: i18n.global.t('pageDumps.modal.deleteDump'),
-              okTitle: i18n.global.t('pageDumps.modal.deleteDump'),
-              cancelTitle: i18n.global.t('global.action.cancel'),
-              autoFocusButton: 'ok',
-            },
-          )
-          .then((deleteConfrimed) => {
-            if (deleteConfrimed) {
-              this.$store
-                .dispatch('dumps/deleteDumps', [dump])
-                .then((messages) => {
-                  messages.forEach(({ type, message }) => {
-                    if (type === 'success') {
-                      this.successToast(message);
-                    } else if (type === 'error') {
-                      this.errorToast(message);
-                    }
-                  });
-                });
-            }
+        const ok = await this.confirmDialog(
+          i18n.global.t('pageDumps.modal.deleteDumpConfirmation', 1),
+          {
+            title: i18n.global.t('pageDumps.modal.deleteDump', 1),
+            okTitle: i18n.global.t('pageDumps.modal.deleteDump', 1),
+            cancelTitle: i18n.global.t('global.action.cancel'),
+          },
+        );
+        if (ok)
+          this.$store.dispatch('dumps/deleteDumps', [item]).then((messages) => {
+            messages.forEach(({ type, message }) => {
+              if (type === 'success') {
+                this.successToast(message);
+              } else if (type === 'error') {
+                this.errorToast(message);
+              }
+            });
           });
       }
       else if (action === 'download') {
-        this.downloadEntry(dump.data);
+        this.downloadEntry(item.data);
       }
     },
-    onTableBatchAction(action, index) {
-      if (action === 'delete') {
-        const selectedCount = this.selectedRowsMap[index]?.length || 0;
-        this.$bvModal
-          .msgBoxConfirm(
-            this.$tc('pageDumps.modal.deleteDumpConfirmation', selectedCount),
-            {
-              title: this.$tc('pageDumps.modal.deleteDump', selectedCount),
-              okTitle: this.$tc('pageDumps.modal.deleteDump', selectedCount),
-              cancelTitle: this.$t('global.action.cancel'),
-              autoFocusButton: 'cancel',
-              centered: true,
-            }
-          )
-          .then((deleteConfirmed) => {
-            if (deleteConfirmed) {
-              if (selectedCount === this.allDumps[index].dumps.length) {
-                this.$store
-                  .dispatch('dumps/deleteAllDumps')
-                  .then(function(success) { this.successToast(success); }.bind(this))
-                  .catch(function(error) { this.errorToast(error.message); }.bind(this));
-              } else {
-                this.$store
-                  .dispatch('dumps/deleteDumps', this.selectedRowsMap[index])
-                  .then(function(messages) {
-                    messages.forEach(function(message) {
-                      if (message.type === 'success') {
-                        this.successToast(message.message);
-                      } else if (message.type === 'error') {
-                        this.errorToast(message.message);
-                      }
-                    }.bind(this));
-                  }.bind(this));
-              }
-            }
-          });
+    async onTableBatchAction(action, index) {
+      if (action !== 'delete') return;
+      const selected = this.selectedRowsMap[index] || [];
+      const count = selected.length;
+      if (count === 0) return;
+
+      const ok = await this.confirmDialog(
+        i18n.global.t('pageDumps.modal.deleteDumpConfirmation', count),
+        {
+          title: i18n.global.t('pageDumps.modal.deleteDump', count),
+          okTitle: i18n.global.t('pageDumps.modal.deleteDump', count),
+          cancelTitle: i18n.global.t('global.action.cancel'),
+        },
+      );
+      if (!ok) return;
+
+      if (count === this.allDumps[index].dumps.length) {
+        this.$store
+          .dispatch('dumps/deleteAllDumps')
+          .then((success) => this.successToast(success))
+          .catch(({ message }) => this.errorToast(message));
+        return;
       }
+
+      this.$store.dispatch('dumps/deleteDumps', selected).then((messages) => {
+        messages.forEach(({ type, message }) => {
+          if (type === 'success') {
+            this.successToast(message);
+          } else if (type === 'error') {
+            this.errorToast(message);
+          }
+        });
+      });
     },
     exportFileName(row) {
       let filename = row.item.dumpType + '_' + row.item.id + '.' + this.fileExtension;
@@ -461,18 +453,18 @@ export default {
         tableRef.selectRow(rowIndex, checked);
         // Update selected rows map based on all currently selected rows
         const selectedRows = tableRef.selectedRows;
-        this.$set(this.selectedRowsMap, index, selectedRows);
+        this.selectedRowsMap[index] = selectedRows;
         
         // Update header checkbox state
         const totalItems = this.getFilteredDumps(index).length;
         const selectedCount = selectedRows.length;
-        this.$set(this.tableHeaderCheckboxModelMap, index, selectedCount > 0);
-        this.$set(
-          this.tableHeaderCheckboxIndeterminateMap,
-          index,
-          selectedCount > 0 && selectedCount < totalItems
-        );
+        this.tableHeaderCheckboxModelMap[index] = selectedCount > 0;
+        this.tableHeaderCheckboxIndeterminateMap[index] =
+          selectedCount > 0 && selectedCount < totalItems;
       }
+    },
+    confirmDialog(message, options = {}) {
+      return this.$confirm({ message, ...options });
     },
   },
 };

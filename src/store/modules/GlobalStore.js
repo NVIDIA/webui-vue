@@ -1,5 +1,36 @@
 import api from '@/store/api';
 
+const HOST_STATE = {
+  on: 'xyz.openbmc_project.State.Host.HostState.Running',
+  off: 'xyz.openbmc_project.State.Host.HostState.Off',
+  error: 'xyz.openbmc_project.State.Host.HostState.Quiesced',
+  diagnosticMode: 'xyz.openbmc_project.State.Host.HostState.DiagnosticMode',
+};
+
+const privilegesId = {
+  admin: 'Administrator',
+  operator: 'Operator',
+  readOnly: 'ReadOnly',
+};
+
+const serverStateMapper = (hostState) => {
+  switch (hostState) {
+    case HOST_STATE.on:
+    case 'On': // Redfish PowerState
+      return 'on';
+    case HOST_STATE.off:
+    case 'Off': // Redfish PowerState
+      return 'off';
+    case HOST_STATE.error:
+    case 'Quiesced': // Redfish Status
+      return 'error';
+    case HOST_STATE.diagnosticMode:
+    case 'InTest': // Redfish Status
+      return 'diagnosticMode';
+    default:
+      return 'unreachable';
+  }
+};
 const GlobalStore = {
   namespaced: true,
   state: {
@@ -68,7 +99,10 @@ const GlobalStore = {
   actions: {
     async fetchServiceRoot({ commit }) {
       try {
-        commit('setServiceRoot', await api.get('/redfish/v1', {timeout: 60 * 1000}));
+        commit(
+          'setServiceRoot',
+          await api.get('/redfish/v1', { timeout: 60 * 1000 }),
+        );
       } catch (error) {
         console.log(error);
       }
@@ -206,5 +240,6 @@ const GlobalStore = {
     },
   },
 };
+export { GlobalStore, serverStateMapper, privilegesId };
 
 export default GlobalStore;

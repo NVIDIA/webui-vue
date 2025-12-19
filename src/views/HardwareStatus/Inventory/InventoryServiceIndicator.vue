@@ -3,11 +3,13 @@
     v-if="showLeds && !isLocationIndicatorUndefined"
     :section-title="$t('pageInventory.systemIndicator.sectionTitle')"
   >
-    <div class="form-background pl-4 pt-4 pb-1">
+    <div class="form-background ps-4 pt-4 pb-1">
       <b-row>
         <b-col sm="6" md="3">
           <dl>
-            <dt>{{ $t('pageServerPowerOperations.powerState') }}</dt>
+            <dt>
+              {{ $t('pageInventory.systemIndicator.powerStatus') }}
+            </dt>
             <dd>
               {{ powerState ? $t(`global.powerState.${powerState}`) : '' }}
             </dd>
@@ -60,7 +62,7 @@ export default {
   created() {
     this.$store.dispatch('global/getSystemInfo').finally(() => {
       // Emit initial data fetch complete to parent component
-      this.$eventBus.$emit('hardware-status-service-complete');
+      this.$eventBus.emit('hardware-status-service-complete');
     });
   },
   methods: {

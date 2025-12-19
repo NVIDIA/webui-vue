@@ -24,18 +24,29 @@ export default {
     };
   },
   created() {
-    this.$eventBus.$on('loader-start', (percents) => {
+    this.handleLoaderStart = (percents) => {
       this.startLoadingInterval(percents);
-    });
-    this.$eventBus.$on('loader-end', () => {
+    };
+    this.handleLoaderEnd = () => {
       this.endLoadingInterval();
-    });
-    this.$eventBus.$on('loader-hide', () => {
+    };
+    this.handleLoaderHide = () => {
       this.hideLoadingBar();
-    });
+    };
+
+    this.$eventBus.on('loader-start', this.handleLoaderStart);
+    this.$eventBus.on('loader-end', this.handleLoaderEnd);
+    this.$eventBus.on('loader-hide', this.handleLoaderHide);
+  },
+  beforeUnmount() {
+    this.$eventBus.off('loader-start', this.handleLoaderStart);
+    this.$eventBus.off('loader-end', this.handleLoaderEnd);
+    this.$eventBus.off('loader-hide', this.handleLoaderHide);
+    this.clearLoadingInterval();
+    this.clearTimeout();
   },
   methods: {
-    startLoadingInterval([beginPercent = 0, endPercent = 100]) {
+    startLoadingInterval([beginPercent = 0, endPercent = 100] = [0, 100]) {
       this.clearLoadingInterval();
       this.clearTimeout();
       this.loadingIndicatorValue = beginPercent;
@@ -76,7 +87,8 @@ export default {
 
 <style lang="scss" scoped>
 .progress {
-  position: absolute;
+  position: relative;
+  top: 0px;
   left: 0;
   right: 0;
   bottom: -0.4rem;

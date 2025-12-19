@@ -14,7 +14,7 @@
               v-model="bluefieldTarget"
               name="bluefield-target"
               value="BMC"
-              class="mr-3"
+              class="me-3"
             >
               BMC
             </b-form-radio>
@@ -23,7 +23,7 @@
               v-model="bluefieldTarget"
               name="bluefield-target"
               value="CEC"
-              class="mr-3"
+              class="me-3"
             >
               CEC
             </b-form-radio>
@@ -45,7 +45,7 @@
           class="mb-3"
         >
           <div class="d-flex">
-            <b-form-radio v-model="nvidiaGBTarget" value="BMC" class="mr-3">
+            <b-form-radio v-model="nvidiaGBTarget" value="BMC" class="me-3">
               BMC
             </b-form-radio>
             <b-form-radio v-model="nvidiaGBTarget" value="HMC">
@@ -104,8 +104,12 @@
               @input="onFileUpload($event)"
             >
               <template #invalid>
-                <b-form-invalid-feedback role="alert">
-                  {{ $t('global.form.required') }}
+                <b-form-invalid-feedback
+                  role="alert"
+                  :state="false"
+                  v-if="v$.file.$error"
+                >
+                  {{ $t('global.form.fieldRequired') }}
                 </b-form-invalid-feedback>
               </template>
             </form-file>
@@ -144,7 +148,7 @@
               @input="clearServerError"
             />
             <b-form-invalid-feedback role="alert" v-if="v$.form.ImageURI.$error">
-              <span v-if="!v$.form.ImageURI.serverError">
+              <span v-if="v$.form.ImageURI.serverError?.$invalid">
                 <a href="#"
                   @click.prevent="showDetailServerError"
                   :title="$t('pageFirmware.form.updateFirmware.clickToViewApiResponse')"
@@ -190,12 +194,12 @@
         </div>
         <div class="mb-3">
           <b-form-invalid-feedback role="alert" :state="false" v-if="v$.form.ImageURI.$error">
-            <span v-if="!v$.form.ImageURI.required">
+            <span v-if="v$.form.ImageURI.required?.$invalid">
               {{ $t('global.form.fieldRequired') }}
             </span>
           </b-form-invalid-feedback>
           <b-form-invalid-feedback role="alert" :state="false" v-if="v$.form.Target.$error">
-            <span v-if="!v$.form.Target.serverError">
+            <span v-if="v$.form.Target.serverError?.$invalid">
               <a href="#"
                 @click.prevent="showDetailServerError"
                 :title="$t('pageFirmware.form.updateFirmware.clickToViewApiResponse')"
@@ -233,6 +237,7 @@
     <modal-confirm-identity :default-remote-server-ip="remoteServerIp" />
     <json-modal
       :title="$t('pageFirmware.form.updateFirmware.apiErrorResponse')"
+      :content="serverError"
     >
       {{ serverError }}
     </json-modal>
@@ -240,12 +245,13 @@
 </template>
 
 <script>
-import { required, requiredIf } from '@vuelidate/validators';
+import { requiredIf, helpers } from '@vuelidate/validators';
 
 import BVToastMixin from '@/components/Mixins/BVToastMixin';
 import LoadingBarMixin, { loading } from '@/components/Mixins/LoadingBarMixin';
 import VuelidateMixin from '@/components/Mixins/VuelidateMixin.js';
 import { useVuelidate } from '@vuelidate/core';
+import { useModal } from 'bootstrap-vue-next';
 
 import FormFile from '@/components/Global/FormFile';
 import ModalUpdateFirmware from './FirmwareModalUpdateFirmware';
@@ -268,8 +274,10 @@ export default {
     },
   },
   setup() {
+    const bvModal = useModal();
     return {
       v$: useVuelidate(),
+      bvModal,
     };
   },
   data() {
@@ -395,7 +403,7 @@ export default {
       handler(newInfo, oldInfo) {
         this.displayUpdateProgress(newInfo, oldInfo);
       },
-      immdiate: true,
+      immediate: true,
       deep: true,
     },
     bluefieldTarget: {
@@ -408,7 +416,7 @@ export default {
             this.fileSource = this.allowableActions?.[0];
         }
       },
-      immdiate: true,
+      immediate: true,
     },
     computedTargets: {
       handler(newValue) {
@@ -421,15 +429,19 @@ export default {
       handler() {
         this.clearServerError();
         this.v$.form.Target.$touch();
-      }
+      },
     },
   },
   validations() {
+    // Vuelidate v2 `required` treats File objects as empty because File has no enumerable keys.
+    // Use a custom "required" check for file inputs.
+    const requiredLocalFile = helpers.withMessage(
+      this.$t('global.form.fieldRequired'),
+      (value) => !this.isLocalSelected || value != null,
+    );
     return {
       file: {
-        required: requiredIf(function () {
-          return this.isLocalSelected;
-        }),
+        required: requiredLocalFile,
       },
       form: {
         ...generateValidation(
@@ -465,7 +477,8 @@ export default {
       this.redfishCommonError = false;
     },
     showDetailServerError() {
-      this.$bvModal.show('json-modal');
+      const modal = this.bvModal.get('json-modal');
+      modal?.show?.();
     },
     updateFirmware() {
       this.isUploading = true;
@@ -488,7 +501,7 @@ export default {
           this.v$.$touch();
           this.validateRedfishError();
           const lastToast = document.querySelector('.toast');
-          this.$bvToast.hide(lastToast.id);
+          this.$bvToast?.hide?.(lastToast?.id);
         })
         .finally(() => {
           this.isUploading = false;
@@ -537,7 +550,7 @@ export default {
         this.endLoader();
         if (oldInitiator)
           this.errorToast(this.$t('pageFirmware.toast.resetFailedMessage'));
-      } else if (state === 'WaitReadyFailed' && state !== state) {
+      } else if (state === 'WaitReadyFailed' && oldState !== state) {
         this.endLoader();
         if (oldInitiator)
           this.errorToast(this.$t('pageFirmware.toast.waitReadyFailedMessage'));
@@ -548,33 +561,36 @@ export default {
           this.v$.$touch();
           this.validateRedfishError(errMsg);
           const lastToast = document.querySelector('.toast');
-          this.$bvToast.hide(lastToast.id);
+          this.$bvToast?.hide?.(lastToast?.id);
         }
       }
     },
     onConfirmIdentity() {
-      this.$bvModal.show('modal-confirm-identity');
+      const modal = this.bvModal.get('modal-confirm-identity');
+      modal?.show?.();
     },
     onSubmitUpload() {
       this.v$.$touch();
-      if (this.v$.$invalid) return;
+      if (this.v$.$invalid) {
+        return;
+      }
       if (this.hasCheckedTargets) {
-        this.$bvModal.msgBoxConfirm(
-          this.$t('pageFirmware.form.updateFirmware.confirmCheckedMessage'),
-          {
-            buttonSize: 'sm',
-            okVariant: 'danger',
-            okTitle: this.$t('global.action.confirm'),
-            cancelTitle: this.$t('global.action.cancel'),
-            cancelVariant: 'secondary',
-          },
-        ).then(confirmed => {
+        this.$confirm({
+          message: this.$t('pageFirmware.form.updateFirmware.confirmCheckedMessage'),
+          buttonSize: 'sm',
+          okVariant: 'danger',
+          okTitle: this.$t('global.action.confirm'),
+          cancelTitle: this.$t('global.action.cancel'),
+          cancelVariant: 'secondary',
+        }).then((confirmed) => {
           if (confirmed) {
-            this.$bvModal.show('modal-update-firmware');
+            const modal = this.bvModal.get('modal-update-firmware');
+            modal?.show?.();
           }
         });
       } else {
-        this.$bvModal.show('modal-update-firmware');
+        const modal = this.bvModal.get('modal-update-firmware');
+        modal?.show?.();
       }
     },
     onFileUpload(file) {

@@ -3,7 +3,7 @@ export const loading = true;
 const LoadingBarMixin = {
   data() {
     return {
-      loading: false
+      loading: false,
     };
   },
   created() {

@@ -60,7 +60,7 @@
     <b-row class="d-flex">
       <b-col class="d-flex flex-column justify-content-end">
         <dl class="mb-2" sm="6" md="6">
-          <dt class="d-inline font-weight-bold mr-1">
+          <dt class="d-inline fw-bold me-1">
             SOL {{ $t('pageSerialOverLan.status') }}:
           </dt>
           <dd class="d-inline">
@@ -70,7 +70,7 @@
               v-if="connectionState === ConnectionState.CLOSED" 
               size="sm" 
               variant="primary" 
-              class="ml-2"
+              class="ms-2"
               @click="closeTerminal(); openTerminal()"
             >
               {{ $t('global.action.connect') }}
@@ -222,6 +222,7 @@ export default {
         fontSize: 15,
         fontFamily:
           'SFMono-Regular, Menlo, Monaco, Consolas, Liberation Mono, Courier New, monospace',
+        scrollback: 10000,
       });
 
       const attachAddon = new AttachAddon(this.ws);

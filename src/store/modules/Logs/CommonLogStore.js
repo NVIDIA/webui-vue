@@ -1,6 +1,5 @@
 import api, { getResponseCount } from '@/store/api';
 import i18n from '@/i18n';
-import Vue from 'vue';
 
 const getHealthStatus = (events, loadedEvents) => {
   let status = loadedEvents ? 'OK' : '';
@@ -49,9 +48,10 @@ const CommonLogStore = {
     logServices: (state) => state.logServices,
   },
   mutations: {
-    setAllEvents: (state, { Members, value }) => (
-      (Vue.set(state.allEvents, value, Members)), (state.loadedEvents = true)
-    ),
+    setAllEvents: (state, { Members, value }) => {
+      state.allEvents[value] = Members;
+      state.loadedEvents = true;
+    },
     setLogServiceUris: (state, uris) => (state.logServiceUris = uris),
     setInitialized: (state, value) => (state.isInitialized = value),
     setLogServices: (state, services) => {

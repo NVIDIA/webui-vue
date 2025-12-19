@@ -5,9 +5,10 @@
   >
     <b-table
       sort-icon-left
-      no-sort-reset
+      must-sort
       hover
       responsive="md"
+      thead-class="table-light"
       :items="items"
       :fields="fields"
       show-empty
@@ -21,10 +22,11 @@
           data-test-id="hardwareStatus-button-expandAssembly"
           :title="expandRowLabel"
           class="btn-icon-only"
+          :class="{ collapsed: !row.detailsShowing }"
           @click="toggleRowDetails(row)"
         >
           <icon-chevron />
-          <span class="sr-only">{{ expandRowLabel }}</span>
+          <span class="visually-hidden">{{ expandRowLabel }}</span>
         </b-button>
       </template>
 
@@ -74,8 +76,8 @@
               <!-- Board Manufacture Date -->
               <dt>{{ $t('pageInventory.table.boardManufactureDate') }}:</dt>
               <dd v-if="item.boardManufactureDate">
-                {{ item.boardManufactureDate | formatDate }}
-                {{ item.boardManufactureDate | formatTime }}
+                {{ $filters.formatDate(new Date(item.boardManufactureDate)) }}
+                {{ $filters.formatTime(new Date(item.boardManufactureDate)) }}
               </dd>
               <dd v-else>{{ dataFormatter(item.boardManufactureDate) }}</dd>
               <!-- Board Manufacturer -->
@@ -189,7 +191,7 @@ export default {
             label: this.$t('pageInventory.table.chassisSerialNumber'),
             formatter: this.dataFormatter,
           },
-        ];
+        ].filter((field) => field && field.key);
       }
       return [
         {
@@ -220,23 +222,18 @@ export default {
           label: i18n.global.t('pageInventory.table.identifyLed'),
           formatter: this.dataFormatter,
         }:{},
-      ];
+      ].filter((field) => field && field.key);
     },
   },
   created() {
-    if (this.showFru) {
-      this.$store.dispatch('assemblies/getFruInfo').finally(() => {
-        // Emit initial data fetch complete to parent component
-        this.$eventBus.$emit('hardware-status-assembly-complete');
-        this.isBusy = false;
-      });
-    } else {
-      this.$store.dispatch('assemblies/getAssemblyInfo').finally(() => {
-        // Emit initial data fetch complete to parent component
-        this.$eventBus.$emit('hardware-status-assembly-complete');
-        this.isBusy = false;
-      });
-    }
+    const action = this.showFru
+      ? 'assemblies/getFruInfo'
+      : 'assemblies/getAssemblyInfo';
+    this.$store.dispatch(action).finally(() => {
+      // Emit initial data fetch complete to parent component
+      this.$eventBus.emit('hardware-status-assembly-complete');
+      this.isBusy = false;
+    });
   },
   methods: {
     toggleIdentifyLedValue(row) {

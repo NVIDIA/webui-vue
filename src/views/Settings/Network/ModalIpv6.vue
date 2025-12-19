@@ -53,7 +53,7 @@
         </b-col>
       </b-row>
     </b-form>
-    <template #modal-footer="{ cancel }">
+    <template #footer="{ cancel }">
       <b-button variant="secondary" @click="cancel()">
         {{ $t('global.action.cancel') }}
       </b-button>
@@ -66,6 +66,8 @@
 
 <script>
 import VuelidateMixin from '@/components/Mixins/VuelidateMixin.js';
+import { useVuelidate } from '@vuelidate/core';
+import { useI18n } from 'vue-i18n';
 import { required, helpers } from 'vuelidate/lib/validators';
 
 const validateIpv6 = helpers.regex(
@@ -80,8 +82,21 @@ const validatePrefixLength = helpers.regex(
 
 export default {
   mixins: [VuelidateMixin],
+  props: {
+    modelValue: {
+      type: Boolean,
+      default: false,
+    },
+  },
+  emits: ['ok', 'hidden', 'update:modelValue'],
+  setup() {
+    return {
+      v$: useVuelidate(),
+    };
+  },
   data() {
     return {
+      $t: useI18n().t,
       form: {
         ipAddress: '',
         prefixLength: '',
@@ -102,6 +117,18 @@ export default {
       },
     };
   },
+  watch: {
+    modelValue: {
+      handler(newValue) {
+        if (newValue) {
+          this.$nextTick(() => {
+            this.$refs.modal?.show();
+          });
+        }
+      },
+      immediate: true,
+    },
+  },
   methods: {
     handleSubmit() {
       this.v$.$touch();
@@ -121,6 +148,7 @@ export default {
       this.form.ipAddress = null;
       this.form.prefixLength = null;
       this.v$.$reset();
+      this.$emit('update:modelValue', false);
       this.$emit('hidden');
     },
     onOk(bvModalEvt) {

@@ -100,7 +100,7 @@
         </b-row>
       </b-container>
     </b-form>
-    <template #modal-footer="{ cancel }">
+    <template #footer="{ cancel }">
       <b-button
         variant="secondary"
         data-test-id="userManagement-button-cancel"
@@ -141,6 +141,7 @@ export default {
       required: true,
     },
   },
+  emits: ['ok'],
   setup() {
     return {
       v$: useVuelidate(),

@@ -1,24 +1,24 @@
+import mitt from 'mitt';
 
-const eventBus = {
-  events: {},
-  $on(event, callback) {
-    if (!this.events[event]) {
-      this.events[event] = [];
-    }
-    this.events[event].push(callback);
-  },
-  $off(event, callback) {
-    if (!this.events[event]) return;
-    if (!callback) {
-      this.events[event] = [];
-      return;
-    }
-    this.events[event] = this.events[event].filter(cb => cb !== callback);
-  },
-  $emit(event, ...args) {
-    if (!this.events[event]) return;
-    this.events[event].forEach(callback => callback(...args));
-  }
+const emitter = mitt();
+
+function once(event, handler) {
+  const wrapper = (...args) => {
+    emitter.off(event, wrapper);
+    handler(...args);
+  };
+  emitter.on(event, wrapper);
+}
+
+export default {
+  // Vue 2-style alias
+  $on: emitter.on,
+  $off: emitter.off,
+  $emit: emitter.emit,
+  $once: once,
+  // Plain methods used by PS4 branch
+  on: emitter.on,
+  off: emitter.off,
+  emit: emitter.emit,
+  once,
 };
-
-export default eventBus;

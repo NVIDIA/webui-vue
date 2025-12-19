@@ -22,7 +22,7 @@
       no-sort-reset
       hover
       responsive="md"
-      sort-by="health"
+      :sort-by="['health']"
       show-empty
       :items="drives"
       :fields="fields"

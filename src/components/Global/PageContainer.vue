@@ -27,13 +27,17 @@ export default {
   },
   created() {
     this.managerStatusIntervalId = startManagerStatusCheck();
-    this.$eventBus.$on('skip-navigation', () => {
+    this.handleSkipNavigation = () => {
       this.setFocus(this.$el);
-    });
+    };
+    this.$eventBus.on('skip-navigation', this.handleSkipNavigation);
   },
-  beforeDestroy() {
+  beforeUnmount() {
     if (this.managerStatusIntervalId) {
       clearInterval(this.managerStatusIntervalId);
+    }
+    if (this.handleSkipNavigation) {
+      this.$eventBus.off('skip-navigation', this.handleSkipNavigation);
     }
   },
 };
@@ -44,8 +48,8 @@ main {
   height: 100%;
   padding-top: $spacer * 1.5;
   padding-bottom: $spacer * 3;
-  padding-left: $spacer;
-  padding-right: $spacer;
+  padding-inline-start: $spacer;
+  padding-inline-end: $spacer;
 
   &:focus-visible {
     box-shadow: inset 0 0 0 2px theme-color('primary');
@@ -53,7 +57,7 @@ main {
   }
 
   @include media-breakpoint-up($responsive-layout-bp) {
-    padding-left: $spacer * 2;
+    padding-inline-start: $spacer * 2;
   }
 }
 </style>

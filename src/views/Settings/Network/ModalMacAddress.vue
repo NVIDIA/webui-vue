@@ -32,7 +32,7 @@
         </b-col>
       </b-row>
     </b-form>
-    <template #modal-footer="{ cancel }">
+    <template #footer="{ cancel }">
       <b-button variant="secondary" @click="cancel()">
         {{ $t('global.action.cancel') }}
       </b-button>
@@ -58,11 +58,16 @@ import { useI18n } from 'vue-i18n';
 export default {
   mixins: [VuelidateMixin],
   props: {
+    modelValue: {
+      type: Boolean,
+      default: false,
+    },
     macAddress: {
       type: String,
       default: '',
     },
   },
+  emits: ['ok', 'hidden', 'update:modelValue'],
   setup() {
     return {
       v$: useVuelidate(),
@@ -79,6 +84,16 @@ export default {
   watch: {
     macAddress() {
       this.form.macAddress = this.macAddress;
+    },
+    modelValue: {
+      handler(newValue) {
+        if (newValue) {
+          this.$nextTick(() => {
+            this.$refs.modal?.show();
+          });
+        }
+      },
+      immediate: true,
     },
   },
   validations() {
@@ -106,6 +121,7 @@ export default {
     resetForm() {
       this.form.macAddress = this.macAddress;
       this.v$.$reset();
+      this.$emit('update:modelValue', false);
       this.$emit('hidden');
     },
     onOk(bvModalEvt) {

@@ -6,36 +6,35 @@
     :cancel-title="$t('global.action.cancel')"
     @ok="$emit('ok')"
   >
-    <template>
-      <p>
-        {{ $t('pageFirmware.modal.updateFirmwareInfoDefault1') }}
-      </p>
-      <p v-if="showBackupBmcMessage">
-        {{
-          $t('pageFirmware.modal.updateFirmwareInfoTargetBackup', {
-            running: runningBmcVersion,
-          })
-        }}
-      </p>
-      <p v-if="showBackupBiosMessage">
-        {{
-          $t('pageFirmware.modal.updateFirmwareInfoTargetBackup', {
-            running: runningBiosVersion,
-          })
-        }}
-      </p>
-      <p v-if="showBackup">
-        {{ $t('pageFirmware.modal.updateFirmwareInfoBackup') }}
-      </p>
-      <p>
+    <p>
+      {{ $t('pageFirmware.modal.updateFirmwareInfoDefault1') }}
+    </p>
+    <p v-if="showBackupBmcMessage">
+      {{
+        $t('pageFirmware.modal.updateFirmwareInfoTargetBackup', {
+          running: runningBmcVersion,
+        })
+      }}
+    </p>
+    <p v-if="showBackupBiosMessage">
+      {{
+        $t('pageFirmware.modal.updateFirmwareInfoTargetBackup', {
+          running: runningBiosVersion,
+        })
+      }}
+    </p>
+    <p v-if="showBackup">
+      {{ $t('pageFirmware.modal.updateFirmwareInfoBackup') }}
+    </p>
+    <p>
       {{ $t('pageFirmware.modal.updateFirmwareInfoDefault2') }}
-      </p>
-    </template>
+    </p>
   </b-modal>
 </template>
 
 <script>
 export default {
+  emits: ['ok'],
   props: {
     targets: {
       type: Array,

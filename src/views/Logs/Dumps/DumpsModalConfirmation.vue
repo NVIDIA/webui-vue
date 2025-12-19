@@ -26,7 +26,7 @@
     >
       {{ $t('global.form.required') }}
     </b-form-invalid-feedback>
-    <template #modal-footer="{ cancel }">
+    <template #footer="{ cancel }">
       <b-button variant="secondary" @click="cancel()">
         {{ $t('global.action.cancel') }}
       </b-button>
@@ -46,6 +46,13 @@ import { useI18n } from 'vue-i18n';
 export default {
   components: { StatusIcon },
   mixins: [VuelidateMixin],
+  props: {
+    requireConfirmation: {
+      type: Boolean,
+      default: false,
+    },
+  },
+  emits: ['ok'],
   setup() {
     return {
       v$: useVuelidate(),
@@ -55,12 +62,17 @@ export default {
     return {
       $t: useI18n().t,
       confirmed: false,
+      isOpen: this.requireConfirmation,
     };
   },
-  validations: {
-    confirmed: {
-      mustBeTrue: (value) => value === true,
-    },
+  validations() {
+    return this.isOpen
+      ? {
+          confirmed: {
+            mustBeTrue: (value) => value === true,
+          },
+        }
+      : {};
   },
   methods: {
     closeModal() {
@@ -76,6 +88,7 @@ export default {
     },
     resetForm() {
       this.confirmed = false;
+      this.isOpen = false;
       this.v$.$reset();
     },
   },
