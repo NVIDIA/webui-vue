@@ -67,7 +67,6 @@
 <script>
 import VuelidateMixin from '@/components/Mixins/VuelidateMixin.js';
 import { useVuelidate } from '@vuelidate/core';
-import { useI18n } from 'vue-i18n';
 import { required, helpers } from '@vuelidate/validators';
 
 const validateIpv6 = helpers.regex(

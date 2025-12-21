@@ -112,14 +112,16 @@ export default {
       this.form.bootOption = value;
     },
   },
-  validations: {
+  validations() {
     // Empty validations to leverage vuelidate form states
     // to check for changed values
-    form: {
-      bootOption: {},
-      bootSourceOption: {},
-      oneTimeBoot: {},
-    },
+    return {
+      form: {
+        bootOption: {},
+        bootSourceOption: {},
+        oneTimeBoot: {},
+      },
+    };
   },
   methods: {
     handleSubmit() {

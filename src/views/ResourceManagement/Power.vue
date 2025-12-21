@@ -159,13 +159,15 @@ export default {
       .dispatch('powerControl/getPowerControl')
       .finally(() => this.endLoader());
   },
-  validations: {
-    powerCapValue: {
-      between: between(1, 10000),
-      required: requiredIf(function () {
-        return this.isPowerCapFieldEnabled;
-      }),
-    },
+  validations() {
+    return {
+      powerCapValue: {
+        between: between(1, 10000),
+        required: requiredIf(function () {
+          return this.isPowerCapFieldEnabled;
+        }),
+      },
+    };
   },
   methods: {
     submitForm() {
