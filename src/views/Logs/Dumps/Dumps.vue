@@ -50,7 +50,7 @@
               </b-col>
             </b-row>
             <table-toolbar
-              :selected-items-count="selectedRowsMap[index] ? selectedRowsMap[index].length : 0"
+              :selected-items-count="getSelectedItemsCount(index)"
               :actions="batchActions"
               @clear-selected="clearSelectedRows($refs.tables[index])"
               @batch-action="onTableBatchAction($event, index)"
@@ -80,7 +80,7 @@
                 <b-form-checkbox
                   v-model="tableHeaderCheckboxModelMap[index]"
                   :indeterminate="tableHeaderCheckboxIndeterminateMap[index]"
-                  @change="onChangeHeaderCheckbox($refs.tables[index])"
+                  @change="onChangeHeaderCheckbox($refs.tables[index], $event)"
                 >
                   <span class="visually-hidden-focusable">
                     {{ $t('global.table.selectAll') }}
@@ -172,11 +172,7 @@ import TableRowAction from '@/components/Global/TableRowAction';
 import TableToolbar from '@/components/Global/TableToolbar';
 import TableToolbarExport from '@/components/Global/TableToolbarExport';
 /* this mixin fork supports multiple tables */
-import BVMultiTableSelectableMixin, {
-  selectedRowsMap,
-  tableHeaderCheckboxModelMap,
-  tableHeaderCheckboxIndeterminateMap,
-} from '@/components/Mixins/BVMultiTableSelectableMixin';
+import BVMultiTableSelectableMixin from '@/components/Mixins/BVMultiTableSelectableMixin';
 import BVToastMixin from '@/components/Mixins/BVToastMixin';
 import BVPaginationMixin, {
   currentPage,
@@ -271,6 +267,7 @@ export default {
         {
           value: 'delete',
           label: i18n.global.t('global.action.delete'),
+          enabled: true,
         },
       ],
       tableFilters: [
@@ -293,9 +290,9 @@ export default {
       filterStartDates: {},
       searchFilters: {},
       searchTotalFilteredRowsMap: {},
-      selectedRowsMap: selectedRowsMap,
-      tableHeaderCheckboxModelMap: tableHeaderCheckboxModelMap,
-      tableHeaderCheckboxIndeterminateMap: tableHeaderCheckboxIndeterminateMap,
+      selectedRowsMap: {},
+      tableHeaderCheckboxModelMap: {},
+      tableHeaderCheckboxIndeterminateMap: {},
 
     };
   },
@@ -329,6 +326,26 @@ export default {
       return this.$store.getters['dumps/fileExtension'];
     },
   },
+  watch: {
+    // Initialize reactive map entries when dumps are loaded
+    allDumps: {
+      immediate: true,
+      handler(dumps) {
+        dumps.forEach((_, index) => {
+          // Initialize if not already set to ensure reactivity
+          if (this.selectedRowsMap[index] === undefined) {
+            this.selectedRowsMap[index] = [];
+          }
+          if (this.tableHeaderCheckboxModelMap[index] === undefined) {
+            this.tableHeaderCheckboxModelMap[index] = false;
+          }
+          if (this.tableHeaderCheckboxIndeterminateMap[index] === undefined) {
+            this.tableHeaderCheckboxIndeterminateMap[index] = false;
+          }
+        });
+      },
+    },
+  },
   async created() {
     this.startLoader();
     this.$store.dispatch('dumps/getAllDumps').finally(() => {
@@ -337,6 +354,10 @@ export default {
     });
   },
   methods: {
+    getSelectedItemsCount(index) {
+      const rows = this.selectedRowsMap[index];
+      return Array.isArray(rows) ? rows.length : 0;
+    },
     convertBytesToMegabytes(bytes) {
       return parseFloat((bytes / 1000000).toFixed(3));
     },
@@ -353,11 +374,12 @@ export default {
     async onTableRowAction(action, item) {
       if (action === 'delete') {
         const ok = await this.confirmDialog(
-          i18n.global.t('pageDumps.modal.deleteDumpConfirmation', 1),
+          i18n.global.t('pageDumps.modal.deleteDumpConfirmation', { count: 1 }, 1),
           {
-            title: i18n.global.t('pageDumps.modal.deleteDump', 1),
-            okTitle: i18n.global.t('pageDumps.modal.deleteDump', 1),
+            title: i18n.global.t('pageDumps.modal.deleteDump', { count: 1 }, 1),
+            okTitle: i18n.global.t('pageDumps.modal.deleteDump', { count: 1 }, 1),
             cancelTitle: i18n.global.t('global.action.cancel'),
+            autoFocusButton: 'ok',
           },
         );
         if (ok)
@@ -382,10 +404,10 @@ export default {
       if (count === 0) return;
 
       const ok = await this.confirmDialog(
-        i18n.global.t('pageDumps.modal.deleteDumpConfirmation', count),
+        i18n.global.t('pageDumps.modal.deleteDumpConfirmation', { count }, count),
         {
-          title: i18n.global.t('pageDumps.modal.deleteDump', count),
-          okTitle: i18n.global.t('pageDumps.modal.deleteDump', count),
+          title: i18n.global.t('pageDumps.modal.deleteDump', { count }, count),
+          okTitle: i18n.global.t('pageDumps.modal.deleteDump', { count }, count),
           cancelTitle: i18n.global.t('global.action.cancel'),
         },
       );
@@ -394,7 +416,10 @@ export default {
       if (count === this.allDumps[index].dumps.length) {
         this.$store
           .dispatch('dumps/deleteAllDumps')
-          .then((success) => this.successToast(success))
+          .then((success) => {
+            this.successToast(success);
+            this.clearSelectedRows(this.$refs.tables[index], index);
+          })
           .catch(({ message }) => this.errorToast(message));
         return;
       }
@@ -407,6 +432,7 @@ export default {
             this.errorToast(message);
           }
         });
+        this.clearSelectedRows(this.$refs.tables[index], index);
       });
     },
     exportFileName(row) {
@@ -445,23 +471,6 @@ export default {
         filteredByDate,
         this.activeFiltersMap[index] || [],
       );
-    },
-    onChangeRowCheckbox(checked, tableRefs, rowIndex, index) {
-      // tableRefs is an array since it's a ref in v-for
-      const tableRef = tableRefs[0];
-      if (tableRef) {
-        tableRef.selectRow(rowIndex, checked);
-        // Update selected rows map based on all currently selected rows
-        const selectedRows = tableRef.selectedRows;
-        this.selectedRowsMap[index] = selectedRows;
-        
-        // Update header checkbox state
-        const totalItems = this.getFilteredDumps(index).length;
-        const selectedCount = selectedRows.length;
-        this.tableHeaderCheckboxModelMap[index] = selectedCount > 0;
-        this.tableHeaderCheckboxIndeterminateMap[index] =
-          selectedCount > 0 && selectedCount < totalItems;
-      }
     },
     confirmDialog(message, options = {}) {
       return this.$confirm({ message, ...options });

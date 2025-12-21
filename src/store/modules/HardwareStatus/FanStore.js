@@ -1,4 +1,5 @@
 import api from '@/store/api';
+import { getOdataId } from '@/utilities/redfishUtils';
 
 const FanStore = {
   namespaced: true,
@@ -61,14 +62,14 @@ const FanStore = {
     async getChassisFans(_, chassis) {
       if (!chassis.ThermalSubsystem) return;
       return await api
-        .get(chassis.ThermalSubsystem['@odata.id'])
+        .get(getOdataId(chassis.ThermalSubsystem))
         .then((response) => {
           if (!response?.data?.Fans) throw new Error('skip');
-          return api.get(`${response.data.Fans['@odata.id']}`);
+          return api.get(`${getOdataId(response.data.Fans)}`);
         })
         .then(({ data: { Members } }) => {
           const promises = Members.map((member) =>
-            api.get(member['@odata.id']),
+            api.get(getOdataId(member)),
           );
           return api.all(promises);
         })

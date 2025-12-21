@@ -1,5 +1,6 @@
 import api from '@/store/api';
 import i18n from '@/i18n';
+import { getOdataId } from '@/utilities/redfishUtils';
 
 const ProcessorStore = {
   namespaced: true,
@@ -56,7 +57,7 @@ const ProcessorStore = {
           totalThreads: TotalThreads,
           locationNumber: Location?.PartLocation?.ServiceLabel,
           identifyLed: LocationIndicatorActive,
-          uri: processor['@odata.id'],
+          uri: getOdataId(processor),
           FirmwareVersion
         };
       });

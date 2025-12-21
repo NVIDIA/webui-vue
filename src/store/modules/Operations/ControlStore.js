@@ -1,7 +1,7 @@
 import api from '@/store/api';
 import i18n from '@/i18n';
 import { startManagerStatusCheck } from '@/services/ManagerStatusService';
-import redfishUtils from '@/utilities/redfishUtils';
+import redfishUtils, { getOdataId } from '@/utilities/redfishUtils';
 /**
  * Watch for serverStatus changes in GlobalStore module
  * to set isOperationInProgress state
@@ -263,8 +263,8 @@ const ControlStore = {
           let targetPath;
           if (resetAction && resetAction.target) {
             targetPath = resetAction.target;
-          } else if (manager['@odata.id']) {
-            targetPath = `${manager['@odata.id']}/Actions/Manager.Reset`;
+          } else if (getOdataId(manager)) {
+            targetPath = `${getOdataId(manager)}/Actions/Manager.Reset`;
           } else {
             console.warn(`Manager ${manager.Id || 'unknown'} missing @odata.id property`);
             targetPath = `/redfish/v1/Managers/${manager.Id || 'default'}/Actions/Manager.Reset`;

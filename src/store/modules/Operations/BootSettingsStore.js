@@ -1,5 +1,6 @@
 import api from '@/store/api';
 import i18n from '@/i18n';
+import { getOdataId } from '@/utilities/redfishUtils';
 
 const BootSettingsStore = {
   namespaced: true,
@@ -43,12 +44,12 @@ const BootSettingsStore = {
           );
           commit('setOverrideEnabled', Boot.BootSourceOverrideEnabled);
           commit('setBootSource', Boot.BootSourceOverrideTarget);
-          return api.get(Boot.BootOptions['@odata.id']);
+          return api.get(getOdataId(Boot.BootOptions));
         })
         .then(async (response) => {
           const promises =
             response.data.Members?.map((bootOption) => {
-              return api.get(bootOption['@odata.id']).catch((error) => {
+              return api.get(getOdataId(bootOption)).catch((error) => {
                 console.log(error);
                 return error;
               });

@@ -1,5 +1,6 @@
 import api from '@/store/api';
 import i18n from '@/i18n';
+import { getOdataId } from '@/utilities/redfishUtils';
 
 // Helper function to format uptime seconds into a human-readable string
 const formatUptime = (seconds) => {
@@ -73,7 +74,7 @@ const BmcStore = {
       bmc.sparePartNumber = data.SparePartNumber;
       bmc.statusState = data.Status?.State;
       bmc.uuid = data.UUID;
-      bmc.uri = data['@odata.id'];
+      bmc.uri = getOdataId(data);
       state.bmc[data.index] = bmc;
     },
     setManagerReady: (state, ready) => {
@@ -104,7 +105,7 @@ const BmcStore = {
         const bmcPath = `${await this.dispatch('global/getBmcPath')}`;
         const { data: { Members = [] } } = await api.get('/redfish/v1/Managers');
         const bmcPromises = Members.map((member, idx) =>
-          api.get(member['@odata.id']).then(async ({ data }) => {
+          api.get(getOdataId(member)).then(async ({ data }) => {
             commit('setBmcInfo', { ...data, index: idx });
             
             // Check if UptimeSeconds is available in any OEM section
@@ -146,7 +147,7 @@ const BmcStore = {
             }
             
             data = { ...data, ...upTimeData };
-            if (bmcPath === member['@odata.id']) {
+            if (bmcPath === getOdataId(member)) {
               commit('setBmcTime', upTimeData.date);
               commit('setBmcUpTime', upTimeData.upTime);
             }

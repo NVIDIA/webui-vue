@@ -206,6 +206,7 @@ export default {
         {
           value: 'disconnect',
           label: i18n.global.t('pageSessions.action.disconnect'),
+          enabled: true,
         },
       ],
       currentPage: currentPage,
@@ -260,6 +261,7 @@ export default {
               this.errorToast(message);
             }
           });
+          this.clearSelectedRows(this.$refs.table);
         });
     },
     onTableRowAction(action, { uri }) {
@@ -282,9 +284,9 @@ export default {
         const uris = this.selectedRows.map((row) => row.uri);
         const count = this.selectedRows.length;
         this.confirmDialog(
-          i18n.global.t('pageSessions.modal.disconnectMessage', count),
+          i18n.global.t('pageSessions.modal.disconnectMessage', { count }, count),
           {
-            title: i18n.global.t('pageSessions.modal.disconnectTitle', count),
+            title: i18n.global.t('pageSessions.modal.disconnectTitle', { count }, count),
             okTitle: i18n.global.t('pageSessions.action.disconnect'),
             cancelTitle: i18n.global.t('global.action.cancel'),
             autoFocusButton: 'ok',

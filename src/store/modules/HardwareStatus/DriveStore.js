@@ -1,4 +1,5 @@
 import api from '@/store/api';
+import { getOdataId } from '@/utilities/redfishUtils';
 
 const DriveStore = {
   namespaced: true,
@@ -69,7 +70,7 @@ const DriveStore = {
               
               // Create promises for each drive
               const drivePromises = collection.Drives.map(drive => {
-                return api.get(drive['@odata.id']);
+                return api.get(getOdataId(drive));
               });
               
               allDrivePromises.push(...drivePromises);

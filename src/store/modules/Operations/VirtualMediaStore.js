@@ -1,5 +1,6 @@
 import api from '@/store/api';
 import i18n from '@/i18n';
+import { getOdataId } from '@/utilities/redfishUtils';
 
 const transferProtocolType = Object.freeze({
   CIFS: 'CIFS',
@@ -104,7 +105,7 @@ const VirtualMediaStore = {
           .get(`${await this.dispatch('global/getBmcPath')}/VirtualMedia`)
           .then((response) =>
             response.data.Members.map(
-              (virtualMedia) => virtualMedia['@odata.id'],
+              (virtualMedia) => getOdataId(virtualMedia),
             ),
           )
           .then((devices) => api.all(devices.map((device) => api.get(device))));

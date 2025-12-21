@@ -1,5 +1,6 @@
 import api from '@/store/api';
 import i18n from '@/i18n';
+import { getOdataId } from '@/utilities/redfishUtils';
 
 const IPMI_FRU_CHASSIS_TYPE = {
   0: 'Unspecified',
@@ -73,7 +74,7 @@ const AssemblyStore = {
           name: Name,
           locationNumber: Location?.PartLocation?.ServiceLabel,
           identifyLed: LocationIndicatorActive,
-          uri: assembly['@odata.id'],
+          uri: getOdataId(assembly),
           vendor: Vendor,
         };
       });
@@ -113,7 +114,7 @@ const AssemblyStore = {
     async getChassisAssembly(_, chassis) {
       if (!chassis.Assembly) return;
       return await api
-        .get(chassis.Assembly['@odata.id'])
+        .get(getOdataId(chassis.Assembly))
         .then(({ data }) => {
           return data.Assemblies;
         })

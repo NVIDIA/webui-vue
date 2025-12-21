@@ -256,6 +256,7 @@ import LoadingBarMixin, { loading } from '@/components/Mixins/LoadingBarMixin';
 import VuelidateMixin from '@/components/Mixins/VuelidateMixin.js';
 import { useVuelidate } from '@vuelidate/core';
 import { useModal } from 'bootstrap-vue-next';
+import { getOdataId } from '@/utilities/redfishUtils';
 
 import FormFile from '@/components/Global/FormFile';
 import ModalUpdateFirmware from './FirmwareModalUpdateFirmware';
@@ -495,7 +496,7 @@ export default {
       });
       this.dispatchFileUpload()
         .then((resp) => {
-          const taskHandle = resp?.data?.['@odata.id'];
+          const taskHandle = getOdataId(resp?.data);
           this.$store.dispatch('firmware/setFirmwareUpdateTask', {
             taskHandle: taskHandle,
             initiator: true,

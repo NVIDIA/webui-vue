@@ -18,7 +18,7 @@
           <dt>{{ $t('pageOverview.criticalEvents') }}</dt>
           <dd class="h3 d-flex align-items-center">
             {{ dataFormatter(criticalEvents(key).length) }}
-            <status-icon status="danger" class="ml-2" />
+            <status-icon status="danger" class="ms-2" />
           </dd>
         </dl>
       </b-col>
@@ -27,7 +27,7 @@
           <dt>{{ $t('pageOverview.warningEvents') }}</dt>
           <dd class="h3 d-flex align-items-center">
             {{ dataFormatter(warningEvents(key).length) }}
-            <status-icon status="warning" class="ml-2" />
+            <status-icon status="warning" class="ms-2" />
           </dd>
         </dl>
       </b-col>

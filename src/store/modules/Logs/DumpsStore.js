@@ -1,5 +1,7 @@
 import api, { getResponseCount } from '@/store/api';
 import i18n from '@/i18n';
+import { downloadEntry } from './LogUtils';
+import { getOdataId } from '@/utilities/redfishUtils';
 
 const DumpsStore = {
   namespaced: true,
@@ -43,13 +45,13 @@ const DumpsStore = {
       return await api
         .get(`${await this.dispatch('global/getSystemPath')}`)
         .then(({ data: { LogServices } }) =>
-          api.get(LogServices?.['@odata.id']),
+          api.get(getOdataId(LogServices)),
         )
         .then(({ data: { Members = [] } }) => {
           const member = Members.find((o) =>
-            o?.['@odata.id']?.endsWith('/' + state.logType),
+            getOdataId(o)?.endsWith('/' + state.logType),
           );
-          return member?.['@odata.id'];
+          return getOdataId(member);
         })
         .catch((error) => {
           console.log(error);
@@ -90,7 +92,7 @@ const DumpsStore = {
       managers.forEach((element) => element.TYPE="Bmc");
 
       let promises = systems.concat(managers).map(async (service) => {
-        let uri = service["LogServices"]?.['@odata.id'];
+        let uri = getOdataId(service["LogServices"]);
         if (!uri) return null;
         
         let id = service.Id;
@@ -102,10 +104,10 @@ const DumpsStore = {
         
         try {
           const { data: { Members = [] } } = await api.get(uri);
-          const member = Members.find((o) => o?.['@odata.id']?.endsWith('/Dump'));
+          const member = Members.find((o) => getOdataId(o)?.endsWith('/Dump'));
           if (!member) return null;
           
-          const { data } = await api.get(member['@odata.id']);
+          const { data } = await api.get(getOdataId(member));
           data.TEXT = translationToken;
           data.TYPE = service.TYPE;
           data.VALUE = id;
@@ -163,17 +165,17 @@ const DumpsStore = {
       managers.forEach((element) => element.TYPE="Bmc");
       return api
         .get(`${await this.dispatch('global/getBmcPath')}`)
-        .then((response) => api.get(response.data.LogServices['@odata.id']))
-        .then((response) => api.get(`${response.data['@odata.id']}/Dump`))
-        .then((response) => api.get(response.data.Entries['@odata.id']))
+        .then((response) => api.get(getOdataId(response.data.LogServices)))
+        .then((response) => api.get(`${getOdataId(response.data)}/Dump`))
+        .then((response) => api.get(getOdataId(response.data.Entries)))
         .catch((error) => console.log(error));
     },
     async getSystemDumpEntries() {
       return api
         .get(`${await this.dispatch('global/getSystemPath')}`)
-        .then((response) => api.get(response.data.LogServices['@odata.id']))
-        .then((response) => api.get(`${response.data['@odata.id']}/Dump`))
-        .then((response) => api.get(response.data.Entries['@odata.id']))
+        .then((response) => api.get(getOdataId(response.data.LogServices)))
+        .then((response) => api.get(`${getOdataId(response.data)}/Dump`))
+        .then((response) => api.get(getOdataId(response.data.Entries)))
         .catch((error) => console.log(error));
     },
     async getAllDumps({ state, commit, dispatch }) {
@@ -184,7 +186,7 @@ const DumpsStore = {
       const services = state.dumpServices;
 
       let promises = services.map(async (service) => {
-        let uri = service["Entries"]?.['@odata.id'];
+        let uri = getOdataId(service["Entries"]);
         if (!uri) return null;
 
         try {
@@ -197,7 +199,7 @@ const DumpsStore = {
             dateTime: new Date(dump.Created),
             dumpType: dump.Name,
             id: dump.Id,
-            location: dump['@odata.id'],
+            location: getOdataId(dump),
             size: dump.AdditionalDataSizeBytes,
             originatorType: dump.OriginatorType,
             diagnosticDataType: dump.DiagnosticDataType,
@@ -261,6 +263,7 @@ const DumpsStore = {
             if (successCount) {
               const message = i18n.global.t(
                 'pageDumps.toast.successDeleteDump',
+                { count: successCount },
                 successCount,
               );
               toastMessages.push({ type: 'success', message });
@@ -269,6 +272,7 @@ const DumpsStore = {
             if (errorCount) {
               const message = i18n.global.t(
                 'pageDumps.toast.errorDeleteDump',
+                { count: errorCount },
                 errorCount,
               );
               toastMessages.push({ type: 'error', message });
@@ -288,36 +292,22 @@ const DumpsStore = {
           commit('setAllDumps', []);
           return i18n.global.t(
             'pageDumps.toast.successDeleteDump',
+            { count: totalDumpCount },
             totalDumpCount,
           );
         })
         .catch((error) => {
           console.log(error);
           throw new Error(
-            i18n.global.t('pageDumps.toast.errorDeleteDump', totalDumpCount),
+            i18n.global.t('pageDumps.toast.errorDeleteDump', { count: totalDumpCount }, totalDumpCount),
           );
         });
     },
-    async downloadEntry({dispatch}, uri) {
-      return await api
-        .get(uri, {
-          headers: {
-            Accept: 'application/octet-stream',
-          },
-          responseType: 'arraybuffer',
-        })
-        .then((response) => {
-          const blob = new Blob([response.data], {
-            contentType: 'application/octet-stream',
-          });
-          return blob;
-        })
-        .catch((error) => {
-          console.log(error);
-          throw new Error(
-            i18n.global.t('pageEventLogs.toast.errorDownloadEventEntry'),
-          );
-        });
+    async downloadEntry(_, uri) {
+      return downloadEntry(uri, {
+        errorKey: 'pageEventLogs.toast.errorDownloadEventEntry',
+        useArrayBuffer: true,
+      });
     },
   },
 };

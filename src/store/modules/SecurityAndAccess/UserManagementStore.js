@@ -1,5 +1,6 @@
 import api, { getResponseCount } from '@/store/api';
 import i18n from '@/i18n';
+import { getOdataId } from '@/utilities/redfishUtils';
 
 /** FIXME: This is a temporary fix to get the resolution from the error message. 
  *  It is not translated and the current error message does not provide an easy way to translate.
@@ -72,7 +73,7 @@ const UserManagementStore = {
       return await api
         .get('/redfish/v1/AccountService/Accounts')
         .then((response) =>
-          response.data.Members.map((user) => user['@odata.id']),
+          response.data.Members.map((user) => getOdataId(user)),
         )
         .then((userIds) => api.all(userIds.map((user) => api.get(user))))
         .then((users) => {
@@ -109,7 +110,7 @@ const UserManagementStore = {
         .get('/redfish/v1/AccountService/Roles')
         .then(({ data: { Members = [] } = {} }) => {
           const roles = Members.map((role) => {
-            return role['@odata.id'].split('/').pop();
+            return getOdataId(role).split('/').pop();
           });
           commit('setAccountRoles', roles);
         })
@@ -220,12 +221,12 @@ const UserManagementStore = {
             let toastMessages = [];
 
             if (successCount) {
-              const message = i18n.tc(successMessage, successCount);
+              const message = i18n.global.t(successMessage, { count: successCount }, successCount);
               toastMessages.push({ type: 'success', message });
             }
 
             if (errorCount) {
-              const message = i18n.tc(errorMessage, errorCount);
+              const message = i18n.global.t(errorMessage, { count: errorCount }, errorCount);
               const errorDetails = errorResponses.map(r => r.error?.response?.data || r.error);
               
               toastMessages.push({ 

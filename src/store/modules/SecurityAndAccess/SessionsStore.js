@@ -1,5 +1,6 @@
 import api, { getResponseCount } from '@/store/api';
 import i18n from '@/i18n';
+import { getOdataId } from '@/utilities/redfishUtils';
 
 const SessionsStore = {
   namespaced: true,
@@ -18,7 +19,7 @@ const SessionsStore = {
       return await api
         .get('/redfish/v1/SessionService/Sessions')
         .then((response) =>
-          response.data.Members.map((sessionLogs) => sessionLogs['@odata.id']),
+          response.data.Members.map((sessionLogs) => getOdataId(sessionLogs)),
         )
         .then((sessionUris) =>
           api.all(sessionUris.map((sessionUri) => api.get(sessionUri))),
@@ -32,7 +33,7 @@ const SessionsStore = {
                 : '-',
               username: sessionUri.data?.UserName,
               ipAddress: sessionUri.data?.ClientOriginIPAddress,
-              uri: sessionUri.data['@odata.id'],
+              uri: getOdataId(sessionUri.data),
             };
           });
           commit('setAllConnections', allConnectionsData);
@@ -50,8 +51,8 @@ const SessionsStore = {
       );
       return await api
         .all(promises)
-        .then((response) => {
-          dispatch('getSessionsData');
+        .then(async (response) => {
+          await dispatch('getSessionsData');
           return response;
         })
         .then(
@@ -62,6 +63,7 @@ const SessionsStore = {
             if (successCount) {
               const message = i18n.global.t(
                 'pageSessions.toast.successDelete',
+                { count: successCount },
                 successCount,
               );
               toastMessages.push({ type: 'success', message });
@@ -70,6 +72,7 @@ const SessionsStore = {
             if (errorCount) {
               const message = i18n.global.t(
                 'pageSessions.toast.errorDelete',
+                { count: errorCount },
                 errorCount,
               );
               toastMessages.push({ type: 'error', message });

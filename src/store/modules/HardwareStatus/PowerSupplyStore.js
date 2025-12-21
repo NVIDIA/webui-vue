@@ -1,4 +1,5 @@
 import api from '@/store/api';
+import { getOdataId } from '@/utilities/redfishUtils';
 
 const PowerSupplyStore = {
   namespaced: true,
@@ -75,17 +76,17 @@ const PowerSupplyStore = {
     },
     async getChassisPower(_, chassis) {
       if (
-        !(chassis['PowerSubsystem'] && chassis['PowerSubsystem']['@odata.id'])
+        !(chassis['PowerSubsystem'] && getOdataId(chassis['PowerSubsystem']))
       )
         return;
       return await api
-        .get(chassis['PowerSubsystem']['@odata.id'])
+        .get(getOdataId(chassis['PowerSubsystem']))
         .then((response) => {
-          return api.get(`${response.data.PowerSupplies['@odata.id']}`);
+          return api.get(`${getOdataId(response.data.PowerSupplies)}`);
         })
         .then(({ data: { Members } }) => {
           const promises = Members.map((member) =>
-            api.get(member['@odata.id']),
+            api.get(getOdataId(member)),
           );
           return api.all(promises);
         })

@@ -1,7 +1,3 @@
-export const selectedRows = [];
-export const tableHeaderCheckboxModel = false;
-export const tableHeaderCheckboxIndeterminate = false;
-
 const BVTableSelectableMixin = {
   data() {
     return {
@@ -34,12 +30,17 @@ const BVTableSelectableMixin = {
     },
     toggleSelectRow(tableRef, rowIndex) {
       if (tableRef && rowIndex !== undefined) {
-        const wasSelected = tableRef.isRowSelected(rowIndex);
+        // Convert page-relative index to absolute index in the full items array
+        const currentPage = this.currentPage || 1;
+        const perPage = this.perPage || 10;
+        const absoluteIndex = (currentPage - 1) * perPage + rowIndex;
+
+        const wasSelected = tableRef.isRowSelected(absoluteIndex);
 
         if (wasSelected) {
-          tableRef.unselectRow(rowIndex);
+          tableRef.unselectRow(absoluteIndex);
         } else {
-          tableRef.selectRow(rowIndex);
+          tableRef.selectRow(absoluteIndex);
         }
 
         // Manually trigger onRowSelected after toggle since unselectRow might not fire event

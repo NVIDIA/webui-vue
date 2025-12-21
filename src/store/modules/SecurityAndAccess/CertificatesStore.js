@@ -1,5 +1,6 @@
 import api from '@/store/api';
 import i18n from '@/i18n';
+import { getOdataId } from '@/utilities/redfishUtils';
 
 const getCertificateProp = (certificateTypes, type, prop) => {
   const certificate = certificateTypes.find(
@@ -68,7 +69,7 @@ const CertificatesStore = {
             data: {
               Links: { Certificates },
             },
-          }) => Certificates.map((certificate) => certificate['@odata.id']),
+          }) => Certificates.map((certificate) => getOdataId(certificate)),
         )
         .then((certificateLocations) => {
           const promises = certificateLocations.map((location) =>
@@ -86,7 +87,7 @@ const CertificatesStore = {
                 } = data;
                 return {
                   type: Name,
-                  location: data['@odata.id'],
+                  location: getOdataId(data),
                   certificate: getCertificateProp(
                     getters['certificateTypes'],
                     Name,

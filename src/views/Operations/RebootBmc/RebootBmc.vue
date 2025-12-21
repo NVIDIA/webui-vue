@@ -217,19 +217,19 @@ export default {
         return;
       }
       
-      this.$bvModal
-        .msgBoxConfirm(this.$t('pageRebootBmc.modal.dynamicConfirmMessage', {
-          manager: resetOption.manager,
-          type: resetOption.type
-        }), {
-          title: this.$t('pageRebootBmc.modal.confirmTitle'),
-          okTitle: this.$t('global.action.confirm'),
-          cancelTitle: this.$t('global.action.cancel'),
-          autoFocusButton: 'ok',
-        })
-        .then((confirmed) => {
-          if (confirmed) this.rebootBmc(resetOption);
-        });
+      this.$confirm(this.$t('pageRebootBmc.modal.dynamicConfirmMessage', {
+        manager: resetOption.manager,
+        type: resetOption.type
+      }), {
+        okVariant: 'danger',
+        cancelVariant: 'secondary',
+        title: this.$t('pageRebootBmc.modal.confirmTitle'),
+        okTitle: this.$t('global.action.confirm'),
+        cancelTitle: this.$t('global.action.cancel'),
+        autoFocusButton: 'ok',
+      }).then((confirmed) => {
+        if (confirmed) this.rebootBmc(resetOption);
+      });
     },
     rebootBmc(resetOption = this.selectedResetType) {
       const managerId = resetOption.id;

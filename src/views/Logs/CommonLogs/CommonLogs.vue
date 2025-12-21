@@ -15,13 +15,10 @@
           <b-form-select
             id="selectSystem"
             v-model="logService"
+            :options="logServiceOptions"
             aria-required="true"
-            @change="getLogData($event)"
-          >
-            <b-form-select-option v-for="option in logServices" :key="option.value" :value="option.value">
-              {{ option.value }}
-            </b-form-select-option>
-          </b-form-select>
+            @update:model-value="getLogData"
+          />
         </b-form-group>
       </b-col>
       <b-col>
@@ -36,7 +33,7 @@
           @change-search="onChangeSearchInput"
           @clear-search="onClearSearchInput"
         />
-        <div class="ml-sm-4">
+        <div class="ms-sm-4">
           <table-cell-count
             :filtered-items-count="filteredRows"
             :total-number-of-cells="allLogs.length"
@@ -48,7 +45,7 @@
       </b-col>
     </b-row>
     <b-row>
-      <b-col class="text-right">
+      <b-col class="text-end">
         <table-filter :filters="tableFilters" @filter-change="onFilterChange" />
         <b-button
           variant="link"
@@ -102,6 +99,7 @@
           </template>
         </table-toolbar>
         <b-table
+          :key="tableKey"
           id="table-event-logs"
           ref="table"
           responsive="md"
@@ -131,7 +129,7 @@
               v-model="tableHeaderCheckboxModel"
               data-test-id="eventLogs-checkbox-selectAll"
               :indeterminate="tableHeaderCheckboxIndeterminate"
-              @change="onChangeHeaderCheckbox($refs.table)"
+              @change="onChangeHeaderCheckbox($refs.table, $event)"
             >
               <span class="sr-only">{{ $t('global.table.selectAll') }}</span>
             </b-form-checkbox>
@@ -284,6 +282,8 @@ import IconExport from '@carbon/icons-vue/es/document--export/20';
 import IconChevron from '@carbon/icons-vue/es/chevron--down/20';
 import IconDownload from '@carbon/icons-vue/es/download/20';
 import { omit } from 'lodash';
+import i18n from '@/i18n';
+import { getOdataId } from '@/utilities/redfishUtils';
 
 import PageTitle from '@/components/Global/PageTitle';
 import StatusIcon from '@/components/Global/StatusIcon';
@@ -302,11 +302,7 @@ import BVPaginationMixin, {
   perPage,
   itemsPerPageOptions,
 } from '@/components/Mixins/BVPaginationMixin';
-import BVTableSelectableMixin, {
-  selectedRows,
-  tableHeaderCheckboxModel,
-  tableHeaderCheckboxIndeterminate,
-} from '@/components/Mixins/BVTableSelectableMixin';
+import BVTableSelectableMixin from '@/components/Mixins/BVTableSelectableMixin';
 import BVToastMixin from '@/components/Mixins/BVToastMixin';
 import DataFormatterMixin from '@/components/Mixins/DataFormatterMixin';
 import TableSortMixin from '@/components/Mixins/TableSortMixin';
@@ -438,7 +434,7 @@ export default {
           key: 'actions',
           sortable: false,
           label: '',
-          tdClass: 'text-right text-nowrap',
+          tdClass: 'text-end text-nowrap',
         },
       ].filter((field) => field && field.key),
       tableFilters:
@@ -472,6 +468,7 @@ export default {
               {
                 value: 'delete',
                 label: this.$t('global.action.delete'),
+                enabled: true,
               },
             ],
       currentPage: currentPage,
@@ -481,9 +478,6 @@ export default {
       perPage: perPage,
       searchFilter: searchFilter,
       searchTotalFilteredRows: 0,
-      selectedRows: selectedRows,
-      tableHeaderCheckboxModel: tableHeaderCheckboxModel,
-      tableHeaderCheckboxIndeterminate: tableHeaderCheckboxIndeterminate,
       hideToggle:
         process.env.VUE_APP_EVENT_LOGS_TOGGLE_BUTTON_DISABLED === 'true' ||
         this.hideFields.includes('status'),
@@ -491,11 +485,18 @@ export default {
         process.env.VUE_APP_EVENT_LOGS_DELETE_BUTTON_DISABLED === 'true',
       logService: null,
       logs: [],
+      tableKey: 0,
     };
   },
   computed: {
     logServices() {
       return this.$store.getters[this.logStore + '/logServices'];
+    },
+    logServiceOptions() {
+      return Object.values(this.logServices).map((service) => ({
+        value: service.value,
+        text: service.value,
+      }));
     },
     filteredRows() {
       return this.searchFilter
@@ -568,6 +569,9 @@ export default {
   },
   methods: {
     getLogData(logService) {
+      if (!logService || !this.logServices[logService]) {
+        return;
+      }
       this.startLoader();
       this.logService = logService;
       this.isBusy = true;
@@ -576,6 +580,14 @@ export default {
         this.logs = this.$store.getters[this.logStore + '/getAllEventsByValue'](logService);
         this.isBusy = false;
       });
+    },
+    refreshLogsAndClearSelection() {
+      // Increment key to force table re-render and clear stale selection state
+      this.tableKey++;
+      this.logs = this.$store.getters[this.logStore + '/getAllEventsByValue'](this.logService);
+      this.selectedRows = [];
+      this.tableHeaderCheckboxModel = false;
+      this.tableHeaderCheckboxIndeterminate = false;
     },
     downloadEntry(uri) {
       let filename = uri?.split('LogServices/')?.[1];
@@ -594,7 +606,7 @@ export default {
     changelogStatus(row) {
       this.$store
         .dispatch(this.logStore + '/updateLogStatus', {
-          uri: row['@odata.id'],
+          uri: getOdataId(row),
           status: row.Resolved,
         })
         .then((success) => {
@@ -610,25 +622,26 @@ export default {
       );
     },
     deleteAllLogs() {
-      this.$bvModal
-        .msgBoxConfirm(this.$t('pageEventLogs.modal.deleteAllMessage'), {
-          title: this.$t('pageEventLogs.modal.deleteAllTitle'),
-          okTitle: this.$t('global.action.delete'),
-          okVariant: 'danger',
-          cancelTitle: this.$t('global.action.cancel'),
-          autoFocusButton: 'cancel',
-        })
-        .then((deleteConfirmed) => {
-          if (deleteConfirmed) {
-            this.$store
-              .dispatch(this.logStore + '/deleteAllLogs', {
-                data: this.allLogs, 
-                LogService: this.logServices[this.logService]
-              })
-              .then((message) => this.successToast(message))
-              .catch(({ message }) => this.errorToast(message));
-          }
-        });
+      this.$confirm(this.$t('pageEventLogs.modal.deleteAllMessage'), {
+        title: this.$t('pageEventLogs.modal.deleteAllTitle'),
+        okTitle: this.$t('global.action.delete'),
+        okVariant: 'danger',
+        cancelTitle: this.$t('global.action.cancel'),
+        autoFocusButton: 'cancel',
+      }).then((deleteConfirmed) => {
+        if (deleteConfirmed) {
+          this.$store
+            .dispatch(this.logStore + '/deleteAllLogs', {
+              data: this.allLogs,
+              LogService: this.logServices[this.logService],
+            })
+            .then((message) => {
+              this.successToast(message);
+              this.refreshLogsAndClearSelection();
+            })
+            .catch(({ message }) => this.errorToast(message));
+        }
+      });
     },
     deleteLogs(uris) {
       this.$store
@@ -641,6 +654,7 @@ export default {
               this.errorToast(message);
             }
           });
+          this.refreshLogsAndClearSelection();
         });
     },
     exportAllLogs() {
@@ -657,61 +671,59 @@ export default {
       }
     },
     onTableRowAction(action, item) {
-      const uri = item?.['@odata.id'];
+      const uri = getOdataId(item);
       if (action === 'delete') {
-        this.$bvModal
-          .msgBoxConfirm(this.$tc('pageEventLogs.modal.deleteMessage'), {
-            title: this.$tc('pageEventLogs.modal.deleteTitle'),
-            okTitle: this.$t('global.action.delete'),
-            cancelTitle: this.$t('global.action.cancel'),
-            autoFocusButton: 'ok',
-          })
-          .then((deleteConfirmed) => {
-            if (deleteConfirmed) this.deleteLogs([uri]);
-          });
+        this.$confirm(i18n.global.t('pageEventLogs.modal.deleteMessage'), {
+          title: i18n.global.t('pageEventLogs.modal.deleteTitle'),
+          okTitle: this.$t('global.action.delete'),
+          cancelTitle: this.$t('global.action.cancel'),
+          okVariant: 'danger',
+        }).then((deleteConfirmed) => {
+          if (deleteConfirmed) this.deleteLogs([uri]);
+        });
       }
     },
     onBatchAction(action) {
       if (action === 'delete') {
-        const uris = this.selectedRows.map((row) => row?.['@odata.id']);
-        this.$bvModal
-          .msgBoxConfirm(
-            this.$tc(
-              'pageEventLogs.modal.deleteMessage',
+        const uris = this.selectedRows.map((row) => getOdataId(row));
+        this.$confirm(
+          i18n.global.t(
+            'pageEventLogs.modal.deleteMessage',
+            this.selectedRows.length,
+          ),
+          {
+            title: i18n.global.t(
+              'pageEventLogs.modal.deleteTitle',
               this.selectedRows.length,
             ),
-            {
-              title: this.$tc(
-                'pageEventLogs.modal.deleteTitle',
-                this.selectedRows.length,
-              ),
-              okTitle: this.$t('global.action.delete'),
-              cancelTitle: this.$t('global.action.cancel'),
-              autoFocusButton: 'ok',
-            },
-          )
-          .then((deleteConfirmed) => {
-            if (deleteConfirmed) {
-              if (this.selectedRows.length === this.allLogs.length) {
-                this.$store
-                  .dispatch(
-                    this.logStore + '/deleteAllLogs',
-                    this.selectedRows.length,
-                  )
-                  .then(() => {
-                    this.successToast(
-                      this.$tc(
-                        'pageEventLogs.toast.successDelete',
-                        uris.length,
-                      ),
-                    );
-                  })
-                  .catch(({ message }) => this.errorToast(message));
-              } else {
-                this.deleteLogs(uris);
-              }
+            okTitle: this.$t('global.action.delete'),
+            cancelTitle: this.$t('global.action.cancel'),
+            okVariant: 'danger',
+          },
+        ).then((deleteConfirmed) => {
+          if (deleteConfirmed) {
+            if (this.selectedRows.length === this.allLogs.length) {
+              this.$store
+                .dispatch(
+                  this.logStore + '/deleteAllLogs',
+                  this.selectedRows.length,
+                )
+                .then(() => {
+                  this.successToast(
+                    i18n.global.t(
+                      'pageEventLogs.toast.successDelete',
+                      { count: uris.length },
+                      uris.length,
+                    ),
+                  );
+                  this.refreshLogsAndClearSelection();
+                })
+                .catch(({ message }) => this.errorToast(message));
+            } else {
+              this.deleteLogs(uris);
             }
-          });
+          }
+        });
       }
     },
     onChangeDateTimeFilter({ fromDate, toDate }) {
@@ -750,6 +762,7 @@ export default {
               this.errorToast(message);
             }
           });
+          this.refreshLogsAndClearSelection();
         });
     },
   },

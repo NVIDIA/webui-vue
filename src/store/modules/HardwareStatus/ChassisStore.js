@@ -1,5 +1,6 @@
 import api from '@/store/api';
 import i18n from '@/i18n';
+import { getOdataId } from '@/utilities/redfishUtils';
 
 const ChassisStore = {
   namespaced: true,
@@ -48,7 +49,7 @@ const ChassisStore = {
           minPowerWatts: MinPowerWatts,
           name: Name,
           identifyLed: LocationIndicatorActive,
-          uri: chassis['@odata.id'],
+          uri: getOdataId(chassis),
           locationNumber: Location?.PartLocation?.ServiceLabel,
         };
       });
@@ -59,7 +60,7 @@ const ChassisStore = {
       return await api
         .get('/redfish/v1/Chassis')
         .then(({ data: { Members = [] } }) =>
-          Members.map((member) => api.get(member['@odata.id'])),
+          Members.map((member) => api.get(getOdataId(member))),
         )
         .then((promises) => api.allSettled(promises))
         .then((response) => {

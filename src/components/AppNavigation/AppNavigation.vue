@@ -235,7 +235,8 @@ svg {
 
   &:focus {
     background-color: theme-color-level(light, 0);
-    box-shadow: inset 0 0 0 2px theme-color('primary');
+    // Use CSS variable for theme-ability, with Bootstrap primary as fallback
+    box-shadow: inset 0 0 0 2px var(--colors-brand, #{theme-color('primary')});
     color: theme-color('dark');
     outline: 0;
   }
@@ -260,7 +261,8 @@ svg {
     bottom: 0;
     inset-inline-start: 0;
     width: 4px;
-    background-color: theme-color('primary');
+    // Use CSS variable for theme-ability, with Bootstrap primary as fallback
+    background-color: var(--colors-brand, #{theme-color('primary')});
   }
 
   &:hover,

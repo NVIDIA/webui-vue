@@ -1,5 +1,7 @@
 import api, { getResponseCount } from '@/store/api';
 import i18n from '@/i18n';
+import { downloadEntry } from './LogUtils';
+import { getOdataId } from '@/utilities/redfishUtils';
 
 const getHealthStatus = (events, loadedEvents) => {
   let status = loadedEvents ? 'OK' : '';
@@ -79,7 +81,7 @@ const CommonLogStore = {
         });
       systems.forEach((element) => element.TYPE="System");
       let promises = systems.map(async (service) => {
-        let uri = service["LogServices"]?.['@odata.id'];
+        let uri = getOdataId(service["LogServices"]);
         if (!uri) return null;
         
         let id = service.Id;
@@ -89,9 +91,9 @@ const CommonLogStore = {
         
         try {
           const { data: { Members = [] } } = await api.get(uri);
-          const member = Members.find((o) => o?.['@odata.id']?.endsWith('/' + state.logType));
+          const member = Members.find((o) => getOdataId(o)?.endsWith('/' + state.logType));
           if (!member) return null;
-          const { data } = await api.get(member['@odata.id']);
+          const { data } = await api.get(getOdataId(member));
           data.text = translationToken;
           data.type = service.TYPE;
           data.value = id;
@@ -123,10 +125,10 @@ const CommonLogStore = {
         await dispatch('initializeLogStore');
       }
 
-      let entries = LogService?.Entries?.['@odata.id'];
+      let entries = getOdataId(LogService?.Entries);
       if (!entries) {
          LogService = state.logServices[state.systemId];
-         entries = LogService?.Entries?.['@odata.id'];
+         entries = getOdataId(LogService?.Entries);
       }
       if (!entries) return;
 
@@ -141,15 +143,15 @@ const CommonLogStore = {
     },
     async deleteAllLogs({ dispatch }, { data, LogService = state.logServices[state.systemId] }) {
       let clearLog = LogService?.Actions?.['#LogService.ClearLog']?.target;
-      if (!clearLog) throw new Error(i18n.tc('pageEventLogs.toast.errorDelete', data.length));
+      if (!clearLog) throw new Error(i18n.global.t('pageEventLogs.toast.errorDelete', { count: data.length }, data.length));
       return await api
         .post(clearLog)
         .then(() => dispatch('getLogData'))
-        .then(() => i18n.tc('pageEventLogs.toast.successDelete', data.length))
+        .then(() => i18n.global.t('pageEventLogs.toast.successDelete', { count: data.length }, data.length))
         .catch((error) => {
           console.log(error);
           throw new Error(
-            i18n.tc('pageEventLogs.toast.errorDelete', data.length),
+            i18n.global.t('pageEventLogs.toast.errorDelete', { count: data.length }, data.length),
           );
         });
     },
@@ -162,8 +164,8 @@ const CommonLogStore = {
       );
       return await api
         .all(promises)
-        .then((response) => {
-          dispatch('getLogData');
+        .then(async (response) => {
+          await dispatch('getLogData');
           return response;
         })
         .then(
@@ -172,16 +174,18 @@ const CommonLogStore = {
             const toastMessages = [];
 
             if (successCount) {
-              const message = i18n.tc(
+              const message = i18n.global.t(
                 'pageEventLogs.toast.successDelete',
+                { count: successCount },
                 successCount,
               );
               toastMessages.push({ type: 'success', message });
             }
 
             if (errorCount) {
-              const message = i18n.tc(
+              const message = i18n.global.t(
                 'pageEventLogs.toast.errorDelete',
+                { count: errorCount },
                 errorCount,
               );
               toastMessages.push({ type: 'error', message });
@@ -193,15 +197,15 @@ const CommonLogStore = {
     },
     async toggleLogsResolvedStatus({ dispatch }, { logs, resolved = true }) {
       const promises = logs.map((log) =>
-        api.patch(log?.['@odata.id'], { Resolved: resolved }).catch((error) => {
+        api.patch(getOdataId(log), { Resolved: resolved }).catch((error) => {
           console.log(error);
           return error;
         }),
       );
       return await api
         .all(promises)
-        .then((response) => {
-          dispatch('getLogData');
+        .then(async (response) => {
+          await dispatch('getLogData');
           return response;
         })
         .then(
@@ -212,14 +216,14 @@ const CommonLogStore = {
               const successKey = resolved
                 ? 'pageEventLogs.toast.successResolveLogs'
                 : 'pageEventLogs.toast.successUnresolveLogs';
-              const message = i18n.tc(successKey, successCount);
+              const message = i18n.global.t(successKey, { count: successCount }, successCount);
               toastMessages.push({ type: 'success', message });
             }
             if (errorCount) {
               const errorKey = resolved
                 ? 'pageEventLogs.toast.errorResolveLogs'
                 : 'pageEventLogs.toast.errorUnresolveLogs';
-              const message = i18n.tc(errorKey, errorCount);
+              const message = i18n.global.t(errorKey, { count: errorCount }, errorCount);
               toastMessages.push({ type: 'error', message });
             }
             return toastMessages;
@@ -231,14 +235,14 @@ const CommonLogStore = {
       const updatedEventLogStatus = log.status;
       return await api
         .patch(log.uri, { Resolved: updatedEventLogStatus })
-        .then(() => {
-          dispatch('getLogData');
+        .then(async () => {
+          await dispatch('getLogData');
         })
         .then(() => {
           if (log.status) {
-            return i18n.tc('pageEventLogs.toast.successResolveLogs', 1);
+            return i18n.global.t('pageEventLogs.toast.successResolveLogs', { count: 1 }, 1);
           } else {
-            return i18n.tc('pageEventLogs.toast.successUnresolveLogs', 1);
+            return i18n.global.t('pageEventLogs.toast.successUnresolveLogs', { count: 1 }, 1);
           }
         })
         .catch((error) => {
@@ -247,24 +251,9 @@ const CommonLogStore = {
         });
     },
     async downloadEntry(_, uri) {
-      return await api
-        .get(uri, {
-          headers: {
-            Accept: 'application/octet-stream',
-          },
-        })
-        .then((response) => {
-          const blob = new Blob([response.data], {
-            type: response.headers['content-type'],
-          });
-          return blob;
-        })
-        .catch((error) => {
-          console.log(error);
-          throw new Error(
-            i18n.global.t('pageEventLogs.toast.errorDownloadEventEntry'),
-          );
-        });
+      return downloadEntry(uri, {
+        errorKey: 'pageEventLogs.toast.errorDownloadEventEntry',
+      });
     },
   },
 };

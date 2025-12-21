@@ -162,7 +162,7 @@ export default {
   }
   &:focus {
     box-shadow:
-      inset 0 0 0 3px theme-color('primary'),
+      inset 0 0 0 3px var(--colors-brand, #{theme-color('primary')}),
       inset 0 0 0 5px $white;
   }
 }
@@ -186,7 +186,7 @@ export default {
     align-items: center;
 
     &:focus {
-      box-shadow: inset 0 0 0 2px theme-color('primary');
+      box-shadow: inset 0 0 0 2px var(--colors-brand, #{theme-color('primary')});
     }
   }
 }

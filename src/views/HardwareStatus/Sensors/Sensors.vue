@@ -139,11 +139,7 @@ import TableToolbar from '@/components/Global/TableToolbar';
 import TableToolbarExport from '@/components/Global/TableToolbarExport';
 import TableCellCount from '@/components/Global/TableCellCount';
 
-import BVTableSelectableMixin, {
-  selectedRows,
-  tableHeaderCheckboxModel,
-  tableHeaderCheckboxIndeterminate,
-} from '@/components/Mixins/BVTableSelectableMixin';
+import BVTableSelectableMixin from '@/components/Mixins/BVTableSelectableMixin';
 import LoadingBarMixin from '@/components/Mixins/LoadingBarMixin';
 import TableFilterMixin from '@/components/Mixins/TableFilterMixin';
 import DataFormatterMixin from '@/components/Mixins/DataFormatterMixin';
@@ -204,9 +200,6 @@ export default {
       activeFilters: [],
       searchFilter: searchFilter,
       searchTotalFilteredRows: 0,
-      selectedRows: selectedRows,
-      tableHeaderCheckboxModel: tableHeaderCheckboxModel,
-      tableHeaderCheckboxIndeterminate: tableHeaderCheckboxIndeterminate,
     };
   },
   computed: {

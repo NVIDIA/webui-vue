@@ -65,8 +65,21 @@ const AuthenticationStore = {
       state.sessionURI = null;
       state.xAuthToken = null;
       state.consoleWindow = false;
+
       // Reset API logs state to prevent data leaking across user sessions
       resetApiStateOnLogout();
+
+      // Clear axios-cache-interceptor cache to prevent stale ETags
+      // from being used in the next session
+      const cachePrefix = 'webui-vue-cache:';
+      const keysToRemove = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && key.startsWith(cachePrefix)) {
+          keysToRemove.push(key);
+        }
+      }
+      keysToRemove.forEach((key) => localStorage.removeItem(key));
     },
   },
   actions: {

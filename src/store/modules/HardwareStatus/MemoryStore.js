@@ -1,5 +1,6 @@
 import api from '@/store/api';
 import i18n from '@/i18n';
+import { getOdataId } from '@/utilities/redfishUtils';
 
 const MemoryStore = {
   namespaced: true,
@@ -51,7 +52,7 @@ const MemoryStore = {
           description: Description,
           memoryType: MemoryType,
           identifyLed: LocationIndicatorActive,
-          uri: data['@odata.id'],
+          uri: getOdataId(data),
           locationNumber: Location?.PartLocation?.ServiceLabel,
         };
       });

@@ -1,5 +1,6 @@
 import api from '@/store/api';
 import { uniqBy } from 'lodash';
+import { getOdataId } from '@/utilities/redfishUtils';
 
 const SensorsStore = {
   namespaced: true,
@@ -44,14 +45,14 @@ const SensorsStore = {
       commit('setSensorsDefault');
     },
     async getSensors({ commit }, chassis) {
-      if (!(chassis['Sensors'] && chassis['Sensors']['@odata.id'])) return;
+      if (!(chassis['Sensors'] && getOdataId(chassis['Sensors']))) return;
       const sensors = await api
-        .get(chassis['Sensors']['@odata.id'])
+        .get(getOdataId(chassis['Sensors']))
         .then((response) => response.data.Members)
         .catch((error) => console.log(error));
       if (!sensors) return;
       const promises = sensors.map((sensor) => {
-        return api.get(sensor['@odata.id']).catch((error) => {
+        return api.get(getOdataId(sensor)).catch((error) => {
           console.log(error);
           return error;
         });
@@ -80,9 +81,9 @@ const SensorsStore = {
       });
     },
     async getThermalSensors({ commit }, chassis) {
-      if (!(chassis['Thermal'] && chassis['Thermal']['@odata.id'])) return;
+      if (!(chassis['Thermal'] && getOdataId(chassis['Thermal']))) return;
       return await api
-        .get(chassis['Thermal']['@odata.id'])
+        .get(getOdataId(chassis['Thermal']))
         .then(({ data: { Fans = [], Temperatures = [] } }) => {
           const sensorData = [];
           Fans.forEach((sensor) => {
@@ -120,9 +121,9 @@ const SensorsStore = {
         .catch((error) => console.log(error));
     },
     async getPowerSensors({ commit }, chassis) {
-      if (!(chassis['Power'] && chassis['Power']['@odata.id'])) return;
+      if (!(chassis['Power'] && getOdataId(chassis['Power']))) return;
       return await api
-        .get(chassis['Power']['@odata.id'])
+        .get(getOdataId(chassis['Power']))
         .then(({ data: { Voltages = [] } }) => {
           const sensorData = Voltages.map((sensor) => {
             return {

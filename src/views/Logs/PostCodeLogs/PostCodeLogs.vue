@@ -128,7 +128,13 @@
             >
               <template #icon>
                 <icon-export v-if="action.value === 'export'" />
+                <span v-if="action.value === 'export'">
+                  {{ $t('global.action.export') }}
+                </span>
                 <icon-download v-if="action.value === 'download'" />
+                <span v-if="action.value === 'download'">
+                  {{ $t('global.action.download') }}
+                </span>
               </template>
             </table-row-action>
           </template>
@@ -185,11 +191,7 @@ import BVPaginationMixin, {
   perPage,
   itemsPerPageOptions,
 } from '@/components/Mixins/BVPaginationMixin';
-import BVTableSelectableMixin, {
-  selectedRows,
-  tableHeaderCheckboxModel,
-  tableHeaderCheckboxIndeterminate,
-} from '@/components/Mixins/BVTableSelectableMixin';
+import BVTableSelectableMixin from '@/components/Mixins/BVTableSelectableMixin';
 import BVToastMixin from '@/components/Mixins/BVToastMixin';
 import TableSortMixin from '@/components/Mixins/TableSortMixin';
 import TableRowExpandMixin, {
@@ -276,9 +278,6 @@ export default {
       perPage: perPage,
       searchFilter: searchFilter,
       searchTotalFilteredRows: 0,
-      selectedRows: selectedRows,
-      tableHeaderCheckboxModel: tableHeaderCheckboxModel,
-      tableHeaderCheckboxIndeterminate: tableHeaderCheckboxIndeterminate,
     };
   },
   computed: {

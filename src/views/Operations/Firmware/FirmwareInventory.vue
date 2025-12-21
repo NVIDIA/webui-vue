@@ -9,7 +9,7 @@
             isExpanded ? $t('pageFirmware.viewLess') : $t('pageFirmware.viewMore')
           "
           v-show="showViewButton"
-          class="btn-icon-only p-0 ml-3"
+          class="btn-icon-only p-0 ms-3"
           style="margin: 0"
           @click="toggleExpand"
         >

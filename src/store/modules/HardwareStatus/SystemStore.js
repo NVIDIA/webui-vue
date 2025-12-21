@@ -1,5 +1,6 @@
 import api from '@/store/api';
 import i18n from '@/i18n';
+import { getOdataId } from '@/utilities/redfishUtils';
 
 const SystemStore = {
   namespaced: true,
@@ -48,7 +49,7 @@ const SystemStore = {
         .get('/redfish/v1/Systems')
         .then(({ data: { Members = [] } }) => {
           const promises = Members.map((member, idx) =>
-            api.get(member['@odata.id']).then(({ data }) => {
+            api.get(getOdataId(member)).then(({ data }) => {
               commit('setSystemInfo', { ...data, index: idx });
               state.redfish_systems[idx] = data;
               return data;
@@ -66,14 +67,14 @@ const SystemStore = {
       if (!getters.isLoaded) await dispatch('getSystem');
       let Systems = getters.redfish_systems;
       let promises = Systems.flatMap(async (system) => {
-        if (!(system[name] && system[name]['@odata.id'])) return;
+        if (!(system[name] && getOdataId(system[name]))) return;
         return await api
-          .get(system[name]['@odata.id'])
+          .get(getOdataId(system[name]))
           .then(async ({data}) => {
             if (data?.Members?.length) {
               const gets = data.Members.map((member) =>
                 api
-                  .get(member['@odata.id'])
+                  .get(getOdataId(member))
                   .then((data) => {
                     if (callback) callback(data.data);
                     return data.data;
@@ -102,8 +103,8 @@ const SystemStore = {
     async getSystemsProp({ getters, dispatch }, { prop }) {
       let Systems = await dispatch('getSystemsWithProp', { prop });
       let promises = Systems.flatMap(async (system) => {
-        if (!(system[prop] && system[prop]['@odata.id'])) return;
-        return await api.get(system[prop]['@odata.id'])
+        if (!(system[prop] && getOdataId(system[prop]))) return;
+        return await api.get(getOdataId(system[prop]))
       });
       return await api
         .allSettled(promises.flat())

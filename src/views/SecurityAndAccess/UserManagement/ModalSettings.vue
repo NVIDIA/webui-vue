@@ -74,7 +74,7 @@
               >
                 {{ $t('pageUserManagement.modal.automaticAfterTimeout') }}
               </b-form-radio>
-              <div class="mt-3 ml-4">
+              <div class="mt-3 ms-4">
                 <b-form-text id="lockout-duration-help-block">
                   {{ $t('pageUserManagement.modal.timeoutDurationSeconds') }}
                 </b-form-text>

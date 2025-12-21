@@ -93,11 +93,7 @@ import LoadingBarMixin from '@/components/Mixins/LoadingBarMixin';
 import BVToastMixin from '@/components/Mixins/BVToastMixin';
 import { useModal } from 'bootstrap-vue-next';
 
-import BVTableSelectableMixin, {
-  selectedRows,
-  tableHeaderCheckboxModel,
-  tableHeaderCheckboxIndeterminate,
-} from '@/components/Mixins/BVTableSelectableMixin';
+import BVTableSelectableMixin from '@/components/Mixins/BVTableSelectableMixin';
 import { useI18n } from 'vue-i18n';
 import i18n from '@/i18n';
 
@@ -148,9 +144,6 @@ export default {
           label: i18n.global.t('global.action.delete'),
         },
       ],
-      selectedRows: selectedRows,
-      tableHeaderCheckboxModel: tableHeaderCheckboxModel,
-      tableHeaderCheckboxIndeterminate: tableHeaderCheckboxIndeterminate,
     };
   },
   computed: {
@@ -239,7 +232,10 @@ export default {
       this.startLoader();
       this.$store
         .dispatch('snmpAlerts/deleteDestination', id)
-        .then((success) => this.successToast(success))
+        .then((success) => {
+          this.successToast(success);
+          this.clearSelectedRows(this.$refs.table);
+        })
         .catch(({ message }) => this.errorToast(message))
         .finally(() => this.endLoader());
     },
@@ -249,14 +245,16 @@ export default {
         this.confirmDialog(
           i18n.global.t(
             'pageSnmpAlerts.modal.batchDeleteConfirmMessage',
+            { count },
             count,
           ),
           {
             title: i18n.global.t(
               'pageSnmpAlerts.modal.deleteSnmpDestinationTitle',
+              { count },
               count,
             ),
-            okTitle: i18n.global.t('pageSnmpAlerts.deleteDestination', count),
+            okTitle: i18n.global.t('pageSnmpAlerts.deleteDestination', { count }, count),
             cancelTitle: i18n.global.t('global.action.cancel'),
             autoFocusButton: 'ok',
           },
@@ -273,6 +271,7 @@ export default {
                   if (type === 'success') this.successToast(message);
                   if (type === 'error') this.errorToast(message);
                 });
+                this.clearSelectedRows(this.$refs.table);
               })
               .finally(() => this.endLoader());
           }

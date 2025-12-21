@@ -1,5 +1,6 @@
 import api from '@/store/api';
 import i18n from '@/i18n';
+import { downloadEntry } from './LogUtils';
 
 const PostCodeLogsStore = {
   namespaced: true,
@@ -43,14 +44,19 @@ const PostCodeLogsStore = {
         )
         .then(() => dispatch('getPostCodesLogData'))
         .then(() =>
-          i18n.global.t('pagePostCodeLogs.toast.successDelete', data.length),
+          i18n.global.t('pagePostCodeLogs.toast.successDelete', { count: data.length }, data.length),
         )
         .catch((error) => {
           console.log(error);
           throw new Error(
-            i18n.global.t('pagePostCodeLogs.toast.errorDelete', data.length),
+            i18n.global.t('pagePostCodeLogs.toast.errorDelete', { count: data.length }, data.length),
           );
         });
+    },
+    async downloadEntry(_, uri) {
+      return downloadEntry(uri, {
+        errorKey: 'pageEventLogs.toast.errorDownloadEventEntry',
+      });
     },
   },
 };

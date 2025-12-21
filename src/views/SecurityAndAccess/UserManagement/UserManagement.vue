@@ -138,11 +138,7 @@ import TableRoles from './TableRoles';
 import TableToolbar from '@/components/Global/TableToolbar';
 import TableRowAction from '@/components/Global/TableRowAction';
 
-import BVTableSelectableMixin, {
-  selectedRows,
-  tableHeaderCheckboxModel,
-  tableHeaderCheckboxIndeterminate,
-} from '@/components/Mixins/BVTableSelectableMixin';
+import BVTableSelectableMixin from '@/components/Mixins/BVTableSelectableMixin';
 import BVToastMixin from '@/components/Mixins/BVToastMixin';
 import LoadingBarMixin from '@/components/Mixins/LoadingBarMixin';
 import i18n from '@/i18n';
@@ -199,10 +195,6 @@ export default {
           tdClass: 'text-end text-nowrap',
         },
       ],
-
-      selectedRows: selectedRows,
-      tableHeaderCheckboxModel: tableHeaderCheckboxModel,
-      tableHeaderCheckboxIndeterminate: tableHeaderCheckboxIndeterminate,
       showUserModal: false,
       showSettingsModal: false,
       showRoles: false,
@@ -345,7 +337,10 @@ export default {
       this.startLoader();
       this.$store
         .dispatch('userManagement/deleteUser', username)
-        .then((success) => this.successToast(success))
+        .then((success) => {
+          this.successToast(success);
+          this.clearSelectedRows(this.$refs.table);
+        })
         .catch(({ message }) => {
           if (username === this.$store.getters['global/username']) {
             this.$store.dispatch('authentication/logout');
@@ -362,11 +357,12 @@ export default {
           this.confirmDialog(
             i18n.global.t(
               'pageUserManagement.modal.batchDeleteConfirmMessage',
+              { count },
               count,
             ),
             {
-              title: i18n.global.t('pageUserManagement.deleteUser', count),
-              okTitle: i18n.global.t('pageUserManagement.deleteUser', count),
+              title: i18n.global.t('pageUserManagement.deleteUser', { count }, count),
+              okTitle: i18n.global.t('pageUserManagement.deleteUser', { count }, count),
               cancelTitle: i18n.global.t('global.action.cancel'),
               autoFocusButton: 'ok',
             },
@@ -383,6 +379,7 @@ export default {
                       this.errorToast(message, { redfishError: errorDetails });
                     }
                   });
+                  this.clearSelectedRows(this.$refs.table);
                 })
                 .finally(() => this.endLoader());
             }
@@ -400,6 +397,7 @@ export default {
                   this.errorToast(message, { redfishError: errorDetails });
                 }
               });
+              this.clearSelectedRows(this.$refs.table);
             })
             .finally(() => this.endLoader());
           break;
@@ -415,6 +413,7 @@ export default {
                   this.errorToast(message, { redfishError: errorDetails });
                 }
               });
+              this.clearSelectedRows(this.$refs.table);
             })
             .finally(() => this.endLoader());
           break;

@@ -1,4 +1,5 @@
 import api from '@/store/api';
+import { getOdataId } from '@/utilities/redfishUtils';
 
 const HOST_STATE = {
   on: 'xyz.openbmc_project.State.Host.HostState.Running',
@@ -75,7 +76,7 @@ const GlobalStore = {
   mutations: {
     setServiceRoot: (state, serviceRoot) => {
       state.serviceRoot = serviceRoot.data;
-      state.bmcPath = serviceRoot.data?.ManagerProvidingService?.['@odata.id'];
+      state.bmcPath = getOdataId(serviceRoot.data?.ManagerProvidingService);
     },
     setHealthStatus: (state, healthStatus) => (state.healthStatus = healthStatus),
     setLanguagePreference: (state, language) =>
@@ -118,18 +119,19 @@ const GlobalStore = {
 
         // Step 1: Fetch the MetricReports URI
         const telemetryResponse = await api.get('/redfish/v1/TelemetryService/');
-        const metricReportsUri = telemetryResponse?.data?.MetricReports?.['@odata.id'];
+        const metricReportsUri = getOdataId(telemetryResponse?.data?.MetricReports);
         if (!metricReportsUri) throw new Error('MetricReports URI not found');
 
         // Step 2: Fetch the MetricReports
         const metricReportsResponse = await api.get(metricReportsUri);
         if (!metricReportsResponse) throw new Error('MetricReports response is undefined');
 
-        const healthMetricsUri = metricReportsResponse?.data?.Members?.find(member => {
-          const uriSegments = member['@odata.id']?.split('/') || [];
+        const healthMetricsMember = metricReportsResponse?.data?.Members?.find(member => {
+          const uriSegments = getOdataId(member)?.split('/') || [];
           const lastSegment = uriSegments[uriSegments.length - 1];
           return lastSegment.includes('HealthMetrics');
-        })?.['@odata.id'];
+        });
+        const healthMetricsUri = getOdataId(healthMetricsMember);
 
         if (!healthMetricsUri) throw new Error('HealthMetrics URI not found');
 
@@ -179,7 +181,7 @@ const GlobalStore = {
           .get('/redfish/v1/Managers', {timeout: 60 * 1000})
           .catch((error) => console.log(error));
         // Note: This is only set here if ManagerProvidingService is not found in the service root
-        state.bmcPath = managers?.data?.Members?.[0]?.['@odata.id'];
+        state.bmcPath = getOdataId(managers?.data?.Members?.[0]);
       }
       return state.bmcPath;
     },
@@ -190,13 +192,13 @@ const GlobalStore = {
       if (!state.bmcPath) await dispatch('getBmcPath');
       if (!state.ManagerProvidingService) state.ManagerProvidingService = (await api.get(state.bmcPath)).data;
       if (!state.ManagerProvidingService) throw new Error('BMC not found');
-      let systemPath = state.ManagerProvidingService && state.ManagerProvidingService.Links && state.ManagerProvidingService.Links.ManagerForServers && state.ManagerProvidingService.Links.ManagerForServers[0] ? state.ManagerProvidingService.Links.ManagerForServers[0]['@odata.id'] : null;
+      let systemPath = state.ManagerProvidingService && state.ManagerProvidingService.Links && state.ManagerProvidingService.Links.ManagerForServers && state.ManagerProvidingService.Links.ManagerForServers[0] ? getOdataId(state.ManagerProvidingService.Links.ManagerForServers[0]) : null;
       if (!systemPath) {
         const systems = await api
           .get('/redfish/v1/Systems')
           .catch((error) => console.log(error));
         // Note: This is only set here if ManagerForServers is not found in the ManagerProvidingService
-        systemPath = systems && systems.data && systems.data.Members && systems.data.Members[0] ? systems.data.Members[0]['@odata.id'] : null;
+        systemPath = systems && systems.data && systems.data.Members && systems.data.Members[0] ? getOdataId(systems.data.Members[0]) : null;
       }
       
       commit('setSystemPath', systemPath);
@@ -207,13 +209,13 @@ const GlobalStore = {
       if (!state.bmcPath) await dispatch('getBmcPath');
       if (!state.ManagerProvidingService) state.ManagerProvidingService = (await api.get(state.bmcPath)).data;
       if (!state.ManagerProvidingService) throw new Error('BMC not found');
-      let chassisPath = state.ManagerProvidingService && state.ManagerProvidingService.Links && state.ManagerProvidingService.Links.ManagerForChassis && state.ManagerProvidingService.Links.ManagerForChassis[0] ? state.ManagerProvidingService.Links.ManagerForChassis[0]['@odata.id'] : null;
+      let chassisPath = state.ManagerProvidingService && state.ManagerProvidingService.Links && state.ManagerProvidingService.Links.ManagerForChassis && state.ManagerProvidingService.Links.ManagerForChassis[0] ? getOdataId(state.ManagerProvidingService.Links.ManagerForChassis[0]) : null;
       if (!chassisPath) {
         const chassis = await api
           .get('/redfish/v1/Chassis')
           .catch((error) => console.log(error));
         // Note: This is only set here if ManagerForChassis is not found in the ManagerProvidingService
-        chassisPath = chassis && chassis.data && chassis.data.Members && chassis.data.Members[0] ? chassis.data.Members[0]['@odata.id'] : null;
+        chassisPath = chassis && chassis.data && chassis.data.Members && chassis.data.Members[0] ? getOdataId(chassis.data.Members[0]) : null;
       }
       commit('setChassisPath', chassisPath);
       return chassisPath;

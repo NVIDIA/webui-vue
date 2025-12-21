@@ -108,11 +108,7 @@ import { mapGetters } from 'vuex';
 import Alert from '@/components/Global/Alert';
 import TableToolbar from '@/components/Global/TableToolbar';
 import TableRowAction from '@/components/Global/TableRowAction';
-import BVTableSelectableMixin, {
-  selectedRows,
-  tableHeaderCheckboxModel,
-  tableHeaderCheckboxIndeterminate,
-} from '@/components/Mixins/BVTableSelectableMixin';
+import BVTableSelectableMixin from '@/components/Mixins/BVTableSelectableMixin';
 import BVToastMixin from '@/components/Mixins/BVToastMixin';
 import ModalAddRoleGroup from './ModalAddRoleGroup';
 import LoadingBarMixin from '@/components/Mixins/LoadingBarMixin';
@@ -167,11 +163,9 @@ export default {
         {
           value: 'delete',
           label: i18n.global.t('global.action.delete'),
+          enabled: true,
         },
       ],
-      selectedRows: selectedRows,
-      tableHeaderCheckboxModel: tableHeaderCheckboxModel,
-      tableHeaderCheckboxIndeterminate: tableHeaderCheckboxIndeterminate,
     };
   },
   computed: {
@@ -223,7 +217,10 @@ export default {
             .dispatch('ldap/deleteRoleGroup', {
               roleGroups: this.selectedRows,
             })
-            .then((success) => this.successToast(success))
+            .then((success) => {
+              this.successToast(success);
+              this.clearSelectedRows(this.$refs.table);
+            })
             .catch(({ message }) => this.errorToast(message))
             .finally(() => this.endLoader());
         }
@@ -252,7 +249,10 @@ export default {
                 .dispatch('ldap/deleteRoleGroup', {
                   roleGroups: [row],
                 })
-                .then((success) => this.successToast(success))
+                .then((success) => {
+                  this.successToast(success);
+                  this.clearSelectedRows(this.$refs.table);
+                })
                 .catch(({ message }) => this.errorToast(message))
                 .finally(() => this.endLoader());
             }

@@ -1,5 +1,6 @@
 import api, { getResponseCount } from '@/store/api';
 import i18n from '@/i18n';
+import { getOdataId } from '@/utilities/redfishUtils';
 
 const SnmpAlertsStore = {
   namespaced: true,
@@ -20,9 +21,9 @@ const SnmpAlertsStore = {
     async getSnmpAlertUrl() {
       return await api
         .get('/redfish/v1/')
-        .then((response) => api.get(response.data.EventService['@odata.id']))
-        .then((response) => api.get(response.data.Subscriptions['@odata.id']))
-        .then((response) => response.data['@odata.id'])
+        .then((response) => api.get(getOdataId(response.data.EventService)))
+        .then((response) => api.get(getOdataId(response.data.Subscriptions)))
+        .then((response) => getOdataId(response.data))
         .catch((error) => console.log('Error', error));
     },
     async getSnmpDetails({ commit, dispatch }) {
@@ -30,7 +31,7 @@ const SnmpAlertsStore = {
       return await api
         .get(snmpAlertUrl)
         .then((response) =>
-          response.data.Members.map((user) => user['@odata.id']),
+          response.data.Members.map((user) => getOdataId(user)),
         )
         .then((userIds) => api.all(userIds.map((user) => api.get(user))))
         .then((users) => {

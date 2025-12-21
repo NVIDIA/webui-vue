@@ -1,6 +1,7 @@
 import api from '@/store/api';
 import i18n from '@/i18n';
 import { startManagerStatusCheck } from '@/services/ManagerStatusService';
+import { getOdataId } from '@/utilities/redfishUtils';
 
 function envInt(key, defaultValue) {
   if (process.env[key] == null) return defaultValue;
@@ -143,9 +144,9 @@ const FirmwareStore = {
       return api
         .get(`${await this.dispatch('global/getBmcPath')}`)
         .then(({ data: { Links } }) => {
-          const activeImageId = Links?.ActiveSoftwareImage?.['@odata.id'];
+          const activeImageId = getOdataId(Links?.ActiveSoftwareImage);
           const softwareImageIds =
-            Links?.SoftwareImages?.map((image) => image['@odata.id']) || [];
+            Links?.SoftwareImages?.map((image) => getOdataId(image)) || [];
 
           commit('setActiveBmcFirmwareId', activeImageId);
           commit('setBmcSoftwareImageIds', softwareImageIds);
@@ -156,9 +157,9 @@ const FirmwareStore = {
       return api
         .get(`${await this.dispatch('global/getSystemPath')}/Bios`)
         .then(({ data: { Links } }) => {
-          const activeImageId = Links?.ActiveSoftwareImage['@odata.id'];
+          const activeImageId = getOdataId(Links?.ActiveSoftwareImage);
           const softwareImageIds =
-            Links?.SoftwareImages?.map((image) => image['@odata.id']) || [];
+            Links?.SoftwareImages?.map((image) => getOdataId(image)) || [];
           commit('setActiveBiosFirmwareId', activeImageId);
           commit('setBiosSoftwareImageIds', softwareImageIds);
         })
@@ -168,7 +169,7 @@ const FirmwareStore = {
       const inventoryList = await api
         .get('/redfish/v1/UpdateService/FirmwareInventory')
         .then(({ data: { Members = [] } = {} }) =>
-          Members.map((item) => api.get(item['@odata.id'])),
+          Members.map((item) => api.get(getOdataId(item))),
         )
         .catch((error) => console.log(error));
       return await api
@@ -180,15 +181,15 @@ const FirmwareStore = {
           response.forEach(({ data }) => {
             const item = {
               version: data?.Version,
-              id: data?.['@odata.id'],
+              id: getOdataId(data),
               name: data?.Id,
-              location: data?.['@odata.id'],
+              location: getOdataId(data),
               status: data?.Status?.Health,
               updateable: data?.Updateable,
               checked: false,
             };
             if (!item.name) {
-              item.name = data?.['@odata.id']?.split('/').pop();
+              item.name = getOdataId(data)?.split('/').pop();
             }
             firmwareInventory.push(item);
 
@@ -516,7 +517,7 @@ const FirmwareStore = {
       if (!(members?.length > 0)) return null;
 
       for (let i = members.length - 1; i >= 0; i--) {
-        const taskHandle = members[i]?.['@odata.id'];
+        const taskHandle = getOdataId(members[i]);
         const taskInfo = await api.get(taskHandle).catch((error) => {
           console.log(error);
         });

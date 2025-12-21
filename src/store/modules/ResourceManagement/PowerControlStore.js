@@ -1,5 +1,6 @@
 import api from '@/store/api';
 import i18n from '@/i18n';
+import { getOdataId } from '@/utilities/redfishUtils';
 
 const PowerControlStore = {
   namespaced: true,
@@ -32,7 +33,7 @@ const PowerControlStore = {
       return await api
         .get(`${await this.dispatch('global/getChassisPath')}`)
         .then((response) => {
-          const powerUri = response?.data?.Power?.['@odata.id'];
+          const powerUri = getOdataId(response?.data?.Power);
           if (!powerUri) {
             commit('setHasPowerControl', false);
             throw new Error('noPower');
@@ -42,7 +43,7 @@ const PowerControlStore = {
         .then((response) => {
           const powerControl = response?.data?.PowerControl;
           if (!powerControl || powerControl.length === 0) return;
-          const powerCapUri = response.data['@odata.id'];
+          const powerCapUri = getOdataId(response.data);
           const powerCap = powerControl[0].PowerLimit.LimitInWatts;
           // If system is powered off, power consumption does not exist in the PowerControl
           const powerConsumption = powerControl[0].PowerConsumedWatts || null;

@@ -2,6 +2,37 @@ import api from '@/store/api';
 import i18n from '@/i18n';
 
 /**
+ * Get the @odata.id from a Redfish resource.
+ * Handles both standard format (@odata.id as property) and
+ * transformed format (@odata as object with id property).
+ *
+ * @param {Object} resource - A Redfish resource object
+ * @returns {string|undefined} - The @odata.id URI or undefined if not found
+ */
+export function getOdataId(resource) {
+  if (!resource) return undefined;
+  // Standard Redfish format: "@odata.id" as a property name
+  if (resource['@odata.id']) return resource['@odata.id'];
+  // Transformed format: "@odata" as an object with "id" property
+  if (resource['@odata']?.id) return resource['@odata'].id;
+  return undefined;
+}
+
+/**
+ * Get the @odata.type from a Redfish resource.
+ * Handles both standard format and transformed format.
+ *
+ * @param {Object} resource - A Redfish resource object
+ * @returns {string|undefined} - The @odata.type or undefined if not found
+ */
+export function getOdataType(resource) {
+  if (!resource) return undefined;
+  if (resource['@odata.type']) return resource['@odata.type'];
+  if (resource['@odata']?.type) return resource['@odata'].type;
+  return undefined;
+}
+
+/**
  * Utility functions for working with Redfish API actions and their parameters
  * 
  * @example
