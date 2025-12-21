@@ -66,7 +66,7 @@
             "required": "Обязательно",
             "search": "Поиск",
             "selectAnOption": "Выберите опцию",
-            "valueMustBeBetween": "Значение должно быть между %{min} – %{max}",
+            "valueMustBeBetween": "Значение должно быть между {min} – {max}",
             "submitting": "Отправка..."
         },
         "powerState": {
@@ -261,8 +261,8 @@
                 "timezone": "@:pageDateTime.form.time.label ({timezone})"
             },
             "ntpServers": {
-                "server1": "Сервер %{index}",
-                "server": "Сервер %{index}"
+                "server1": "Сервер {index}",
+                "server": "Сервер {index}"
             }
         },
         "toast": {
@@ -284,7 +284,7 @@
         },
         "modal": {
             "deleteDump": "Удалить дамп | Удалить дампы",
-            "deleteDumpConfirmation": "Вы уверены, что хотите удалить %{count} дамп? Действие не может быть отменено. | Вы уверены, что хотите удалить все %{count} дампов? Это действие нельзя отменить.",
+            "deleteDumpConfirmation": "Вы уверены, что хотите удалить {count} дамп? Действие не может быть отменено. | Вы уверены, что хотите удалить все {count} дампов? Это действие нельзя отменить.",
             "initiateSystemDump": "Запустить системный дамп",
             "initiateSystemDumpMessage1": "Вы уверены?",
             "initiateSystemDumpMessage2": "Во время создания системного дампа вы не сможете запустить другие дампы.",
@@ -338,11 +338,11 @@
         "toast": {
             "errorDelete": "Ошибка удаления {count} записи. | Ошибка уделения {count} записей.",
             "errorLogStatusUpdate": "Ошибка обновления статуса записи.",
-            "errorResolveLogs": "Ошибка разрешения %{count} записи. | Ошибка разрешения %{count} записей.",
-            "errorUnresolveLogs": "Ошибка снятия разрешения с %{count} записи. | Ошибка снятия разрешения с %{count} записей.",
-            "successDelete": "Успешное удаление %{count} записи. | Успешное удаление всех %{count} записей.",
-            "successResolveLogs": "Успешное разрешение %{count} записи. | Успешное разрешение %{count} записей.",
-            "successUnresolveLogs": "Успешная отмена разрешения с %{count} записи. | Успешная отмена разрешения с %{count} записей.",
+            "errorResolveLogs": "Ошибка разрешения {count} записи. | Ошибка разрешения {count} записей.",
+            "errorUnresolveLogs": "Ошибка снятия разрешения с {count} записи. | Ошибка снятия разрешения с {count} записей.",
+            "successDelete": "Успешное удаление {count} записи. | Успешное удаление всех {count} записей.",
+            "successResolveLogs": "Успешное разрешение {count} записи. | Успешное разрешение {count} записей.",
+            "successUnresolveLogs": "Успешная отмена разрешения с {count} записи. | Успешная отмена разрешения с {count} записей.",
             "errorDownloadEventEntry": "Ошибка загрузки записи журнала событий."
         }
     },
@@ -446,9 +446,9 @@
             "switchImages": "Сменить образы",
             "switchRunningImage": "Сменить рабочий образ",
             "switchRunningImageInfo": "Для запуска резервного образа требуется перезагрузка BMC. Страница может не реагировать на запросы в течение этого времени.",
-            "switchRunningImageInfo2": "Вы уверены, что хотите переключиться на резервный образ (%{backup})?",
+            "switchRunningImageInfo2": "Вы уверены, что хотите переключиться на резервный образ ({backup})?",
             "updateFirmwareInfo": "В зависимости от типа прошивки, BMC может перезагрузиться или может произойти перезагрузка питания хоста во время обновления. Не включайте/выключайте устройство до завершения обновления.",
-            "updateFirmwareInfoTargetBackup": "Текущий рабочий образ (%{running}) будет скопирован в резервный. Существующий резервный образ будет удален.",
+            "updateFirmwareInfoTargetBackup": "Текущий рабочий образ ({running}) будет скопирован в резервный. Существующий резервный образ будет удален.",
             "updateFirmwareInfoBackup": "Если у этого образа есть резервная копия, рабочий образ будет скопирован в резервный и заменит текущий резервный образ.",
             "updateFirmwareInfoDefault1": "В зависимости от типа прошивки, BMC может перезагрузиться, или может произойти перезагрузка питания хоста во время обновления. Не включайте/выключайте устройство до завершения обновления.",
             "updateFirmwareInfoDefault2": "Вы уверены, что хотите продолжить обновление?"
@@ -695,7 +695,7 @@
             "cannotStartWithANumber": "Не может начинаться с цифры",
             "clickSaveToUnlockAccount": "Нажмите \"Сохранить\" для разблокировки учётной записи",
             "confirmUserPassword": "Подтвердите пароль пользователя",
-            "deleteConfirmMessage": "Вы уверены, что хотите удалить пользователя '%{user}'? Это действие нельзя отменить.",
+            "deleteConfirmMessage": "Вы уверены, что хотите удалить пользователя '{user}'? Это действие нельзя отменить.",
             "deleteSelfConfirmMessage": "Вы уверены, что хотите удалить свою учётную запись? Это действие нельзя отменить. И вы будете выйти из системы.",
             "manual": "Ручное",
             "maxFailedLoginAttempts": "Максимальное количество попыток входа",
@@ -1122,15 +1122,15 @@
             "confirmRebootTitle": "Перезагрузка сервера приведёт к разрыву соединения",
             "confirmShutdownMessage": "Вы уверены, что хотите выключить сервер?",
             "confirmShutdownTitle": "Выключение сервера приведёт к разрыву соединения",
-            "confirmPauseMessage": "Вы уверены, что хотите выполнить операцию %{operation}?",
+            "confirmPauseMessage": "Вы уверены, что хотите выполнить операцию {operation}?",
             "confirmPauseTitle": "Подтвердите операцию приостановки",
             "confirmResumeMessage": "Вы уверены, что хотите возобновить работу приостановленной системы?",
             "confirmResumeTitle": "Подтверждение операции возобновления",
-            "confirmSpecialOperationMessage": "Вы уверены, что хотите выполнить операцию %{operation}?",
+            "confirmSpecialOperationMessage": "Вы уверены, что хотите выполнить операцию {operation}?",
             "confirmSpecialOperationTitle": "Подтверждение специальной операции",
-            "confirmPowerOnMessage": "Вы уверены, что хотите выполнить операцию %{operation}?",
+            "confirmPowerOnMessage": "Вы уверены, что хотите выполнить операцию {operation}?",
             "confirmPowerOnTitle": "Подтверждение операции включения",
-            "confirmGenericOperationMessage": "Вы уверены, что хотите выполнить операцию %{operation}?",
+            "confirmGenericOperationMessage": "Вы уверены, что хотите выполнить операцию {operation}?",
             "confirmGenericOperationTitle": "Подтверждение операции"
         },
         "toast": {

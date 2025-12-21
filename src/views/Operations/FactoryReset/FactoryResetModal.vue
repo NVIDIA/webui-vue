@@ -14,24 +14,24 @@
     </p>
     <ul v-if="resetType == 'resetBios'" class="ps-3 mb-4">
       <li class="mt-1 mb-1">
-        {{ t('pageFactoryReset.modal.resetBiosSettingsList.item1') }}
+        {{ $t('pageFactoryReset.modal.resetBiosSettingsList.item1') }}
       </li>
       <li class="mt-1 mb-1">
-        {{ t('pageFactoryReset.modal.resetBiosSettingsList.item2') }}
+        {{ $t('pageFactoryReset.modal.resetBiosSettingsList.item2') }}
       </li>
     </ul>
     <ul v-else-if="resetType == 'resetToDefaults'" class="ps-3 mb-4">
       <li class="mt-1 mb-1">
-        {{ t('pageFactoryReset.modal.resetToDefaultsSettingsList.item1') }}
+        {{ $t('pageFactoryReset.modal.resetToDefaultsSettingsList.item1') }}
       </li>
       <li class="mt-1 mb-1">
-        {{ t('pageFactoryReset.modal.resetToDefaultsSettingsList.item2') }}
+        {{ $t('pageFactoryReset.modal.resetToDefaultsSettingsList.item2') }}
       </li>
       <li class="mt-1 mb-1">
-        {{ t('pageFactoryReset.modal.resetToDefaultsSettingsList.item3') }}
+        {{ $t('pageFactoryReset.modal.resetToDefaultsSettingsList.item3') }}
       </li>
       <li class="mt-1 mb-1">
-        {{ t('pageFactoryReset.modal.resetToDefaultsSettingsList.item4') }}
+        {{ $t('pageFactoryReset.modal.resetToDefaultsSettingsList.item4') }}
       </li>
     </ul>
 
@@ -40,7 +40,7 @@
       <p class="d-flex mb-2">
         <status-icon status="danger" />
         <span id="reset-to-default-warning" class="ms-1">
-          {{ t(`pageFactoryReset.modal.resetWarningMessage`) }}
+          {{ $t(`pageFactoryReset.modal.resetWarningMessage`) }}
         </span>
       </p>
       <b-form-checkbox
@@ -48,13 +48,13 @@
         aria-describedby="reset-to-default-warning"
         @change="v$.confirm.$touch()"
       >
-        {{ t(`pageFactoryReset.modal.resetWarningCheckLabel`) }}
+        {{ $t(`pageFactoryReset.modal.resetWarningCheckLabel`) }}
       </b-form-checkbox>
       <b-form-invalid-feedback
         role="alert"
         :state="getValidationState(v$.confirm)"
       >
-        {{ t('global.form.fieldRequired') }}
+        {{ $t('global.form.fieldRequired') }}
       </b-form-invalid-feedback>
     </template>
 
@@ -64,7 +64,7 @@
         data-test-id="factoryReset-button-cancel"
         @click="cancel()"
       >
-        {{ t('global.action.cancel') }}
+        {{ $t('global.action.cancel') }}
       </b-button>
       <b-button
         type="sumbit"
@@ -81,7 +81,6 @@
 import StatusIcon from '@/components/Global/StatusIcon';
 import VuelidateMixin from '@/components/Mixins/VuelidateMixin';
 import { useVuelidate } from '@vuelidate/core';
-import { useI18n } from 'vue-i18n';
 
 export default {
   components: { StatusIcon },
@@ -102,9 +101,7 @@ export default {
   },
   emits: ['okConfirm', 'update:modelValue'],
   setup() {
-    const { t } = useI18n();
     return {
-      t,
       v$: useVuelidate(),
     };
   },
@@ -130,13 +127,13 @@ export default {
       return this.powerState && this.powerState === 'Off' ? true : false;
     },
     modalTitle() {
-      return this.t(`pageFactoryReset.modal.${this.resetType}Title`);
+      return this.$t(`pageFactoryReset.modal.${this.resetType}Title`);
     },
     modalHeader() {
-      return this.t(`pageFactoryReset.modal.${this.resetType}Header`);
+      return this.$t(`pageFactoryReset.modal.${this.resetType}Header`);
     },
     modalSubmitText() {
-      return this.t(`pageFactoryReset.modal.${this.resetType}SubmitText`);
+      return this.$t(`pageFactoryReset.modal.${this.resetType}SubmitText`);
     },
   },
   validations() {

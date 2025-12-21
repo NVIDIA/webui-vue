@@ -13,11 +13,11 @@
           <b-col sm="9">
             <alert :show="true" variant="warning" small>
               <template v-if="!v$.form.manualUnlock.$dirty">
-                {{ i18n.t('pageUserManagement.modal.accountLocked') }}
+                {{ $t('pageUserManagement.modal.accountLocked') }}
               </template>
               <template v-else>
                 {{
-                  i18n.t('pageUserManagement.modal.clickSaveToUnlockAccount')
+                  $t('pageUserManagement.modal.clickSaveToUnlockAccount')
                 }}
               </template>
             </alert>
@@ -34,14 +34,14 @@
               data-test-id="userManagement-button-manualUnlock"
               @click="v$.form.manualUnlock.$touch()"
             >
-              {{ i18n.t('pageUserManagement.modal.unlock') }}
+              {{ $t('pageUserManagement.modal.unlock') }}
             </b-button>
           </b-col>
         </b-row>
         <b-row>
           <b-col>
             <b-form-group
-              :label="i18n.t('pageUserManagement.modal.accountStatus')"
+              :label="$t('pageUserManagement.modal.accountStatus')"
             >
               <b-form-radio
                 v-model="form.status"
@@ -50,7 +50,7 @@
                 data-test-id="userManagement-radioButton-statusEnabled"
                 @change="v$.form.status.$touch()"
               >
-                {{ i18n.t('global.status.enabled') }}
+                {{ $t('global.status.enabled') }}
               </b-form-radio>
               <b-form-radio
                 v-model="form.status"
@@ -60,18 +60,18 @@
                 :disabled="!newUser && originalUsername === disabled"
                 @change="v$.form.status.$touch()"
               >
-                {{ i18n.t('global.status.disabled') }}
+                {{ $t('global.status.disabled') }}
               </b-form-radio>
             </b-form-group>
             <b-form-group
-              :label="i18n.t('pageUserManagement.modal.username')"
+              :label="$t('pageUserManagement.modal.username')"
               label-for="username"
             >
               <b-form-text id="username-help-block">
-                {{ i18n.t('pageUserManagement.modal.cannotStartWithANumber') }}
+                {{ $t('pageUserManagement.modal.cannotStartWithANumber') }}
                 <br />
                 {{
-                  i18n.t(
+                  $t(
                     'pageUserManagement.modal.noSpecialCharactersExceptUnderscore',
                   )
                 }}
@@ -89,23 +89,23 @@
               />
               <b-form-invalid-feedback role="alert">
                 <template v-if="v$.form.username.required.$invalid">
-                  {{ i18n.t('global.form.fieldRequired') }}
+                  {{ $t('global.form.fieldRequired') }}
                 </template>
                 <template v-else-if="v$.form.username.maxLength.$invalid">
                   {{
-                    i18n.t('global.form.lengthMustBeBetween', {
+                    $t('global.form.lengthMustBeBetween', {
                       min: 1,
                       max: 16,
                     })
                   }}
                 </template>
                 <template v-else-if="v$.form.username.pattern.$invalid">
-                  {{ i18n.t('global.form.invalidFormat') }}
+                  {{ $t('global.form.invalidFormat') }}
                 </template>
               </b-form-invalid-feedback>
             </b-form-group>
             <b-form-group
-              :label="i18n.t('pageUserManagement.modal.privilege')"
+              :label="$t('pageUserManagement.modal.privilege')"
               label-for="privilege"
             >
               <b-form-select
@@ -119,25 +119,25 @@
               >
                 <template #first>
                   <b-form-select-option :value="null" disabled>
-                    {{ i18n.t('global.form.selectAnOption') }}
+                    {{ $t('global.form.selectAnOption') }}
                   </b-form-select-option>
                 </template>
               </b-form-select>
               <b-form-invalid-feedback role="alert">
                 <template v-if="v$.form.privilege.required.$invalid">
-                  {{ i18n.t('global.form.fieldRequired') }}
+                  {{ $t('global.form.fieldRequired') }}
                 </template>
               </b-form-invalid-feedback>
             </b-form-group>
           </b-col>
           <b-col>
             <b-form-group
-              :label="i18n.t('pageUserManagement.modal.userPassword')"
+              :label="$t('pageUserManagement.modal.userPassword')"
               label-for="password"
             >
               <b-form-text id="password-help-block">
                 {{
-                  i18n.t('pageUserManagement.modal.passwordMustBeBetween', {
+                  $t('pageUserManagement.modal.passwordMustBeBetween', {
                     min: passwordRequirements.minLength,
                     max: passwordRequirements.maxLength,
                   })
@@ -157,7 +157,7 @@
                 />
                 <b-form-invalid-feedback role="alert">
                   <template v-if="v$.form.password.required.$invalid">
-                    {{ i18n.t('global.form.fieldRequired') }}
+                    {{ $t('global.form.fieldRequired') }}
                   </template>
                   <template
                     v-if="
@@ -166,7 +166,7 @@
                     "
                   >
                     {{
-                      i18n.t('pageUserManagement.modal.passwordMustBeBetween', {
+                      $t('pageUserManagement.modal.passwordMustBeBetween', {
                         min: passwordRequirements.minLength,
                         max: passwordRequirements.maxLength,
                       })
@@ -176,7 +176,7 @@
               </input-password-toggle>
             </b-form-group>
             <b-form-group
-              :label="i18n.t('pageUserManagement.modal.confirmUserPassword')"
+              :label="$t('pageUserManagement.modal.confirmUserPassword')"
               label-for="password-confirmation"
             >
               <input-password-toggle>
@@ -194,14 +194,14 @@
                   <template
                     v-if="v$.form.passwordConfirmation.required.$invalid"
                   >
-                    {{ i18n.t('global.form.fieldRequired') }}
+                    {{ $t('global.form.fieldRequired') }}
                   </template>
                   <template
                     v-else-if="
                       v$.form.passwordConfirmation.sameAsPassword.$invalid
                     "
                   >
-                    {{ i18n.t('pageUserManagement.modal.passwordsDoNotMatch') }}
+                    {{ $t('pageUserManagement.modal.passwordsDoNotMatch') }}
                   </template>
                 </b-form-invalid-feedback>
               </input-password-toggle>
@@ -216,7 +216,7 @@
         data-test-id="userManagement-button-cancel"
         @click="cancel()"
       >
-        {{ i18n.t('global.action.cancel') }}
+        {{ $t('global.action.cancel') }}
       </b-button>
       <b-button
         form="form-user"
@@ -226,10 +226,10 @@
         @click="onOk"
       >
         <template v-if="newUser">
-          {{ i18n.t('pageUserManagement.addUser') }}
+          {{ $t('pageUserManagement.addUser') }}
         </template>
         <template v-else>
-          {{ i18n.t('global.action.save') }}
+          {{ $t('global.action.save') }}
         </template>
       </b-button>
     </template>
@@ -247,7 +247,6 @@ import {
 } from '@vuelidate/validators';
 import VuelidateMixin from '@/components/Mixins/VuelidateMixin.js';
 import { useVuelidate } from '@vuelidate/core';
-import { useI18n } from 'vue-i18n';
 
 import InputPasswordToggle from '@/components/Global/InputPasswordToggle';
 import Alert from '@/components/Global/Alert';
@@ -271,10 +270,8 @@ export default {
   },
   emits: ['ok', 'hidden', 'update:modelValue'],
   setup() {
-    const i18n = useI18n();
     return {
       v$: useVuelidate(),
-      i18n,
     };
   },
   data() {
@@ -302,8 +299,8 @@ export default {
     },
     modalTitle() {
       return this.newUser
-        ? this.i18n.t('pageUserManagement.addUser')
-        : this.i18n.t('pageUserManagement.editUser');
+        ? this.$t('pageUserManagement.addUser')
+        : this.$t('pageUserManagement.editUser');
     },
     newUser() {
       return this.user ? false : true;

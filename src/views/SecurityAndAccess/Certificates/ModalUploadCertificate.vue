@@ -10,7 +10,7 @@
       <!-- Replace Certificate type -->
       <template v-if="certificate !== null">
         <dl class="mb-4">
-          <dt>{{ i18n.t('pageCertificates.modal.certificateType') }}</dt>
+          <dt>{{ $t('pageCertificates.modal.certificateType') }}</dt>
           <dd>{{ certificate.certificate }}</dd>
         </dl>
       </template>
@@ -18,7 +18,7 @@
       <!-- Add new Certificate type -->
       <template v-else>
         <b-form-group
-          :label="i18n.t('pageCertificates.modal.certificateType')"
+          :label="$t('pageCertificates.modal.certificateType')"
           label-for="certificate-type"
         >
           <b-form-select
@@ -31,13 +31,13 @@
           </b-form-select>
           <b-form-invalid-feedback role="alert">
             <template v-if="v$.form.certificateType.required.$invalid">
-              {{ i18n.t('global.form.fieldRequired') }}
+              {{ $t('global.form.fieldRequired') }}
             </template>
           </b-form-invalid-feedback>
         </b-form-group>
       </template>
 
-      <b-form-group :label="i18n.t('pageCertificates.modal.certificateFile')">
+      <b-form-group :label="$t('pageCertificates.modal.certificateFile')">
         <form-file
           id="certificate-file"
           v-model="form.file"
@@ -46,7 +46,7 @@
         >
           <template #invalid>
             <b-form-invalid-feedback role="alert">
-              {{ i18n.t('global.form.required') }}
+              {{ $t('global.form.required') }}
             </b-form-invalid-feedback>
           </template>
         </form-file>
@@ -54,14 +54,14 @@
     </b-form>
     <template #modal-ok>
       <template v-if="certificate">
-        {{ i18n.t('global.action.replace') }}
+        {{ $t('global.action.replace') }}
       </template>
       <template v-else>
-        {{ i18n.t('global.action.add') }}
+        {{ $t('global.action.add') }}
       </template>
     </template>
     <template #modal-cancel>
-      {{ i18n.t('global.action.cancel') }}
+      {{ $t('global.action.cancel') }}
     </template>
   </b-modal>
 </template>
@@ -72,7 +72,6 @@ import VuelidateMixin from '@/components/Mixins/VuelidateMixin.js';
 import { useVuelidate } from '@vuelidate/core';
 
 import FormFile from '@/components/Global/FormFile';
-import { useI18n } from 'vue-i18n';
 
 export default {
   components: { FormFile },
@@ -92,10 +91,8 @@ export default {
   },
   emits: ['ok'],
   setup() {
-    const i18n = useI18n();
     return {
       v$: useVuelidate(),
-      i18n,
     };
   },
   data() {
@@ -109,8 +106,8 @@ export default {
   computed: {
     modalTitle() {
       return this.certificate
-        ? this.i18n.t('pageCertificates.replaceCertificate')
-        : this.i18n.t('pageCertificates.addNewCertificate');
+        ? this.$t('pageCertificates.replaceCertificate')
+        : this.$t('pageCertificates.addNewCertificate');
     },
     certificateTypes() {
       return this.$store.getters['certificates/availableUploadTypes'];

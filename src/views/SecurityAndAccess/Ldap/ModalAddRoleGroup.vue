@@ -14,7 +14,7 @@
             <!-- Edit role group -->
             <template v-if="roleGroup !== null">
               <dl class="mb-4">
-                <dt>{{ i18n.t('pageLdap.modal.groupName') }}</dt>
+                <dt>{{ $t('pageLdap.modal.groupName') }}</dt>
                 <dd style="word-break: break-all">{{ form.groupName }}</dd>
               </dl>
             </template>
@@ -22,7 +22,7 @@
             <!-- Add new role group -->
             <template v-else>
               <b-form-group
-                :label="i18n.t('pageLdap.modal.groupName')"
+                :label="$t('pageLdap.modal.groupName')"
                 label-for="role-group-name"
               >
                 <b-form-input
@@ -32,13 +32,13 @@
                   @input="v$.form.groupName.$touch()"
                 />
                 <b-form-invalid-feedback role="alert">
-                  {{ i18n.t('global.form.fieldRequired') }}
+                  {{ $t('global.form.fieldRequired') }}
                 </b-form-invalid-feedback>
               </b-form-group>
             </template>
 
             <b-form-group
-              :label="i18n.t('pageLdap.modal.groupPrivilege')"
+              :label="$t('pageLdap.modal.groupPrivilege')"
               label-for="privilege"
             >
               <b-form-select
@@ -50,12 +50,12 @@
               >
                 <template v-if="!roleGroup" #first>
                   <b-form-select-option :value="null" disabled>
-                    {{ i18n.t('global.form.selectAnOption') }}
+                    {{ $t('global.form.selectAnOption') }}
                   </b-form-select-option>
                 </template>
               </b-form-select>
               <b-form-invalid-feedback role="alert">
-                {{ i18n.t('global.form.fieldRequired') }}
+                {{ $t('global.form.fieldRequired') }}
               </b-form-invalid-feedback>
             </b-form-group>
           </b-form>
@@ -64,14 +64,14 @@
     </b-container>
     <template #footer="{ cancel }">
       <b-button variant="secondary" @click="cancel()">
-        {{ i18n.t('global.action.cancel') }}
+        {{ $t('global.action.cancel') }}
       </b-button>
       <b-button form="role-group" type="submit" variant="primary" @click="onOk">
         <template v-if="roleGroup">
-          {{ i18n.t('global.action.save') }}
+          {{ $t('global.action.save') }}
         </template>
         <template v-else>
-          {{ i18n.t('global.action.add') }}
+          {{ $t('global.action.add') }}
         </template>
       </b-button>
     </template>
@@ -82,7 +82,6 @@
 import { required, requiredIf } from '@vuelidate/validators';
 import VuelidateMixin from '@/components/Mixins/VuelidateMixin.js';
 import { useVuelidate } from '@vuelidate/core';
-import { useI18n } from 'vue-i18n';
 
 export default {
   mixins: [VuelidateMixin],
@@ -105,10 +104,8 @@ export default {
   },
   emits: ['ok', 'hidden', 'update:modelValue'],
   setup() {
-    const i18n = useI18n();
     return {
       v$: useVuelidate(),
-      i18n,
     };
   },
   data() {
@@ -130,8 +127,8 @@ export default {
     },
     modalTitle() {
       return this.roleGroup
-        ? this.i18n.t('pageLdap.modal.editRoleGroup')
-        : this.i18n.t('pageLdap.modal.addNewRoleGroup');
+        ? this.$t('pageLdap.modal.editRoleGroup')
+        : this.$t('pageLdap.modal.addNewRoleGroup');
     },
     accountRoles() {
       return this.$store.getters['userManagement/accountRoles'];

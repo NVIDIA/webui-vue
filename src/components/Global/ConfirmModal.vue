@@ -57,15 +57,12 @@
 </template>
 
 <script>
-import { useI18n } from 'vue-i18n';
 import i18n from '@/i18n';
 
 export default {
   name: 'ConfirmModal',
   data() {
-    const $t = useI18n().t;
     return {
-      $t,
       show: false,
       message: '',
       title: '',

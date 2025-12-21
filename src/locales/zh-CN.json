@@ -54,19 +54,19 @@
         "clearSelectedFile": "清除选定文件"
       },
       "form": {
-        "dateMustBeAfter": "日期必须在 %{date} 之后",
-        "dateMustBeBefore": "日期必须在 %{date} 之前",
+        "dateMustBeAfter": "日期必须在 {date} 之后",
+        "dateMustBeBefore": "日期必须在 {date} 之前",
         "fieldRequired": "字段必填",
         "invalidFormat": "格式无效",
         "invalidValue": "值无效",
-        "lengthMustBeBetween": "长度必须在 %{min} – %{max} 个字符之间",
-        "mustBeAtLeast": "必须至少为 %{value}",
+        "lengthMustBeBetween": "长度必须在 {min} – {max} 个字符之间",
+        "mustBeAtLeast": "必须至少为 {value}",
         "optional": "可选",
         "passwordsDoNotMatch": "密码不匹配",
         "required": "必需",
         "search": "搜索",
         "selectAnOption": "选择一个选项",
-        "valueMustBeBetween": "值必须在 %{min} – %{max} 之间",
+        "valueMustBeBetween": "值必须在 {min} – {max} 之间",
         "submitting": "提交中..."
       },
       "powerState": {
@@ -111,11 +111,11 @@
         "emptySearchMessage": "没有项目与搜索查询匹配",
         "expandTableRow": "展开表格行",
         "fromDate": "开始日期",
-        "items": "%{count} 项",
+        "items": "{count} 项",
         "itemsPerPage": "每页项目数",
         "selectAll": "全选",
         "selectItem": "选择项目",
-        "selectedItems": "%{filterCount} / %{count} 项",
+        "selectedItems": "{filterCount} / {count} 项",
         "toDate": "结束日期",
         "viewAll": "查看全部"
       },
@@ -231,7 +231,7 @@
         },
         "modal": {
             "disconnectTitle": "断开会话| 断开会话",
-            "disconnectMessage": "您确定要断开 %{count} 个会话吗？此操作无法撤消。| 您确定要断开 %{count} 个会话吗？此操作无法撤消。"
+            "disconnectMessage": "您确定要断开 {count} 个会话吗？此操作无法撤消。| 您确定要断开 {count} 个会话吗？此操作无法撤消。"
         },
         "table": {
             "sessionID": "会话ID",
@@ -241,8 +241,8 @@
             "searchSessions": "搜索会话"
         },
         "toast": {
-            "errorDelete": "断开 %{count} 个会话时出错。| 断开 %{count} 个会话时出错。",
-            "successDelete": "成功断开 %{count} 个会话。| 成功断开 %{count} 个会话。"
+            "errorDelete": "断开 {count} 个会话时出错。| 断开 {count} 个会话时出错。",
+            "successDelete": "成功断开 {count} 个会话。| 成功断开 {count} 个会话。"
         }
     },
     "pageDateTime": {
@@ -256,10 +256,10 @@
             "manual": "手动",
             "time": {
                 "label": "24小时制",
-                "timezone": "@:pageDateTime.form.time.label (%{timezone})"
+                "timezone": "@:pageDateTime.form.time.label ({timezone})"
             },
             "ntpServers": {
-                "server1": "服务器 %{index}"
+                "server1": "服务器 {index}"
             }
         },
         "toast": {
@@ -279,7 +279,7 @@
         },
         "modal": {
             "deleteDump": "删除Dump| 删除Dumps",
-            "deleteDumpConfirmation": "您确定要删除 %{count} 个Dump吗？此操作无法撤消。| 您确定要删除 %{count} 个Dumps吗？此操作无法撤消。",
+            "deleteDumpConfirmation": "您确定要删除 {count} 个Dump吗？此操作无法撤消。| 您确定要删除 {count} 个Dumps吗？此操作无法撤消。",
             "initiateSystemDump": "启动系统转储",
             "initiateSystemDumpMessage1": "您确定吗？",
             "initiateSystemDumpMessage2": "系统转储正在进行时，您将无法启动任何其他转储。",
@@ -295,10 +295,10 @@
             "size": "大小"
         },
         "toast": {
-            "errorDeleteDump": "删除 %{count} 个Dump时出错。| 删除 %{count} 个Dumps时出错。",
+            "errorDeleteDump": "删除 {count} 个Dump时出错。| 删除 {count} 个Dumps时出错。",
             "errorStartBmcDump": "启动新的 BMC Dump时出错。",
             "errorStartSystemDump": "启动新的系统Dump时出错。",
-            "successDeleteDump": "成功删除 %{count} 个Dump。| 成功删除 %{count} 个Dumps。",
+            "successDeleteDump": "成功删除 {count} 个Dump。| 成功删除 {count} 个Dumps。",
             "successStartBmcDumpTitle": "已启动 BMC Dump",
             "successStartSystemDumpTitle": "已启动系统Dump",
             "successStartBmcDump": "转储将需要一些时间才能完成。刷新应用程序以在表中查看已完成的转储。",
@@ -321,7 +321,7 @@
             "deleteAllTitle": "删除所有日志",
             "deleteAllMessage": "您确定要删除所有日志吗？此操作无法撤消。",
             "deleteTitle": "删除日志| 删除日志",
-            "deleteMessage": "您确定要删除 %{count} 个日志吗？此操作无法撤消。| 您确定要删除 %{count} 个日志吗？此操作无法撤消。"
+            "deleteMessage": "您确定要删除 {count} 个日志吗？此操作无法撤消。| 您确定要删除 {count} 个日志吗？此操作无法撤消。"
         },
         "table": {
             "date": "日期",
@@ -337,14 +337,14 @@
             "type": "类型"
         },
         "toast": {
-            "errorDelete": "删除 %{count} 个日志时出错。| 删除 %{count} 个日志时出错。",
+            "errorDelete": "删除 {count} 个日志时出错。| 删除 {count} 个日志时出错。",
             "errorLogStatusUpdate": "更新日志状态时出错。",
-            "errorResolveLogs": "解决 %{count} 个日志时出错。| 解决 %{count} 个日志时出错。",
-            "errorUnresolveLogs": "未解决 %{count} 个日志时出错。| 未解决 %{count} 个日志时出错。",
+            "errorResolveLogs": "解决 {count} 个日志时出错。| 解决 {count} 个日志时出错。",
+            "errorUnresolveLogs": "未解决 {count} 个日志时出错。| 未解决 {count} 个日志时出错。",
             "errorDownloadEventEntry": "下载事件日志条目时出错。",
-            "successDelete": "成功删除 %{count} 个日志。| 成功删除 %{count} 个日志。",
-            "successResolveLogs": "成功解决 %{count} 个日志。| 成功解决 %{count} 个日志。",
-            "successUnresolveLogs": "成功未解决 %{count} 个日志。| 成功未解决 %{count} 个日志。"
+            "successDelete": "成功删除 {count} 个日志。| 成功删除 {count} 个日志。",
+            "successResolveLogs": "成功解决 {count} 个日志。| 成功解决 {count} 个日志。",
+            "successUnresolveLogs": "成功未解决 {count} 个日志。| 成功未解决 {count} 个日志。"
         }
     },
     "pageFactoryReset": {
@@ -447,9 +447,9 @@
             "switchImages": "切换映像",
             "switchRunningImage": "切换运行映像",
             "switchRunningImageInfo": "需要重启 BMC 才能运行备份映像。在此期间，应用程序可能会无响应。",
-            "switchRunningImageInfo2": "您确定要切换到备份映像 (%{backup}) 吗？",
+            "switchRunningImageInfo2": "您确定要切换到备份映像 ({backup}) 吗？",
             "updateFirmwareInfo": "根据固件类型，在更新过程中，BMC 可能会重新启动，或者主机电源可能会重新启动。在更新完成之前，请勿打开/关闭设备电源。",
-            "updateFirmwareInfoTargetBackup": "正在运行的映像 (%{running}) 将被复制到备份。备份映像将被删除。",
+            "updateFirmwareInfoTargetBackup": "正在运行的映像 ({running}) 将被复制到备份。备份映像将被删除。",
             "updateFirmwareInfoBackup": "如果此镜像有备份，则运行镜像将被复制到备份并替换当前备份镜像。",
             "updateFirmwareInfoDefault1": "根据固件类型，在更新过程中，BMC 可能会重新启动，或者主机电源可能会重新启动。在更新完成之前，请勿打开/关闭设备电源。",
             "updateFirmwareInfoDefault2": "您确定要继续更新吗？"
@@ -649,8 +649,8 @@
         },
         "modal": {
             "addNewRoleGroup": "添加新角色组",
-            "deleteRoleGroupBatchConfirmMessage": "您确定要删除 %{count} 个角色组吗？此操作无法撤消。| 您确定要删除 %{count} 个角色组吗？此操作无法撤消。",
-            "deleteRoleGroupConfirmMessage": "您确定要删除 '%{groupName}' 吗？此操作无法撤消。",
+            "deleteRoleGroupBatchConfirmMessage": "您确定要删除 {count} 个角色组吗？此操作无法撤消。| 您确定要删除 {count} 个角色组吗？此操作无法撤消。",
+            "deleteRoleGroupConfirmMessage": "您确定要删除 '{groupName}' 吗？此操作无法撤消。",
             "deleteRoleGroup": "删除角色组",
             "editRoleGroup": "编辑角色组",
             "groupName": "组名",
@@ -667,11 +667,11 @@
             "errorSaveActiveDirectorySettings": "保存活动目录设置时出错。",
             "errorSaveLdapSettings": "保存 Open LDAP 设置时出错。",
             "errorSaveRoleGroup": "保存角色组时出错。",
-            "successAddRoleGroup": "成功添加角色组 '%{groupName}'。",
+            "successAddRoleGroup": "成功添加角色组 '{groupName}'。",
             "successDeleteRoleGroup": "成功删除角色组。| 成功删除角色组。",
             "successSaveActiveDirectorySettings": "成功保存活动目录设置。",
             "successSaveLdapSettings": "成功保存 Open LDAP 设置。",
-            "successSaveRoleGroup": "成功保存角色组 '%{groupName}'。"
+            "successSaveRoleGroup": "成功保存角色组 '{groupName}'。"
         }
     },
     "pageUserManagement": {
@@ -685,16 +685,16 @@
             "accountLocked": "账户已锁定",
             "accountStatus": "账户状态",
             "automaticAfterTimeout": "超时后自动",
-            "batchDeleteConfirmMessage": "您确定要删除 %{count} 个用户吗？此操作无法撤消。| 您确定要删除 %{count} 个用户吗？此操作无法撤消。",
+            "batchDeleteConfirmMessage": "您确定要删除 {count} 个用户吗？此操作无法撤消。| 您确定要删除 {count} 个用户吗？此操作无法撤消。",
             "cannotStartWithANumber": "不能以数字开头",
             "clickSaveToUnlockAccount": "点击\"保存\"解锁账户",
             "confirmUserPassword": "确认用户密码",
-            "deleteConfirmMessage": "您确定要删除用户 '%{user}' 吗？此操作无法撤消。",
+            "deleteConfirmMessage": "您确定要删除用户 '{user}' 吗？此操作无法撤消。",
             "deleteSelfConfirmMessage": "您确定要删除您的账户吗？此操作无法撤消。并且您将被登出。",
             "manual": "手动",
             "maxFailedLoginAttempts": "最大登录失败次数",
             "noSpecialCharactersExceptUnderscore": "除下划线外没有特殊字符",
-            "passwordMustBeBetween": "密码必须在 %{min} – %{max} 个字符之间",
+            "passwordMustBeBetween": "密码必须在 {min} – {max} 个字符之间",
             "passwordsDoNotMatch": "密码不匹配",
             "privilege": "权限",
             "timeoutDurationSeconds": "超时时长（秒）",
@@ -721,23 +721,23 @@
             "noAccess": "无访问权限"
         },
         "toast": {
-            "errorBatchDelete": "删除 %{count} 个用户时出错。| 删除 %{count} 个用户时出错。",
-            "errorBatchDisable": "禁用 %{count} 个用户时出错。| 禁用 %{count} 个用户时出错。",
-            "errorBatchEnable": "启用 %{count} 个用户时出错。| 启用 %{count} 个用户时出错。",
-            "errorCreateUser": "创建用户 '%{username}' 时出错。",
-            "errorAlreadyExistUser": "用户名 '%{username}' 已存在。",
-            "errorDeleteUser": "删除用户 '%{username}' 时出错。",
+            "errorBatchDelete": "删除 {count} 个用户时出错。| 删除 {count} 个用户时出错。",
+            "errorBatchDisable": "禁用 {count} 个用户时出错。| 禁用 {count} 个用户时出错。",
+            "errorBatchEnable": "启用 {count} 个用户时出错。| 启用 {count} 个用户时出错。",
+            "errorCreateUser": "创建用户 '{username}' 时出错。",
+            "errorAlreadyExistUser": "用户名 '{username}' 已存在。",
+            "errorDeleteUser": "删除用户 '{username}' 时出错。",
             "errorLoadAccountSettings": "加载账户设置时出错",
             "errorLoadUsers": "加载用户时出错。",
             "errorSaveSettings": "保存账户设置时出错。",
-            "errorUpdateUser": "更新用户 '%{username}' 时出错。",
-            "successBatchDelete": "成功删除 %{count} 个用户。| 成功删除 %{count} 个用户。",
-            "successBatchDisable": "成功禁用 %{count} 个用户。| 成功禁用 %{count} 个用户。",
-            "successBatchEnable": "成功启用 %{count} 个用户。| 成功启用 %{count} 个用户。",
-            "successCreateUser": "创建用户 '%{username}' 成功。",
-            "successDeleteUser": "删除用户 '%{username}' 成功。",
+            "errorUpdateUser": "更新用户 '{username}' 时出错。",
+            "successBatchDelete": "成功删除 {count} 个用户。| 成功删除 {count} 个用户。",
+            "successBatchDisable": "成功禁用 {count} 个用户。| 成功禁用 {count} 个用户。",
+            "successBatchEnable": "成功启用 {count} 个用户。| 成功启用 {count} 个用户。",
+            "successCreateUser": "创建用户 '{username}' 成功。",
+            "successDeleteUser": "删除用户 '{username}' 成功。",
             "successSaveSettings": "成功保存账户设置。",
-            "successUpdateUser": "更新用户 '%{username}' 成功。"
+            "successUpdateUser": "更新用户 '{username}' 成功。"
         }
     },
     "pageLogin": {
@@ -811,18 +811,18 @@
             "timeStampOffset": "时间戳偏移量"
         },
         "toast": {
-            "errorDelete": "删除 %{count} 个日志时出错。| 删除 %{count} 个日志时出错。",
-            "successDelete": "成功删除 %{count} 个日志。| 成功删除 %{count} 个日志。"
+            "errorDelete": "删除 {count} 个日志时出错。| 删除 {count} 个日志时出错。",
+            "successDelete": "成功删除 {count} 个日志。| 成功删除 {count} 个日志。"
         }
     },
     "pageProfileSettings": {
-        "browserOffset": "浏览器偏移 (%{timezone})",
+        "browserOffset": "浏览器偏移 ({timezone})",
         "changePassword": "更改密码",
         "confirmPassword": "确认新密码",
         "defaultUTC": "默认 (UTC)",
         "newPassword": "新密码",
         "currentPassword": "当前密码",
-        "newPassLabelTextInfo": "密码必须在 %{min} - %{max} 个字符之间",
+        "newPassLabelTextInfo": "密码必须在 {min} - {max} 个字符之间",
         "passwordsDoNotMatch": "密码不匹配",
         "profileInfoTitle": "个人资料信息",
         "timezone": "时区",
@@ -863,7 +863,7 @@
         "modal": {
             "confirmDisableDhcp": "您确定要禁用 DHCP 吗？",
             "confirmEnableDhcp": "启用 DHCP 时，静态 IP 地址将无法访问。",
-            "dhcpConfirmTitle": "%{dhcpState} DHCP",
+            "dhcpConfirmTitle": "{dhcpState} DHCP",
             "editHostnameTitle": "编辑主机名",
             "editMacAddressTitle": "编辑 MAC 地址",
             "editIPv6DefaultGatewayTitle": "编辑 IPv6 默认网关",
@@ -890,8 +890,8 @@
             "subnet": "子网掩码"
         },
         "toast": {
-            "errorSaveNetworkSettings": "更新 %{setting} 设置时出错。",
-            "successSaveNetworkSettings": "成功更新 %{setting} 设置。"
+            "errorSaveNetworkSettings": "更新 {setting} 设置时出错。",
+            "successSaveNetworkSettings": "成功更新 {setting} 设置。"
         }
     },
     "pagePageNotFound": {
@@ -1008,7 +1008,7 @@
     "pagePower": {
         "description": "设置功率上限，以保持功耗在指定的瓦特值以下或等于该值",
         "powerCapLabel": "功率上限值（以瓦特为单位）",
-        "powerCapLabelTextInfo": "值必须在 %{min} 和 %{max} 之间",
+        "powerCapLabelTextInfo": "值必须在 {min} 和 {max} 之间",
         "powerCapSettingData": "应用功率上限",
         "powerCapSettingLabel": "功率上限设置",
         "powerConsumption": "当前功耗",
@@ -1111,15 +1111,15 @@
             "confirmRebootTitle": "服务器重启将导致停机",
             "confirmShutdownMessage": "您确定要关闭吗？",
             "confirmShutdownTitle": "服务器关闭将导致停机",
-            "confirmPauseMessage": "您确定要执行 %{operation} 操作吗？",
+            "confirmPauseMessage": "您确定要执行 {operation} 操作吗？",
             "confirmPauseTitle": "确认暂停操作",
             "confirmResumeMessage": "您确定要恢复暂停的系统吗？",
             "confirmResumeTitle": "确认恢复操作",
-            "confirmSpecialOperationMessage": "您确定要执行 %{operation} 操作吗？",
+            "confirmSpecialOperationMessage": "您确定要执行 {operation} 操作吗？",
             "confirmSpecialOperationTitle": "确认特殊操作",
-            "confirmPowerOnMessage": "您确定要执行 %{operation} 操作吗？",
+            "confirmPowerOnMessage": "您确定要执行 {operation} 操作吗？",
             "confirmPowerOnTitle": "确认开机操作",
-            "confirmGenericOperationMessage": "您确定要执行 %{operation} 操作吗？",
+            "confirmGenericOperationMessage": "您确定要执行 {operation} 操作吗？",
             "confirmGenericOperationTitle": "确认操作"
         },
         "toast": {
@@ -1133,7 +1133,7 @@
         "pageDescription": "使用 IP 地址和端口设置简单网络管理协议 (SNMP) 陷阱。",
         "modal": {
             "addSnmpDestinationTitle": "添加 SNMP 警报目标",
-            "batchDeleteConfirmMessage": "您确定要删除 SNMP 警报目标吗？此操作无法撤消。| 您确定要删除 %{count} 个 SNMP 警报目标吗？此操作无法撤消。",
+            "batchDeleteConfirmMessage": "您确定要删除 SNMP 警报目标吗？此操作无法撤消。| 您确定要删除 {count} 个 SNMP 警报目标吗？此操作无法撤消。",
             "deleteConfirmMessage": "您确定要删除 SNMP 警报目标吗？此操作无法撤消。",
             "deleteSnmpDestinationTitle": "删除 SNMP 警报目标| 删除 SNMP 警报目标",
             "ipaddress": "IP 地址",
@@ -1149,7 +1149,7 @@
             "errorDeleteDestination": "删除 SNMP 警报目标时出错。",
             "errorLoadSnmpDetails": "加载 SNMP 警报详细信息时出错。",
             "successAddDestination": "成功添加 SNMP 警报目标。",
-            "successBatchDelete": "成功删除 SNMP 警报目标。| 成功删除 %{count} 个 SNMP 警报目标。",
+            "successBatchDelete": "成功删除 SNMP 警报目标。| 成功删除 {count} 个 SNMP 警报目标。",
             "successDeleteDestination": "成功删除 SNMP 警报目标。"
         }
     },
@@ -1162,8 +1162,8 @@
         "ldapCertificate": "LDAP 证书",
         "replaceCertificate": "替换证书",
         "alert": {
-            "certificateExpiredMessage": "%{certificate} 已过期。考虑用新证书替换它。",
-            "certificateExpiringMessage": "%{certificate} 即将过期。考虑用新证书替换它。",
+            "certificateExpiredMessage": "{certificate} 已过期。考虑用新证书替换它。",
+            "certificateExpiringMessage": "{certificate} 即将过期。考虑用新证书替换它。",
             "certificatesExpiredMessage": "一些证书已过期。考虑用新证书替换它们。",
             "certificatesExpiringMessage": "一些证书即将过期。考虑用新证书替换它们。",
             "incorrectCertificateFileType": "文件不是正确的证书类型"
@@ -1181,7 +1181,7 @@
             "companyUnit": "公司单位",
             "contactPerson": "联系人",
             "country": "国家/地区",
-            "deleteConfirmMessage": "您确定要删除由 %{issuedBy} 颁发的 '%{certificate}' 吗？此操作无法撤消。",
+            "deleteConfirmMessage": "您确定要删除由 {issuedBy} 颁发的 '{certificate}' 吗？此操作无法撤消。",
             "duplicateAlternateName": "备用名称重复",
             "emailAddress": "电子邮件地址",
             "generateACertificateSigningRequest": "生成证书签名请求 (CSR)",
@@ -1202,9 +1202,9 @@
             "errorAddCertificate": "添加证书时出错。",
             "errorDeleteCertificate": "删除证书时出错。",
             "errorReplaceCertificate": "替换证书时出错。",
-            "successAddCertificate": "成功添加 %{certificate}。",
-            "successDeleteCertificate": "成功删除 %{certificate}。",
-            "successReplaceCertificate": "成功替换 %{certificate}。"
+            "successAddCertificate": "成功添加 {certificate}。",
+            "successDeleteCertificate": "成功删除 {certificate}。",
+            "successReplaceCertificate": "成功替换 {certificate}。"
         }
     },
     "pageVirtualMedia": {

@@ -124,7 +124,7 @@
               xl="3"
             >
               <b-form-group
-                :label="$t('pageDateTime.form.ntpServers.server', { index })"
+                :label="$t('pageDateTime.form.ntpServers.server', { index: index + 1 })"
                 :label-for="item.id"
               >
                 <b-input-group v-if="index == 0">

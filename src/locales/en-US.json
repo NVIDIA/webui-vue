@@ -68,7 +68,7 @@
             "required": "Required",
             "search": "Search",
             "selectAnOption": "Select an option",
-            "valueMustBeBetween": "Value must be between %{min} – %{max}",
+            "valueMustBeBetween": "Value must be between {min} – {max}",
             "submitting": "Submitting..."
         },
         "powerState": {
@@ -267,7 +267,7 @@
                 "timezone": "@:pageDateTime.form.time.label ({timezone})"
             },
             "ntpServers": {
-                "server": "Server %{index}"
+                "server": "Server {index}"
             }
         },
         "toast": {
@@ -455,9 +455,9 @@
             "switchImages": "Switch images",
             "switchRunningImage": "Switch running image",
             "switchRunningImageInfo": "A BMC reboot is required to run the backup image. The application might be unresponsive during this time.",
-            "switchRunningImageInfo2": "Are you sure you want to switch to the backup image (%{backup})?",
+            "switchRunningImageInfo2": "Are you sure you want to switch to the backup image ({backup})?",
             "updateFirmwareInfoDefault1": "Depending on firmware type, the BMC may reboot, or host power may be cycled, during the update process. Do not Power ON/OFF the device until the update is finished.",
-            "updateFirmwareInfoTargetBackup": "The running image (%{running}) will be copied to backup. The backup image will be deleted.",
+            "updateFirmwareInfoTargetBackup": "The running image ({running}) will be copied to backup. The backup image will be deleted.",
             "updateFirmwareInfoBackup": "If this image has a backup, the running image will be copied to backup and replace the current backup image.",
             "updateFirmwareInfoDefault2": "Are you sure you want to proceed with the update?"
         },
@@ -699,7 +699,7 @@
             "cannotStartWithANumber": "Cannot start with a number",
             "clickSaveToUnlockAccount": "Click \"Save\" to unlock account",
             "confirmUserPassword": "Confirm user password",
-            "deleteConfirmMessage": "Are you sure you want to delete user '%{user}'? This action cannot be undone.",
+            "deleteConfirmMessage": "Are you sure you want to delete user '{user}'? This action cannot be undone.",
             "deleteSelfConfirmMessage": "Are you sure you want to delete your account? This action cannot be undone. And you will be logged out.",
             "manual": "Manual",
             "maxFailedLoginAttempts": "Max failed login attempts",
@@ -1110,15 +1110,15 @@
             "confirmRebootTitle": "Server reboot will cause outage",
             "confirmShutdownMessage": "Are you sure you want to shut down?",
             "confirmShutdownTitle": "Server shutdown will cause outage",
-            "confirmPauseMessage": "Are you sure you want to perform the %{operation} operation?",
+            "confirmPauseMessage": "Are you sure you want to perform the {operation} operation?",
             "confirmPauseTitle": "Confirm pause operation",
             "confirmResumeMessage": "Are you sure you want to resume the paused system?",
             "confirmResumeTitle": "Confirm resume operation",
-            "confirmSpecialOperationMessage": "Are you sure you want to perform the %{operation} operation?",
+            "confirmSpecialOperationMessage": "Are you sure you want to perform the {operation} operation?",
             "confirmSpecialOperationTitle": "Confirm special operation",
-            "confirmPowerOnMessage": "Are you sure you want to perform the %{operation} operation?",
+            "confirmPowerOnMessage": "Are you sure you want to perform the {operation} operation?",
             "confirmPowerOnTitle": "Confirm power on operation",
-            "confirmGenericOperationMessage": "Are you sure you want to perform the %{operation} operation?",
+            "confirmGenericOperationMessage": "Are you sure you want to perform the {operation} operation?",
             "confirmGenericOperationTitle": "Confirm operation"
         },
         "toast": {
