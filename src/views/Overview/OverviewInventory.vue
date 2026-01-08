@@ -40,7 +40,7 @@ export default {
   data() {
     return {
       showLeds:
-        process.env.VUE_APP_HIDE_INVENTORY_LED !== 'true',
+        import.meta.env.VITE_HIDE_INVENTORY_LED !== 'true',
     };
   },
   computed: {

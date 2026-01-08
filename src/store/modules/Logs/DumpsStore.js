@@ -10,7 +10,7 @@ const DumpsStore = {
     dumpTypeOptions: [],
     dumpServices: [],
     isInitialized: false,
-    fileExtension: process.env.VUE_APP_DUMP_FILE_EXTENSION || 'tar.xz',
+    fileExtension: import.meta.env.VITE_DUMP_FILE_EXTENSION || 'tar.xz',
   },
   getters: {
     allDumps: (state) => state.allDumps,
@@ -66,7 +66,7 @@ const DumpsStore = {
         "text": "BMC dump",
         "_type": "Bmc"
       }];
-      return process.env.VUE_APP_HIDE_SYSTEM_DUMP === 'true'
+      return import.meta.env.VITE_HIDE_SYSTEM_DUMP === 'true'
            ? options
            : [ ...options,
             {
@@ -83,7 +83,7 @@ const DumpsStore = {
           ];
     },
     async fetchDumpServices({ state, commit }) {
-      const systems = process.env.VUE_APP_HIDE_SYSTEM_DUMP === 'true' ? [] :
+      const systems = import.meta.env.VITE_HIDE_SYSTEM_DUMP === 'true' ? [] :
         await this.dispatch('system/getSystemsWithProp', {
           prop: 'LogServices',
         });

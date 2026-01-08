@@ -155,6 +155,7 @@
 
 <script>
 import PageSection from '@/components/Global/PageSection';
+import eventBus from '@/eventBus';
 import IconChevron from '@carbon/icons-vue/es/chevron--down/20';
 import StatusIcon from '@/components/Global/StatusIcon';
 import BVToastMixin from '@/components/Mixins/BVToastMixin';
@@ -216,7 +217,7 @@ export default {
   created() {
     this.$store.dispatch('bmc/getBmcInfo').finally(() => {
       // Emit initial data fetch complete to parent component
-      this.$eventBus.emit('hardware-status-bmc-manager-complete');
+      eventBus.$emit('hardware-status-bmc-manager-complete');
       this.isBusy = false;
     });
   },

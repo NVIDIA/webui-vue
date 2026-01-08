@@ -135,8 +135,8 @@
 
 <script>
 import PageSection from '@/components/Global/PageSection';
+import eventBus from '@/eventBus';
 import IconChevron from '@carbon/icons-vue/es/chevron--down/20';
-
 import StatusIcon from '@/components/Global/StatusIcon';
 import TableCellCount from '@/components/Global/TableCellCount';
 import DataFormatterMixin from '@/components/Mixins/DataFormatterMixin';
@@ -224,7 +224,7 @@ export default {
   created() {
     this.$store.dispatch('powerSupply/getAllPowerSupplies').finally(() => {
       // Emit initial data fetch complete to parent component
-      this.$eventBus.emit('hardware-status-power-supplies-complete');
+      eventBus.$emit('hardware-status-power-supplies-complete');
       this.isBusy = false;
     });
   },

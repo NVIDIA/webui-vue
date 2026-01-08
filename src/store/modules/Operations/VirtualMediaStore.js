@@ -69,7 +69,7 @@ const VirtualMediaStore = {
      * @returns {Function} Function to determine if device is a proxy device
      */
     isProxyDevice: () => (device) => {
-      return device.TransferProtocolType === transferProtocolType.OEM 
+      return device.TransferProtocolType === transferProtocolType.OEM
              || device.Id.startsWith('Slot_'); // FIXME: remove once we have better detection
     },
   },
@@ -89,7 +89,7 @@ const VirtualMediaStore = {
         // If the virtual media list is disabled, we need to show the default device
         // This is hardcoded to a single Local Device
         const virtualMediaListEnabled =
-          process.env.VUE_APP_VIRTUAL_MEDIA_LIST_ENABLED === 'false'
+          import.meta.env.VITE_VIRTUAL_MEDIA_LIST_ENABLED === 'false'
             ? false
             : true;
         if (!virtualMediaListEnabled) {
@@ -109,7 +109,7 @@ const VirtualMediaStore = {
             ),
           )
           .then((devices) => api.all(devices.map((device) => api.get(device))));
-        
+
         let proxyDevices = devices
           .filter((d) => getters['isProxyDevice'](d.data))
           .map((device) => ({

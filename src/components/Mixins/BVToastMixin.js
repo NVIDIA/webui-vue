@@ -2,6 +2,8 @@ import { h } from 'vue';
 import { BLink } from 'bootstrap-vue-next';
 import StatusIcon from '../Global/StatusIcon';
 import i18n from '@/i18n';
+import eventBus from '@/eventBus';
+
 const BVToastMixin = {
   components: {
     StatusIcon,
@@ -37,7 +39,7 @@ const BVToastMixin = {
         {
           class: 'd-inline-block mt-3',
           onClick: () => {
-            this.$eventBus.emit('refresh-application');
+            eventBus.$emit('refresh-application');
           },
         },
         () => i18n.global.t('global.action.refresh'),
@@ -135,17 +137,17 @@ const BVToastMixin = {
       } = {},
     ) {
       let body;
-      
+
       if (redfishError) {
         // Create unique ID for this error
         const errorId = 'error-' + Date.now();
-        
+
         // Store error details for later use
         if (!this._redfishErrorDetails) {
           this._redfishErrorDetails = {};
         }
         this._redfishErrorDetails[errorId] = redfishError;
-        
+
         // Create a simple error message with the view details option
         body = [
           h('p', { class: 'mb-0' }, message),
@@ -165,7 +167,7 @@ const BVToastMixin = {
       } else {
         body = this.$_BVToastMixin_createBody(message);
       }
-      
+
       const title = this.$_BVToastMixin_createTitle(t, 'danger');
       if (refreshAction) body.push(this.$_BVToastMixin_createRefreshAction());
       if (timestamp) {

@@ -423,7 +423,7 @@ export default {
               tdClass: 'text-break',
             }
           : {},
-        process.env.VUE_APP_EVENT_LOGS_TOGGLE_BUTTON_DISABLED === 'true' ||
+        import.meta.env.VITE_EVENT_LOGS_TOGGLE_BUTTON_DISABLED === 'true' ||
         this.hideFields.includes('status')
           ? {}
           : {
@@ -438,7 +438,7 @@ export default {
         },
       ].filter((field) => field && field.key),
       tableFilters:
-        process.env.VUE_APP_EVENT_LOGS_TOGGLE_BUTTON_DISABLED === 'true' ||
+        import.meta.env.VITE_EVENT_LOGS_TOGGLE_BUTTON_DISABLED === 'true' ||
         this.hideFields.includes('status')
           ? [
               {
@@ -462,7 +462,7 @@ export default {
       expandRowLabel,
       activeFilters: [],
       batchActions:
-        process.env.VUE_APP_EVENT_LOGS_DELETE_BUTTON_DISABLED === 'true'
+        import.meta.env.VITE_EVENT_LOGS_DELETE_BUTTON_DISABLED === 'true'
           ? []
           : [
               {
@@ -479,10 +479,10 @@ export default {
       searchFilter: searchFilter,
       searchTotalFilteredRows: 0,
       hideToggle:
-        process.env.VUE_APP_EVENT_LOGS_TOGGLE_BUTTON_DISABLED === 'true' ||
+        import.meta.env.VITE_EVENT_LOGS_TOGGLE_BUTTON_DISABLED === 'true' ||
         this.hideFields.includes('status'),
       hideDelete:
-        process.env.VUE_APP_EVENT_LOGS_DELETE_BUTTON_DISABLED === 'true',
+        import.meta.env.VITE_EVENT_LOGS_DELETE_BUTTON_DISABLED === 'true',
       logService: null,
       logs: [],
       tableKey: 0,

@@ -1,3 +1,5 @@
+import eventBus from '@/eventBus';
+
 export const loading = true;
 
 const LoadingBarMixin = {
@@ -12,19 +14,19 @@ const LoadingBarMixin = {
   },
   methods: {
     progressLoader(percents) {
-      this.$eventBus.$emit('loader-start', percents);
+      eventBus.$emit('loader-start', percents);
       this.loading = true;
     },
     startLoader() {
-      this.$eventBus.$emit('loader-start', [0, 100]);
+      eventBus.$emit('loader-start', [0, 100]);
       this.loading = true;
     },
     endLoader() {
-      this.$eventBus.$emit('loader-end');
+      eventBus.$emit('loader-end');
       this.loading = false;
     },
     hideLoader() {
-      this.$eventBus.$emit('loader-hide');
+      eventBus.$emit('loader-hide');
     },
   },
 };

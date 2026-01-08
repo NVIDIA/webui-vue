@@ -79,6 +79,7 @@
 //dotenv customizations.
 import AppNavigationMixin from './AppNavigationMixin';
 import AppFooter from '@/components/Global/AppFooter';
+import eventBus from '@/eventBus';
 
 export default {
   name: 'AppNavigation',
@@ -100,20 +101,23 @@ export default {
       this.initializeOpenSectionsFromRoute();
     },
     isNavigationOpen: function (isNavigationOpen) {
-      this.$eventBus.emit('change-is-navigation-open', isNavigationOpen);
+      eventBus.$emit('change-is-navigation-open', isNavigationOpen);
     },
   },
   mounted() {
     this.getPrivilege();
     this.toggleNavigationHandler = () => this.toggleIsOpen();
-    this.$eventBus.on('toggle-navigation', this.toggleNavigationHandler);
+    eventBus.$on('toggle-navigation', this.toggleNavigationHandler);
     // Expand the parent section for the current route on initial load/refresh
     this.initializeOpenSectionsFromRoute();
   },
   beforeUnmount() {
-    this.$eventBus.off('toggle-navigation', this.toggleNavigationHandler);
+    eventBus.$off('toggle-navigation', this.toggleNavigationHandler);
   },
   methods: {
+    handleToggleNavigation() {
+      this.toggleIsOpen();
+    },
     isItemOpen(id) {
       return !!this.openSections[id];
     },

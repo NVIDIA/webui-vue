@@ -129,6 +129,7 @@
 
 <script>
 import BVToastMixin from '@/components/Mixins/BVToastMixin';
+import eventBus from '@/eventBus';
 import IconEdit from '@carbon/icons-vue/es/edit/16';
 import DataFormatterMixin from '@/components/Mixins/DataFormatterMixin';
 import PageSection from '@/components/Global/PageSection';
@@ -214,7 +215,7 @@ export default {
   created() {
     this.$store.dispatch('network/getEthernetData').finally(() => {
       // Emit initial data fetch complete to parent component
-      this.$eventBus.emit('network-global-settings-complete');
+      eventBus.$emit('network-global-settings-complete');
       const networkSettings =
         this.$store.getters['network/globalNetworkSettings'][0];
       this.dnsState = networkSettings.useDnsEnabled;

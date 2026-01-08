@@ -160,11 +160,10 @@
 
 <script>
 import BVToastMixin from '@/components/Mixins/BVToastMixin';
+import eventBus from '@/eventBus';
 import PageSection from '@/components/Global/PageSection';
 import IconChevron from '@carbon/icons-vue/es/chevron--down/20';
-
 import StatusIcon from '@/components/Global/StatusIcon';
-
 import TableRowExpandMixin, {
   expandRowLabel,
 } from '@/components/Mixins/TableRowExpandMixin';
@@ -223,7 +222,7 @@ export default {
   created() {
     this.$store.dispatch('system/getSystem').finally(() => {
       // Emit initial data fetch complete to parent component
-      this.$eventBus.emit('hardware-status-system-complete');
+      eventBus.$emit('hardware-status-system-complete');
       this.isBusy = false;
     });
   },

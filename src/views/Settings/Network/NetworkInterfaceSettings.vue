@@ -59,6 +59,7 @@
 
 <script>
 import BVToastMixin from '@/components/Mixins/BVToastMixin';
+import eventBus from '@/eventBus';
 import IconEdit from '@carbon/icons-vue/es/edit/16';
 import PageSection from '@/components/Global/PageSection';
 import DataFormatterMixin from '@/components/Mixins/DataFormatterMixin';
@@ -89,7 +90,7 @@ export default {
       linkSpeed: '',
       fqdn: '',
       macAddress: '',
-      macAddressEditable: process.env.VUE_APP_ENV_NAME !== 'nvidia-bluefield',
+      macAddressEditable: import.meta.env.VITE_ENV_NAME !== 'nvidia-bluefield',
       showMacAddressModal: false,
     };
   },
@@ -106,7 +107,7 @@ export default {
     this.getSettings();
     this.$store.dispatch('network/getEthernetData').finally(() => {
       // Emit initial data fetch complete to parent component
-      this.$eventBus.emit('network-interface-settings-complete');
+      eventBus.$emit('network-interface-settings-complete');
     });
   },
   methods: {

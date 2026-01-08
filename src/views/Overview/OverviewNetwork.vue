@@ -101,7 +101,7 @@ export default {
   mixins: [DataFormatterMixin],
   data() {
     return {
-      showIPv6: process.env.VUE_APP_ENV_NAME === 'nvidia-bluefield',
+      showIPv6: import.meta.env.VITE_ENV_NAME === 'nvidia-bluefield',
     };
   },
   computed: {

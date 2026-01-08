@@ -238,7 +238,7 @@ export default {
     return {
       selectedResetType: null,
       selectedAutomatically: false,
-      isBluefield: process.env.VUE_APP_ENV_NAME === 'nvidia-bluefield',
+      isBluefield: import.meta.env.VITE_ENV_NAME === 'nvidia-bluefield',
     };
   },
   computed: {

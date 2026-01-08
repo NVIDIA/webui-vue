@@ -42,6 +42,7 @@
 </template>
 <script>
 import PageSection from '@/components/Global/PageSection';
+import eventBus from '@/eventBus';
 import BVToastMixin from '@/components/Mixins/BVToastMixin';
 
 export default {
@@ -62,7 +63,7 @@ export default {
   created() {
     this.$store.dispatch('global/getSystemInfo').finally(() => {
       // Emit initial data fetch complete to parent component
-      this.$eventBus.emit('hardware-status-service-complete');
+      eventBus.$emit('hardware-status-service-complete');
     });
   },
   methods: {

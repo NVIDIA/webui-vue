@@ -16,6 +16,8 @@ import { mapState } from 'vuex';
 import JumpLinkMixin from '@/components/Mixins/JumpLinkMixin';
 import GlobalBanner from '@/components/Global/GlobalBanner';
 import { startManagerStatusCheck } from '@/services/ManagerStatusService';
+import eventBus from '@/eventBus';
+
 export default {
   name: 'PageContainer',
   components: { GlobalBanner },
@@ -30,14 +32,14 @@ export default {
     this.handleSkipNavigation = () => {
       this.setFocus(this.$el);
     };
-    this.$eventBus.on('skip-navigation', this.handleSkipNavigation);
+    eventBus.$on('skip-navigation', this.handleSkipNavigation);
   },
   beforeUnmount() {
     if (this.managerStatusIntervalId) {
       clearInterval(this.managerStatusIntervalId);
     }
     if (this.handleSkipNavigation) {
-      this.$eventBus.off('skip-navigation', this.handleSkipNavigation);
+      eventBus.$off('skip-navigation', this.handleSkipNavigation);
     }
   },
 };

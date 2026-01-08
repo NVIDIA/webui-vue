@@ -41,11 +41,9 @@
           :style="tableStyle"
           responsive="sm"
         >
-          <template
-            v-if="hasFirmwareInventoryCheckbox && (!hideFirmwareTargets || showAdvanced)"
-            #cell(select)="data"
-          >
+          <template #cell(select)="data">
             <b-form-checkbox
+              v-if="hasFirmwareInventoryCheckbox && (!hideFirmwareTargets || showAdvanced)"
               v-model="data.item.checked"
               :disabled="data.item.updateable === false"
               @change="handleCheckboxChange(data.item)"
@@ -92,9 +90,9 @@ export default {
         },
       ],
       hasFirmwareInventoryCheckbox:
-        process.env.VUE_APP_HIDE_FIRMWARE_INVENTORY_CHECKBOX !== 'true',
+        import.meta.env.VITE_HIDE_FIRMWARE_INVENTORY_CHECKBOX !== 'true',
       hideFirmwareTargets:
-        process.env.VUE_APP_HIDE_FIRMWARE_TARGETS === 'true',
+        import.meta.env.VITE_HIDE_FIRMWARE_TARGETS === 'true',
       showAdvanced: false,
     };
   },

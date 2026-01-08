@@ -37,7 +37,7 @@ export default {
   data() {
     return {
       showBackup:
-        process.env.VUE_APP_ENV_NAME !== 'nvidia-bluefield' &&
+        import.meta.env.VITE_ENV_NAME !== 'nvidia-bluefield' &&
           this.backupVersion,
       showBios: this.firmwareVersion,
     };
@@ -59,7 +59,7 @@ export default {
       return this.$store.getters['firmware/activeBiosFirmware'];
     },
     firmwareVersion() {
-      if (process.env.VUE_APP_ENV_NAME === 'nvidia-bluefield') {
+      if (import.meta.env.VITE_ENV_NAME === 'nvidia-bluefield') {
         return this.activeBiosFirmware?.version;
       }
       return this.activeBiosFirmware?.version;

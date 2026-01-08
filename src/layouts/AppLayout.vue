@@ -21,6 +21,7 @@ import AppNavigation from '@/components/AppNavigation';
 import PageContainer from '@/components/Global/PageContainer';
 import ButtonBackToTop from '@/components/Global/ButtonBackToTop';
 import JumpLinkMixin from '@/components/Mixins/JumpLinkMixin';
+import eventBus from '@/eventBus';
 
 export default {
   name: 'App',
@@ -46,7 +47,7 @@ export default {
   },
   mounted() {
     this.refreshHandler = () => this.refresh();
-    this.$eventBus.on('refresh-application', this.refreshHandler);
+    eventBus.$on('refresh-application', this.refreshHandler);
     this.sessionCheckInterval = setInterval(() => {
       if (!localStorage.getItem('storedUsername')) {
         if (this.$eventBus && this.$eventBus.$consoleWindow) {
@@ -63,7 +64,7 @@ export default {
       clearInterval(this.sessionCheckInterval);
     }
     if (this.refreshHandler) {
-      this.$eventBus.off('refresh-application', this.refreshHandler);
+      eventBus.$off('refresh-application', this.refreshHandler);
     }
   },
   methods: {

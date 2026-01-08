@@ -4,17 +4,17 @@ import { startManagerStatusCheck } from '@/services/ManagerStatusService';
 import { getOdataId } from '@/utilities/redfishUtils';
 
 function envInt(key, defaultValue) {
-  if (process.env[key] == null) return defaultValue;
-  const value = parseInt(process.env[key]);
+  if (import.meta.env[key] == null) return defaultValue;
+  const value = parseInt(import.meta.env[key]);
   if (isNaN(value)) return defaultValue;
   return value;
 }
 
-const TASK_POLL_INTERVAL = envInt('VUE_APP_FIRMWARE_UPDATE_POLL_INTERVAL', 4);
-const TASK_POLL_TIMEOUT = envInt('VUE_APP_FIRMWARE_UPDATE_POLL_TIMEOUT', 1200);
+const TASK_POLL_INTERVAL = envInt('VITE_FIRMWARE_UPDATE_POLL_INTERVAL', 4);
+const TASK_POLL_TIMEOUT = envInt('VITE_FIRMWARE_UPDATE_POLL_TIMEOUT', 1200);
 const MAX_TASK_POLL_TIME = TASK_POLL_TIMEOUT / TASK_POLL_INTERVAL;
-const WAIT_FOR_READY_INTERVAL = envInt('VUE_APP_WAIT_FOR_READY_INTERVAL', 8);
-const WAIT_FOR_READY_TIME = envInt('VUE_APP_WAIT_FOR_READY_TIME', 40);
+const WAIT_FOR_READY_INTERVAL = envInt('VITE_WAIT_FOR_READY_INTERVAL', 8);
+const WAIT_FOR_READY_TIME = envInt('VITE_WAIT_FOR_READY_TIME', 40);
 
 const FirmwareStore = {
   namespaced: true,
@@ -487,7 +487,7 @@ const FirmwareStore = {
       };
 
       // Bluefield bmc does not support resetRequired, use hard code instead
-      if (process.env.VUE_APP_ENV_NAME === 'nvidia-bluefield') {
+      if (import.meta.env.VITE_ENV_NAME === 'nvidia-bluefield') {
         const component = resolutionMsg?.MessageArgs;
         if (component?.includes('BMC_Firmware'))
           return {

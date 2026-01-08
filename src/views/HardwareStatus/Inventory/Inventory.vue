@@ -56,6 +56,7 @@
 </template>
 
 <script>
+import eventBus from '@/eventBus';
 import PageTitle from '@/components/Global/PageTitle';
 import ServiceIndicator from './InventoryServiceIndicator';
 import TableSystem from './InventoryTableSystem';
@@ -102,10 +103,10 @@ export default {
   data() {
     return {
       showLeds:
-        (process.env.VUE_APP_ENV_NAME === 'nvidia-gb') ? false :
-        process.env.VUE_APP_HIDE_INVENTORY_LED !== 'true',
+        (import.meta.env.VITE_ENV_NAME === 'nvidia-gb') ? false :
+        import.meta.env.VITE_HIDE_INVENTORY_LED !== 'true',
       showSystemLeds:
-        process.env.VUE_APP_HIDE_INVENTORY_LED !== 'true',
+        import.meta.env.VITE_HIDE_INVENTORY_LED !== 'true',
       observer: null,
       validLinks: [],
       links: [
@@ -224,74 +225,74 @@ export default {
 
     const bmcManagerTablePromise = new Promise((resolve) => {
       this.bmcManagerResolve = resolve;
-      this.$eventBus.on(
+      eventBus.$on(
         'hardware-status-bmc-manager-complete',
         this.eventHandlers.bmcManager,
       );
     });
     const chassisTablePromise = new Promise((resolve) => {
       this.chassisResolve = resolve;
-      this.$eventBus.on(
+      eventBus.$on(
         'hardware-status-chassis-complete',
         this.eventHandlers.chassis,
       );
     });
     const dimmSlotTablePromise = new Promise((resolve) => {
       this.dimmSlotResolve = resolve;
-      this.$eventBus.on(
+      eventBus.$on(
         'hardware-status-dimm-slot-complete',
         this.eventHandlers.dimmSlot,
       );
     });
     const fansTablePromise = new Promise((resolve) => {
       this.fansResolve = resolve;
-      this.$eventBus.on('hardware-status-fans-complete', this.eventHandlers.fans);
+      eventBus.$on('hardware-status-fans-complete', this.eventHandlers.fans);
     });
     const powerSuppliesTablePromise = new Promise((resolve) => {
       this.powerSuppliesResolve = resolve;
-      this.$eventBus.on(
+      eventBus.$on(
         'hardware-status-power-supplies-complete',
         this.eventHandlers.powerSupplies,
       );
     });
     const processorsTablePromise = new Promise((resolve) => {
       this.processorsResolve = resolve;
-      this.$eventBus.on(
+      eventBus.$on(
         'hardware-status-processors-complete',
         this.eventHandlers.processors,
       );
     });
     const serviceIndicatorPromise = new Promise((resolve) => {
       this.serviceResolve = resolve;
-      this.$eventBus.on(
+      eventBus.$on(
         'hardware-status-service-complete',
         this.eventHandlers.service,
       );
     });
     const systemTablePromise = new Promise((resolve) => {
       this.systemResolve = resolve;
-      this.$eventBus.on(
+      eventBus.$on(
         'hardware-status-system-complete',
         this.eventHandlers.system,
       );
     });
     const assemblyTablePromise = new Promise((resolve) => {
       this.assemblyResolve = resolve;
-      this.$eventBus.on(
+      eventBus.$on(
         'hardware-status-assembly-complete',
         this.eventHandlers.assembly,
       );
     });
     const networkAdapterTablePromise = new Promise((resolve) => {
       this.networkAdapterResolve = resolve;
-      this.$eventBus.on(
+      eventBus.$on(
         'hardware-status-network-adapter-complete',
         this.eventHandlers.networkAdapter,
       );
     });
     const drivesTablePromise = new Promise((resolve) => {
       this.drivesResolve = resolve;
-      this.$eventBus.on(
+      eventBus.$on(
         'hardware-status-drives-complete',
         this.eventHandlers.drives,
       );
@@ -318,47 +319,47 @@ export default {
   beforeUnmount() {
     this.observer?.disconnect?.();
     // Clean up all event listeners
-    this.$eventBus.off(
+    eventBus.$off(
       'hardware-status-bmc-manager-complete',
       this.eventHandlers.bmcManager,
     );
-    this.$eventBus.off(
+    eventBus.$off(
       'hardware-status-chassis-complete',
       this.eventHandlers.chassis,
     );
-    this.$eventBus.off(
+    eventBus.$off(
       'hardware-status-dimm-slot-complete',
       this.eventHandlers.dimmSlot,
     );
-    this.$eventBus.off(
+    eventBus.$off(
       'hardware-status-fans-complete',
       this.eventHandlers.fans,
     );
-    this.$eventBus.off(
+    eventBus.$off(
       'hardware-status-power-supplies-complete',
       this.eventHandlers.powerSupplies,
     );
-    this.$eventBus.off(
+    eventBus.$off(
       'hardware-status-processors-complete',
       this.eventHandlers.processors,
     );
-    this.$eventBus.off(
+    eventBus.$off(
       'hardware-status-service-complete',
       this.eventHandlers.service,
     );
-    this.$eventBus.off(
+    eventBus.$off(
       'hardware-status-system-complete',
       this.eventHandlers.system,
     );
-    this.$eventBus.off(
+    eventBus.$off(
       'hardware-status-assembly-complete',
       this.eventHandlers.assembly,
     );
-    this.$eventBus.off(
+    eventBus.$off(
       'hardware-status-network-adapter-complete',
       this.eventHandlers.networkAdapter,
     );
-    this.$eventBus.off(
+    eventBus.$off(
       'hardware-status-drives-complete',
       this.eventHandlers.drives,
     );

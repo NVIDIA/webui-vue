@@ -108,7 +108,7 @@ export default {
   data() {
     return {
       confirm: false,
-      showWarning: process.env.VUE_APP_ENV_NAME !== 'nvidia-bluefield',
+      showWarning: import.meta.env.VITE_ENV_NAME !== 'nvidia-bluefield',
     };
   },
   computed: {

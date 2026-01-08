@@ -2,7 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const path = require('path');
 const fs = require('fs');
-const SchemaIndexer = require('./schema-indexer');
+const SchemaIndexer = require('./schema-indexer.cjs');
 const yaml = require('js-yaml');
 
 const app = express();

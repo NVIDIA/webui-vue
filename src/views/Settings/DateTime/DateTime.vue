@@ -203,8 +203,8 @@ export default {
     };
   },
   data() {
-    const ntpServerNumber = process.env.VUE_APP_NTP_SERVER_NUMBER
-      ? process.env.VUE_APP_NTP_SERVER_NUMBER
+    const ntpServerNumber = import.meta.env.VITE_NTP_SERVER_NUMBER
+      ? import.meta.env.VITE_NTP_SERVER_NUMBER
       : 3;
     const addresses = [];
     const items = [];

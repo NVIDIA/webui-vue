@@ -298,13 +298,13 @@ export default {
       },
       isUploading: false,
       isServerPowerOffRequired:
-        process.env.VUE_APP_SERVER_OFF_REQUIRED === 'true',
-      isBluefield: process.env.VUE_APP_ENV_NAME === 'nvidia-bluefield',
+        import.meta.env.VITE_SERVER_OFF_REQUIRED === 'true',
+      isBluefield: import.meta.env.VITE_ENV_NAME === 'nvidia-bluefield',
       bluefieldTarget: 'BMC',
-      isNvidiaGB: process.env.VUE_APP_ENV_NAME === 'nvidia-gb',
+      isNvidiaGB: import.meta.env.VITE_ENV_NAME === 'nvidia-gb',
       nvidiaGBTarget: 'BMC',
       hideFirmwareTargets:
-        process.env.VUE_APP_HIDE_FIRMWARE_TARGETS === 'true',
+        import.meta.env.VITE_HIDE_FIRMWARE_TARGETS === 'true',
       serverError: null,
       errorDetails: null,
       redfishCommonError: false,
@@ -533,12 +533,12 @@ export default {
       }
     },
     displayUpdateProgress(newInfo = {}, oldInfo = {}) {
-      const { state, taskPercent, errMsg, jsonErrMsg } = newInfo;
+      const { state, taskPercent: rawPercent, errMsg, jsonErrMsg } = newInfo;
       const { state: oldState, initiator: oldInitiator } = oldInfo;
       if (!state) return;
       if (state === 'TaskStarted') {
         // Avoid too much time at 0%(no loading bar)
-        if (taskPercent <= 1) taskPercent = 1;
+        const taskPercent = rawPercent <= 1 ? 1 : rawPercent;
         this.progressLoader([taskPercent, taskPercent]);
       } else if (state === 'TaskCompleted' && oldState !== state) {
         // End loader for polling task, then start new loader for waiting for ready

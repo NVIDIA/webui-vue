@@ -123,10 +123,10 @@
 
 <script>
 import PageSection from '@/components/Global/PageSection';
+import eventBus from '@/eventBus';
 import IconChevron from '@carbon/icons-vue/es/chevron--down/20';
 import BVToastMixin from '@/components/Mixins/BVToastMixin';
 import StatusIcon from '@/components/Global/StatusIcon';
-
 import TableRowExpandMixin, {
   expandRowLabel,
 } from '@/components/Mixins/TableRowExpandMixin';
@@ -179,7 +179,7 @@ export default {
   created() {
     this.$store.dispatch('chassis/getChassisInfo').finally(() => {
       // Emit initial data fetch complete to parent component
-      this.$eventBus.emit('hardware-status-chassis-complete');
+      eventBus.$emit('hardware-status-chassis-complete');
       this.isBusy = false;
     });
   },

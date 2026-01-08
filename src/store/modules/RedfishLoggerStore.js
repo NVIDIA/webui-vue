@@ -70,7 +70,7 @@ const RedfishLoggerStore = {
   namespaced: true,
   state: {
     // Feature enabled via env var - read only once at startup
-    featureEnabled: process.env.VUE_APP_ENABLE_REDFISH_LOGGER === 'true',
+    featureEnabled: import.meta.env.VITE_ENABLE_REDFISH_LOGGER === 'true',
     // Runtime logging state - user controlled
     loggingEnabled: false,
     // Logger panel visibility - user controlled

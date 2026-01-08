@@ -75,9 +75,9 @@ export default {
     return {
       loading,
       isServerPowerOffRequired:
-        process.env.VUE_APP_SERVER_OFF_REQUIRED === 'true',
+        import.meta.env.VITE_SERVER_OFF_REQUIRED === 'true',
       isServerPowerOnRequired:
-        process.env.VUE_APP_SERVER_ON_REQUIRED === 'true',
+        import.meta.env.VITE_SERVER_ON_REQUIRED === 'true',
     };
   },
   computed: {

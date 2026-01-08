@@ -1,17 +1,10 @@
 <template>
-  <span :class="['status-icon', status]">
-    <img
-      svg-inline
-      :class="status"
-      src="@/assets/images/power.svg"
-      width="24"
-      height="24"
-      :alt="altText"
-    />
-  </span>
+  <span class="status-icon power-icon-wrapper" v-html="svgContent" />
 </template>
 
 <script>
+import powerSvgRaw from '@/assets/images/power.svg?raw';
+
 export default {
   name: 'PowerIcon',
   props: {
@@ -21,6 +14,15 @@ export default {
     },
   },
   computed: {
+    svgContent() {
+      // Add width, height, class and aria-label to SVG
+      const classAttr = this.status ? `class="${this.status}"` : '';
+      const ariaLabel = `aria-label="${this.altText}"`;
+      return powerSvgRaw.replace(
+        '<svg ',
+        `<svg width="24" height="24" ${classAttr} ${ariaLabel} `
+      );
+    },
     altText() {
       // Generate accessible alt text based on power status
       if (this.status.includes('on')) {
@@ -34,12 +36,13 @@ export default {
 };
 </script>
 
-<style lang="scss" scoped>
-.status-icon {
+<style lang="scss">
+.status-icon.power-icon-wrapper {
   vertical-align: text-bottom;
 
   svg {
     fill: currentColor;
+    color: theme-color('success');
 
     >[data-id="power-off"] {
       display: none;
@@ -47,8 +50,6 @@ export default {
     >[data-id="power-on"] {
       display: initial;
     }
-
-    color: theme-color('success');
 
     &.off {
       color: theme-color('danger');
@@ -72,29 +73,30 @@ export default {
       }
     }
 
-    &.blink { 
+    &.blink {
       g rect,
       g path,
       g circle {
-          animation: blink 1.0s infinite;
+          animation: blink-power 1.0s infinite;
+      }
+    }
+
+    &[class^='1Hz'],
+    &[class*='1Hz'] {
+      g rect,
+      g path,
+      g circle {
+        animation-duration: 0.25s;
       }
     }
   }
 
-  svg[class^='1Hz'],
-  svg[class*='1Hz'] {
-    g rect,
-    g path,
-    g circle {
-      animation-duration: 0.25s;
-    }
+  .cls-1 {
+      fill: none;
   }
 }
-.cls-1 {
-    fill: none;
-}
 
-@keyframes blink {
+@keyframes blink-power {
   100%,
   0% {
       fill: none;

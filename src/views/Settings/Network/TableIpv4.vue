@@ -66,6 +66,7 @@
 
 <script>
 import BVToastMixin from '@/components/Mixins/BVToastMixin';
+import eventBus from '@/eventBus';
 import IconAdd from '@carbon/icons-vue/es/add--alt/20';
 import IconEdit from '@carbon/icons-vue/es/edit/20';
 import IconTrashcan from '@carbon/icons-vue/es/trash-can/20';
@@ -173,7 +174,7 @@ export default {
     this.getIpv4TableItems();
     this.$store.dispatch('network/getEthernetData').finally(() => {
       // Emit initial data fetch complete to parent component
-      this.$eventBus.emit('network-table-ipv4-complete');
+      eventBus.$emit('network-table-ipv4-complete');
     });
   },
   methods: {

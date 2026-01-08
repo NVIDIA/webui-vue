@@ -107,9 +107,9 @@
 
 <script>
 import PageSection from '@/components/Global/PageSection';
+import eventBus from '@/eventBus';
 import IconChevron from '@carbon/icons-vue/es/chevron--down/20';
 import TableCellCount from '@/components/Global/TableCellCount';
-
 import StatusIcon from '@/components/Global/StatusIcon';
 import DataFormatterMixin from '@/components/Mixins/DataFormatterMixin';
 import TableSortMixin from '@/components/Mixins/TableSortMixin';
@@ -196,7 +196,7 @@ export default {
   created() {
     this.$store.dispatch('fan/getFanInfo').finally(() => {
       // Emit initial data fetch complete to parent component
-      this.$eventBus.emit('hardware-status-fans-complete');
+      eventBus.$emit('hardware-status-fans-complete');
       this.isBusy = false;
     });
   },

@@ -32,7 +32,7 @@ export default {
   computed: {
     ...mapGetters('global', ['assetTag', 'modelType', 'serialNumber']),
     isRedfishLoggerEnabled() {
-      return process.env.VUE_APP_ENABLE_REDFISH_LOGGER === 'true';
+      return import.meta.env.VITE_ENABLE_REDFISH_LOGGER === 'true';
     },
   },
   watch: {

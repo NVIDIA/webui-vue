@@ -177,7 +177,7 @@ export default {
   data() {
     return {
       isBusy: true,
-      supportMore: process.env.VUE_APP_SHOW_MORE_SENSOR_INFO === 'true',
+      supportMore: import.meta.env.VITE_SHOW_MORE_SENSOR_INFO === 'true',
       showMore: false,
       tableFilters: [
         {

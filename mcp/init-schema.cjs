@@ -1,6 +1,6 @@
 const fs = require('fs');
 const path = require('path');
-const SchemaIndexer = require('./schema-indexer');
+const SchemaIndexer = require('./schema-indexer.cjs');
 
 // Path to store the cached index
 const CACHE_DIR = path.join(__dirname, 'cache');

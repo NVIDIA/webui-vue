@@ -58,6 +58,7 @@
 
 <script>
 import i18n from '@/i18n';
+import eventBus from '@/eventBus';
 
 export default {
   name: 'ConfirmModal',
@@ -96,11 +97,10 @@ export default {
     },
   },
   created() {
-    const bus = require('@/eventBus').default;
-    bus.$on('confirm:open', this.enqueue);
+    eventBus.$on('confirm:open', this.enqueue);
   },
   beforeUnmount() {
-    require('@/eventBus').default.$off('confirm:open', this.enqueue);
+    eventBus.$off('confirm:open', this.enqueue);
   },
   methods: {
     enqueue(payload) {

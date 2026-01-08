@@ -282,7 +282,7 @@ export default {
           ],
         },
       ],
-      showTableFilters: process.env.VUE_APP_ENV_NAME !== 'nvidia-bluefield',
+      showTableFilters: import.meta.env.VITE_ENV_NAME !== 'nvidia-bluefield',
       activeFiltersMap: {},
       currentPageMap: {},
       perPageMap: { 0: this.perPage },

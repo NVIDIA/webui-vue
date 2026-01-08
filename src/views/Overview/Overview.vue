@@ -60,6 +60,7 @@
 
 <script>
 import LoadingBarMixin from '@/components/Mixins/LoadingBarMixin';
+import eventBus from '@/eventBus';
 import OverviewDumps from './OverviewDumps.vue';
 import OverviewLogs from './OverviewLogs.vue';
 import OverviewFirmware from './OverviewFirmware.vue';
@@ -88,15 +89,15 @@ export default {
   mixins: [LoadingBarMixin],
   data() {
     return {
-      showDumps: process.env.VUE_APP_ENV_NAME === 'ibm',
+      showDumps: import.meta.env.VITE_ENV_NAME === 'ibm',
       showPower: !['nvidia-bluefield', 'nvidia-igx', 'nvidia-gb'].includes(
-        process.env.VUE_APP_ENV_NAME,
+        import.meta.env.VITE_ENV_NAME,
       ),
       showInventory: !['nvidia-bluefield', 'nvidia-igx'].includes(
-        process.env.VUE_APP_ENV_NAME,
+        import.meta.env.VITE_ENV_NAME,
       ),
       showSelLog: ['nvidia-bluefield', 'nvidia-igx', 'nvidia-gb'].includes(
-        process.env.VUE_APP_ENV_NAME,
+        import.meta.env.VITE_ENV_NAME,
       ),
     };
   },
@@ -105,7 +106,7 @@ export default {
 
     const waitFor = (eventName) =>
       new Promise((resolve) => {
-        this.$eventBus.$once(eventName, resolve);
+        eventBus.$once(eventName, resolve);
       });
 
     const promises = [

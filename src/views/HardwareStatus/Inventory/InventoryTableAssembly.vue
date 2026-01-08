@@ -131,6 +131,7 @@
 
 <script>
 import PageSection from '@/components/Global/PageSection';
+import eventBus from '@/eventBus';
 import IconChevron from '@carbon/icons-vue/es/chevron--down/20';
 import BVToastMixin from '@/components/Mixins/BVToastMixin';
 import TableRowExpandMixin, {
@@ -147,7 +148,7 @@ export default {
     return {
       isBusy: true,
       expandRowLabel: expandRowLabel,
-      showFru: process.env.VUE_APP_SHOW_FRU === 'true',
+      showFru: import.meta.env.VITE_SHOW_FRU === 'true',
     };
   },
   computed: {
@@ -229,7 +230,7 @@ export default {
       : 'assemblies/getAssemblyInfo';
     this.$store.dispatch(action).finally(() => {
       // Emit initial data fetch complete to parent component
-      this.$eventBus.emit('hardware-status-assembly-complete');
+      eventBus.$emit('hardware-status-assembly-complete');
       this.isBusy = false;
     });
   },

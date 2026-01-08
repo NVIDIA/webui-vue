@@ -35,12 +35,7 @@
             to="/"
             data-test-id="appHeader-container-overview"
           >
-            <img
-              svg-inline
-              class="header-logo"
-              src="@/assets/images/nvidia-logo.svg"
-              :alt="altLogo"
-            />
+            <logo-header class="header-logo" :aria-label="altLogo" />
           </b-navbar-brand>
           <div v-if="isNavTagPresent" :key="routerKey" class="ps-2 nav-tags">
             <span>|</span>
@@ -151,8 +146,10 @@ import IconRecordingFilled from '@carbon/icons-vue/es/recording--filled/20';
 import StatusIcon from '@/components/Global/StatusIcon';
 import PowerIcon from '@/components/Global/PowerIcon';
 import LoadingBar from '@/components/Global/LoadingBar';
+import LogoHeader from '@/assets/images/logo-header.svg?component';
 import { mapState, mapGetters, mapActions } from 'vuex';
 import i18n from '@/i18n';
+import eventBus from '@/eventBus';
 
 export default {
   name: 'AppHeader',
@@ -166,6 +163,7 @@ export default {
     StatusIcon,
     PowerIcon,
     LoadingBar,
+    LogoHeader,
   },
   mixins: [BVToastMixin],
   props: {
@@ -178,7 +176,7 @@ export default {
   data() {
     return {
       isNavigationOpen: false,
-      altLogo: process.env.VUE_APP_COMPANY_NAME || 'Built on OpenBMC',
+      altLogo: import.meta.env.VITE_COMPANY_NAME || 'Built on OpenBMC',
     };
   },
   computed: {
@@ -246,16 +244,13 @@ export default {
 
   },
   mounted() {
-    if (!this.$eventBus) return;
     this.navigationOpenHandler = (isNavigationOpen) => {
       this.isNavigationOpen = isNavigationOpen;
     };
-    this.$eventBus.on('change-is-navigation-open', this.navigationOpenHandler);
+    eventBus.$on('change-is-navigation-open', this.navigationOpenHandler);
   },
   beforeUnmount() {
-    if (this.$eventBus && this.navigationOpenHandler) {
-      this.$eventBus.off('change-is-navigation-open', this.navigationOpenHandler);
-    }
+    eventBus.$off('change-is-navigation-open', this.navigationOpenHandler);
   },
   methods: {
     getHealthStatus() {
@@ -274,15 +269,11 @@ export default {
       this.$store.dispatch('authentication/logout');
     },
     toggleNavigation() {
-      if (this.$eventBus) {
-        this.$eventBus.emit('toggle-navigation');
-      }
+      eventBus.$emit('toggle-navigation');
     },
     setFocus(event) {
       event.preventDefault();
-      if (this.$eventBus) {
-        this.$eventBus.emit('skip-navigation');
-      }
+      eventBus.$emit('skip-navigation');
     },
     ...mapActions('redfishLogger', ['toggleLogging']),
   },
@@ -339,7 +330,7 @@ export default {
 
     // Ensure left and right navbar groups are distributed across the full width.
     // This is defensive against structural differences in bootstrap-vue-next markup
-    // and cases where bootstrap navbar flex rules aren’t taking effect.
+    // and cases where bootstrap navbar flex rules aren't taking effect.
     > .container-fluid {
       display: flex;
       align-items: center;
@@ -451,11 +442,11 @@ export default {
       animation: pulse 1.5s ease-in-out infinite;
     }
   }
-  
+
   .not-recording-icon {
     fill: $gray-500 !important;
   }
-  
+
   @keyframes pulse {
     0%, 100% {
       opacity: 1;
