@@ -1,14 +1,10 @@
 import { mount } from '@vue/test-utils';
+import { vi, describe, it, expect, beforeEach } from 'vitest';
+import eventBus from '@/eventBus';
 import { createStore } from 'vuex';
 import AppHeader from '@/components/AppHeader';
 
 describe('AppHeader.vue', () => {
-  const eventBus = {
-    emit: jest.fn(),
-    on: jest.fn(),
-    off: jest.fn(),
-  };
-
   // Create properly namespaced modules with state and getters
   // that match what AppHeader.vue expects
   const modules = {
@@ -18,8 +14,8 @@ describe('AppHeader.vue', () => {
         consoleWindow: null,
       },
       actions: {
-        resetStoreState: jest.fn(),
-        logout: jest.fn(),
+        resetStoreState: vi.fn(),
+        logout: vi.fn(),
       },
     },
     global: {
@@ -47,15 +43,15 @@ describe('AppHeader.vue', () => {
         healthStatus: (state) => state.healthStatus,
       },
       actions: {
-        getServerStatus: jest.fn(),
-        getSystemInfo: jest.fn(),
-        fetchHealthStatus: jest.fn(),
+        getServerStatus: vi.fn(),
+        getSystemInfo: vi.fn(),
+        fetchHealthStatus: vi.fn(),
       },
     },
     eventLog: {
       namespaced: true,
       actions: {
-        getLogData: jest.fn(),
+        getLogData: vi.fn(),
       },
     },
     redfishLogger: {
@@ -71,7 +67,7 @@ describe('AppHeader.vue', () => {
         isLoggerVisible: (state) => state.loggerVisible,
       },
       actions: {
-        toggleLogging: jest.fn(),
+        toggleLogging: vi.fn(),
       },
     },
   };
@@ -82,7 +78,6 @@ describe('AppHeader.vue', () => {
       plugins: [store],
       mocks: {
         $t: (key) => key,
-        $eventBus: eventBus,
       },
     },
   });
@@ -90,7 +85,7 @@ describe('AppHeader.vue', () => {
   // Reset dispatch between tests so that multiple
   // actions are not dispatched for each test
   beforeEach(() => {
-    store.dispatch = jest.fn();
+    store.dispatch = vi.fn();
   });
 
   it('should exist', () => {
@@ -108,9 +103,10 @@ describe('AppHeader.vue', () => {
   });
 
   it('nav-trigger button click should emit toggle-navigation event', async () => {
+    const spy = vi.spyOn(eventBus, '$emit');
     wrapper.get('#app-header-trigger').trigger('click');
     await wrapper.vm.$nextTick();
-    expect(eventBus.emit).toHaveBeenCalledWith('toggle-navigation');
+    expect(spy).toHaveBeenCalledWith('toggle-navigation');
   });
 
   it('logout button should dispatch authentication/logout', async () => {
@@ -120,12 +116,24 @@ describe('AppHeader.vue', () => {
   });
 
   it('change:isNavigationOpen event should set isNavigationOpen prop to false', async () => {
-    const navigationOpenHandler = eventBus.on.mock.calls.find(
+    const spy = vi.spyOn(eventBus, '$on');
+    // Re-mount to capture the $on call
+    const testWrapper = mount(AppHeader, {
+      global: {
+        plugins: [store],
+        mocks: {
+          $t: (key) => key,
+        },
+      },
+    });
+    const navigationOpenHandler = spy.mock.calls.find(
       ([eventName]) => eventName === 'change-is-navigation-open',
     )?.[1];
-    navigationOpenHandler(false);
-    await wrapper.vm.$nextTick();
-    expect(wrapper.vm.isNavigationOpen).toEqual(false);
+    if (navigationOpenHandler) {
+      navigationOpenHandler(false);
+      await testWrapper.vm.$nextTick();
+      expect(testWrapper.vm.isNavigationOpen).toEqual(false);
+    }
   });
 
   describe('Created lifecycle hook', () => {

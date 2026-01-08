@@ -94,10 +94,6 @@ export default {
       type: String,
       default: null,
     },
-    modelValue: {
-      type: Boolean,
-      default: false,
-    },
   },
   emits: ['okConfirm', 'update:modelValue'],
   setup() {

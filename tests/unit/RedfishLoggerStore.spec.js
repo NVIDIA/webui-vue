@@ -1,3 +1,4 @@
+import { vi, describe, it, expect, beforeEach } from 'vitest';
 import RedfishLoggerStore from '@/store/modules/RedfishLoggerStore';
 
 describe('RedfishLoggerStore', () => {
@@ -245,8 +246,8 @@ describe('RedfishLoggerStore', () => {
     let dispatch;
 
     beforeEach(() => {
-      commit = jest.fn();
-      dispatch = jest.fn();
+      commit = vi.fn();
+      dispatch = vi.fn();
     });
 
     it('enableLogging should commit setLoggingEnabled and show logger', () => {

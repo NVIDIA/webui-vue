@@ -12,7 +12,7 @@
               v-model="resetOption"
               stacked
             >
-            <div v-for="(item, index) in resetBiosUris">
+            <div v-for="(item, index) in resetBiosUris" :key="'bios-' + index">
               <b-form-radio
                 class="mb-1"
                 :value="{ ...item, value: 'resetBios' }"
@@ -28,7 +28,7 @@
               </b-form-text>
             </div>
 
-            <div v-for="(item, index) in bmcResetToDefaultsUris">
+            <div v-for="(item, index) in bmcResetToDefaultsUris" :key="'defaults-' + index">
               <b-form-radio
                 class="mb-1"
                 :value="{ ...item, value: 'resetToDefaults' }"

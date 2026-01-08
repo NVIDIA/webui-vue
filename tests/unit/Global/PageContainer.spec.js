@@ -1,10 +1,11 @@
+import { vi, describe, it, expect } from 'vitest';
 import { mount } from '@vue/test-utils';
 import PageContainer from '@/components/Global/PageContainer';
 
 // Mock the ManagerStatusService to prevent store dispatch calls
-jest.mock('@/services/ManagerStatusService', () => ({
-  startManagerStatusCheck: jest.fn(() => 123),
-  stopManagerStatusCheck: jest.fn(),
+vi.mock('@/services/ManagerStatusService', () => ({
+  startManagerStatusCheck: vi.fn(() => 123),
+  stopManagerStatusCheck: vi.fn(),
 }));
 
 describe('PageContainer.vue', () => {
@@ -20,8 +21,8 @@ describe('PageContainer.vue', () => {
           },
         },
         $eventBus: {
-          on: jest.fn(),
-          off: jest.fn(),
+          on: vi.fn(),
+          off: vi.fn(),
         },
       },
       stubs: {

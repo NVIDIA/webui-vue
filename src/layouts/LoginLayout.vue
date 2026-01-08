@@ -28,7 +28,7 @@
 </template>
 
 <script>
-import LoginCompanyLogo from '@/assets/images/login-company-logo.svg?component';
+import LoginCompanyLogo from '@/assets/images/nvidia-logo-login.svg?component';
 import BuiltOnOpenbmcLogo from '@/assets/images/built-on-openbmc-logo.svg?component';
 
 export default {

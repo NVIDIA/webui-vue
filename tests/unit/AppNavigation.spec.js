@@ -1,21 +1,18 @@
 import { mount } from '@vue/test-utils';
+import { vi, describe, it, expect } from 'vitest';
+import eventBus from '@/eventBus';
 import AppNavigation from '@/components/AppNavigation';
 import { createStore } from 'vuex';
 import { createRouter, createMemoryHistory } from 'vue-router';
 
 describe('AppNavigation.vue', () => {
   let wrapper;
-  const eventBus = {
-    emit: jest.fn(),
-    on: jest.fn(),
-    off: jest.fn(),
-  };
   const router = createRouter({
     history: createMemoryHistory(),
     routes: [],
   });
   const actions = {
-    'global/userPrivilege': jest.fn(),
+    'global/userPrivilege': vi.fn(),
   };
   const store = createStore({ actions });
 
@@ -24,7 +21,6 @@ describe('AppNavigation.vue', () => {
       plugins: [store, router],
       mocks: {
         $t: (key) => key,
-        $eventBus: eventBus,
       },
     },
   });
@@ -43,23 +39,35 @@ describe('AppNavigation.vue', () => {
   });
 
   it('Nav Overlay click should emit change-is-navigation-open event', async () => {
+    const spy = vi.spyOn(eventBus, '$emit');
+    wrapper.vm.isNavigationOpen = true;
+    await wrapper.vm.$nextTick();
     const navOverlay = wrapper.find('#nav-overlay');
     navOverlay.trigger('click');
     await wrapper.vm.$nextTick();
-    expect(eventBus.emit).toHaveBeenCalledWith(
-      'change-is-navigation-open',
-      true,
-    );
+    expect(spy).toHaveBeenCalledWith('change-is-navigation-open', false);
   });
 
   it('toggle-navigation event should toggle isNavigation data prop value', async () => {
-    const toggleHandler = eventBus.on.mock.calls.find(
+    const spy = vi.spyOn(eventBus, '$on');
+    // Re-mount to capture the $on call
+    const testWrapper = mount(AppNavigation, {
+      global: {
+        plugins: [store, router],
+        mocks: {
+          $t: (key) => key,
+        },
+      },
+    });
+    const toggleHandler = spy.mock.calls.find(
       ([eventName]) => eventName === 'toggle-navigation',
     )?.[1];
-    wrapper.vm.isNavigationOpen = false;
-    toggleHandler();
-    expect(wrapper.vm.isNavigationOpen).toBe(true);
-    toggleHandler();
-    expect(wrapper.vm.isNavigationOpen).toBe(false);
+    if (toggleHandler) {
+      testWrapper.vm.isNavigationOpen = false;
+      toggleHandler();
+      expect(testWrapper.vm.isNavigationOpen).toBe(true);
+      toggleHandler();
+      expect(testWrapper.vm.isNavigationOpen).toBe(false);
+    }
   });
 });

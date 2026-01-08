@@ -41,7 +41,7 @@
               {{ $t('global.form.selectAnOption') }}
             </b-form-select-option>
           </template>
-          <b-form-select-option v-for="option in dumpTypeOptions" :value="option">
+          <b-form-select-option v-for="option in dumpTypeOptions" :key="option.text" :value="option">
             {{ $t('pageDumps.dumpTypes.' + option.text) }}
           </b-form-select-option>
         </b-form-select>

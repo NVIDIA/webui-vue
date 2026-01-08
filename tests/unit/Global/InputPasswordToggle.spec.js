@@ -1,3 +1,4 @@
+import { describe, it, expect } from 'vitest';
 import { mount } from '@vue/test-utils';
 import InputPasswordToggle from '@/components/Global/InputPasswordToggle';
 
@@ -21,7 +22,8 @@ describe('InputPasswordToggle.vue', () => {
     expect(wrapper.find('.isVisible').exists()).toBe(false);
   });
   it('should render isVisible class when button is clicked', async () => {
-    await wrapper.find('b-button').trigger('click');
+    // Find the stubbed button element (b-button becomes button)
+    await wrapper.find('button').trigger('click');
     expect(wrapper.find('.isVisible').exists()).toBe(true);
   });
   it('should render correctly', () => {

@@ -34,15 +34,16 @@ export default {
     OverviewCard,
   },
   mixins: [DataFormatterMixin],
-  data() {
-    return {
-      showBackup:
-        import.meta.env.VITE_ENV_NAME !== 'nvidia-bluefield' &&
-          this.backupVersion,
-      showBios: this.firmwareVersion,
-    };
-  },
   computed: {
+    showBackup() {
+      return (
+        import.meta.env.VITE_ENV_NAME !== 'nvidia-bluefield' &&
+        this.backupVersion
+      );
+    },
+    showBios() {
+      return !!this.firmwareVersion;
+    },
     // TODO: Update the template to show an array of bmc images
     backupBmcFirmware() {
       const backupFirmwares =

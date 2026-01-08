@@ -1,6 +1,6 @@
 <template>
   <div>
-    <GlobalBanner
+    <global-banner
       :show="!isManagerReady"
       :message="$t('global.toast.bmcIsNotReady')"
       variant="warning"

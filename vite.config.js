@@ -1,3 +1,4 @@
+/// <reference types="vitest" />
 import { defineConfig, loadEnv } from 'vite';
 import vue from '@vitejs/plugin-vue';
 import basicSsl from '@vitejs/plugin-basic-ssl';
@@ -6,6 +7,54 @@ import viteCompression from 'vite-plugin-compression';
 import { fileURLToPath, URL } from 'node:url';
 import path from 'node:path';
 import fs from 'node:fs';
+
+// Plugin to remove crossorigin attribute from generated HTML
+// bmcweb doesn't return CORS headers for static files, which causes
+// browsers to reject resources with empty MIME types when crossorigin is set
+function removeCrossorigin() {
+  return {
+    name: 'remove-crossorigin',
+    enforce: 'post',
+    transformIndexHtml(html) {
+      return html.replace(/ crossorigin/g, '');
+    },
+  };
+}
+
+// Plugin to provide fallback for version-info when file doesn't exist
+function versionInfoFallback() {
+  const versionInfoPath = path.resolve(__dirname, 'src/env/version-info.js');
+  const versionInfoPathNoExt = path.resolve(__dirname, 'src/env/version-info');
+  const virtualId = '\0version-info-fallback';
+
+  return {
+    name: 'version-info-fallback',
+    enforce: 'pre',
+    resolveId(source) {
+      // Match both with alias and resolved paths
+      if (
+        source === '@/env/version-info' ||
+        source === versionInfoPath ||
+        source === versionInfoPathNoExt
+      ) {
+        // Check if the real file exists
+        if (fs.existsSync(versionInfoPath)) {
+          return versionInfoPath;
+        }
+        // Return virtual module ID if file doesn't exist
+        return virtualId;
+      }
+      return null;
+    },
+    load(id) {
+      if (id === virtualId) {
+        // Return fallback module with empty version info
+        return 'export default { gitCommitSha: "" };';
+      }
+      return null;
+    },
+  };
+}
 
 // Plugin to resolve directory imports to index.js (like Webpack does)
 function resolveDirectoryIndex() {
@@ -119,6 +168,7 @@ export default defineConfig(({ mode }) => {
 
   return {
     plugins: [
+      versionInfoFallback(),
       resolveDirectoryIndex(),
       vue(),
       svgLoader({
@@ -130,11 +180,13 @@ export default defineConfig(({ mode }) => {
       ...(mode === 'production'
         ? [
             viteCompression({
-              deleteOriginFile: true,
+              deleteOriginFile: false,
               algorithm: 'gzip',
             }),
           ]
         : []),
+      // Remove crossorigin attributes for bmcweb compatibility
+      removeCrossorigin(),
     ],
 
     resolve: {
@@ -275,7 +327,7 @@ export default defineConfig(({ mode }) => {
                 }
               }
             });
-            proxy.on('error', (err, req) => {
+            proxy.on('error', (err) => {
               console.error('[vite] /console proxy error:', err.message);
             });
           },
@@ -323,16 +375,27 @@ export default defineConfig(({ mode }) => {
     },
 
     build: {
+      // Disable crossorigin attribute on script/link tags
+      // bmcweb doesn't return CORS headers for static files
+      modulePreload: {
+        polyfill: false,
+      },
       // Generate hashed filenames
       rollupOptions: {
         output: {
           // Single chunk output (like LimitChunkCountPlugin with maxChunks: 1)
           manualChunks: undefined,
-          entryFileNames: 'js/[name].[hash].js',
+          // Use 'app' instead of 'index' to avoid bmcweb webassets renaming
+          // bmcweb treats 'index.*' files specially and renames them to directory paths
+          entryFileNames: 'js/app.[hash].js',
           chunkFileNames: 'js/[name].[hash].js',
           assetFileNames: (assetInfo) => {
             if (assetInfo.name?.endsWith('.css')) {
-              return 'css/[name].[hash][extname]';
+              // Use 'app' prefix instead of 'index' to avoid bmcweb webassets renaming
+              // bmcweb treats 'index.*' files specially and renames them to directory paths
+              const baseName = assetInfo.name.replace('.css', '');
+              const finalName = baseName === 'index' ? 'app' : baseName;
+              return `css/${finalName}.[hash][extname]`;
             }
             return 'assets/[name].[hash][extname]';
           },
@@ -346,5 +409,24 @@ export default defineConfig(({ mode }) => {
 
     // Handle .ico files
     assetsInclude: ['**/*.ico'],
+
+    // Vitest configuration
+    test: {
+      globals: true,
+      environment: 'happy-dom',
+      setupFiles: ['./tests/vitest.setup.js'],
+      include: ['tests/unit/**/*.spec.js'],
+      css: false,
+      snapshotSerializers: ['vue3-snapshot-serializer'],
+      server: {
+        deps: {
+          inline: ['@carbon/icons-vue'],
+        },
+      },
+      coverage: {
+        provider: 'v8',
+        reporter: ['text', 'json', 'html'],
+      },
+    },
   };
 });

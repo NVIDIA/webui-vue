@@ -1,280 +1,156 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`ResponseJsonTree.vue Snapshot should render complex Redfish response correctly 1`] = `
-<span
-  class="json-tree"
->
-  
+exports[`ResponseJsonTree.vue > Snapshot > should render complex Redfish response correctly 1`] = `
+<span class="json-tree">
   <!-- Render objects with special handling for @odata.id and @odata.context -->
-  
   <span>
     {
   </span>
-  <div
-    class="json-indent"
-  >
-    
-    
+  <div class="json-indent">
     <span>
-      "@odata.context": 
+      "@odata.context":
     </span>
     <!-- Handle @odata.id and @odata.context as clickable links -->
     <a
       aria-label="pageRedfishLogger.navigateToUrl"
       class="url-link"
       href="#"
-    >
-      "/redfish/v1/$metadata#Manager.Manager"
-    </a>
-    
+    >"/redfish/v1/$metadata#Manager.Manager"</a>
     ,
-    
     <br />
-    
-    
     <span>
-      "@odata.id": 
+      "@odata.id":
     </span>
     <!-- Handle @odata.id and @odata.context as clickable links -->
     <a
       aria-label="pageRedfishLogger.navigateToUrl"
       class="url-link"
       href="#"
-    >
-      "/redfish/v1/Managers/bmc"
-    </a>
-    
+    >"/redfish/v1/Managers/bmc"</a>
     ,
-    
     <br />
-    
-    
     <span>
-      "@odata.type": 
+      "@odata.type":
     </span>
     <!-- Handle @odata.id and @odata.context as clickable links -->
-    <span
-      class="json-tree"
-    >
-      
-      
+    <span class="json-tree">
       "#Manager.v1_14_0.Manager"
-      
-      
     </span>
-    
     ,
-    
     <br />
-    
-    
     <span>
-      "Id": 
+      "Id":
     </span>
     <!-- Handle @odata.id and @odata.context as clickable links -->
-    <span
-      class="json-tree"
-    >
-      
-      
+    <span class="json-tree">
       "bmc"
-      
-      
     </span>
-    
     ,
-    
     <br />
-    
-    
     <span>
-      "Name": 
+      "Name":
     </span>
     <!-- Handle @odata.id and @odata.context as clickable links -->
-    <span
-      class="json-tree"
-    >
-      
-      
+    <span class="json-tree">
       "Manager"
-      
-      
     </span>
-    
     ,
-    
     <br />
-    
-    
     <span>
-      "Status": 
+      "Status":
     </span>
     <!-- Handle @odata.id and @odata.context as clickable links -->
-    <span
-      class="json-tree"
-    >
-      
+    <span class="json-tree">
       <!-- Render objects with special handling for @odata.id and @odata.context -->
-      
       <span>
         {
       </span>
-      <div
-        class="json-indent"
-      >
-        
-        
+      <div class="json-indent">
         <span>
-          "Health": 
+          "Health":
         </span>
         <!-- Handle @odata.id and @odata.context as clickable links -->
-        <span
-          class="json-tree"
-        >
-          
-          
+        <span class="json-tree">
           "OK"
-          
-          
         </span>
-        
         ,
-        
         <br />
-        
-        
         <span>
-          "State": 
+          "State":
         </span>
         <!-- Handle @odata.id and @odata.context as clickable links -->
-        <span
-          class="json-tree"
-        >
-          
-          
+        <span class="json-tree">
           "Enabled"
-          
-          
         </span>
-        <!--v-if-->
+        <!-- v-if -->
         <br />
-        
-        
       </div>
       <span>
         }
       </span>
-      
-      
     </span>
-    
     ,
-    
     <br />
-    
-    
     <span>
-      "Links": 
+      "Links":
     </span>
     <!-- Handle @odata.id and @odata.context as clickable links -->
-    <span
-      class="json-tree"
-    >
-      
+    <span class="json-tree">
       <!-- Render objects with special handling for @odata.id and @odata.context -->
-      
       <span>
         {
       </span>
-      <div
-        class="json-indent"
-      >
-        
-        
+      <div class="json-indent">
         <span>
-          "ManagerForServers": 
+          "ManagerForServers":
         </span>
         <!-- Handle @odata.id and @odata.context as clickable links -->
-        <span
-          class="json-tree"
-        >
-          
-          
+        <span class="json-tree">
           <span>
             [
           </span>
-          <div
-            class="json-indent"
-          >
-            
-            
-            <span
-              class="json-tree"
-            >
-              
+          <div class="json-indent">
+            <span class="json-tree">
               <!-- Render objects with special handling for @odata.id and @odata.context -->
-              
               <span>
                 {
               </span>
-              <div
-                class="json-indent"
-              >
-                
-                
+              <div class="json-indent">
                 <span>
-                  "@odata.id": 
+                  "@odata.id":
                 </span>
                 <!-- Handle @odata.id and @odata.context as clickable links -->
                 <a
                   aria-label="pageRedfishLogger.navigateToUrl"
                   class="url-link"
                   href="#"
-                >
-                  "/redfish/v1/Systems/system"
-                </a>
-                <!--v-if-->
+                >"/redfish/v1/Systems/system"</a>
+                <!-- v-if -->
                 <br />
-                
-                
               </div>
               <span>
                 }
               </span>
-              
-              
             </span>
-            <!--v-if-->
+            <!-- v-if -->
             <br />
-            
-            
           </div>
           <span>
             ]
           </span>
-          
-          
         </span>
-        <!--v-if-->
+        <!-- v-if -->
         <br />
-        
-        
       </div>
       <span>
         }
       </span>
-      
-      
     </span>
-    <!--v-if-->
+    <!-- v-if -->
     <br />
-    
-    
   </div>
   <span>
     }
   </span>
-  
-  
 </span>
 `;

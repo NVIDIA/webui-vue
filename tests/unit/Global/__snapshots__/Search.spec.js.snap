@@ -1,29 +1,39 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`Search.vue should render correctly 1`] = `
-<div
-  class="search-global"
->
-  <b-form-group
-    class="mb-2"
+exports[`Search.vue > should render correctly 1`] = `
+<div class="search-global">
+  <div
+    class="
+      form-group
+      mb-2
+      mb-2
+    "
     label="global.form.search"
     label-class="invisible"
     label-for="searchInput-test-uid"
   >
-    <b-input-group
-      class="align-items-center"
+    <div
+      class="
+        align-items-center
+        input-group
+      "
       size="md"
     >
-      <b-form-input
+      <input
         aria-label="global.form.search"
-        class="search-input"
+        class="
+          form-control
+          search-input
+          search-input
+        "
         id="searchInput-test-uid"
         modelvalue=""
         placeholder="Search"
         type="text"
+        value="''"
       />
-      <!--v-if-->
-    </b-input-group>
-  </b-form-group>
+      <!-- v-if -->
+    </div>
+  </div>
 </div>
 `;

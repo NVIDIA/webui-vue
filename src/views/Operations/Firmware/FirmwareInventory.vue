@@ -139,7 +139,7 @@ export default {
       this.showAdvanced = !this.showAdvanced;
     },
   },
-  beforeDestroy() {
+  beforeUnmount() {
     this.$store.commit('firmware/setCheckedItems', []);
   },
 };
