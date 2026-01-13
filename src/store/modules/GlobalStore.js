@@ -70,6 +70,7 @@ const GlobalStore = {
     systemId: (state) => state.system?.Id || null,
     locationIndicatorActive: (state) => state.system?.LocationIndicatorActive || null,
     lastPowerOperationTime: (state) => state.lastPowerOperationTime,
+    manufacturer: (state) => state.system?.Manufacturer || null,
   },
   mutations: {
     setServiceRoot: (state, serviceRoot) => {

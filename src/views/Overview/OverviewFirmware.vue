@@ -27,7 +27,6 @@
 <script>
 import OverviewCard from './OverviewCard';
 import DataFormatterMixin from '@/components/Mixins/DataFormatterMixin';
-import { mapState } from 'vuex';
 
 export default {
   name: 'Firmware',
@@ -44,9 +43,6 @@ export default {
     };
   },
   computed: {
-    ...mapState({
-      server: (state) => state.system.systems[0],
-    }),
     // TODO: Update the template to show an array of bmc images
     backupBmcFirmware() {
       const backupFirmwares =

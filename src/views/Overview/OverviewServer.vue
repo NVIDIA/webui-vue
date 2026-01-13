@@ -7,15 +7,15 @@
       <b-col sm="6">
         <dl>
           <dt>{{ $t('pageOverview.model') }}</dt>
-          <dd>{{ dataFormatter(serverModel) }}</dd>
+          <dd>{{ dataFormatter(modelType) }}</dd>
           <dt>{{ $t('pageOverview.serialNumber') }}</dt>
-          <dd>{{ dataFormatter(serverSerialNumber) }}</dd>
+          <dd>{{ dataFormatter(serialNumber) }}</dd>
         </dl>
       </b-col>
       <b-col sm="6">
         <dl>
           <dt>{{ $t('pageOverview.serverManufacturer') }}</dt>
-          <dd>{{ dataFormatter(serverManufacturer) }}</dd>
+          <dd>{{ dataFormatter(manufacturer) }}</dd>
         </dl>
       </b-col>
     </b-row>
@@ -25,7 +25,7 @@
 <script>
 import OverviewCard from './OverviewCard';
 import DataFormatterMixin from '@/components/Mixins/DataFormatterMixin';
-import { mapState } from 'vuex';
+import { mapGetters } from 'vuex';
 import { useI18n } from 'vue-i18n';
 
 export default {
@@ -40,18 +40,7 @@ export default {
     };
   },
   computed: {
-    ...mapState({
-      server: (state) => state.system.systems[0],
-      serverModel() {
-        return this.server?.model;
-      },
-      serverSerialNumber() {
-        return this.server?.serialNumber;
-      },
-      serverManufacturer() {
-        return this.server?.manufacturer;
-      },
-    }),
+    ...mapGetters('global', ['modelType', 'manufacturer', 'serialNumber']),
   },
   created() {
     this.$store.dispatch('system/getSystem').finally(() => {
