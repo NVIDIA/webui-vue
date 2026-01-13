@@ -49,6 +49,11 @@ export default {
   name: 'FormFile',
   components: { BFormFile, IconClose },
   props: {
+    // Vue 3 v-model support
+    modelValue: {
+      type: [File, Object],
+      default: null,
+    },
     id: {
       type: String,
       default: '',
@@ -70,16 +75,25 @@ export default {
       default: 'secondary',
     },
   },
-  emits: ['input'],
+  emits: ['update:modelValue', 'input'],
   data() {
     return {
       $t: useI18n().t,
-      file: null,
+      // internal mirror of v-model value
+      file: this.modelValue ?? null,
     };
   },
   watch: {
-    file(newFile, oldFile) {
-      // Emit file value to parent (Options API pages expect @input to carry the File)
+    modelValue(newValue) {
+      // Keep internal state in sync if parent updates/clears value
+      if (newValue !== this.file) {
+        this.file = newValue ?? null;
+      }
+    },
+    file(newFile) {
+      // Vue 3 v-model
+      this.$emit('update:modelValue', newFile);
+      // Back-compat for any legacy listeners expecting @input
       this.$emit('input', newFile);
     },
   },

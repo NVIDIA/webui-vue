@@ -1219,6 +1219,7 @@
             "rw": "读写（默认只读）"
         },
         "toast": {
+            "errorLoadingData": "加载虚拟媒体数据时出错。",
             "errorMounting": "挂载时出错",
             "errorReadingFile": "读取文件时出错。正在关闭服务器。",
             "errorUnmounting": "卸载时出错",

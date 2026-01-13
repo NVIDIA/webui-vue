@@ -109,7 +109,7 @@ const VirtualMediaStore = {
           )
           .then((devices) => api.all(devices.map((device) => api.get(device))));
         
-        const proxyDevices = devices
+        let proxyDevices = devices
           .filter((d) => getters['isProxyDevice'](d.data))
           .map((device) => ({
             ...device.data,
@@ -118,7 +118,7 @@ const VirtualMediaStore = {
           }));
         // if there are no proxy devices, add the default device
         if (proxyDevices.length === 0) {
-          proxyDevices=[defaultDevice];
+          proxyDevices = [defaultDevice];
         }
         // Don't kill current connections on a reload of data
         // override items in the proxyDevices array with current active devices

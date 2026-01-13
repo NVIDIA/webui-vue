@@ -214,8 +214,9 @@ export default {
      */
     startVM(device) {
       const token = this.$store.getters['authentication/token'];
+      const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
       device.nbd = new NbdServer(
-        `wss://${window.location.host}${device.WebSocketEndpoint}`,
+        `${wsProtocol}//${window.location.host}${device.WebSocketEndpoint}`,
         device.file,
         device.Id,
         token,

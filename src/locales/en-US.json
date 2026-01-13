@@ -1218,6 +1218,7 @@
             "rw": "Read and Write (Default Read Only)"
         },
         "toast": {
+            "errorLoadingData": "Error loading virtual media data.",
             "errorMounting": "Error mounting",
             "errorReadingFile": "Error reading file. Closing server.",
             "errorUnmounting": "Error unmounting",
