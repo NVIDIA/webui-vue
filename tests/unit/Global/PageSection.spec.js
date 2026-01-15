@@ -3,11 +3,11 @@ import PageSection from '@/components/Global/PageSection';
 
 describe('PageSection.vue', () => {
   const wrapper = mount(PageSection, {
-    propsData: {
-      sectionTitle: 'PageSection test title',
-    },
-    mocks: {
-      $t: (key) => key,
+    props: { sectionTitle: 'PageSection test title' },
+    global: {
+      mocks: {
+        $t: (key) => key,
+      },
     },
   });
   it('should exist', () => {

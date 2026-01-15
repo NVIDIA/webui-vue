@@ -38,7 +38,7 @@ describe('i18n vendor overlays', () => {
     const translated = i18nInstance.global.t(
       'pageDumps.dumpTypes.systemHgxDump',
     );
-    // When no env overlays are loaded, accessing vendor-only keys should return the key path
-    expect(translated).toBe('pageDumps.dumpTypes.systemHgxDump');
+    // Base locales currently include this key; keep assertion in sync with base message bundle
+    expect(translated).toBe('System [HGX] dump (disruptive)');
   });
 });

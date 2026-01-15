@@ -9,8 +9,10 @@ describe('LoadingBar.vue', () => {
         isLoadingComplete: false,
       };
     },
-    mocks: {
-      $t: (key) => key,
+    global: {
+      mocks: {
+        $t: (key) => key,
+      },
     },
   });
   it('should exist', () => {
@@ -22,7 +24,7 @@ describe('LoadingBar.vue', () => {
       loadingIndicatorValue: 100,
     });
     expect(wrapper.vm.isLoadingComplete).toBe(false);
-    expect(wrapper.find('.progress').exists()).toBe(true);
+    expect(wrapper.find('b-progress').exists()).toBe(true);
   });
   it('should hide loading bar element', async () => {
     await wrapper.setData({
@@ -30,7 +32,7 @@ describe('LoadingBar.vue', () => {
       loadingIndicatorValue: 0,
     });
     expect(wrapper.vm.isLoadingComplete).toBe(true);
-    expect(wrapper.find('.progress').exists()).toBe(false);
+    expect(wrapper.find('b-progress').exists()).toBe(false);
   });
   it('should render correctly', () => {
     expect(wrapper.element).toMatchSnapshot();

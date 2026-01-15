@@ -3,9 +3,7 @@ import StatusIcon from '@/components/Global/StatusIcon';
 
 describe('StatusIcon.vue', () => {
   const wrapper = mount(StatusIcon, {
-    propsData: {
-      status: 'info',
-    },
+    props: { status: 'info' },
   });
   it('should exist', () => {
     expect(wrapper.exists()).toBe(true);

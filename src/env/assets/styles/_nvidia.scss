@@ -161,9 +161,9 @@ $loading-color-100: #76b900;
   border-width: var(--borderWidths-sm);
 }
 
-:root .btn svg {
-  margin-inline-end: 1rem;
-}
+// :root .btn svg {
+//   margin-inline-end: 1rem;
+// }
 
 :root .btn:disabled:not(.btn-link) {
   color: var(--colors-actionFgPrimaryDisabled);

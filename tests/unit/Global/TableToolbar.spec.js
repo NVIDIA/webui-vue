@@ -3,11 +3,11 @@ import TableToolbar from '@/components/Global/TableToolbar';
 
 describe('TableToolbar.vue', () => {
   const wrapper = mount(TableToolbar, {
-    propsData: {
-      selectedItemsCount: 0,
-    },
-    mocks: {
-      $t: (key) => key,
+    props: { selectedItemsCount: 0 },
+    global: {
+      mocks: {
+        $t: (key) => key,
+      },
     },
   });
   it('should exist', () => {

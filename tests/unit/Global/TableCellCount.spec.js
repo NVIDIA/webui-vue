@@ -3,12 +3,11 @@ import TableCellCount from '@/components/Global/TableCellCount';
 
 describe('TableCellCount.vue', () => {
   const wrapper = mount(TableCellCount, {
-    propsData: {
-      filteredItemsCount: 5,
-      totalNumberOfCells: 100,
-    },
-    mocks: {
-      $t: (key) => key,
+    props: { filteredItemsCount: 5, totalNumberOfCells: 100 },
+    global: {
+      mocks: {
+        $t: (key) => key,
+      },
     },
   });
   it('should exist', () => {

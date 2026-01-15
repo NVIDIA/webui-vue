@@ -6,19 +6,29 @@
       src="@/assets/images/power.svg"
       width="24"
       height="24"
-      :alt="systemPower"
+      :alt="altText"
     />
   </span>
 </template>
 
 <script>
-
 export default {
   name: 'PowerIcon',
   props: {
     status: {
       type: String,
       default: '',
+    },
+  },
+  computed: {
+    altText() {
+      // Generate accessible alt text based on power status
+      if (this.status.includes('on')) {
+        return this.$t('global.status.on');
+      } else if (this.status === 'off') {
+        return this.$t('global.status.off');
+      }
+      return this.$t('global.status.notAvailable');
     },
   },
 };

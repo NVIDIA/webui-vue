@@ -6,7 +6,6 @@
 
 <script>
 import { TextLogHandler } from '@/store/modules/Logs/TextLogHandler';
-import { useI18n } from 'vue-i18n';
 
 export default {
   props: {
@@ -18,11 +17,6 @@ export default {
       type: String,
       default: 'data',
     },
-  },
-  data() {
-    return {
-      $t: useI18n().t,
-    };
   },
   computed: {
     dataForExport() {

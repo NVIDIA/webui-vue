@@ -233,7 +233,11 @@
     </div>
 
     <!-- Modals -->
-    <modal-update-firmware :targets="form.Target" @ok="updateFirmware" />
+    <modal-update-firmware
+      v-model="isUpdateModalVisible"
+      :targets="form.Target"
+      @ok="updateFirmware"
+    />
     <modal-confirm-identity :default-remote-server-ip="remoteServerIp" />
     <json-modal
       :title="$t('pageFirmware.form.updateFirmware.apiErrorResponse')"
@@ -303,6 +307,7 @@ export default {
       serverError: null,
       errorDetails: null,
       redfishCommonError: false,
+      isUpdateModalVisible: false,
     };
   },
   computed: {
@@ -526,10 +531,10 @@ export default {
         });
       }
     },
-    displayUpdateProgress(
-      { state, taskPercent, errMsg, jsonErrMsg },
-      { state: oldState, initiator: oldInitiator },
-    ) {
+    displayUpdateProgress(newInfo = {}, oldInfo = {}) {
+      const { state, taskPercent, errMsg, jsonErrMsg } = newInfo;
+      const { state: oldState, initiator: oldInitiator } = oldInfo;
+      if (!state) return;
       if (state === 'TaskStarted') {
         // Avoid too much time at 0%(no loading bar)
         if (taskPercent <= 1) taskPercent = 1;
@@ -584,13 +589,11 @@ export default {
           cancelVariant: 'secondary',
         }).then((confirmed) => {
           if (confirmed) {
-            const modal = this.bvModal.get('modal-update-firmware');
-            modal?.show?.();
+            this.isUpdateModalVisible = true;
           }
         });
       } else {
-        const modal = this.bvModal.get('modal-update-firmware');
-        modal?.show?.();
+        this.isUpdateModalVisible = true;
       }
     },
     onFileUpload(file) {

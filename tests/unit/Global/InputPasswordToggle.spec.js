@@ -8,8 +8,10 @@ describe('InputPasswordToggle.vue', () => {
         isVisible: false,
       };
     },
-    mocks: {
-      $t: (key) => key,
+    global: {
+      mocks: {
+        $t: (key) => key,
+      },
     },
   });
   it('should exist', () => {
@@ -19,7 +21,7 @@ describe('InputPasswordToggle.vue', () => {
     expect(wrapper.find('.isVisible').exists()).toBe(false);
   });
   it('should render isVisible class when button is clicked', async () => {
-    await wrapper.find('button').trigger('click');
+    await wrapper.find('b-button').trigger('click');
     expect(wrapper.find('.isVisible').exists()).toBe(true);
   });
   it('should render correctly', () => {

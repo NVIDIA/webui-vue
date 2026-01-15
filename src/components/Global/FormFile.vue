@@ -70,7 +70,7 @@ export default {
       default: 'secondary',
     },
     modelValue: {
-      type: [File, Object, null],
+      type: [File, Object],
       default: null,
     },
   },

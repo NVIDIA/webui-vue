@@ -2,8 +2,11 @@
 
 exports[`LoadingBar.vue should render correctly 1`] = `
 <transition-stub
+  appear="false"
+  css="true"
   name="fade"
+  persisted="false"
 >
-  <!---->
+  <!--v-if-->
 </transition-stub>
 `;

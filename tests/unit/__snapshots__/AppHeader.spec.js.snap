@@ -9,15 +9,13 @@ exports[`AppHeader.vue should render correctly 1`] = `
       class="link-skip-nav btn btn-light"
       href="#main-content"
     >
-      
       appHeader.skipToContent
-    
     </a>
-     
     <b-navbar
       aria-label="appHeader.applicationHeader"
       type="dark"
     >
+      <!-- Left aligned nav items -->
       <b-button
         aria-hidden="true"
         class="nav-trigger"
@@ -25,8 +23,7 @@ exports[`AppHeader.vue should render correctly 1`] = `
         type="button"
         variant="link"
       >
-        <!---->
-         
+        <!--v-if-->
         <svg
           fill="currentColor"
           focusable="false"
@@ -46,33 +43,31 @@ exports[`AppHeader.vue should render correctly 1`] = `
           />
         </svg>
       </b-button>
-       
       <b-navbar-nav>
         <b-navbar-brand
-          class="mr-0"
+          class="me-0"
           data-test-id="appHeader-container-overview"
           to="/"
         >
           <img
             alt="Built on OpenBMC"
             class="header-logo"
-            src="@/assets/images/nvidia-logo.svg"
+            src=""
             svg-inline=""
           />
         </b-navbar-brand>
-         
-        <!---->
+        <!--v-if-->
       </b-navbar-nav>
-       
+      <!-- Right aligned nav items -->
       <b-navbar-nav
-        class="ml-auto helper-menu"
+        class="ms-auto helper-menu"
       >
         <b-nav-item
           data-test-id="appHeader-container-health"
           to="/logs/event-logs"
         >
           <span
-            class="status-icon secondary"
+            class="status-icon success"
           >
             <svg
               aria-hidden="true"
@@ -85,20 +80,18 @@ exports[`AppHeader.vue should render correctly 1`] = `
               xmlns="http://www.w3.org/2000/svg"
             >
               <path
-                d="M10,1c-5,0-9,4-9,9s4,9,9,9s9-4,9-9S15,1,10,1z M13.5,14.5l-8-8l1-1l8,8L13.5,14.5z"
+                d="M10,1c-4.9,0-9,4.1-9,9s4.1,9,9,9s9-4,9-9S15,1,10,1z M8.7,13.5l-3.2-3.2l1-1l2.2,2.2l4.8-4.8l1,1L8.7,13.5z"
               />
               <path
-                d="M13.5,14.5l-8-8l1-1l8,8L13.5,14.5z"
+                d="M8.7,13.5l-3.2-3.2l1-1l2.2,2.2l4.8-4.8l1,1L8.7,13.5z"
                 data-icon-path="inner-path"
+                fill="none"
                 opacity="0"
               />
             </svg>
           </span>
-          
-          appHeader.health
-        
+           appHeader.health
         </b-nav-item>
-         
         <b-nav-item
           data-test-id="appHeader-container-power"
           to="/operations/server-power-operations"
@@ -107,39 +100,32 @@ exports[`AppHeader.vue should render correctly 1`] = `
             id="tooltip-target-power"
           >
             <span
-              class="status-icon secondary"
+              class="status-icon on"
             >
               <img
-                class="secondary"
+                alt="global.status.on"
+                class="on"
                 height="24"
-                src="@/assets/images/power.svg"
+                src=""
                 svg-inline=""
                 width="24"
               />
             </span>
-            
-            appHeader.power
-          
+             appHeader.power
           </span>
-           
           <b-tooltip
             target="tooltip-target-power"
             triggers="hover"
           >
             <div>
-              
-              pageServerPowerOperations.powerState : undefined
-            
+              pageServerPowerOperations.powerState : On
             </div>
-             
             <div>
-              
-              pageServerPowerOperations.systemStatus : undefined
-            
+              pageServerPowerOperations.systemStatus : 
             </div>
           </b-tooltip>
         </b-nav-item>
-         
+        <!-- Using LI elements instead of b-nav-item to support semantic button elements -->
         <li
           class="nav-item"
         >
@@ -166,7 +152,6 @@ exports[`AppHeader.vue should render correctly 1`] = `
                 d="M12 10H6.78A11 11 0 0127 16h2A13 13 0 006 7.68V4H4v8h8zM20 22h5.22A11 11 0 015 16H3a13 13 0 0023 8.32V28h2V20H20z"
               />
             </svg>
-             
             <span
               class="responsive-text"
             >
@@ -174,7 +159,6 @@ exports[`AppHeader.vue should render correctly 1`] = `
             </span>
           </b-button>
         </li>
-         
         <li
           class="nav-item"
         >
@@ -184,30 +168,27 @@ exports[`AppHeader.vue should render correctly 1`] = `
             right=""
             variant="link"
           >
-             
             <b-dropdown-item
               data-test-id="appHeader-link-profile"
               to="/profile-settings"
             >
               appHeader.profileSettings
-            
             </b-dropdown-item>
-             
             <b-dropdown-item
               data-test-id="appHeader-link-logout"
             >
-              
               appHeader.logOut
-            
             </b-dropdown-item>
           </b-dropdown>
         </li>
       </b-navbar-nav>
     </b-navbar>
   </header>
-   
   <transition-stub
+    appear="false"
+    css="true"
     name="fade"
+    persisted="false"
   >
     <b-progress>
       <b-progress-bar

@@ -5,11 +5,11 @@ process.env.BOOTSTRAP_VUE_NO_WARN = true;
 
 describe('InfoTooltip.vue', () => {
   const wrapper = mount(InfoTooltip, {
-    propsData: {
-      title: 'A tooltip test title',
-    },
-    mocks: {
-      $t: (key) => key,
+    props: { title: 'A tooltip test title' },
+    global: {
+      mocks: {
+        $t: (key) => key,
+      },
     },
   });
   it('should exist', () => {

@@ -1,28 +1,73 @@
-import { mount, createWrapper } from '@vue/test-utils';
+import { mount } from '@vue/test-utils';
 import { createStore } from 'vuex';
 import AppHeader from '@/components/AppHeader';
 
 describe('AppHeader.vue', () => {
-  const actions = {
-    'global/getServerStatus': jest.fn(),
-    'eventLog/getLogData': jest.fn(),
-    'authentication/resetStoreState': jest.fn(),
-    'global/getSystemInfo': jest.fn(),
+  const eventBus = {
+    emit: jest.fn(),
+    on: jest.fn(),
+    off: jest.fn(),
   };
 
-  // VueX requires that all modules be present, even if they aren't used
-  // in the test, so invent a Fake auth module and install it.
+  // Create properly namespaced modules with state and getters
+  // that match what AppHeader.vue expects
   const modules = {
     authentication: {
       namespaced: true,
+      state: {
+        consoleWindow: null,
+      },
+      actions: {
+        resetStoreState: jest.fn(),
+        logout: jest.fn(),
+      },
+    },
+    global: {
+      namespaced: true,
+      state: {
+        assetTag: '',
+        modelType: '',
+        serialNumber: '',
+        isAuthorized: true,
+        userPrivilege: 'Administrator',
+        serverStatus: 'on',
+        powerState: 'On',
+        username: 'root',
+        healthStatus: 'OK',
+      },
+      getters: {
+        assetTag: (state) => state.assetTag,
+        modelType: (state) => state.modelType,
+        serialNumber: (state) => state.serialNumber,
+        isAuthorized: (state) => state.isAuthorized,
+        userPrivilege: (state) => state.userPrivilege,
+        serverStatus: (state) => state.serverStatus,
+        powerState: (state) => state.powerState,
+        username: (state) => state.username,
+        healthStatus: (state) => state.healthStatus,
+      },
+      actions: {
+        getServerStatus: jest.fn(),
+        getSystemInfo: jest.fn(),
+        fetchHealthStatus: jest.fn(),
+      },
+    },
+    eventLog: {
+      namespaced: true,
+      actions: {
+        getLogData: jest.fn(),
+      },
     },
   };
 
-  const store = createStore({ actions, modules });
+  const store = createStore({ modules });
   const wrapper = mount(AppHeader, {
-    store,
-    mocks: {
-      $t: (key) => key,
+    global: {
+      plugins: [store],
+      mocks: {
+        $t: (key) => key,
+        $eventBus: eventBus,
+      },
     },
   });
 
@@ -47,10 +92,9 @@ describe('AppHeader.vue', () => {
   });
 
   it('nav-trigger button click should emit toggle-navigation event', async () => {
-    const rootWrapper = createWrapper(wrapper.vm.$root);
     wrapper.get('#app-header-trigger').trigger('click');
     await wrapper.vm.$nextTick();
-    expect(rootWrapper.emitted('toggle-navigation')).toBeTruthy();
+    expect(eventBus.emit).toHaveBeenCalledWith('toggle-navigation');
   });
 
   it('logout button should dispatch authentication/logout', async () => {
@@ -60,9 +104,11 @@ describe('AppHeader.vue', () => {
   });
 
   it('change:isNavigationOpen event should set isNavigationOpen prop to false', async () => {
-    const rootWrapper = createWrapper(wrapper.vm.$root);
-    rootWrapper.vm.$emit('change-is-navigation-open', false);
-    await rootWrapper.vm.$nextTick();
+    const navigationOpenHandler = eventBus.on.mock.calls.find(
+      ([eventName]) => eventName === 'change-is-navigation-open',
+    )?.[1];
+    navigationOpenHandler(false);
+    await wrapper.vm.$nextTick();
     expect(wrapper.vm.isNavigationOpen).toEqual(false);
   });
 

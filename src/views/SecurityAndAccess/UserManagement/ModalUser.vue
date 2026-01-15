@@ -242,8 +242,9 @@ import {
   maxLength,
   minLength,
   requiredIf,
+  helpers,
+  sameAs,
 } from '@vuelidate/validators';
-import { helpers, sameAs } from 'vuelidate/lib/validators';
 import VuelidateMixin from '@/components/Mixins/VuelidateMixin.js';
 import { useVuelidate } from '@vuelidate/core';
 import { useI18n } from 'vue-i18n';
@@ -335,7 +336,7 @@ export default {
         username: {
           required,
           maxLength: maxLength(16),
-          pattern: helpers.regex('pattern', /^([a-zA-Z_][a-zA-Z0-9_]*)/),
+          pattern: helpers.regex(/^([a-zA-Z_][a-zA-Z0-9_]*)/),
         },
         privilege: {
           required,
@@ -351,7 +352,7 @@ export default {
           required: requiredIf(function () {
             return this.requirePassword();
           }),
-          sameAsPassword: sameAs('password'),
+          sameAsPassword: sameAs(() => this.form.password),
         },
         manualUnlock: {},
       },
