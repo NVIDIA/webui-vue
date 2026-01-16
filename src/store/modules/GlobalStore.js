@@ -46,6 +46,8 @@ const GlobalStore = {
     lastPowerOperationTime: null,
     // Cached Manager resource (for multiple lookups)
     manager: null,
+    // Boot progress tracking (Redfish ComputerSystem.BootProgress)
+    bootProgress: null, // { LastState, LastStateTime, Oem }
   },
   getters: {
     assetTag: (state) => state.system?.AssetTag || null,
@@ -69,6 +71,10 @@ const GlobalStore = {
     lastPowerOperationTime: (state) => state.lastPowerOperationTime,
     manufacturer: (state) => state.system?.Manufacturer || null,
     manager: (state) => state.manager,
+    // Boot progress getters
+    bootProgress: (state) => state.bootProgress,
+    bootProgressState: (state) => state.bootProgress?.LastState || null,
+    bootProgressTime: (state) => state.bootProgress?.LastStateTime || null,
   },
   mutations: {
     setServiceRoot: (state, serviceRoot) => {
@@ -95,6 +101,17 @@ const GlobalStore = {
     setLastPowerOperationTime: (state, lastPowerOperationTime) => 
       (state.lastPowerOperationTime = lastPowerOperationTime),
     setManager: (state, manager) => (state.manager = manager),
+    setBootProgress: (state, bootProgress) => {
+      const oldState = state.bootProgress?.LastState;
+      const newState = bootProgress?.LastState;
+      if (oldState !== newState) {
+        console.log('[Boot Progress] State changed:', oldState, '->', newState);
+      }
+      if (bootProgress?.LastStateTime !== state.bootProgress?.LastStateTime) {
+        console.log('[Boot Progress] Time:', bootProgress?.LastStateTime);
+      }
+      state.bootProgress = bootProgress;
+    },
   },
   actions: {
     async fetchServiceRoot({ commit }) {
@@ -247,9 +264,21 @@ const GlobalStore = {
             const lastPowerOperationTime = new Date(lastReset);
             commit('setLastPowerOperationTime', lastPowerOperationTime);
           }
+          // Extract boot progress if available (Redfish ComputerSystem.BootProgress)
+          // See: https://redfish.dmtf.org/schemas/v1/ComputerSystem.v1_26_0.json
+          // BootProgress contains: LastState, LastStateTime, Oem
+          // LastState enum: None, PrimaryProcessorInitializationStarted, BusInitializationStarted,
+          //   MemoryInitializationStarted, SecondaryProcessorInitializationStarted, 
+          //   PCIResourceConfigStarted, SystemHardwareInitializationComplete, SetupEntered,
+          //   OSBootStarted, OSRunning, OEM
+          const bootProgress = data?.BootProgress || null;
+          commit('setBootProgress', bootProgress);
           return data;
         })
-        .catch((error) => console.log(error));
+        .catch((error) => {
+          // Re-throw network errors so callers can detect server unreachable
+          throw error;
+        });
     },
   },
 };

@@ -26,7 +26,8 @@ const BmcStore = {
   state: {
     bmc: [],
     Managers: [],
-    isManagerReady: false,
+    isManagerReady: true,
+    managerNotReadyDetails: '',
     resetToDefaultsUris: [],
     bmcTime: null,
     bmcUpTime: null,
@@ -79,6 +80,9 @@ const BmcStore = {
     },
     setManagerReady: (state, ready) => {
       state.isManagerReady = ready;
+    },
+    setManagerNotReadyDetails: (state, details) => {
+      state.managerNotReadyDetails = details;
     },
     setResetToDefaultsUris: (state, value) => {
       state.resetToDefaultsUris = value;
@@ -157,9 +161,19 @@ const BmcStore = {
         );
 
         const results = await Promise.all(bmcPromises);
-        const allManagersReady = results.every((manager) =>
-          manager?.Status?.State === 'Enabled');
+        const notReady = results.filter(
+          (manager) => manager?.Status?.State !== 'Enabled',
+        );
+        const allManagersReady = notReady.length === 0;
         commit('setManagerReady', allManagersReady);
+        if (!allManagersReady) {
+          const details = notReady
+            .map((m) => `${m.Id}.Status.State = "${m.Status?.State}"`)
+            .join(', ');
+          commit('setManagerNotReadyDetails', details);
+        } else {
+          commit('setManagerNotReadyDetails', '');
+        }
         const resetToDefaultsUris = results.flatMap(
           (bmc) => {
             const uri = bmc.Actions?.["#Manager.ResetToDefaults"]?.['target'];

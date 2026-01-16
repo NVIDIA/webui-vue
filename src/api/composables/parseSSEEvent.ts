@@ -164,24 +164,20 @@ function generateEventId(): string {
 export function extractResourceType(originUri?: string): string | undefined {
   if (!originUri) return undefined;
 
-  // Common Redfish resource patterns
-  const patterns = [
-    /\/Sensors\//i,
-    /\/LogServices\/.*\/Entries/i,
-    /\/EventLog\/Entries/i,
-    /\/Thermal/i,
-    /\/Power/i,
-    /\/Chassis/i,
-    /\/Systems/i,
-    /\/Managers/i,
+  const patterns: Array<{ pattern: RegExp; resource: string }> = [
+    { pattern: /\/Sensors(?:\/|$)/i, resource: 'Sensors' },
+    { pattern: /\/LogServices\/[^/]+\/Entries(?:\/|$)/i, resource: 'Entries' },
+    { pattern: /\/EventLog\/Entries(?:\/|$)/i, resource: 'Entries' },
+    { pattern: /\/Thermal(?:\/|$)/i, resource: 'Thermal' },
+    { pattern: /\/Power(?:\/|$)/i, resource: 'Power' },
+    { pattern: /\/Chassis(?:\/|$)/i, resource: 'Chassis' },
+    { pattern: /\/Systems(?:\/|$)/i, resource: 'Systems' },
+    { pattern: /\/Managers(?:\/|$)/i, resource: 'Managers' },
   ];
 
-  for (const pattern of patterns) {
+  for (const { pattern, resource } of patterns) {
     if (pattern.test(originUri)) {
-      const match = originUri.match(/\/([A-Za-z]+)(?:\/|$)/);
-      if (match) {
-        return match[1];
-      }
+      return resource;
     }
   }
 

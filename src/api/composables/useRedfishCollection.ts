@@ -183,7 +183,7 @@ async function getServiceRoot(
   // Use a dedicated "static" cache key so other parts of the app can
   // refresh ServiceRoot without affecting collection-fetch capability checks.
   // The ServiceRoot capabilities are treated as load-once here.
-  const cacheKey = ['redfish', 'v1', 'ServiceRoot', 'static'] as const;
+  const cacheKey = ['ServiceRoot', 'static'] as const;
 
   // Check if ServiceRoot is already cached
   const cached = queryClient.getQueryData<ServiceRoot>(cacheKey);
@@ -529,7 +529,7 @@ export function useAllSubResources<
   subResource: string,
 ) {
   const queryClient = useQueryClient();
-  const queryKey = ['redfish', 'allSubResources', collectionPath, subResource] as const;
+  const queryKey = ['allSubResources', collectionPath, subResource] as const;
 
   return useQuery({
     queryKey,

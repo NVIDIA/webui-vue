@@ -26,8 +26,12 @@ let timeoutId: ReturnType<typeof setTimeout> | null = null;
 // Manual loading (legacy) can be triggered via the event bus.
 const manualLoadingCount = ref(0);
 
-const isFetchingCount = useIsFetching();
-const isMutatingCount = useIsMutating();
+const isFetchingCount = useIsFetching({
+  predicate: (query) => !query.options.meta?.hideLoadingBar,
+});
+const isMutatingCount = useIsMutating({
+  predicate: (mutation) => !mutation.options.meta?.hideLoadingBar,
+});
 
 const isBusy = computed(
   () =>

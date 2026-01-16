@@ -15,7 +15,7 @@
  * ServiceRoot → Managers[0] → Links.ManagerForServers[0] → System
  */
 import { defineStore } from 'pinia';
-import { computed } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { useQueryClient } from '@tanstack/vue-query';
 import {
   useGetServiceRoot,
@@ -31,6 +31,7 @@ import {
 } from '@/api/mutator/axios-instance';
 import type { ServiceRoot } from '@/api/model/ServiceRoot';
 import type { ResourcePowerState } from '@/api/model/ResourcePowerState';
+import type { ComputerSystemBootProgressTypes } from '@/api/model/ComputerSystemBootProgressTypes';
 
 // ============================================================================
 // Query Keys (for SSE invalidation)
@@ -92,8 +93,26 @@ function getManagerProvidingServiceId(
 // Store Definition
 // ============================================================================
 
+// Boot polling interval (ms) when tracking a power transition / boot sequence
+const BOOT_POLL_INTERVAL = 1000;
+const BOOT_POLL_MAX_INTERVAL = 30000;
+const BOOT_POLL_BACKOFF_STEP = 15000;
+// Minimum time (ms) to keep polling after a power event before allowing
+// the "stable" check to stop polling.  BMCs report PowerState=On and
+// BootProgress=None before the boot firmware has updated BootProgress,
+// so stopping immediately would miss the entire boot sequence.
+const BOOT_POLL_MIN_DURATION = 60000;
+
 export const useGlobalStore = defineStore('global', () => {
   const queryClient = useQueryClient();
+
+  // ---------------------------------------------------------------------------
+  // Boot-progress polling (activated by SSE power events)
+  // ---------------------------------------------------------------------------
+  const isBootPolling = ref(false);
+  const bootPollInterval = ref(BOOT_POLL_INTERVAL);
+  let bootPollTimer: ReturnType<typeof setTimeout> | null = null;
+  let bootPollStartTime = 0;
 
   // ---------------------------------------------------------------------------
   // Vue Query: ServiceRoot
@@ -180,10 +199,18 @@ export const useGlobalStore = defineStore('global', () => {
   });
 
   // Fetch the System by ID
+  // refetchInterval is driven by isBootPolling — when a power event starts a
+  // boot sequence we poll rapidly until the system reaches a stable state.
   const ManagedSystemQuery = useGetSystemsById(SystemId, {
     query: {
       enabled: computed(() => !!SystemId.value),
       staleTime: 30 * 1000, // 30 seconds - system state can change
+      refetchInterval: computed(() =>
+        isBootPolling.value ? bootPollInterval.value : false,
+      ),
+      meta: computed(() =>
+        isBootPolling.value ? { hideLoadingBar: true } : {},
+      ),
     },
   });
 
@@ -229,6 +256,133 @@ export const useGlobalStore = defineStore('global', () => {
     () => ManagedSystem.value?.PowerState as ResourcePowerState | undefined,
   );
 
+  /**
+   * Last boot progress state (e.g. 'OSRunning', 'None').
+   * If the BootProgress field disappears during boot, keep the previous state.
+   */
+  const lastBootProgressState = ref<ComputerSystemBootProgressTypes | undefined>(
+    undefined,
+  );
+  const BootProgressState = computed<ComputerSystemBootProgressTypes | undefined>(
+    () => ManagedSystem.value?.BootProgress?.LastState ?? lastBootProgressState.value,
+  );
+  watch(
+    () => ManagedSystem.value?.BootProgress?.LastState,
+    (state) => {
+      if (state) {
+        lastBootProgressState.value = state;
+      }
+    },
+  );
+
+  /** Timestamp of the last boot state change */
+  const BootProgressTime = computed<string | null | undefined>(
+    () => ManagedSystem.value?.BootProgress?.LastStateTime,
+  );
+
+  /** OEM-specific boot progress state */
+  const BootProgressOemState = computed<string | null | undefined>(() => {
+    const boot = ManagedSystem.value?.BootProgress;
+    if (!boot) return null;
+
+    const direct = boot.OemLastState;
+    if (typeof direct === 'string' && direct.length > 0) return direct;
+
+    const oem = boot.Oem as Record<string, unknown> | undefined;
+    if (!oem) return null;
+
+    const vendor = oem.Nvidia as Record<string, unknown> | undefined;
+    const vendorState =
+      (vendor?.OemLastState as string | undefined) ??
+      (vendor?.LastState as string | undefined);
+    if (typeof vendorState === 'string' && vendorState.length > 0) return vendorState;
+
+    const oemState = oem.OemLastState as string | undefined;
+    if (typeof oemState === 'string' && oemState.length > 0) return oemState;
+
+    return null;
+  });
+
+  /** Whether the system is actively booting (needs rapid polling) */
+  const IsBooting = computed(() => {
+    const power = PowerState.value;
+    const boot = BootProgressState.value;
+
+    // Power transitioning
+    if (power === 'PoweringOn' || power === 'PoweringOff') return true;
+
+    // Active boot state (not idle, not fully booted)
+    if (boot && boot !== 'None' && boot !== 'OSRunning') return true;
+
+    return false;
+  });
+
+  // Helper: is the system in a stable state (safe to stop polling)?
+  const isSystemStable = (
+    power: ResourcePowerState | undefined,
+    boot: ComputerSystemBootProgressTypes | undefined,
+  ) => {
+    const isBootProgressStable = boot === 'None' || boot === 'OSRunning';
+    return power === 'On' && isBootProgressStable;
+  };
+
+  const stopBootPolling = () => {
+    console.log('[Global] Boot polling stopped — system stable');
+    isBootPolling.value = false;
+    bootPollInterval.value = BOOT_POLL_INTERVAL;
+    if (bootPollTimer) {
+      clearTimeout(bootPollTimer);
+      bootPollTimer = null;
+    }
+  };
+
+  const scheduleBootPollingBackoff = () => {
+    if (!isBootPolling.value) return;
+    bootPollInterval.value = Math.min(
+      bootPollInterval.value * 2,
+      BOOT_POLL_MAX_INTERVAL,
+    );
+    bootPollTimer = setTimeout(scheduleBootPollingBackoff, BOOT_POLL_BACKOFF_STEP);
+  };
+
+  // Auto-stop boot polling when system reaches a stable state.
+  // Note: We intentionally do not treat power === 'Off' as stable here.
+  // The polling backs off to BOOT_POLL_MAX_INTERVAL and serves as a
+  // keep-alive to detect remote power-on events.
+  // Suppress the check for BOOT_POLL_MIN_DURATION after polling starts
+  // because BMCs report PowerState=On + BootProgress=None before the
+  // boot firmware has begun updating BootProgress.
+  watch([PowerState, BootProgressState], ([power, boot]) => {
+    if (!isBootPolling.value) return;
+
+    if (Date.now() - bootPollStartTime < BOOT_POLL_MIN_DURATION) return;
+
+    if (isSystemStable(power, boot)) {
+      stopBootPolling();
+    }
+  });
+
+  // Auto-start boot polling when booting is detected outside SSE.
+  watch([IsBooting, PowerState, BootProgressState], ([isBooting, power, boot]) => {
+    if (isBootPolling.value) return;
+    if (!isBooting) return;
+    if (isSystemStable(power, boot)) return;
+    void startBootPolling();
+  });
+
+  // Reset polling interval when OEM boot state changes — the system is
+  // actively progressing through boot stages, so poll fast again and
+  // let the backoff ramp back up.
+  watch(BootProgressOemState, () => {
+    if (!isBootPolling.value) return;
+    bootPollInterval.value = BOOT_POLL_INTERVAL;
+    if (bootPollTimer) {
+      clearTimeout(bootPollTimer);
+      bootPollTimer = null;
+    }
+    scheduleBootPollingBackoff();
+  });
+
   /** System asset tag */
   const AssetTag = computed(() => ManagedSystem.value?.AssetTag);
 
@@ -249,6 +403,25 @@ export const useGlobalStore = defineStore('global', () => {
   // ---------------------------------------------------------------------------
 
   /**
+   * Start rapid polling for boot progress.
+   * Called by SSE power-event handler to track a power transition / boot
+   * sequence. Polling stops automatically when a stable state is reached.
+   */
+  async function startBootPolling(): Promise<void> {
+    console.log('[Global] Boot polling started');
+    isBootPolling.value = true;
+    bootPollInterval.value = BOOT_POLL_INTERVAL;
+    bootPollStartTime = Date.now();
+    if (bootPollTimer) {
+      clearTimeout(bootPollTimer);
+      bootPollTimer = null;
+    }
+    scheduleBootPollingBackoff();
+    // Immediate refetch so the UI updates right away
+    await refetchManagedSystem();
+  }
+
+  /**
    * Refetch all data by invalidating Vue Query and axios caches.
    */
   async function refetch(): Promise<void> {
@@ -261,9 +434,9 @@ export const useGlobalStore = defineStore('global', () => {
 
     // Then invalidate Vue Query cache (triggers refetch)
     await Promise.all([
-      queryClient.invalidateQueries({ queryKey: ['getServiceRoot'] }),
-      queryClient.invalidateQueries({ queryKey: ['getManagers'] }),
-      queryClient.invalidateQueries({ queryKey: ['getSystems'] }),
+      queryClient.invalidateQueries({ queryKey: [], exact: true }),
+      queryClient.invalidateQueries({ queryKey: ['Managers'] }),
+      queryClient.invalidateQueries({ queryKey: ['Systems'] }),
     ]);
   }
 
@@ -273,7 +446,7 @@ export const useGlobalStore = defineStore('global', () => {
   async function refetchManager(): Promise<void> {
     await clearManagersCache();
     await queryClient.invalidateQueries({
-      queryKey: ['getManagers', ManagerId.value],
+      queryKey: ['Managers', ManagerId.value],
     });
   }
 
@@ -283,7 +456,7 @@ export const useGlobalStore = defineStore('global', () => {
   async function refetchManagedSystem(): Promise<void> {
     await clearSystemsCache();
     await queryClient.invalidateQueries({
-      queryKey: ['getSystems', SystemId.value],
+      queryKey: ['Systems', SystemId.value],
     });
   }
 
@@ -344,6 +517,10 @@ export const useGlobalStore = defineStore('global', () => {
 
     // Derived state
     PowerState,
+    BootProgressState,
+    BootProgressTime,
+    BootProgressOemState,
+    IsBooting,
     AssetTag,
     Model,
     SerialNumber,
@@ -359,6 +536,7 @@ export const useGlobalStore = defineStore('global', () => {
     refetch,
     refetchManager,
     refetchManagedSystem,
+    startBootPolling,
 
     // Imperative getters (for other Pinia stores)
     getManager,

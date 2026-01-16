@@ -2,7 +2,7 @@
   <div>
     <global-banner
       :show="!isManagerReady"
-      :message="$t('global.toast.bmcIsNotReady')"
+      :message="managerBannerMessage"
       variant="warning"
     />
     <main id="main-content" class="page-container">
@@ -25,6 +25,11 @@ export default {
   computed: {
     isManagerReady() {
       return !!this.$store?.state?.bmc?.isManagerReady;
+    },
+    managerBannerMessage() {
+      const details = this.$store?.state?.bmc?.managerNotReadyDetails;
+      const base = this.$t('global.toast.bmcIsNotReady');
+      return details ? `${base} (${details})` : base;
     },
   },
   created() {

@@ -97,15 +97,16 @@ export const setQueryClient = (client: QueryClient): void => {
 
 /**
  * Derive a Vue Query cache key from a Redfish URL.
- * Strips query parameters and splits path segments.
+ * Strips the /redfish/v1 prefix and query parameters, then splits path segments.
  *
- * Example: "/redfish/v1/TaskService/Tasks/1" -> ["redfish", "v1", "TaskService", "Tasks", "1"]
+ * Example: "/redfish/v1/TaskService/Tasks/1" -> ["TaskService", "Tasks", "1"]
  */
 function deriveQueryKey(url: string): string[] {
   // Strip query parameters
   const pathOnly = url.split("?")[0];
-  // Split into segments, filter empty strings (from leading/trailing slashes)
-  return pathOnly.split("/").filter(Boolean);
+  // Strip /redfish/v1/ prefix, then split into segments
+  const stripped = pathOnly.replace(/^\/redfish\/v1\/?/, "/");
+  return stripped.split("/").filter(Boolean);
 }
 
 // Response interceptor: sync successful GET /redfish/* responses into Vue Query cache

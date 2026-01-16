@@ -114,7 +114,7 @@ export default {
       const token = this.authStore.token;
       this.rfb = new RFB(
         this.$refs.panel,
-        `wss://${window.location.host}/kvm/0`,
+        `${window.location.protocol === 'https:' ? 'wss' : 'ws'}://${window.location.host}/kvm/0`,
         { wsProtocols: [token] },
       );
 

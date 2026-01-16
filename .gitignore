@@ -38,10 +38,13 @@ src/api/registries/
 src/api/model/*
 !src/api/model/AccountService.ts
 !src/api/model/ActionInfoParameters.ts
+!src/api/model/ComputerSystemBootProgressTypes.ts
 !src/api/model/ComputerSystemResetRequestBody.ts
 !src/api/model/Event.ts
 !src/api/model/EventRecord.ts
 !src/api/model/LogEntry.ts
+!src/api/model/LogEntryCollection.ts
+!src/api/model/LogServiceCollection.ts
 !src/api/model/MetricReport.ts
 !src/api/model/ResourceHealth.ts
 !src/api/model/ResourcePowerState.ts

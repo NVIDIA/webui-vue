@@ -75,6 +75,8 @@ export function useSSEInit(options: UseSSEInitOptions = {}) {
     const MessageId = Event.MessageId ?? '';
     const Message = Event.Message ?? '';
     const Args = Event.MessageArgs ?? [];
+    const MessageLower = Message.toLowerCase();
+    const OriginOfCondition = getOriginUri(Event) ?? '';
 
     let IsPowerEvent = false;
 
@@ -90,16 +92,29 @@ export function useSSEInit(options: UseSSEInitOptions = {}) {
       Message.includes('Host Powered ON') ||
       Message.includes('Host Powered OFF') ||
       Message.includes('ChassisPowerOnStarted') ||
-      Message.includes('ChassisPowerOff')
+      Message.includes('ChassisPowerOff') ||
+      MessageLower.includes('chassis power on') ||
+      MessageLower.includes('chassis power off')
     ) {
       console.log(`[SSE] Power event: ${Message}`);
       IsPowerEvent = true;
     }
 
-    // Invalidate managed system query to refetch PowerState
+    // BIOS events mean the system is booting — the BMC won't touch BIOS
+    // resources while powered off. Start boot polling directly; we can't
+    // rely on refetching the System resource because the BMC reports
+    // PowerState=On + BootProgress=None before BootProgress updates.
+    if (!IsPowerEvent && OriginOfCondition.includes('/Bios')) {
+      console.log('[SSE] BIOS event — starting boot polling');
+      IsPowerEvent = true;
+    }
+
+    // Start boot polling to track the power transition / boot sequence.
+    // The Pinia store will poll rapidly until the system reaches a stable
+    // state (On + OSRunning, or Off) and then stop automatically.
     if (IsPowerEvent) {
       const globalStore = useGlobalStore();
-      globalStore.refetchManagedSystem();
+      globalStore.startBootPolling();
       return true;
     }
 
@@ -138,8 +153,8 @@ export function useSSEInit(options: UseSSEInitOptions = {}) {
     });
 
     // Invalidate firmware-related queries
-    queryClient.invalidateQueries({ queryKey: ['redfish', 'UpdateService'] });
-    queryClient.invalidateQueries({ queryKey: ['redfish', 'TaskService'] });
+    queryClient.invalidateQueries({ queryKey: ['UpdateService'] });
+    queryClient.invalidateQueries({ queryKey: ['TaskService'] });
 
     // When a task starts, check if it's a firmware update task
     if (
@@ -295,17 +310,41 @@ export function useSSEInit(options: UseSSEInitOptions = {}) {
   // Watch SSE status and send test event when connecting
   // This primes the SSE stream so we don't wait for a real event
   let testEventSent = false;
+  let testEventRetrySent = false;
+  let testEventRetryTimer: ReturnType<typeof setTimeout> | null = null;
   watch(sse.status, (status, oldStatus) => {
     // Send test event when transitioning to 'connecting'
     if (status === 'connecting' && oldStatus !== 'connecting' && !testEventSent) {
       testEventSent = true;
+      testEventRetrySent = false;
+      if (testEventRetryTimer) {
+        clearTimeout(testEventRetryTimer);
+        testEventRetryTimer = null;
+      }
       // Small delay to ensure EventSource is fully initialized
       setTimeout(sendTestEvent, 200);
+      // If still not connected after 5s, send one more test event
+      testEventRetryTimer = setTimeout(() => {
+        if (sse.status.value !== 'connected' && !testEventRetrySent) {
+          testEventRetrySent = true;
+          sendTestEvent();
+        }
+      }, 5000);
+    }
+
+    if (status === 'connected' && testEventRetryTimer) {
+      clearTimeout(testEventRetryTimer);
+      testEventRetryTimer = null;
     }
 
     // Reset flag when disconnected so we send again on reconnect
     if (status === 'disconnected' || status === 'error') {
       testEventSent = false;
+      testEventRetrySent = false;
+      if (testEventRetryTimer) {
+        clearTimeout(testEventRetryTimer);
+        testEventRetryTimer = null;
+      }
     }
   }, { immediate: true });
 

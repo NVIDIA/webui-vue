@@ -81,9 +81,16 @@ function redfishProxyPlugin(baseUrl) {
         delete options.headers['x-forwarded-for'];
 
         // Create the proxy request
+        // Remove caching headers to prevent stale 304 responses
+        delete options.headers['if-none-match'];
+        delete options.headers['if-modified-since'];
+
         const proxyReq = https.request(options, (proxyRes) => {
-          // Remove HSTS header
+          // Remove HSTS header and caching headers
           delete proxyRes.headers['strict-transport-security'];
+          delete proxyRes.headers['etag'];
+          delete proxyRes.headers['last-modified'];
+          proxyRes.headers['cache-control'] = 'no-cache, no-store, must-revalidate';
 
           // Forward the response
           res.writeHead(proxyRes.statusCode || 500, proxyRes.headers);

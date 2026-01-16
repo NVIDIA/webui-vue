@@ -38,7 +38,7 @@ export function useRedfishRoot() {
     isLoading,
     error,
   } = useQuery({
-    queryKey: ['redfish', 'v1', 'ServiceRoot'] as const,
+    queryKey: ['ServiceRoot'] as const,
     queryFn: getServiceRoot,
     retry: shouldRetry,
     // Expect ServiceRoot can change (e.g., after BMC updates/config changes).

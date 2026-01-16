@@ -57,6 +57,50 @@ export interface UseSSEQueryInvalidationOptions {
 // Default Invalidation Rules
 // ============================================================================
 
+const SYSTEM_LOG_ENTRIES_RE = /\/redfish\/v1\/Systems\/[^/]+\/LogServices\/[^/]+\/Entries/i;
+const CHASSIS_LOG_ENTRIES_RE = /\/redfish\/v1\/Chassis\/[^/]+\/LogServices\/[^/]+\/Entries/i;
+const CHASSIS_SENSORS_RE = /\/redfish\/v1\/Chassis\/[^/]+\/Sensors/i;
+const CHASSIS_THERMAL_RE = /\/redfish\/v1\/Chassis\/[^/]+\/Thermal/i;
+const CHASSIS_POWER_RE = /\/redfish\/v1\/Chassis\/[^/]+\/Power/i;
+
+/**
+ * Build a query key from an OriginOfCondition URI.
+ * Example: /redfish/v1/Systems/1 -> ['Systems','1']
+ */
+function toOriginQueryKey(origin?: string): unknown[] | null {
+  if (!origin) return null;
+  const path = origin.replace(/^\/redfish\/v1\//, '');
+  const segments = path.split('/').filter(Boolean);
+  return segments.length > 0 ? segments : null;
+}
+
+/**
+ * Build a query key for the parent of an OriginOfCondition URI.
+ * Example: /redfish/v1/Systems/1/LogServices/SEL/Entries
+ * -> ['Systems','1','LogServices','SEL']
+ */
+function toOriginParentQueryKey(origin?: string): unknown[] | null {
+  if (!origin) return null;
+  const path = origin.replace(/^\/redfish\/v1\//, '');
+  const segments = path.split('/').filter(Boolean);
+  if (segments.length <= 1) return null;
+  return segments.slice(0, -1);
+}
+
+/**
+ * Build a query key for a collection segment within OriginOfCondition.
+ * Example: /redfish/v1/Chassis/BMC/Sensors/Temp1
+ * -> ['Chassis','BMC','Sensors']
+ */
+function toOriginCollectionQueryKey(collection: string, origin?: string): unknown[] | null {
+  const key = toOriginQueryKey(origin);
+  if (!key) return null;
+  const parts = key.slice(0, key.length - 1);
+  const idx = parts.lastIndexOf(collection);
+  if (idx === -1) return null;
+  return parts.slice(0, idx + 1);
+}
+
 /**
  * Default rules mapping common Redfish events to query keys.
  * Query keys should match those used in Vue Query composables.
@@ -66,35 +110,53 @@ const DEFAULT_RULES: InvalidationRule[] = [
   {
     ResourceTypes: ['Sensors'],
     MessageIdPattern: /ResourceEvent\.\d+\.\d+\.Resource(Created|Removed|Changed)/i,
-    QueryKeys: [
-      ['redfish', 'allSubResources', '/redfish/v1/Chassis', 'Sensors'],
-    ],
+    QueryKeys: [],
+    ExtractKeys: (Event) => {
+      const origin = getOriginUri(Event);
+      if (!origin || !CHASSIS_SENSORS_RE.test(origin)) return [];
+      const key = toOriginCollectionQueryKey('Sensors', origin);
+      return key ? [key] : [];
+    },
   },
 
   // Thermal events (fans, temperatures)
   {
     ResourceTypes: ['Thermal', 'Fans', 'Temperatures'],
-    QueryKeys: [
-      ['redfish', 'allSubResources', '/redfish/v1/Chassis', 'Thermal'],
-    ],
+    QueryKeys: [],
+    ExtractKeys: (Event) => {
+      const origin = getOriginUri(Event);
+      if (!origin || !CHASSIS_THERMAL_RE.test(origin)) return [];
+      const key = toOriginCollectionQueryKey('Thermal', origin);
+      return key ? [key] : [];
+    },
   },
 
   // Power events
   {
     ResourceTypes: ['Power', 'PowerSupplies', 'Voltages'],
-    QueryKeys: [
-      ['redfish', 'allSubResources', '/redfish/v1/Chassis', 'Power'],
-    ],
+    QueryKeys: [],
+    ExtractKeys: (Event) => {
+      const origin = getOriginUri(Event);
+      if (!origin || !CHASSIS_POWER_RE.test(origin)) return [];
+      const key = toOriginCollectionQueryKey('Power', origin);
+      return key ? [key] : [];
+    },
   },
 
-  // Event log entries - invalidate event log queries
+  // Event log entries - invalidate event log queries (removals only)
   {
     ResourceTypes: ['Entries', 'EventLog'],
-    MessageIdPattern: /ResourceEvent\.\d+\.\d+\.Resource(Created|Removed)/i,
-    QueryKeys: [
-      ['eventLog'],
-      ['redfish', 'logEntries'],
-    ],
+    MessageIdPattern: /ResourceEvent\.\d+\.\d+\.ResourceRemoved/i,
+    QueryKeys: [],
+    ExtractKeys: (Event) => {
+      const origin = getOriginUri(Event);
+      if (!origin) return [];
+      if (SYSTEM_LOG_ENTRIES_RE.test(origin) || CHASSIS_LOG_ENTRIES_RE.test(origin)) {
+        const key = toOriginParentQueryKey(origin);
+        return key ? [key] : [];
+      }
+      return [];
+    },
   },
 
   // System state changes - includes managed system for power state
@@ -102,17 +164,13 @@ const DEFAULT_RULES: InvalidationRule[] = [
     ResourceTypes: ['Systems'],
     MessageIdPattern: /ResourceEvent\.\d+\.\d+\.StateChanged/i,
     QueryKeys: [
-      ['redfish', 'system'],
-      ['redfish', 'systems'],
+      ['Systems'],
     ],
     // Dynamically get the managed system's query key
-    ExtractKeys: () => {
-      const globalStore = useGlobalStore();
-      const SystemId = globalStore.SystemId;
-      if (SystemId) {
-        return [['getSystemsById', SystemId]];
-      }
-      return [];
+    ExtractKeys: (Event) => {
+      const origin = getOriginUri(Event);
+      const key = toOriginQueryKey(origin);
+      return key ? [key] : [];
     },
   },
 
@@ -121,27 +179,40 @@ const DEFAULT_RULES: InvalidationRule[] = [
     ResourceTypes: ['Chassis'],
     MessageIdPattern: /ResourceEvent\.\d+\.\d+\.StateChanged/i,
     QueryKeys: [
-      ['redfish', 'chassis'],
-      ['redfish', 'allSubResources', '/redfish/v1/Chassis'],
+      ['Chassis'],
     ],
+    ExtractKeys: (Event) => {
+      const origin = getOriginUri(Event);
+      const key = toOriginQueryKey(origin);
+      return key ? [key] : [];
+    },
   },
 
   // Manager/BMC state changes
   {
     ResourceTypes: ['Managers'],
     QueryKeys: [
-      ['redfish', 'managers'],
-      ['redfish', 'bmc'],
+      ['Managers'],
     ],
+    ExtractKeys: (Event) => {
+      const origin = getOriginUri(Event);
+      const key = toOriginQueryKey(origin);
+      return key ? [key] : [];
+    },
   },
 
   // Alert/Critical events - might affect health status
   {
     MessageIdPattern: /Alert/i,
     QueryKeys: [
-      ['health'],
-      ['eventLog'],
+      ['Systems'],
+      ['Chassis'],
     ],
+    ExtractKeys: (Event) => {
+      const origin = getOriginUri(Event);
+      const key = toOriginQueryKey(origin);
+      return key ? [key] : [];
+    },
   },
 
   // Task events
@@ -149,7 +220,8 @@ const DEFAULT_RULES: InvalidationRule[] = [
     ResourceTypes: ['Tasks'],
     MessageIdPattern: /TaskEvent\.\d+\.\d+\.Task/i,
     QueryKeys: [
-      ['redfish', 'tasks'],
+      ['TaskService'],
+      ['TaskService', 'Tasks'],
     ],
   },
 ];
@@ -228,10 +300,10 @@ function processEvent(
   const OriginUri = getOriginUri(Event);
   if (OriginUri) {
     // Invalidate the exact resource path
-    // e.g., "/redfish/v1/Chassis/BMC_0/Sensors/temp1" → ['redfish', 'v1', 'Chassis', 'BMC_0', 'Sensors', 'temp1']
+    // e.g., "/redfish/v1/Chassis/BMC_0/Sensors/temp1" → ['Chassis', 'BMC_0', 'Sensors', 'temp1']
     const Path = OriginUri.replace(/^\/redfish\/v1\//, '');
     const PathSegments = Path.split('/').filter(Boolean);
-    const ResourceKey = ['redfish', 'v1', ...PathSegments];
+    const ResourceKey = [...PathSegments];
 
     const KeyString = JSON.stringify(ResourceKey);
     if (!InvalidatedKeys.has(KeyString)) {
@@ -248,7 +320,7 @@ function processEvent(
     ) {
       const ParentSegments = PathSegments.slice(0, -1);
       if (ParentSegments.length > 0) {
-        const ParentKey = ['redfish', 'v1', ...ParentSegments];
+        const ParentKey = [...ParentSegments];
         const ParentKeyString = JSON.stringify(ParentKey);
         if (!InvalidatedKeys.has(ParentKeyString)) {
           InvalidatedKeys.add(ParentKeyString);
@@ -310,22 +382,13 @@ function ruleMatches(
   // Check resource type match
   if (Rule.ResourceTypes && Rule.ResourceTypes.length > 0) {
     if (!ResourceType || !Rule.ResourceTypes.includes(ResourceType)) {
-      // Resource type specified but doesn't match
-      if (!Rule.MessageIdPattern) {
-        return false;
-      }
+      return false;
     }
   }
 
   // Check message ID pattern match
-  if (Rule.MessageIdPattern) {
-    if (!matchesMessageId(Event, Rule.MessageIdPattern)) {
-      // If resource types also specified and matched, allow it
-      if (Rule.ResourceTypes && ResourceType && Rule.ResourceTypes.includes(ResourceType)) {
-        return true;
-      }
-      return false;
-    }
+  if (Rule.MessageIdPattern && !matchesMessageId(Event, Rule.MessageIdPattern)) {
+    return false;
   }
 
   return true;

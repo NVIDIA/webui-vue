@@ -45,6 +45,20 @@ const PRIVILEGE_MAPPINGS: Record<string, Record<string, string[][]>> = {
     PUT: [['ConfigureComponents']],
     DELETE: [['ConfigureComponents']],
   },
+  LogEntryCollection: {
+    GET: [['Login']],
+    POST: [['ConfigureManager']],
+    PATCH: [['ConfigureManager']],
+    PUT: [['ConfigureManager']],
+    DELETE: [['ConfigureManager']],
+  },
+  LogServiceCollection: {
+    GET: [['Login']],
+    POST: [['ConfigureManager']],
+    PATCH: [['ConfigureManager']],
+    PUT: [['ConfigureManager']],
+    DELETE: [['ConfigureManager']],
+  },
   Manager: {
     GET: [['Login']],
     POST: [['ConfigureManager']],

@@ -8,7 +8,7 @@
  */
 
 import { spawn } from 'child_process';
-import { existsSync } from 'fs';
+import { existsSync, readFileSync, writeFileSync } from 'fs';
 import { dirname, resolve } from 'path';
 import { fileURLToPath } from 'url';
 
@@ -163,7 +163,7 @@ function runCommand(command, args, options = {}) {
 
 async function main() {
   const startTime = Date.now();
-  const totalSteps = 7;
+  const totalSteps = 8;
 
   log(
     '\n╔════════════════════════════════════════════════════════════════╗',
@@ -205,26 +205,43 @@ async function main() {
     );
     logSuccess('API client generated');
 
-    // Step 3: Convert model names to PascalCase
-    logStep(3, totalSteps, 'Converting model names to PascalCase...');
+    // Step 3: Strip redundant ['redfish','v1'] prefix from query keys
+    logStep(3, totalSteps, 'Stripping query key prefix...');
+    {
+      const genFile = resolve(projectRoot, 'src/api/endpoints/redfish.gen.ts');
+      let code = readFileSync(genFile, 'utf-8');
+      let n = 0;
+      // ['infinite', 'redfish', 'v1', ...] → ['infinite', ...]
+      code = code.replace(/\[\s*'infinite',\s*'redfish',\s*'v1',\s*/g, () => { n++; return "['infinite', "; });
+      code = code.replace(/\[\s*'infinite',\s*'redfish',\s*'v1'\s*\]/g, () => { n++; return "['infinite']"; });
+      // ['redfish', 'v1', ...] → [...]
+      code = code.replace(/\[\s*'redfish',\s*'v1',\s*/g, () => { n++; return '['; });
+      // ['redfish', 'v1'] → []
+      code = code.replace(/\[\s*'redfish',\s*'v1'\s*\]/g, () => { n++; return '[]'; });
+      writeFileSync(genFile, code);
+      logSuccess(`Stripped 'redfish','v1' prefix from ${n} query keys`);
+    }
+
+    // Step 4: Convert model names to PascalCase
+    logStep(4, totalSteps, 'Converting model names to PascalCase...');
     await runCommand('npx', ['tsx', 'scripts/api/pascal-case-models.ts']);
     logSuccess('Model names converted');
 
-    // Step 4: Fix JSDoc formatting
-    logStep(4, totalSteps, 'Fixing JSDoc formatting...');
+    // Step 5: Fix JSDoc formatting
+    logStep(5, totalSteps, 'Fixing JSDoc formatting...');
     await runCommand('npx', ['tsx', 'scripts/api/fix-jsdoc-format.ts']);
     logSuccess('JSDoc formatting fixed');
 
-    // Step 5: Add privilege metadata to endpoint functions
-    logStep(5, totalSteps, 'Adding privilege metadata to endpoints...');
+    // Step 6: Add privilege metadata to endpoint functions
+    logStep(6, totalSteps, 'Adding privilege metadata to endpoints...');
     await runCommand('npx', [
       'tsx',
       'src/api/transformer/add-privilege-metadata.ts',
     ]);
     logSuccess('Privilege metadata added');
 
-    // Step 6: Format model directory with Prettier
-    logStep(6, totalSteps, 'Formatting model files with Prettier...');
+    // Step 7: Format model directory with Prettier
+    logStep(7, totalSteps, 'Formatting model files with Prettier...');
     await runCommand(
       'node',
       [
@@ -241,8 +258,8 @@ async function main() {
     );
     logSuccess('Model files formatted');
 
-    // Step 7: Format endpoints directory with Prettier
-    logStep(7, totalSteps, 'Formatting endpoint files with Prettier...');
+    // Step 8: Format endpoints directory with Prettier
+    logStep(8, totalSteps, 'Formatting endpoint files with Prettier...');
     await runCommand(
       'node',
       [

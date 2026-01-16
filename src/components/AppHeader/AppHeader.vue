@@ -108,7 +108,7 @@ import IconRecording from '@carbon/icons-vue/es/recording/20';
 import IconRecordingFilled from '@carbon/icons-vue/es/recording--filled/20';
 
 import LoadingBar from '@/components/Global/LoadingBar.vue';
-import LogoHeader from '@/assets/images/logo-header.svg?component';
+import LogoHeader from '@/assets/images/nvidia-logo.svg?component';
 import eventBus from '@/eventBus';
 import { useAuthStore } from '@/stores/auth';
 import { useGlobalStore } from '@/stores/global';
