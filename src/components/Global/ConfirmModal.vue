@@ -39,10 +39,15 @@
         </p>
         <p class="mb-3">{{ message }}</p>
         <div class="d-flex justify-content-center" style="column-gap: 5%">
-          <b-button :variant="cancelVariant" class="me-3" @click="onCancel">
+          <b-button
+            ref="cancelBtn"
+            :variant="cancelVariant"
+            class="me-3"
+            @click="onCancel"
+          >
             {{ cancelTitleToShow }}
           </b-button>
-          <b-button :variant="okVariant" @click="onOk">
+          <b-button ref="okBtn" :variant="okVariant" @click="onOk">
             {{ okTitleToShow }}
           </b-button>
         </div>
@@ -77,6 +82,7 @@ export default {
       processingIntervalId: null,
       processingText: 'Processing...',
       currentRequestProcessing: false,
+      autoFocusButton: 'cancel', // 'ok' or 'cancel'
     };
   },
   computed: {
@@ -121,6 +127,7 @@ export default {
       this.processingMax = req.processingMax || 20;
       this.processingText = req.processingText || 'Processing...';
       this.currentRequestProcessing = !!req.processing;
+      this.autoFocusButton = req.autoFocusButton || 'cancel';
       this.show = true;
     },
     onOk() {
@@ -144,11 +151,44 @@ export default {
       this.show = false;
     },
     onShown() {
-      // Bind ESC to cancel while overlay is visible
+      // Focus the appropriate button after DOM update
+      this.$nextTick(() => {
+        const btnRef =
+          this.autoFocusButton === 'ok'
+            ? this.$refs.okBtn
+            : this.$refs.cancelBtn;
+        // bootstrap-vue-next buttons expose the native element via $el
+        const el = btnRef?.$el || btnRef;
+        if (el && typeof el.focus === 'function') {
+          el.focus();
+        }
+      });
+
+      // Bind ESC to cancel and Enter to activate focused button
       this._onKeydown = (e) => {
         if (e.key === 'Escape' || e.key === 'Esc') {
+          e.preventDefault();
           e.stopPropagation();
           this.onCancel();
+        } else if (e.key === 'Enter') {
+          e.preventDefault();
+          e.stopPropagation();
+          // Trigger click on currently focused button, or default to autoFocusButton
+          const activeEl = document.activeElement;
+          const okEl = this.$refs.okBtn?.$el || this.$refs.okBtn;
+          const cancelEl = this.$refs.cancelBtn?.$el || this.$refs.cancelBtn;
+          if (activeEl === okEl) {
+            this.onOk();
+          } else if (activeEl === cancelEl) {
+            this.onCancel();
+          } else {
+            // Default: activate based on autoFocusButton
+            if (this.autoFocusButton === 'ok') {
+              this.onOk();
+            } else {
+              this.onCancel();
+            }
+          }
         }
       };
       document.addEventListener('keydown', this._onKeydown, { capture: true });
