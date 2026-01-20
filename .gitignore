@@ -32,3 +32,6 @@ mcp/pid/mcp.pid
 scripts/generate-version-info.js
 
 src/env/version-info.js
+
+# Font files
+src/env/assets/fonts/NVIDIA*
