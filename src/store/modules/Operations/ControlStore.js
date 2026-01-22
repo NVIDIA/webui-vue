@@ -19,7 +19,7 @@ const checkForServerState = function (serverState) {
   let hasStateChanged = false;
   const store = this;
   const initialState = store.state.global.system?.Status?.State;
-  const waitForTimeout = 60000; // 1 minute
+  const waitForTimeout = 300000; // 5 minutes
 
   const cleanup = () => {
     if (timeout) clearTimeout(timeout);
