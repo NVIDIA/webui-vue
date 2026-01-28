@@ -78,3 +78,11 @@ jest.mock('@/i18n', () => ({
   default: mockI18n,
   createI18nInstance: mockCreateI18nInstance,
 }));
+
+// Mock version-info to prevent snapshot changes on every git commit
+jest.mock('@/env/version-info', () => ({
+  __esModule: true,
+  default: {
+    gitCommitSha: 'test-version',
+  },
+}));
