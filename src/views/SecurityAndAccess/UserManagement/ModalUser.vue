@@ -349,7 +349,7 @@ export default {
           required: requiredIf(function () {
             return this.requirePassword();
           }),
-          sameAsPassword: sameAs(() => this.form.password),
+          sameAsPassword: sameAs(this.form.password),
         },
         manualUnlock: {},
       },
