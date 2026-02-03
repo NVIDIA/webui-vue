@@ -31,17 +31,41 @@
 </template>
 
 <script>
+import { computed, watch } from 'vue';
 import OverviewCard from './OverviewCard';
 import StatusIcon from '@/components/Global/StatusIcon';
 import DataFormatterMixin from '@/components/Mixins/DataFormatterMixin';
+import { useEventLog } from '@/api/composables/useEventLog';
+import eventBus from '@/eventBus';
 
 export default {
   name: 'Events',
   components: { OverviewCard, StatusIcon },
   mixins: [DataFormatterMixin],
+  setup() {
+    // Use the new Vue Query + SSE composable for event logs
+    const { entries, isLoading } = useEventLog();
+
+    // Emit event when loading completes (equivalent to old created() behavior)
+    watch(
+      isLoading,
+      (loading, wasLoading) => {
+        if (wasLoading && !loading) {
+          eventBus.$emit('overview-events-complete');
+        }
+      },
+      { immediate: true },
+    );
+
+    return {
+      eventLogEntries: entries,
+      isEventLogLoading: isLoading,
+    };
+  },
   computed: {
     eventLogData() {
-      return this.$store.getters['eventLog/allEvents'];
+      // Use Vue Query data from composable
+      return this.eventLogEntries;
     },
     criticalEvents() {
       return this.eventLogData
@@ -64,11 +88,7 @@ export default {
         });
     },
   },
-  created() {
-    this.$store.dispatch('eventLog/getEventLogData').finally(() => {
-      this.$eventBus.$emit('overview-events-complete');
-    });
-  },
+  // Vue Query handles data fetching automatically, no need for created() hook
   methods: {
     exportFileNameByDate() {
       // Create export file name based on date

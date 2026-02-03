@@ -1,6 +1,11 @@
 <template>
   <b-container fluid="xl">
     <page-title />
+
+    <!-- SSE Disconnected Banner -->
+    <b-alert v-if="!isSSEConnected && !isLoading" variant="warning" show>
+      {{ $t('pageEventLogs.sseDisconnected') || 'Real-time updates unavailable. Data may be stale.' }}
+    </b-alert>
     <b-row class="align-items-start">
       <b-col sm="8" xl="6" class="d-sm-flex align-items-end mb-4">
         <search
@@ -288,6 +293,8 @@ import SearchFilterMixin, {
 } from '@/components/Mixins/SearchFilterMixin';
 import i18n from '@/i18n';
 import { useModal } from 'bootstrap-vue-next';
+import { useEventLog } from '@/api/composables/useEventLog';
+import { computed, toRefs } from 'vue';
 
 export default {
   components: {
@@ -326,11 +333,30 @@ export default {
   },
   setup() {
     const bvModal = useModal();
-    return { bvModal };
+
+    // Use the new Vue Query + SSE composable for event logs
+    const eventLog = useEventLog();
+
+    return {
+      bvModal,
+      // Event log data and state from composable
+      eventLogEntries: eventLog.entries,
+      isLoading: eventLog.isLoading,
+      isFetching: eventLog.isFetching,
+      isSSEConnected: eventLog.isSSEConnected,
+      // Event log actions from composable
+      eventLogDeleteLog: eventLog.deleteLog,
+      eventLogDeleteLogs: eventLog.deleteLogs,
+      eventLogDeleteAllLogs: eventLog.deleteAllLogs,
+      eventLogResolveLogs: eventLog.resolveLogs,
+      eventLogUnresolveLogs: eventLog.unresolveLogs,
+      eventLogUpdateLogStatus: eventLog.updateLogStatus,
+      eventLogDownloadEntry: eventLog.downloadEntry,
+      eventLogRefetch: eventLog.refetch,
+    };
   },
   data() {
     return {
-      isBusy: true,
       fields: [
         {
           key: 'expandRow',
@@ -425,6 +451,10 @@ export default {
     };
   },
   computed: {
+    // isBusy reflects the loading state from Vue Query
+    isBusy() {
+      return this.isLoading;
+    },
     href() {
       return `data:text/json;charset=utf-8,${this.exportAllLogs()}`;
     },
@@ -434,7 +464,8 @@ export default {
         : this.filteredLogs.length;
     },
     allLogs() {
-      return this.$store.getters['eventLog/allEvents'].map((event) => {
+      // Use Vue Query data from the composable instead of Vuex
+      return this.eventLogEntries.map((event) => {
         return {
           ...event,
           actions: this.hideDelete
@@ -474,19 +505,12 @@ export default {
       );
     },
   },
-  created() {
-    this.startLoader();
-    this.$store.dispatch('eventLog/getEventLogData').finally(() => {
-      this.endLoader();
-      this.isBusy = false;
-    });
-  },
+  // Vue Query handles data fetching automatically, no need for created() hook
   methods: {
     downloadEntry(uri) {
       let filename = uri?.split('LogServices/')?.[1];
-      filename.replace(RegExp('/', 'g'), '_');
-      this.$store
-        .dispatch('eventLog/downloadEntry', uri)
+      filename = filename?.replace(RegExp('/', 'g'), '_') || 'download';
+      this.eventLogDownloadEntry(uri)
         .then((blob) => {
           const link = document.createElement('a');
           link.href = URL.createObjectURL(blob);
@@ -497,11 +521,10 @@ export default {
         .catch(({ message }) => this.errorToast(message));
     },
     changelogStatus(row) {
-      this.$store
-        .dispatch('eventLog/updateEventLogStatus', {
-          uri: row.uri,
-          status: row.status,
-        })
+      this.eventLogUpdateLogStatus({
+        uri: row.uri,
+        status: row.status,
+      })
         .then((success) => {
           this.successToast(success);
         })
@@ -519,32 +542,28 @@ export default {
         },
       );
       if (ok) {
-        this.$store
-          .dispatch('eventLog/deleteAllEventLogs', this.allLogs)
+        this.eventLogDeleteAllLogs()
           .then((message) => this.successToast(message))
           .catch(({ message }) => this.errorToast(message));
       }
     },
     deleteLogs(uris) {
-      this.$store
-        .dispatch('eventLog/deleteEventLogs', uris)
-        .then((messages) => {
-          messages.forEach(({ type, message }) => {
-            if (type === 'success') {
-              this.successToast(message);
-            } else if (type === 'error') {
-              this.errorToast(message);
-            }
-          });
+      this.eventLogDeleteLogs(uris).then((messages) => {
+        messages.forEach(({ type, message }) => {
+          if (type === 'success') {
+            this.successToast(message);
+          } else if (type === 'error') {
+            this.errorToast(message);
+          }
         });
+      });
     },
     exportAllLogs() {
-      {
-        return this.$store.getters['eventLog/allEvents'].map((eventLogs) => {
-          const allEventLogsString = JSON.stringify(eventLogs);
-          return allEventLogsString;
-        });
-      }
+      // Use Vue Query data from the composable instead of Vuex
+      return this.eventLogEntries.map((eventLogs) => {
+        const allEventLogsString = JSON.stringify(eventLogs);
+        return allEventLogsString;
+      });
     },
     onFilterChange({ activeFilters }) {
       this.activeFilters = activeFilters;
@@ -576,15 +595,9 @@ export default {
         );
         if (ok) {
           if (this.selectedRows.length === this.allLogs.length) {
-            this.$store
-              .dispatch('eventLog/deleteAllEventLogs', this.selectedRows.length)
-              .then(() => {
-                this.successToast(
-                  i18n.global.t(
-                    'pageEventLogs.toast.successDelete',
-                    uris.length,
-                  ),
-                );
+            this.eventLogDeleteAllLogs()
+              .then((message) => {
+                this.successToast(message);
               })
               .catch(({ message }) => this.errorToast(message));
           } else {
@@ -616,30 +629,26 @@ export default {
       return fileName + date;
     },
     resolveLogs() {
-      this.$store
-        .dispatch('eventLog/resolveEventLogs', this.selectedRows)
-        .then((messages) => {
-          messages.forEach(({ type, message }) => {
-            if (type === 'success') {
-              this.successToast(message);
-            } else if (type === 'error') {
-              this.errorToast(message);
-            }
-          });
+      this.eventLogResolveLogs(this.selectedRows).then((messages) => {
+        messages.forEach(({ type, message }) => {
+          if (type === 'success') {
+            this.successToast(message);
+          } else if (type === 'error') {
+            this.errorToast(message);
+          }
         });
+      });
     },
     unresolveLogs() {
-      this.$store
-        .dispatch('eventLog/unresolveEventLogs', this.selectedRows)
-        .then((messages) => {
-          messages.forEach(({ type, message }) => {
-            if (type === 'success') {
-              this.successToast(message);
-            } else if (type === 'error') {
-              this.errorToast(message);
-            }
-          });
+      this.eventLogUnresolveLogs(this.selectedRows).then((messages) => {
+        messages.forEach(({ type, message }) => {
+          if (type === 'success') {
+            this.successToast(message);
+          } else if (type === 'error') {
+            this.errorToast(message);
+          }
         });
+      });
     },
     confirmDialog(message, options = {}) {
       return this.$confirm({ message, ...options });

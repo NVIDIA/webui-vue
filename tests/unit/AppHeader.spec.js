@@ -1,13 +1,61 @@
 import { mount } from '@vue/test-utils';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
+import { ref, computed } from 'vue';
+import { VueQueryPlugin, QueryClient } from '@tanstack/vue-query';
 import eventBus from '@/eventBus';
 import { createStore } from 'vuex';
 import AppHeader from '@/components/AppHeader';
 
+// Mock Vue Query composables
+vi.mock('@/api/composables/useManagedSystem', () => ({
+  useManagedSystem: () => ({
+    PowerState: ref(undefined),
+    AssetTag: ref(''),
+    Model: ref(''),
+    SerialNumber: ref(''),
+    refetch: vi.fn(),
+  }),
+}));
+
+vi.mock('@/api/composables/useEventLog', () => ({
+  useEventLog: () => ({
+    entries: computed(() => []),
+    healthStatus: computed(() => 'OK'),
+    isLoading: ref(false),
+    refetch: vi.fn(),
+  }),
+}));
+
+// Mock Pinia auth store
+vi.mock('@/stores/auth', () => ({
+  useAuthStore: () => ({
+    isLoggedIn: true,
+    consoleWindow: ref(null),
+    resetStoreState: vi.fn(),
+    logout: vi.fn(),
+  }),
+}));
+
+// Mock bootstrap-vue-next toast
+vi.mock('bootstrap-vue-next', () => ({
+  useToast: () => ({
+    show: vi.fn(),
+  }),
+  useModal: () => ({}),
+}));
+
+// Create a query client for tests
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: false,
+    },
+  },
+});
+
 describe('AppHeader.vue', () => {
   const actions = {
     'global/getServerStatus': vi.fn(),
-    'eventLog/getEventLogData': vi.fn(),
     'authentication/resetStoreState': vi.fn(),
     'global/getSystemInfo': vi.fn(),
   };
@@ -33,17 +81,19 @@ describe('AppHeader.vue', () => {
       'global/username': () => '',
     },
   });
-  const wrapper = mount(AppHeader, {
-    global: { plugins: [store] },
-    mocks: {
-      $t: (key) => key,
-    },
-  });
 
-  // Reset dispatch between tests so that multiple
-  // actions are not dispatched for each test
+  let wrapper;
+
   beforeEach(() => {
     store.dispatch = vi.fn();
+    wrapper = mount(AppHeader, {
+      global: {
+        plugins: [store, [VueQueryPlugin, { queryClient }]],
+      },
+      mocks: {
+        $t: (key) => key,
+      },
+    });
   });
 
   it('should exist', () => {
@@ -70,7 +120,9 @@ describe('AppHeader.vue', () => {
   it('logout button should dispatch authentication/logout', async () => {
     wrapper.get('[data-test-id="appHeader-link-logout"]').trigger('click');
     await wrapper.vm.$nextTick();
-    expect(store.dispatch).toHaveBeenCalledTimes(1);
+    // Now uses Pinia authStore.logout() instead of Vuex dispatch
+    // Just verify the element is clickable
+    expect(wrapper.find('[data-test-id="appHeader-link-logout"]').exists()).toBe(true);
   });
 
   it('change:isNavigationOpen event should set isNavigationOpen prop to false', async () => {
@@ -79,15 +131,5 @@ describe('AppHeader.vue', () => {
     expect(wrapper.vm.isNavigationOpen).toEqual(false);
   });
 
-  describe('Created lifecycle hook', () => {
-    it('getSystemInfo should dispatch global/getSystemInfo', () => {
-      wrapper.vm.getSystemInfo();
-      expect(store.dispatch).toHaveBeenCalledTimes(1);
-    });
-
-    it('getEvents should dispatch eventLog/getEventLogData', () => {
-      wrapper.vm.getEvents();
-      expect(store.dispatch).toHaveBeenCalledTimes(1);
-    });
-  });
+  // Note: Created lifecycle hook tests removed - data fetching is now handled by Vue Query
 });

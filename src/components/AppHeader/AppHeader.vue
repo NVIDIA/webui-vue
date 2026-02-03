@@ -123,6 +123,7 @@ import LogoHeader from '@/assets/images/logo-header.svg?component';
 import eventBus from '@/eventBus';
 import { useAuthStore } from '@/stores/auth';
 import { useManagedSystem } from '@/api/composables/useManagedSystem';
+import { useEventLog } from '@/api/composables/useEventLog';
 import { ResourcePowerState } from '@/api/model/ResourcePowerState';
 
 // Props
@@ -150,14 +151,22 @@ const {
   refetch: refetchSystem,
 } = useManagedSystem();
 
+// Vue Query + SSE - Event Log (health status)
+const {
+  healthStatus: eventLogHealthStatus,
+  refetch: refetchEventLog,
+} = useEventLog();
+
 // Reactive state
 const isNavigationOpen = ref(false);
 const altLogo = import.meta.env.VITE_COMPANY_NAME || 'Built on OpenBMC';
 
 // Computed - Store getters (still using Vuex for some things)
 const isAuthorized = computed(() => store.getters['global/isAuthorized']);
-const healthStatus = computed(() => store.getters['eventLog/healthStatus']);
 const username = computed(() => store.getters['global/username']);
+
+// Health status from Vue Query + SSE composable
+const healthStatus = eventLogHealthStatus;
 
 // Computed - From Vue Query (Redfish-first naming)
 const assetTag = computed(() => AssetTag.value ?? null);
@@ -227,13 +236,11 @@ function handleNavigationChange(navigationOpen: unknown) {
   isNavigationOpen.value = navigationOpen as boolean;
 }
 
-function getEvents() {
-  store.dispatch('eventLog/getEventLogData');
-}
-
 function refresh() {
   // Refetch system data via Vue Query
   refetchSystem();
+  // Refetch event log data via Vue Query
+  refetchEventLog();
   emit('refresh');
 }
 
@@ -251,9 +258,8 @@ function setFocus(event: Event) {
 }
 
 // Lifecycle - equivalent to created()
-// Vue Query handles system info fetching automatically via useManagedSystem
+// Vue Query handles system info and event log fetching automatically
 authStore.resetStoreState();
-getEvents();
 
 // Lifecycle - mounted
 onMounted(() => {

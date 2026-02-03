@@ -11,7 +11,6 @@ import ControlStore from './modules/Operations/ControlStore';
 import PowerControlStore from './modules/ResourceManagement/PowerControlStore';
 import PowerPolicyStore from './modules/Settings/PowerPolicyStore';
 import NetworkStore from './modules/Settings/NetworkStore';
-import EventLogStore from './modules/Logs/EventLogStore';
 import DumpsStore from './modules/Logs/DumpsStore';
 import ServerLedStore from './modules/HardwareStatus/ServerLedStore';
 import SystemStore from './modules/HardwareStatus/SystemStore';
@@ -48,7 +47,6 @@ const store = createStore({
     powerPolicy: PowerPolicyStore,
     powerSupply: PowerSupplyStore,
     network: NetworkStore,
-    eventLog: EventLogStore,
     dumps: DumpsStore,
     serverLed: ServerLedStore,
     snmpAlerts: SnmpAlertsStore,
