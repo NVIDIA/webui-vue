@@ -29,6 +29,9 @@ yarn-error.log*
 src/api/schema/
 src/api/model/*
 !src/api/model/AccountService.ts
+!src/api/model/ComputerSystem.ts
+!src/api/model/Manager.ts
+!src/api/model/ResourcePowerState.ts
 !src/api/model/Role.ts
 !src/api/model/Sensor.ts
 !src/api/model/ServiceRoot.ts

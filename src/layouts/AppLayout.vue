@@ -5,7 +5,12 @@
       class="app-header"
       :router-key="routerKey"
       @refresh="refresh"
-    />
+    >
+      <!-- SSE Status Indicator in header slot if available -->
+      <template #status>
+        <s-s-e-status-indicator />
+      </template>
+    </app-header>
     <app-navigation class="app-navigation" />
     <page-container class="app-content">
       <router-view ref="routerView" :key="routerKey" />
@@ -20,8 +25,10 @@ import AppHeader from '@/components/AppHeader';
 import AppNavigation from '@/components/AppNavigation';
 import PageContainer from '@/components/Global/PageContainer';
 import ButtonBackToTop from '@/components/Global/ButtonBackToTop';
+import SSEStatusIndicator from '@/components/Global/SSEStatusIndicator.vue';
 import JumpLinkMixin from '@/components/Mixins/JumpLinkMixin';
 import eventBus from '@/eventBus';
+import { useSSEInit } from '@/api/composables/useSSEInit';
 
 export default {
   name: 'App',
@@ -30,8 +37,18 @@ export default {
     AppNavigation,
     PageContainer,
     ButtonBackToTop,
+    SSEStatusIndicator,
   },
   mixins: [JumpLinkMixin],
+  setup() {
+    // Initialize SSE connection for real-time events
+    const sse = useSSEInit();
+
+    return {
+      sseStatus: sse.status,
+      sseIsConnected: sse.isConnected,
+    };
+  },
   data() {
     return {
       routerKey: 0,

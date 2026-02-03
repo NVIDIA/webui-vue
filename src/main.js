@@ -78,6 +78,8 @@ import {
 } from 'bootstrap-vue-next';
 
 const app = createApp(App);
+
+// Create Pinia instance for modern state management (SSE store)
 const pinia = createPinia();
 
 // Note: We register only the components/directives we need
@@ -150,8 +152,8 @@ app.use(i18n);
 app.use(router);
 app.use(pinia);
 app.use(store);
-app.use(ToastPlugin);
 app.use(VueQueryPlugin);
+app.use(ToastPlugin);
 
 app.config.globalProperties.$eventBus = eventBus;
 app.config.globalProperties.$confirm = (messageOrOptions) => {

@@ -60,6 +60,10 @@
             <status-icon :status="serverStatusIcon" />
             {{ t('appHeader.power') }}
           </b-nav-item>
+          <!-- SSE Status Indicator slot -->
+          <li v-if="$slots.status" class="nav-item d-flex align-items-center px-2">
+            <slot name="status"></slot>
+          </li>
           <!-- Using LI elements instead of b-nav-item to support semantic button elements -->
           <li class="nav-item">
             <b-button
@@ -118,6 +122,8 @@ import LoadingBar from '@/components/Global/LoadingBar.vue';
 import LogoHeader from '@/assets/images/logo-header.svg?component';
 import eventBus from '@/eventBus';
 import { useAuthStore } from '@/stores/auth';
+import { useManagedSystem } from '@/api/composables/useManagedSystem';
+import { ResourcePowerState } from '@/api/model/ResourcePowerState';
 
 // Props
 const props = defineProps<{
@@ -135,18 +141,28 @@ const { t } = useI18n();
 const toast = useToast();
 const authStore = useAuthStore();
 
+// Vue Query - Managed System (PowerState, AssetTag, Model, SerialNumber)
+const {
+  PowerState,
+  AssetTag,
+  Model,
+  SerialNumber,
+  refetch: refetchSystem,
+} = useManagedSystem();
+
 // Reactive state
 const isNavigationOpen = ref(false);
 const altLogo = import.meta.env.VITE_COMPANY_NAME || 'Built on OpenBMC';
 
-// Computed - Store getters
-const assetTag = computed(() => store.getters['global/assetTag']);
-const modelType = computed(() => store.getters['global/modelType']);
-const serialNumber = computed(() => store.getters['global/serialNumber']);
+// Computed - Store getters (still using Vuex for some things)
 const isAuthorized = computed(() => store.getters['global/isAuthorized']);
-const serverStatus = computed(() => store.getters['global/serverStatus']);
 const healthStatus = computed(() => store.getters['eventLog/healthStatus']);
 const username = computed(() => store.getters['global/username']);
+
+// Computed - From Vue Query (Redfish-first naming)
+const assetTag = computed(() => AssetTag.value ?? null);
+const modelType = computed(() => Model.value ?? null);
+const serialNumber = computed(() => SerialNumber.value ?? null);
 
 // Computed - Auth store
 const consoleWindow = computed(() => authStore.consoleWindow);
@@ -156,15 +172,18 @@ const isNavTagPresent = computed(
   () => assetTag.value || modelType.value || serialNumber.value,
 );
 
+// Power status icon using Redfish PowerState enum
 const serverStatusIcon = computed(() => {
-  switch (serverStatus.value) {
-    case 'on':
+  switch (PowerState.value) {
+    case ResourcePowerState.On:
       return 'success';
-    case 'error':
-      return 'danger';
-    case 'diagnosticMode':
+    case ResourcePowerState.Off:
+      return 'secondary';
+    case ResourcePowerState.PoweringOn:
+    case ResourcePowerState.PoweringOff:
       return 'warning';
-    case 'off':
+    case ResourcePowerState.Paused:
+      return 'info';
     default:
       return 'secondary';
   }
@@ -208,15 +227,13 @@ function handleNavigationChange(navigationOpen: unknown) {
   isNavigationOpen.value = navigationOpen as boolean;
 }
 
-function getSystemInfo() {
-  store.dispatch('global/getSystemInfo');
-}
-
 function getEvents() {
   store.dispatch('eventLog/getEventLogData');
 }
 
 function refresh() {
+  // Refetch system data via Vue Query
+  refetchSystem();
   emit('refresh');
 }
 
@@ -234,8 +251,8 @@ function setFocus(event: Event) {
 }
 
 // Lifecycle - equivalent to created()
+// Vue Query handles system info fetching automatically via useManagedSystem
 authStore.resetStoreState();
-getSystemInfo();
 getEvents();
 
 // Lifecycle - mounted
