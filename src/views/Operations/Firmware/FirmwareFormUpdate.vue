@@ -39,7 +39,7 @@
         </b-form-group>
 
         <b-form-group
-          v-else-if="isNvidiaGB"
+          v-else-if="isNvidiaGB || isNvidiaVR"
           :label="$t('pageFirmware.form.updateFirmware.target')"
           :disabled="isPageDisabled || isFirmwareUpdateInProgress"
           class="mb-3"
@@ -105,9 +105,9 @@
             >
               <template #invalid>
                 <b-form-invalid-feedback
+                  v-if="v$.file.$error"
                   role="alert"
                   :state="false"
-                  v-if="v$.file.$error"
                 >
                   {{ $t('global.form.fieldRequired') }}
                 </b-form-invalid-feedback>
@@ -147,12 +147,13 @@
               @blur="v$.form.ImageURI.$touch()"
               @input="clearServerError"
             />
-            <b-form-invalid-feedback role="alert" v-if="v$.form.ImageURI.$error">
+            <b-form-invalid-feedback v-if="v$.form.ImageURI.$error" role="alert">
               <span v-if="v$.form.ImageURI.serverError?.$invalid">
-                <a href="#"
-                  @click.prevent="showDetailServerError"
+                <a
+href="#"
                   :title="$t('pageFirmware.form.updateFirmware.clickToViewApiResponse')"
                   class="error"
+                  @click.prevent="showDetailServerError"
                 >
                   {{ errorDetails }}
                 </a>
@@ -193,28 +194,30 @@
           </b-progress>
         </div>
         <div class="mb-3">
-          <b-form-invalid-feedback role="alert" :state="false" v-if="v$.form.ImageURI.$error">
+          <b-form-invalid-feedback v-if="v$.form.ImageURI.$error" role="alert" :state="false">
             <span v-if="v$.form.ImageURI.required?.$invalid">
               {{ $t('global.form.fieldRequired') }}
             </span>
           </b-form-invalid-feedback>
-          <b-form-invalid-feedback role="alert" :state="false" v-if="v$.form.Target.$error">
+          <b-form-invalid-feedback v-if="v$.form.Target.$error" role="alert" :state="false">
             <span v-if="v$.form.Target.serverError?.$invalid">
-              <a href="#"
-                @click.prevent="showDetailServerError"
+              <a
+href="#"
                 :title="$t('pageFirmware.form.updateFirmware.clickToViewApiResponse')"
                 class="error"
+                @click.prevent="showDetailServerError"
               >
                 {{ errorDetails }}
               </a>
             </span>
           </b-form-invalid-feedback>
-          <b-form-invalid-feedback role="alert" :state="false" v-if="redfishCommonError">
+          <b-form-invalid-feedback v-if="redfishCommonError" role="alert" :state="false">
             <span>
-              <a href="#"
-                @click.prevent="showDetailServerError"
+              <a
+href="#"
                 :title="$t('pageFirmware.form.updateFirmware.clickToViewApiResponse')"
                 class="error"
+                @click.prevent="showDetailServerError"
               >
                 {{ errorDetails }}
               </a>
@@ -302,6 +305,7 @@ export default {
       isBluefield: import.meta.env.VITE_ENV_NAME === 'nvidia-bluefield',
       bluefieldTarget: 'BMC',
       isNvidiaGB: import.meta.env.VITE_ENV_NAME === 'nvidia-gb',
+      isNvidiaVR: import.meta.env.VITE_ENV_NAME === 'nvidia-vr',
       nvidiaGBTarget: 'BMC',
       hideFirmwareTargets:
         import.meta.env.VITE_HIDE_FIRMWARE_TARGETS === 'true',
@@ -362,7 +366,7 @@ export default {
       if (this.isBluefield) {
         if (this.fileSource === 'LOCAL') return [];
         else return ['redfish/v1/UpdateService/FirmwareInventory/DPU_OS'];
-      } else if (this.isNvidiaGB && this.nvidiaGBTarget === 'HMC') {
+      } else if ((this.isNvidiaGB || this.isNvidiaVR) && this.nvidiaGBTarget === 'HMC') {
         let targets = [...this.$store.state.firmware.checkedItems];
         if (!targets.length) {
           targets.push('/redfish/v1/Chassis/HGX_Chassis_0');
@@ -538,7 +542,7 @@ export default {
       if (!state) return;
       if (state === 'TaskStarted') {
         // Avoid too much time at 0%(no loading bar)
-        const percent = taskPercent <= 1 ? 1 : taskPercent;
+        const percent = rawPercent <= 1 ? 1 : rawPercent;
         this.progressLoader([percent, percent]);
       } else if (state === 'TaskCompleted' && oldState !== state) {
         // End loader for polling task, then start new loader for waiting for ready

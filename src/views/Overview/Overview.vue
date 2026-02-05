@@ -90,13 +90,16 @@ export default {
   data() {
     return {
       showDumps: import.meta.env.VITE_ENV_NAME === 'ibm',
-      showPower: !['nvidia-bluefield', 'nvidia-igx', 'nvidia-gb'].includes(
-        import.meta.env.VITE_ENV_NAME,
-      ),
+      showPower: ![
+        'nvidia-bluefield',
+        'nvidia-igx',
+        'nvidia-gb',
+        'nvidia-vr',
+      ].includes(import.meta.env.VITE_ENV_NAME),
       showInventory: !['nvidia-bluefield', 'nvidia-igx'].includes(
         import.meta.env.VITE_ENV_NAME,
       ),
-      showSelLog: ['nvidia-bluefield', 'nvidia-igx', 'nvidia-gb'].includes(
+      showSelLog: ['nvidia-bluefield', 'nvidia-igx', 'nvidia-gb', 'nvidia-vr'].includes(
         import.meta.env.VITE_ENV_NAME,
       ),
     };

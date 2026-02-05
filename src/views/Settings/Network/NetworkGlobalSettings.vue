@@ -300,7 +300,7 @@ export default {
         .catch(({ message }) => this.errorToast(message));
     },
     initSettingsModal() {
-      require('@/eventBus').default.$emit('show-hostname-modal');
+      eventBus.$emit('show-hostname-modal');
     },
   },
 };

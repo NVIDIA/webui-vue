@@ -61,6 +61,9 @@ const AuthenticationStore = {
     authError(state, authError = true) {
       state.authError = authError;
     },
+    setConsoleWindow(state, value) {
+      state.consoleWindow = value;
+    },
     logout(state) {
       Cookies.remove('XSRF-TOKEN');
       Cookies.remove('IsAuthenticated');

@@ -119,7 +119,7 @@ export default {
       this.macAddress = this.ethernetData[this.selectedInterface].MACAddress;
     },
     initMacAddressModal() {
-      require('@/eventBus').default.$emit('show-mac-address-modal');
+      eventBus.$emit('show-mac-address-modal');
     },
   },
 };

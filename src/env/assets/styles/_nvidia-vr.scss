@@ -1,0 +1,6 @@
+// NVIDIA-vr extends NVIDIA base theme
+@import "./nvidia";
+
+// VR variant uses yellow for warning accents
+$yellow: #a96700;
+$warning: $yellow;

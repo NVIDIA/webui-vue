@@ -19,12 +19,12 @@ describe('i18n vendor overlays', () => {
 
   test('falls back to vendor root overlays when env has hyphenated suffix', async () => {
     // Simulate running in nvidia-gb but having overlays only in src/env/locales/nvidia
-    vi.stubEnv('VITE_ENV_NAME', 'nvidia-gb');
+    vi.stubEnv('VITE_ENV_NAME', 'nvidia-vr');
 
     const { createI18nInstance } = await import('@/i18n');
     const vendorEn = await import('@/env/locales/nvidia/en-US.json');
     const stubLoader = () => ({ 'en-US': vendorEn.default || vendorEn });
-    const i18nInstance = createI18nInstance('nvidia-gb', 'en-US', stubLoader);
+    const i18nInstance = createI18nInstance('nvidia-vr', 'en-US', stubLoader);
 
     // System HGX dump is NVIDIA-specific and defined in src/env/locales/nvidia/en-US.json
     const translated = i18nInstance.global.t(

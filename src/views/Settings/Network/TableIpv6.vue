@@ -292,7 +292,7 @@ export default {
       return this.$confirm({ message, ...options });
     },
     initDefaultGatewayModal() {
-      require('@/eventBus').default.$emit('show-default-gateway-modal');
+      eventBus.$emit('show-default-gateway-modal');
     },
     saveIpv6Address(modalFormData) {
       this.startLoader();

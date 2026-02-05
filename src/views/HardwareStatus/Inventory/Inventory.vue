@@ -24,34 +24,34 @@
     </page-section>
 
     <!-- System table -->
-    <table-system ref="system" v-bind:show-leds="showSystemLeds" />
+    <table-system ref="system" :show-leds="showSystemLeds" />
 
     <!-- BMC manager table -->
-    <table-bmc-manager ref="bmc" v-bind:show-leds="showLeds" />
+    <table-bmc-manager ref="bmc" :show-leds="showLeds" />
 
     <!-- Chassis table -->
-    <table-chassis ref="chassis" v-bind:show-leds="showLeds" />
+    <table-chassis ref="chassis" :show-leds="showLeds" />
 
     <!-- DIMM slot table -->
-    <table-dimm-slot ref="dimms" v-bind:show-leds="showLeds" />
+    <table-dimm-slot ref="dimms" :show-leds="showLeds" />
 
     <!-- Fans table -->
-    <table-fans ref="fans" v-bind:show-leds="showLeds" />
+    <table-fans ref="fans" :show-leds="showLeds" />
 
     <!-- Power supplies table -->
-    <table-power-supplies ref="powerSupply" v-bind:show-leds="showLeds" />
+    <table-power-supplies ref="powerSupply" :show-leds="showLeds" />
 
     <!-- Processors table -->
-    <table-processors ref="processors" v-bind:show-leds="showLeds" />
+    <table-processors ref="processors" :show-leds="showLeds" />
 
     <!-- Assembly table -->
-    <table-assembly ref="assembly" v-bind:show-leds="showLeds" />
+    <table-assembly ref="assembly" :show-leds="showLeds" />
 
     <!-- NetworkAdapter table -->
-    <table-network-adapter ref="networkAdapter" v-bind:show-leds="showLeds" />
+    <table-network-adapter ref="networkAdapter" :show-leds="showLeds" />
 
     <!-- Drives table -->
-    <table-drives ref="drives" v-bind:show-leds="showLeds" />
+    <table-drives ref="drives" :show-leds="showLeds" />
   </b-container>
 </template>
 
@@ -103,7 +103,7 @@ export default {
   data() {
     return {
       showLeds:
-        (import.meta.env.VITE_ENV_NAME === 'nvidia-gb') ? false :
+        (import.meta.env.VITE_ENV_NAME === 'nvidia-gb' || import.meta.env.VITE_ENV_NAME === 'nvidia-vr') ? false :
         import.meta.env.VITE_HIDE_INVENTORY_LED !== 'true',
       showSystemLeds:
         import.meta.env.VITE_HIDE_INVENTORY_LED !== 'true',

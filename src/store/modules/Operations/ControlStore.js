@@ -250,7 +250,7 @@ const ControlStore = {
           }
           
           // Special case for NVIDIA
-          if (import.meta.env.VITE_ENV_NAME === 'nvidia-gb') {
+          if (import.meta.env.VITE_ENV_NAME === 'nvidia-gb' || import.meta.env.VITE_ENV_NAME === 'nvidia-vr') {
             allowableValues = ['GracefulRestart'];
           }
           
