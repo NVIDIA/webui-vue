@@ -277,11 +277,9 @@ const FirmwareStore = {
       const params = {};
       if (targets != null && targets.length > 0) {
         params.Targets = targets;
-      } else {
-        // TODO: Should be OK to leave Targets out, remove this clause
-        // when bmcweb is updated
-        params.Targets = [`${await this.dispatch('global/getBmcPath')}`];
       }
+      // When no targets selected, don't send Targets parameter
+      // Let the server decide the default target
       if (forceUpdate) params.ForceUpdate = true;
       params['@Redfish.OperationApplyTime'] = applyTime;
       formData.append('UpdateParameters', JSON.stringify(params));

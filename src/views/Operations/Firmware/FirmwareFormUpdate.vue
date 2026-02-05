@@ -538,8 +538,8 @@ export default {
       if (!state) return;
       if (state === 'TaskStarted') {
         // Avoid too much time at 0%(no loading bar)
-        const taskPercent = rawPercent <= 1 ? 1 : rawPercent;
-        this.progressLoader([taskPercent, taskPercent]);
+        const percent = taskPercent <= 1 ? 1 : taskPercent;
+        this.progressLoader([percent, percent]);
       } else if (state === 'TaskCompleted' && oldState !== state) {
         // End loader for polling task, then start new loader for waiting for ready
         this.endLoader();
