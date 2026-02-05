@@ -6,9 +6,9 @@
  */
 import { watch, type Ref } from 'vue';
 import { useQueryClient, type QueryClient } from '@tanstack/vue-query';
-import type { RedfishSSEEvent } from '@/stores/sse';
-import { extractResourceType, matchesMessageId } from './parseSSEEvent';
-import { managedSystemKeys } from './useManagedSystem';
+import type { EventRecord } from '@/api/model/EventRecord';
+import { extractResourceType, matchesMessageId, getOriginUri } from './parseSSEEvent';
+import { useGlobalStore } from '@/stores/global';
 
 // ============================================================================
 // Types
@@ -18,34 +18,34 @@ export interface InvalidationRule {
   /**
    * MessageId pattern to match (string for includes, RegExp for full match)
    */
-  messageIdPattern?: string | RegExp;
+  MessageIdPattern?: string | RegExp;
 
   /**
    * Resource types from OriginOfCondition to match
    */
-  resourceTypes?: string[];
+  ResourceTypes?: string[];
 
   /**
    * Query keys to invalidate when rule matches
    */
-  queryKeys: readonly unknown[][];
+  QueryKeys: readonly unknown[][];
 
   /**
    * Optional: Extract additional query key segments from event
    */
-  extractKeys?: (event: RedfishSSEEvent) => unknown[][];
+  ExtractKeys?: (Event: EventRecord) => unknown[][];
 }
 
 export interface UseSSEQueryInvalidationOptions {
   /**
-   * Events to watch for invalidation
+   * Events to watch for invalidation (Redfish EventRecord)
    */
-  events: Ref<RedfishSSEEvent[]>;
+  Events: Ref<EventRecord[]>;
 
   /**
    * Custom invalidation rules (merged with defaults)
    */
-  rules?: InvalidationRule[];
+  Rules?: InvalidationRule[];
 
   /**
    * Whether to invalidate on buffer exceeded (triggers full refresh)
@@ -64,34 +64,34 @@ export interface UseSSEQueryInvalidationOptions {
 const DEFAULT_RULES: InvalidationRule[] = [
   // Sensor events - invalidate sensor queries
   {
-    resourceTypes: ['Sensors'],
-    messageIdPattern: /ResourceEvent\.\d+\.\d+\.Resource(Created|Removed|Changed)/i,
-    queryKeys: [
+    ResourceTypes: ['Sensors'],
+    MessageIdPattern: /ResourceEvent\.\d+\.\d+\.Resource(Created|Removed|Changed)/i,
+    QueryKeys: [
       ['redfish', 'allSubResources', '/redfish/v1/Chassis', 'Sensors'],
     ],
   },
 
   // Thermal events (fans, temperatures)
   {
-    resourceTypes: ['Thermal', 'Fans', 'Temperatures'],
-    queryKeys: [
+    ResourceTypes: ['Thermal', 'Fans', 'Temperatures'],
+    QueryKeys: [
       ['redfish', 'allSubResources', '/redfish/v1/Chassis', 'Thermal'],
     ],
   },
 
   // Power events
   {
-    resourceTypes: ['Power', 'PowerSupplies', 'Voltages'],
-    queryKeys: [
+    ResourceTypes: ['Power', 'PowerSupplies', 'Voltages'],
+    QueryKeys: [
       ['redfish', 'allSubResources', '/redfish/v1/Chassis', 'Power'],
     ],
   },
 
   // Event log entries - invalidate event log queries
   {
-    resourceTypes: ['Entries', 'EventLog'],
-    messageIdPattern: /ResourceEvent\.\d+\.\d+\.Resource(Created|Removed)/i,
-    queryKeys: [
+    ResourceTypes: ['Entries', 'EventLog'],
+    MessageIdPattern: /ResourceEvent\.\d+\.\d+\.Resource(Created|Removed)/i,
+    QueryKeys: [
       ['eventLog'],
       ['redfish', 'logEntries'],
     ],
@@ -99,20 +99,28 @@ const DEFAULT_RULES: InvalidationRule[] = [
 
   // System state changes - includes managed system for power state
   {
-    resourceTypes: ['Systems'],
-    messageIdPattern: /ResourceEvent\.\d+\.\d+\.StateChanged/i,
-    queryKeys: [
+    ResourceTypes: ['Systems'],
+    MessageIdPattern: /ResourceEvent\.\d+\.\d+\.StateChanged/i,
+    QueryKeys: [
       ['redfish', 'system'],
       ['redfish', 'systems'],
-      managedSystemKeys.system(),
     ],
+    // Dynamically get the managed system's query key
+    ExtractKeys: () => {
+      const globalStore = useGlobalStore();
+      const SystemId = globalStore.SystemId;
+      if (SystemId) {
+        return [['getSystemsById', SystemId]];
+      }
+      return [];
+    },
   },
 
   // Chassis state changes
   {
-    resourceTypes: ['Chassis'],
-    messageIdPattern: /ResourceEvent\.\d+\.\d+\.StateChanged/i,
-    queryKeys: [
+    ResourceTypes: ['Chassis'],
+    MessageIdPattern: /ResourceEvent\.\d+\.\d+\.StateChanged/i,
+    QueryKeys: [
       ['redfish', 'chassis'],
       ['redfish', 'allSubResources', '/redfish/v1/Chassis'],
     ],
@@ -120,8 +128,8 @@ const DEFAULT_RULES: InvalidationRule[] = [
 
   // Manager/BMC state changes
   {
-    resourceTypes: ['Managers'],
-    queryKeys: [
+    ResourceTypes: ['Managers'],
+    QueryKeys: [
       ['redfish', 'managers'],
       ['redfish', 'bmc'],
     ],
@@ -129,8 +137,8 @@ const DEFAULT_RULES: InvalidationRule[] = [
 
   // Alert/Critical events - might affect health status
   {
-    messageIdPattern: /Alert/i,
-    queryKeys: [
+    MessageIdPattern: /Alert/i,
+    QueryKeys: [
       ['health'],
       ['eventLog'],
     ],
@@ -138,9 +146,9 @@ const DEFAULT_RULES: InvalidationRule[] = [
 
   // Task events
   {
-    resourceTypes: ['Tasks'],
-    messageIdPattern: /TaskEvent\.\d+\.\d+\.Task/i,
-    queryKeys: [
+    ResourceTypes: ['Tasks'],
+    MessageIdPattern: /TaskEvent\.\d+\.\d+\.Task/i,
+    QueryKeys: [
       ['redfish', 'tasks'],
     ],
   },
@@ -153,41 +161,47 @@ const DEFAULT_RULES: InvalidationRule[] = [
 /**
  * Watch SSE events and invalidate Vue Query caches.
  */
-export function useSSEQueryInvalidation(options: UseSSEQueryInvalidationOptions) {
-  const { events, rules = [], onBufferExceeded } = options;
+export function useSSEQueryInvalidation(Options: UseSSEQueryInvalidationOptions) {
+  const { Events, Rules = [], onBufferExceeded } = Options;
 
   const queryClient = useQueryClient();
 
   // Merge custom rules with defaults
-  const allRules = [...DEFAULT_RULES, ...rules];
+  const AllRules = [...DEFAULT_RULES, ...Rules];
 
   // Track last processed event to avoid duplicates
-  let lastProcessedEventId: string | null = null;
+  let LastProcessedEventId: string | null = null;
 
   // Watch for new events
   watch(
-    events,
-    (newEvents) => {
-      if (newEvents.length === 0) return;
+    Events,
+    (NewEvents) => {
+      if (NewEvents.length === 0) return;
 
       // Process only new events
-      const latestEvent = newEvents[newEvents.length - 1];
-      if (latestEvent.EventId === lastProcessedEventId) {
+      const LatestEvent = NewEvents[NewEvents.length - 1];
+      if (LatestEvent.EventId === LastProcessedEventId) {
         return;
       }
 
-      lastProcessedEventId = latestEvent.EventId;
+      LastProcessedEventId = LatestEvent.EventId ?? null;
+
+      const MessageId = LatestEvent.MessageId ?? '';
+
+      // Skip heartbeat events - they're for connection health, not data changes
+      if (MessageId.startsWith('HeartbeatEvent.')) {
+        return;
+      }
 
       // Handle EventBufferExceeded - invalidate ALL queries
-      const messageId = latestEvent.MessageId ?? '';
-      if (messageId.endsWith('.EventBufferExceeded')) {
+      if (MessageId.endsWith('.EventBufferExceeded')) {
         console.warn('[SSE] EventBufferExceeded - invalidating all queries');
         queryClient.invalidateQueries();
         onBufferExceeded?.();
         return;
       }
 
-      processEvent(latestEvent, queryClient, allRules);
+      processEvent(LatestEvent, queryClient, AllRules);
     },
     { deep: true },
   );
@@ -202,42 +216,43 @@ export function useSSEQueryInvalidation(options: UseSSEQueryInvalidationOptions)
  * 3. Fall back to static rules for additional invalidations
  */
 function processEvent(
-  event: RedfishSSEEvent,
+  Event: EventRecord,
   queryClient: QueryClient,
-  rules: InvalidationRule[],
+  Rules: InvalidationRule[],
 ) {
-  const invalidatedKeys = new Set<string>();
+  const InvalidatedKeys = new Set<string>();
 
   // -------------------------------------------------------------------------
   // Dynamic path-based invalidation (primary mechanism)
   // -------------------------------------------------------------------------
-  if (event.OriginOfCondition) {
+  const OriginUri = getOriginUri(Event);
+  if (OriginUri) {
     // Invalidate the exact resource path
     // e.g., "/redfish/v1/Chassis/BMC_0/Sensors/temp1" → ['redfish', 'v1', 'Chassis', 'BMC_0', 'Sensors', 'temp1']
-    const path = event.OriginOfCondition.replace(/^\/redfish\/v1\//, '');
-    const pathSegments = path.split('/').filter(Boolean);
-    const resourceKey = ['redfish', 'v1', ...pathSegments];
+    const Path = OriginUri.replace(/^\/redfish\/v1\//, '');
+    const PathSegments = Path.split('/').filter(Boolean);
+    const ResourceKey = ['redfish', 'v1', ...PathSegments];
 
-    const keyString = JSON.stringify(resourceKey);
-    if (!invalidatedKeys.has(keyString)) {
-      invalidatedKeys.add(keyString);
-      queryClient.invalidateQueries({ queryKey: resourceKey });
+    const KeyString = JSON.stringify(ResourceKey);
+    if (!InvalidatedKeys.has(KeyString)) {
+      InvalidatedKeys.add(KeyString);
+      queryClient.invalidateQueries({ queryKey: ResourceKey });
     }
 
     // For add/remove events, also invalidate parent collection
-    const messageId = event.MessageId ?? '';
+    const MessageId = Event.MessageId ?? '';
     if (
-      messageId.includes('ResourceAdded') ||
-      messageId.includes('ResourceRemoved') ||
-      messageId.includes('ResourceCreated')
+      MessageId.includes('ResourceAdded') ||
+      MessageId.includes('ResourceRemoved') ||
+      MessageId.includes('ResourceCreated')
     ) {
-      const parentSegments = pathSegments.slice(0, -1);
-      if (parentSegments.length > 0) {
-        const parentKey = ['redfish', 'v1', ...parentSegments];
-        const parentKeyString = JSON.stringify(parentKey);
-        if (!invalidatedKeys.has(parentKeyString)) {
-          invalidatedKeys.add(parentKeyString);
-          queryClient.invalidateQueries({ queryKey: parentKey });
+      const ParentSegments = PathSegments.slice(0, -1);
+      if (ParentSegments.length > 0) {
+        const ParentKey = ['redfish', 'v1', ...ParentSegments];
+        const ParentKeyString = JSON.stringify(ParentKey);
+        if (!InvalidatedKeys.has(ParentKeyString)) {
+          InvalidatedKeys.add(ParentKeyString);
+          queryClient.invalidateQueries({ queryKey: ParentKey });
         }
       }
     }
@@ -246,39 +261,40 @@ function processEvent(
   // -------------------------------------------------------------------------
   // Static rule-based invalidation (supplementary)
   // -------------------------------------------------------------------------
-  const resourceType = extractResourceType(event.OriginOfCondition);
+  const ResourceType = extractResourceType(OriginUri);
 
-  for (const rule of rules) {
-    if (!ruleMatches(event, rule, resourceType)) {
+  for (const Rule of Rules) {
+    if (!ruleMatches(Event, Rule, ResourceType)) {
       continue;
     }
 
     // Invalidate static query keys
-    for (const queryKey of rule.queryKeys) {
-      const keyString = JSON.stringify(queryKey);
-      if (!invalidatedKeys.has(keyString)) {
-        invalidatedKeys.add(keyString);
-        queryClient.invalidateQueries({ queryKey: queryKey as unknown[] });
+    for (const QueryKey of Rule.QueryKeys) {
+      const KeyString = JSON.stringify(QueryKey);
+      if (!InvalidatedKeys.has(KeyString)) {
+        InvalidatedKeys.add(KeyString);
+        queryClient.invalidateQueries({ queryKey: QueryKey as unknown[] });
       }
     }
 
     // Invalidate dynamic query keys from rule
-    if (rule.extractKeys) {
-      const dynamicKeys = rule.extractKeys(event);
-      for (const queryKey of dynamicKeys) {
-        const keyString = JSON.stringify(queryKey);
-        if (!invalidatedKeys.has(keyString)) {
-          invalidatedKeys.add(keyString);
-          queryClient.invalidateQueries({ queryKey });
+    if (Rule.ExtractKeys) {
+      const DynamicKeys = Rule.ExtractKeys(Event);
+      for (const QueryKey of DynamicKeys) {
+        const KeyString = JSON.stringify(QueryKey);
+        if (!InvalidatedKeys.has(KeyString)) {
+          InvalidatedKeys.add(KeyString);
+          queryClient.invalidateQueries({ queryKey: QueryKey });
         }
       }
     }
   }
 
   // Log invalidations for debugging
-  if (invalidatedKeys.size > 0 && import.meta.env.DEV) {
-    console.debug(
-      `[SSE] Event ${event.MessageId || event.EventId} invalidated ${invalidatedKeys.size} query keys`,
+  if (InvalidatedKeys.size > 0 && import.meta.env.DEV) {
+    console.log(
+      `[SSE] Cache invalidation: ${Event.MessageId || Event.EventId} invalidated ${InvalidatedKeys.size} query keys:`,
+      [...InvalidatedKeys].map((k) => JSON.parse(k)),
     );
   }
 }
@@ -287,25 +303,25 @@ function processEvent(
  * Check if an event matches a rule.
  */
 function ruleMatches(
-  event: RedfishSSEEvent,
-  rule: InvalidationRule,
-  resourceType?: string,
+  Event: EventRecord,
+  Rule: InvalidationRule,
+  ResourceType?: string,
 ): boolean {
   // Check resource type match
-  if (rule.resourceTypes && rule.resourceTypes.length > 0) {
-    if (!resourceType || !rule.resourceTypes.includes(resourceType)) {
+  if (Rule.ResourceTypes && Rule.ResourceTypes.length > 0) {
+    if (!ResourceType || !Rule.ResourceTypes.includes(ResourceType)) {
       // Resource type specified but doesn't match
-      if (!rule.messageIdPattern) {
+      if (!Rule.MessageIdPattern) {
         return false;
       }
     }
   }
 
   // Check message ID pattern match
-  if (rule.messageIdPattern) {
-    if (!matchesMessageId(event, rule.messageIdPattern)) {
+  if (Rule.MessageIdPattern) {
+    if (!matchesMessageId(Event, Rule.MessageIdPattern)) {
       // If resource types also specified and matched, allow it
-      if (rule.resourceTypes && resourceType && rule.resourceTypes.includes(resourceType)) {
+      if (Rule.ResourceTypes && ResourceType && Rule.ResourceTypes.includes(ResourceType)) {
         return true;
       }
       return false;
@@ -325,15 +341,15 @@ function ruleMatches(
  */
 export function invalidateResourceQueries(
   queryClient: QueryClient,
-  resourceUri: string,
+  ResourceUri: string,
 ) {
-  const resourceType = extractResourceType(resourceUri);
+  const ResourceType = extractResourceType(ResourceUri);
 
   // Find matching rules and invalidate
-  for (const rule of DEFAULT_RULES) {
-    if (rule.resourceTypes?.includes(resourceType ?? '')) {
-      for (const queryKey of rule.queryKeys) {
-        queryClient.invalidateQueries({ queryKey: queryKey as unknown[] });
+  for (const Rule of DEFAULT_RULES) {
+    if (Rule.ResourceTypes?.includes(ResourceType ?? '')) {
+      for (const QueryKey of Rule.QueryKeys) {
+        queryClient.invalidateQueries({ queryKey: QueryKey as unknown[] });
       }
     }
   }
@@ -344,17 +360,17 @@ export function invalidateResourceQueries(
  */
 export function invalidateAllSSEQueries(queryClient: QueryClient) {
   // Collect all unique query keys from rules
-  const allKeys = new Set<string>();
+  const AllKeys = new Set<string>();
 
-  for (const rule of DEFAULT_RULES) {
-    for (const queryKey of rule.queryKeys) {
-      allKeys.add(JSON.stringify(queryKey));
+  for (const Rule of DEFAULT_RULES) {
+    for (const QueryKey of Rule.QueryKeys) {
+      AllKeys.add(JSON.stringify(QueryKey));
     }
   }
 
   // Invalidate all
-  for (const keyString of allKeys) {
-    const queryKey = JSON.parse(keyString) as unknown[];
-    queryClient.invalidateQueries({ queryKey });
+  for (const KeyString of AllKeys) {
+    const QueryKey = JSON.parse(KeyString) as unknown[];
+    queryClient.invalidateQueries({ queryKey: QueryKey });
   }
 }

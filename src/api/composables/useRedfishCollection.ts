@@ -43,6 +43,11 @@ export interface RedfishQueryParameters {
   $skip?: number;
   only?: boolean;
   excerpt?: number;
+  /**
+   * Force manual expansion by fetching each member individually.
+   * Use this for BMCs that partially implement $expand (e.g., only expand first item).
+   */
+  forceManualExpand?: boolean;
 }
 
 /**
@@ -135,6 +140,7 @@ function normalizeRedfishQueryParameters(
     $skip: params.$skip,
     only: params.only,
     excerpt: params.excerpt,
+    forceManualExpand: params.forceManualExpand,
   });
 }
 
@@ -237,7 +243,8 @@ export async function fetchRedfishCollection<T>(
 ): Promise<{ Members: T[]; [key: string]: unknown }> {
   const supportsExpand = await checkExpandSupport(queryClient);
 
-  if (supportsExpand) {
+  // Try $expand if supported AND forceManualExpand is not set
+  if (supportsExpand && !params?.forceManualExpand) {
     try {
       // Try $expand - use provided expand or default to '.'
       const url = buildQuery(path, { ...params, $expand: params?.$expand ?? '.' });

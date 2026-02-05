@@ -10,69 +10,21 @@
  */
 import { computed, watch, type Ref, type ComputedRef } from 'vue';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/vue-query';
+import { storeToRefs } from 'pinia';
 import { apiInstance } from '@/api/mutator/axios-instance';
-import { useManagedSystem } from './useManagedSystem';
-import { useSSEStore, type RedfishSSEEvent } from '@/stores/sse';
+import { useGlobalStore } from '@/stores/global';
+import { useSSEStore } from '@/stores/sse';
+import { getOriginUri } from './parseSSEEvent';
+import type { LogEntry } from '@/api/model/LogEntry';
+import type { EventRecord } from '@/api/model/EventRecord';
 import i18n from '@/i18n';
 
 // ============================================================================
 // Types - Following Redfish naming conventions (PascalCase)
 // ============================================================================
 
-/**
- * Redfish LogEntry resource
- */
-export interface LogEntry {
-  '@odata.id': string;
-  '@odata.type'?: string;
-  Id: string;
-  Name?: string;
-  Created?: string;
-  Modified?: string;
-  EntryType?: string;
-  Severity?: 'OK' | 'Warning' | 'Critical';
-  Message?: string;
-  MessageId?: string;
-  MessageArgs?: string[];
-  Resolution?: string;
-  Resolved?: boolean;
-  AdditionalDataURI?: string;
-  OemRecordFormat?: string;
-  Links?: {
-    OriginOfCondition?: { '@odata.id': string };
-  };
-}
-
-/**
- * Event log entry with UI-specific additions.
- * Includes lowercase aliases for backward compatibility with existing templates.
- */
-export interface EventLogEntry extends LogEntry {
-  /** Formatted date for display */
-  date: Date;
-  /** Formatted modified date */
-  modifiedDate?: Date;
-  /** URI for API operations */
-  uri: string;
-  /** Status text for filtering */
-  filterByStatus: 'Resolved' | 'Unresolved';
-  /** Resolved status as boolean */
-  status: boolean;
-  /** Additional data URI if available */
-  additionalDataUri?: string;
-
-  // Lowercase aliases for backward compatibility with existing templates
-  /** @deprecated Use Id instead */
-  id: string;
-  /** @deprecated Use Severity instead */
-  severity?: 'OK' | 'Warning' | 'Critical';
-  /** @deprecated Use Message instead */
-  description?: string;
-  /** @deprecated Use EntryType instead */
-  type?: string;
-  /** @deprecated Use Name instead */
-  name?: string;
-}
+// Re-export LogEntry for consumers
+export type { LogEntry };
 
 /**
  * Log collection response
@@ -99,34 +51,12 @@ export const eventLogKeys = {
 // ============================================================================
 
 /**
- * Transform Redfish LogEntry to UI-friendly EventLogEntry
- */
-function transformLogEntry(log: LogEntry): EventLogEntry {
-  return {
-    ...log,
-    // UI-specific computed fields
-    date: log.Created ? new Date(log.Created) : new Date(),
-    modifiedDate: log.Modified ? new Date(log.Modified) : undefined,
-    uri: log['@odata.id'],
-    filterByStatus: log.Resolved ? 'Resolved' : 'Unresolved',
-    status: log.Resolved ?? false,
-    additionalDataUri: log.AdditionalDataURI,
-    // Lowercase aliases for backward compatibility with existing templates
-    id: log.Id,
-    severity: log.Severity,
-    description: log.Message,
-    type: log.EntryType,
-    name: log.Name,
-  };
-}
-
-/**
  * Calculate health status from events
  */
-function getHealthStatus(events: EventLogEntry[], loadedEvents: boolean): string {
+function getHealthStatus(events: LogEntry[], loadedEvents: boolean): string {
   let status = loadedEvents ? 'OK' : '';
   for (const event of events) {
-    if (event.filterByStatus === 'Unresolved') {
+    if (!event.Resolved) {
       if (event.Severity === 'Warning') {
         status = 'Warning';
       }
@@ -142,7 +72,7 @@ function getHealthStatus(events: EventLogEntry[], loadedEvents: boolean): string
 /**
  * Get high priority (Critical) events
  */
-function getHighPriorityEvents(events: EventLogEntry[]): EventLogEntry[] {
+function getHighPriorityEvents(events: LogEntry[]): LogEntry[] {
   return events.filter(({ Severity }) => Severity === 'Critical');
 }
 
@@ -160,8 +90,8 @@ export interface UseEventLogOptions {
 
 export interface UseEventLogReturn {
   // Data
-  entries: ComputedRef<EventLogEntry[]>;
-  highPriorityEvents: ComputedRef<EventLogEntry[]>;
+  entries: ComputedRef<LogEntry[]>;
+  highPriorityEvents: ComputedRef<LogEntry[]>;
   healthStatus: ComputedRef<string>;
 
   // Query state
@@ -172,7 +102,7 @@ export interface UseEventLogReturn {
 
   // SSE state
   isSSEConnected: ComputedRef<boolean>;
-  sseEvents: ComputedRef<RedfishSSEEvent[]>;
+  SSEEvents: ComputedRef<EventRecord[]>;
 
   // Actions
   refetch: () => Promise<unknown>;
@@ -180,10 +110,10 @@ export interface UseEventLogReturn {
   deleteLogs: (uris: string[]) => Promise<{ type: 'success' | 'error'; message: string }[]>;
   deleteAllLogs: () => Promise<string>;
   resolveLog: (uri: string) => Promise<string>;
-  resolveLogs: (entries: EventLogEntry[]) => Promise<{ type: 'success' | 'error'; message: string }[]>;
+  resolveLogs: (entries: LogEntry[]) => Promise<{ type: 'success' | 'error'; message: string }[]>;
   unresolveLog: (uri: string) => Promise<string>;
-  unresolveLogs: (entries: EventLogEntry[]) => Promise<{ type: 'success' | 'error'; message: string }[]>;
-  updateLogStatus: (entry: { uri: string; status: boolean }) => Promise<string>;
+  unresolveLogs: (entries: LogEntry[]) => Promise<{ type: 'success' | 'error'; message: string }[]>;
+  updateLogStatus: (entry: { uri: string; Resolved: boolean }) => Promise<string>;
   downloadEntry: (uri: string) => Promise<Blob>;
 }
 
@@ -192,7 +122,8 @@ export function useEventLog(options: UseEventLogOptions = {}): UseEventLogReturn
 
   const queryClient = useQueryClient();
   const sseStore = useSSEStore();
-  const { SystemURI } = useManagedSystem();
+  const globalStore = useGlobalStore();
+  const { ManagedSystemURI } = storeToRefs(globalStore);
 
   // -------------------------------------------------------------------------
   // Query: Fetch event log entries
@@ -200,8 +131,8 @@ export function useEventLog(options: UseEventLogOptions = {}): UseEventLogReturn
 
   const entriesQuery = useQuery({
     queryKey: eventLogKeys.entries(),
-    queryFn: async (): Promise<EventLogEntry[]> => {
-      const systemUri = SystemURI.value;
+    queryFn: async (): Promise<LogEntry[]> => {
+      const systemUri = ManagedSystemURI.value;
       if (!systemUri) {
         throw new Error('System URI not available');
       }
@@ -212,10 +143,9 @@ export function useEventLog(options: UseEventLogOptions = {}): UseEventLogReturn
         method: 'GET',
       });
 
-      const members = response.Members ?? [];
-      return members.map(transformLogEntry);
+      return response.Members ?? [];
     },
-    enabled: computed(() => !!SystemURI.value),
+    enabled: computed(() => !!ManagedSystemURI.value),
     staleTime: 30 * 1000, // 30 seconds
     refetchOnWindowFocus: true,
   });
@@ -234,8 +164,9 @@ export function useEventLog(options: UseEventLogOptions = {}): UseEventLogReturn
         const latestEvent = events[events.length - 1];
 
         // Check if this is an EventLog-related event
+        const OriginUri = getOriginUri(latestEvent);
         const isEventLogEvent =
-          latestEvent.OriginOfCondition?.includes('/LogServices/EventLog/Entries') ||
+          OriginUri?.includes('/LogServices/EventLog/Entries') ||
           latestEvent.MessageId?.includes('ResourceCreated') ||
           latestEvent.MessageId?.includes('ResourceRemoved');
 
@@ -276,7 +207,7 @@ export function useEventLog(options: UseEventLogOptions = {}): UseEventLogReturn
   const isFetching = computed(() => entriesQuery.isFetching.value);
 
   const isSSEConnected = computed(() => sseStore.isConnected);
-  const sseEvents = computed(() => sseStore.events);
+  const SSEEvents = computed(() => sseStore.events);
 
   // -------------------------------------------------------------------------
   // Mutations: CRUD operations
@@ -335,7 +266,7 @@ export function useEventLog(options: UseEventLogOptions = {}): UseEventLogReturn
    * Delete all log entries (clear log)
    */
   async function deleteAllLogs(): Promise<string> {
-    const systemUri = SystemURI.value;
+    const systemUri = ManagedSystemURI.value;
     if (!systemUri) {
       throw new Error('System URI not available');
     }
@@ -359,15 +290,15 @@ export function useEventLog(options: UseEventLogOptions = {}): UseEventLogReturn
    * Resolve multiple log entries
    */
   async function resolveLogs(
-    logEntries: EventLogEntry[],
+    logEntries: LogEntry[],
   ): Promise<{ type: 'success' | 'error'; message: string }[]> {
     const results = await Promise.all(
       logEntries.map(async (log) => {
         try {
-          await apiInstance({ url: log.uri, method: 'PATCH', data: { Resolved: true } });
+          await apiInstance({ url: log['@odata.id'], method: 'PATCH', data: { Resolved: true } });
           return { success: true };
         } catch (error) {
-          console.error('Failed to resolve log:', log.uri, error);
+          console.error('Failed to resolve log:', log['@odata.id'], error);
           return { success: false };
         }
       }),
@@ -410,15 +341,15 @@ export function useEventLog(options: UseEventLogOptions = {}): UseEventLogReturn
    * Unresolve multiple log entries
    */
   async function unresolveLogs(
-    logEntries: EventLogEntry[],
+    logEntries: LogEntry[],
   ): Promise<{ type: 'success' | 'error'; message: string }[]> {
     const results = await Promise.all(
       logEntries.map(async (log) => {
         try {
-          await apiInstance({ url: log.uri, method: 'PATCH', data: { Resolved: false } });
+          await apiInstance({ url: log['@odata.id'], method: 'PATCH', data: { Resolved: false } });
           return { success: true };
         } catch (error) {
-          console.error('Failed to unresolve log:', log.uri, error);
+          console.error('Failed to unresolve log:', log['@odata.id'], error);
           return { success: false };
         }
       }),
@@ -451,15 +382,15 @@ export function useEventLog(options: UseEventLogOptions = {}): UseEventLogReturn
   /**
    * Update a single log entry's status
    */
-  async function updateLogStatus(entry: { uri: string; status: boolean }): Promise<string> {
+  async function updateLogStatus(entry: { uri: string; Resolved: boolean }): Promise<string> {
     await apiInstance({
       url: entry.uri,
       method: 'PATCH',
-      data: { Resolved: entry.status },
+      data: { Resolved: entry.Resolved },
     });
     await queryClient.invalidateQueries({ queryKey: eventLogKeys.entries() });
 
-    if (entry.status) {
+    if (entry.Resolved) {
       return i18n.global.t('pageEventLogs.toast.successResolveLogs', 1);
     } else {
       return i18n.global.t('pageEventLogs.toast.successUnresolveLogs', 1);
@@ -500,7 +431,7 @@ export function useEventLog(options: UseEventLogOptions = {}): UseEventLogReturn
 
     // SSE state
     isSSEConnected,
-    sseEvents,
+    SSEEvents,
 
     // Actions
     refetch: () => entriesQuery.refetch(),

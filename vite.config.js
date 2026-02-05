@@ -25,6 +25,11 @@ function redfishProxyPlugin(baseUrl) {
           return next();
         }
 
+        // Skip SSE endpoint - it's handled by a dedicated proxy with no timeout
+        if (req.url?.includes('/EventService/SSE')) {
+          return next();
+        }
+
         // Parse the target URL
         let targetUrl;
         try {
@@ -70,12 +75,30 @@ function redfishProxyPlugin(baseUrl) {
           // Forward the response
           res.writeHead(proxyRes.statusCode || 500, proxyRes.headers);
           proxyRes.pipe(res);
+
+          // Handle errors during response streaming
+          proxyRes.on('error', (err) => {
+            console.error('[redfish-proxy] Response stream error:', err.message);
+            res.destroy();
+          });
         });
 
         proxyReq.on('error', (err) => {
           console.error('[redfish-proxy] Error:', err.message);
-          res.writeHead(502);
-          res.end(`Proxy error: ${err.message}`);
+          // Only send error response if headers haven't been sent yet
+          if (!res.headersSent) {
+            res.writeHead(502);
+            res.end(`Proxy error: ${err.message}`);
+          } else {
+            // Headers already sent, just destroy the response to close the connection
+            res.destroy();
+          }
+        });
+
+        // Set a timeout on the proxy request (30 seconds)
+        proxyReq.setTimeout(30000, () => {
+          console.error('[redfish-proxy] Request timeout');
+          proxyReq.destroy(new Error('Request timeout'));
         });
 
         // Forward the request body
@@ -306,6 +329,39 @@ export default defineConfig(({ mode }) => {
         path: '/ws_hmr',
       },
       proxy: {
+        // SSE endpoint needs special handling - no timeout, no buffering
+        '/redfish/v1/EventService/SSE': {
+          target: env.BASE_URL,
+          changeOrigin: true,
+          secure: false,
+          // Disable proxy timeout for SSE (streaming connection)
+          timeout: 0,
+          proxyTimeout: 0,
+          configure: (proxy) => {
+            proxy.on('proxyReq', (proxyReq, req) => {
+              injectAuthToken(proxyReq, req);
+              // Remove headers that interfere with SSE
+              proxyReq.removeHeader('accept-encoding');
+              proxyReq.removeHeader('x-forwarded-host');
+              proxyReq.removeHeader('x-forwarded-proto');
+              proxyReq.removeHeader('x-forwarded-port');
+              proxyReq.removeHeader('x-forwarded-for');
+            });
+            proxy.on('proxyRes', (proxyRes, req, res) => {
+              removeHsts(proxyRes);
+              // Disable response buffering for SSE streaming
+              proxyRes.headers['x-accel-buffering'] = 'no';
+              proxyRes.headers['cache-control'] = 'no-cache';
+              // Remove content-encoding to prevent compression issues
+              delete proxyRes.headers['content-encoding'];
+              // Disable Node.js socket timeout
+              res.socket?.setTimeout(0);
+            });
+            proxy.on('error', (err, req, res) => {
+              console.error('[vite] SSE proxy error:', err.message);
+            });
+          },
+        },
         '/redfish': {
           target: env.BASE_URL,
           changeOrigin: true,
@@ -368,12 +424,34 @@ export default defineConfig(({ mode }) => {
           configure: (proxy) => {
             proxy.on('proxyRes', removeHsts);
             proxy.on('proxyReqWs', (proxyReq, req) => {
-              const cookies = req.headers.cookie;
-              if (cookies) {
-                const match = cookies.match(/X-Auth-Token=([^;]+)/);
-                if (match) {
-                  proxyReq.setHeader('X-Auth-Token', match[1]);
+              // Debug: log WebSocket connection details
+              console.log('[vite] /kvm WebSocket upgrade request to:', env.BASE_URL + req.url);
+              console.log('[vite] /kvm Sec-WebSocket-Protocol:', req.headers['sec-websocket-protocol'] ? 'present' : 'missing');
+
+              // Forward auth token from cookies to header
+              // bmcweb uses XSRF-TOKEN, other BMCs may use X-Auth-Token
+              const cookies = req.headers.cookie || '';
+              let authToken = null;
+
+              // Try XSRF-TOKEN first (bmcweb)
+              const xsrfMatch = cookies.match(/XSRF-TOKEN=([^;]+)/);
+              if (xsrfMatch) {
+                authToken = xsrfMatch[1];
+              }
+
+              // Fall back to X-Auth-Token cookie if present
+              if (!authToken) {
+                const xAuthMatch = cookies.match(/X-Auth-Token=([^;]+)/);
+                if (xAuthMatch) {
+                  authToken = xAuthMatch[1];
                 }
+              }
+
+              if (authToken) {
+                proxyReq.setHeader('X-Auth-Token', authToken);
+                console.log('[vite] /kvm X-Auth-Token header set from cookie');
+              } else {
+                console.log('[vite] /kvm No auth cookie found, relying on Sec-WebSocket-Protocol');
               }
             });
             proxy.on('error', (err) => {
@@ -389,13 +467,27 @@ export default defineConfig(({ mode }) => {
           configure: (proxy) => {
             proxy.on('proxyRes', removeHsts);
             proxy.on('proxyReqWs', (proxyReq, req) => {
-              // Forward the auth token from cookies for WebSocket connections
-              const cookies = req.headers.cookie;
-              if (cookies) {
-                const match = cookies.match(/X-Auth-Token=([^;]+)/);
-                if (match) {
-                  proxyReq.setHeader('X-Auth-Token', match[1]);
+              // Forward auth token from cookies to header
+              // bmcweb uses XSRF-TOKEN, other BMCs may use X-Auth-Token
+              const cookies = req.headers.cookie || '';
+              let authToken = null;
+
+              // Try XSRF-TOKEN first (bmcweb)
+              const xsrfMatch = cookies.match(/XSRF-TOKEN=([^;]+)/);
+              if (xsrfMatch) {
+                authToken = xsrfMatch[1];
+              }
+
+              // Fall back to X-Auth-Token cookie if present
+              if (!authToken) {
+                const xAuthMatch = cookies.match(/X-Auth-Token=([^;]+)/);
+                if (xAuthMatch) {
+                  authToken = xAuthMatch[1];
                 }
+              }
+
+              if (authToken) {
+                proxyReq.setHeader('X-Auth-Token', authToken);
               }
             });
             proxy.on('error', (err) => {
@@ -411,12 +503,27 @@ export default defineConfig(({ mode }) => {
           configure: (proxy) => {
             proxy.on('proxyRes', removeHsts);
             proxy.on('proxyReqWs', (proxyReq, req) => {
-              const cookies = req.headers.cookie;
-              if (cookies) {
-                const match = cookies.match(/X-Auth-Token=([^;]+)/);
-                if (match) {
-                  proxyReq.setHeader('X-Auth-Token', match[1]);
+              // Forward auth token from cookies to header
+              // bmcweb uses XSRF-TOKEN, other BMCs may use X-Auth-Token
+              const cookies = req.headers.cookie || '';
+              let authToken = null;
+
+              // Try XSRF-TOKEN first (bmcweb)
+              const xsrfMatch = cookies.match(/XSRF-TOKEN=([^;]+)/);
+              if (xsrfMatch) {
+                authToken = xsrfMatch[1];
+              }
+
+              // Fall back to X-Auth-Token cookie if present
+              if (!authToken) {
+                const xAuthMatch = cookies.match(/X-Auth-Token=([^;]+)/);
+                if (xAuthMatch) {
+                  authToken = xAuthMatch[1];
                 }
+              }
+
+              if (authToken) {
+                proxyReq.setHeader('X-Auth-Token', authToken);
               }
             });
             proxy.on('error', (err) => {

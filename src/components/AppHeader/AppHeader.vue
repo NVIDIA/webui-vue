@@ -20,11 +20,11 @@
           :class="{ open: isNavigationOpen }"
           @click="toggleNavigation"
         >
-          <icon-close
+          <IconClose
             v-if="isNavigationOpen"
             :title="t('appHeader.titleHideNavigation')"
           />
-          <icon-menu
+          <IconMenu
             v-if="!isNavigationOpen"
             :title="t('appHeader.titleShowNavigation')"
           />
@@ -35,36 +35,29 @@
             to="/"
             data-test-id="appHeader-container-overview"
           >
-            <logo-header class="header-logo" :aria-label="altLogo" />
+            <LogoHeader class="header-logo" :aria-label="altLogo" />
           </b-navbar-brand>
           <div v-if="isNavTagPresent" :key="routerKey" class="ps-2 nav-tags">
             <span>|</span>
-            <span class="ps-3 asset-tag">{{ assetTag }}</span>
-            <span class="ps-3">{{ modelType }}</span>
-            <span class="ps-3">{{ serialNumber }}</span>
+            <span class="ps-3 asset-tag">{{ AssetTag }}</span>
+            <span class="ps-3">{{ Model }}</span>
+            <span class="ps-3">{{ SerialNumber }}</span>
           </div>
         </b-navbar-nav>
         <!-- Right aligned nav items -->
         <b-navbar-nav class="ms-auto helper-menu">
-          <b-nav-item
-            to="/logs/event-logs"
-            data-test-id="appHeader-container-health"
-          >
-            <status-icon :status="healthStatusIcon" />
-            {{ t('appHeader.health') }}
-          </b-nav-item>
-          <b-nav-item
-            to="/operations/server-power-operations"
-            data-test-id="appHeader-container-power"
-          >
-            <status-icon :status="serverStatusIcon" />
-            {{ t('appHeader.power') }}
-          </b-nav-item>
-          <!-- SSE Status Indicator slot -->
-          <li v-if="$slots.status" class="nav-item d-flex align-items-center px-2">
-            <slot name="status"></slot>
+          <!-- SSE Status Indicator (only shows when not connected) -->
+          <li class="nav-item d-flex align-items-center">
+            <SSEStatusIndicator />
           </li>
-          <!-- Using LI elements instead of b-nav-item to support semantic button elements -->
+
+          <!-- Health Rollup Icon with tooltip -->
+          <HealthRollupIcon />
+
+          <!-- Power State Icon with dropdown -->
+          <PowerStateIcon />
+
+          <!-- Refresh button -->
           <li class="nav-item">
             <b-button
               id="app-header-refresh"
@@ -72,62 +65,45 @@
               data-test-id="appHeader-button-refresh"
               @click="refresh"
             >
-              <icon-renew :title="t('appHeader.titleRefresh')" />
+              <IconRenew :title="t('appHeader.titleRefresh')" />
               <span class="responsive-text">{{ t('appHeader.refresh') }}</span>
             </b-button>
           </li>
-          <li class="nav-item">
-            <b-dropdown
-              id="app-header-user"
-              variant="link"
-              right
-              data-test-id="appHeader-container-user"
-            >
-              <template #button-content>
-                <icon-avatar :title="t('appHeader.titleProfile')" />
-                <span class="responsive-text">{{ username }}</span>
-              </template>
-              <b-dropdown-item
-                to="/profile-settings"
-                data-test-id="appHeader-link-profile"
-                >{{ t('appHeader.profileSettings') }}
-              </b-dropdown-item>
-              <b-dropdown-item
-                data-test-id="appHeader-link-logout"
-                @click="logout"
-              >
-                {{ t('appHeader.logOut') }}
-              </b-dropdown-item>
-            </b-dropdown>
-          </li>
+
+          <!-- User Menu with dropdown -->
+          <UserMenu />
         </b-navbar-nav>
       </b-navbar>
     </header>
-    <loading-bar />
+    <LoadingBar />
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue';
-import { useStore } from 'vuex';
+import { storeToRefs } from 'pinia';
 import { useI18n } from 'vue-i18n';
 import { useToast } from 'bootstrap-vue-next';
 
-import IconAvatar from '@carbon/icons-vue/es/user--avatar/20';
 import IconClose from '@carbon/icons-vue/es/close/20';
 import IconMenu from '@carbon/icons-vue/es/menu/20';
 import IconRenew from '@carbon/icons-vue/es/renew/20';
-import StatusIcon from '@/components/Global/StatusIcon.vue';
+
 import LoadingBar from '@/components/Global/LoadingBar.vue';
 import LogoHeader from '@/assets/images/logo-header.svg?component';
 import eventBus from '@/eventBus';
 import { useAuthStore } from '@/stores/auth';
-import { useManagedSystem } from '@/api/composables/useManagedSystem';
+import { useGlobalStore } from '@/stores/global';
 import { useEventLog } from '@/api/composables/useEventLog';
-import { ResourcePowerState } from '@/api/model/ResourcePowerState';
+
+// Sub-components
+import HealthRollupIcon from './HealthRollupIcon.vue';
+import PowerStateIcon from './PowerStateIcon.vue';
+import UserMenu from './UserMenu.vue';
+import SSEStatusIndicator from '@/components/Global/SSEStatusIndicator.vue';
 
 // Props
-const props = defineProps<{
+defineProps<{
   routerKey?: number;
 }>();
 
@@ -137,97 +113,36 @@ const emit = defineEmits<{
 }>();
 
 // Composables
-const store = useStore();
 const { t } = useI18n();
 const toast = useToast();
 const authStore = useAuthStore();
 
-// Vue Query - Managed System (PowerState, AssetTag, Model, SerialNumber)
-const {
-  PowerState,
-  AssetTag,
-  Model,
-  SerialNumber,
-  refetch: refetchSystem,
-} = useManagedSystem();
+// Global Store - Managed System (AssetTag, Model, SerialNumber)
+const globalStore = useGlobalStore();
+const { AssetTag, Model, SerialNumber } = storeToRefs(globalStore);
 
-// Vue Query + SSE - Event Log (health status)
-const {
-  healthStatus: eventLogHealthStatus,
-  refetch: refetchEventLog,
-} = useEventLog();
+// Vue Query - Event Log (for refresh)
+const { refetch: refetchEventLog } = useEventLog();
 
 // Reactive state
 const isNavigationOpen = ref(false);
-const altLogo = import.meta.env.VITE_COMPANY_NAME || 'Built on OpenBMC';
 
-// Computed - Store getters (still using Vuex for some things)
-const isAuthorized = computed(() => store.getters['global/isAuthorized']);
-const username = computed(() => store.getters['global/username']);
+// Vendor branding from environment
+const altLogo =
+  import.meta.env.VITE_COMPANY_NAME || 'Built on OpenBMC';
 
-// Health status from Vue Query + SSE composable
-const healthStatus = eventLogHealthStatus;
-
-// Computed - From Vue Query (Redfish-first naming)
-const assetTag = computed(() => AssetTag.value ?? null);
-const modelType = computed(() => Model.value ?? null);
-const serialNumber = computed(() => SerialNumber.value ?? null);
-
-// Computed - Auth store
+// Computed - Auth store (replaced Vuex getters)
 const consoleWindow = computed(() => authStore.consoleWindow);
 
-// Computed - Derived
+// Computed - Nav tags presence
 const isNavTagPresent = computed(
-  () => assetTag.value || modelType.value || serialNumber.value,
+  () => AssetTag.value || Model.value || SerialNumber.value,
 );
-
-// Power status icon using Redfish PowerState enum
-const serverStatusIcon = computed(() => {
-  switch (PowerState.value) {
-    case ResourcePowerState.On:
-      return 'success';
-    case ResourcePowerState.Off:
-      return 'secondary';
-    case ResourcePowerState.PoweringOn:
-    case ResourcePowerState.PoweringOff:
-      return 'warning';
-    case ResourcePowerState.Paused:
-      return 'info';
-    default:
-      return 'secondary';
-  }
-});
-
-const healthStatusIcon = computed(() => {
-  switch (healthStatus.value) {
-    case 'OK':
-      return 'success';
-    case 'Warning':
-      return 'warning';
-    case 'Critical':
-      return 'danger';
-    default:
-      return 'secondary';
-  }
-});
 
 // Watchers
 watch(consoleWindow, (value) => {
   if (value === false) {
     eventBus.$consoleWindow?.close();
-  }
-});
-
-watch(isAuthorized, (value) => {
-  if (value === false) {
-    toast?.show?.({
-      body: t('global.toast.unAuthDescription'),
-      props: {
-        title: t('global.toast.unAuthTitle'),
-        variant: 'danger',
-        isStatus: true,
-      },
-    });
   }
 });
 
@@ -238,14 +153,10 @@ function handleNavigationChange(navigationOpen: unknown) {
 
 function refresh() {
   // Refetch system data via Vue Query
-  refetchSystem();
+  globalStore.refetch();
   // Refetch event log data via Vue Query
   refetchEventLog();
   emit('refresh');
-}
-
-function logout() {
-  authStore.logout();
 }
 
 function toggleNavigation() {
@@ -257,8 +168,7 @@ function setFocus(event: Event) {
   eventBus.$emit('skip-navigation');
 }
 
-// Lifecycle - equivalent to created()
-// Vue Query handles system info and event log fetching automatically
+// Lifecycle - reset auth store state on mount
 authStore.resetStoreState();
 
 // Lifecycle - mounted

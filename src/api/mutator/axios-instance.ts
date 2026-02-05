@@ -91,4 +91,60 @@ export const apiInstance = <T>(config: AxiosRequestConfig): Promise<T> => {
   return promise;
 };
 
+/**
+ * Clear axios cache entries matching a URL pattern.
+ * Use this when invalidating Vue Query cache to also clear axios ETag cache.
+ *
+ * @param urlPattern - Regex or string to match against cached URLs.
+ *                     If not provided, clears ALL cache entries.
+ */
+export const clearAxiosCache = async (urlPattern?: string | RegExp): Promise<void> => {
+  if (!isBrowser) return;
+
+  const prefix = "webui-vue-orval-cache:";
+
+  if (!urlPattern) {
+    // Clear all cache entries
+    const keysToRemove: string[] = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key?.startsWith(prefix)) {
+        keysToRemove.push(key);
+      }
+    }
+    keysToRemove.forEach((key) => localStorage.removeItem(key));
+    return;
+  }
+
+  // Clear entries matching the pattern
+  const regex = typeof urlPattern === "string" ? new RegExp(urlPattern) : urlPattern;
+  const keysToRemove: string[] = [];
+
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i);
+    if (key?.startsWith(prefix) && regex.test(key)) {
+      keysToRemove.push(key);
+    }
+  }
+  keysToRemove.forEach((key) => localStorage.removeItem(key));
+};
+
+/**
+ * Clear axios cache for Managers endpoints.
+ */
+export const clearManagersCache = (): Promise<void> =>
+  clearAxiosCache(/\/redfish\/v1\/Managers/);
+
+/**
+ * Clear axios cache for Systems endpoints.
+ */
+export const clearSystemsCache = (): Promise<void> =>
+  clearAxiosCache(/\/redfish\/v1\/Systems/);
+
+/**
+ * Clear axios cache for ServiceRoot.
+ */
+export const clearServiceRootCache = (): Promise<void> =>
+  clearAxiosCache(/\/redfish\/v1\/?$/);
+
 export default apiInstance;

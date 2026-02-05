@@ -68,24 +68,16 @@ export default {
       return this.eventLogEntries;
     },
     criticalEvents() {
-      return this.eventLogData
-        .filter(
-          (log) =>
-            log.severity === 'Critical' && log.filterByStatus === 'Unresolved',
-        )
-        .map((log) => {
-          return log;
-        });
+      return this.eventLogData.filter(
+        (log) =>
+          log.Severity === 'Critical' && !log.Resolved,
+      );
     },
     warningEvents() {
-      return this.eventLogData
-        .filter(
-          (log) =>
-            log.severity === 'Warning' && log.filterByStatus === 'Unresolved',
-        )
-        .map((log) => {
-          return log;
-        });
+      return this.eventLogData.filter(
+        (log) =>
+          log.Severity === 'Warning' && !log.Resolved,
+      );
     },
   },
   // Vue Query handles data fetching automatically, no need for created() hook

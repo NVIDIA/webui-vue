@@ -6,10 +6,9 @@
         <b-button
           v-if="exportButton || downloadButton"
           :disabled="disabled"
-          :download="download"
-          :href="href"
           class="p-0"
           variant="link"
+          @click="handleExport"
         >
           <span v-if="downloadButton">{{ $t('global.action.download') }}</span>
           <span v-if="exportButton">{{ $t('global.action.exportAll') }}</span>
@@ -23,6 +22,8 @@
 </template>
 
 <script>
+import { downloadAsJson } from '@/utilities/exportUtils';
+
 export default {
   name: 'OverviewCard',
   props: {
@@ -42,7 +43,6 @@ export default {
       type: Boolean,
       default: false,
     },
-
     fileName: {
       type: String,
       default: 'data',
@@ -56,15 +56,9 @@ export default {
       default: '/',
     },
   },
-  computed: {
-    dataForExport() {
-      return JSON.stringify(this.data);
-    },
-    download() {
-      return `${this.fileName}.json`;
-    },
-    href() {
-      return `data:text/json;charset=utf-8,${this.dataForExport}`;
+  methods: {
+    handleExport() {
+      downloadAsJson(this.data, this.fileName);
     },
   },
 };

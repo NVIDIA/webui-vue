@@ -2,63 +2,31 @@
  * SSE Event Parser - Parse Redfish EventService SSE payloads
  *
  * Handles Redfish Event payloads from /redfish/v1/EventService/SSE
- * and normalizes them for UI consumption. Preserves Redfish field names.
+ * using Redfish-first types directly from the model.
  *
  * References:
  * - DMTF DSP0266 (Redfish) EventService
  * - bmcweb event_service_manager.hpp
+ * - Event.v1_13_0.json schema
  */
-import type { RedfishSSEEvent, SpecialEventType } from '@/stores/sse';
+import type { SpecialEventType } from '@/stores/sse';
+import type { Event } from '@/api/model/Event';
+import type { EventRecord } from '@/api/model/EventRecord';
 
 // ============================================================================
 // Types
 // ============================================================================
 
 /**
- * Raw Redfish Event payload structure from SSE stream.
- * Each SSE message may contain multiple events in the Events array.
- */
-export interface RedfishEventPayload {
-  '@odata.type'?: string;
-  Id?: string;
-  Name?: string;
-  Events?: RedfishEventRecord[];
-}
-
-/**
- * Individual event record within the Events array.
- * Follows Redfish Event schema (DSP8010).
- */
-export interface RedfishEventRecord {
-  EventId?: string;
-  EventTimestamp?: string;
-  EventType?: string;
-  LogEntry?: unknown;
-  Message?: string;
-  MessageArgs?: string[];
-  MessageId?: string;
-  MessageSeverity?: string;
-  Oem?: object;
-  OriginOfCondition?: {
-    '@odata.id'?: string;
-  };
-  Severity?: string;
-  Resolution?: string;
-  Context?: string;
-  MemberId?: string;
-  [key: string]: unknown;
-}
-
-/**
  * Result of parsing an SSE event
  */
 export interface ParseResult {
-  /** Successfully parsed events */
-  events: RedfishSSEEvent[];
+  /** Successfully parsed events (Redfish EventRecord type) */
+  Events: EventRecord[];
   /** Special event type if detected */
-  specialEvent?: SpecialEventType;
+  SpecialEvent?: SpecialEventType;
   /** Parse error if any */
-  error?: string;
+  Error?: string;
 }
 
 
@@ -67,97 +35,87 @@ export interface ParseResult {
 // ============================================================================
 
 /**
- * Parse raw SSE event data into normalized RedfishSSEEvent objects.
+ * Parse raw SSE event data into Redfish EventRecord objects.
  *
- * @param eventData - Raw data from SSE event (event.data)
- * @param eventId - SSE event ID (event.lastEventId)
- * @returns ParseResult with events and any special event type
+ * @param EventData - Raw data from SSE event (event.data)
+ * @param FallbackEventId - SSE event ID (event.lastEventId) used if EventId missing
+ * @returns ParseResult with Events and any SpecialEvent type
  */
 export function parseSSEEventData(
-  eventData: string,
-  eventId?: string,
+  EventData: string,
+  FallbackEventId?: string,
 ): ParseResult {
-  if (!eventData || eventData.trim() === '') {
-    return { events: [] };
+  if (!EventData || EventData.trim() === '') {
+    return { Events: [] };
   }
 
   try {
-    const payload = JSON.parse(eventData) as RedfishEventPayload;
-    return parseRedfishPayload(payload, eventId);
+    const Payload = JSON.parse(EventData) as Event;
+    return parseRedfishPayload(Payload, FallbackEventId);
   } catch (e) {
-    const errorMessage = e instanceof Error ? e.message : String(e);
-    console.warn('Failed to parse SSE event data:', errorMessage);
+    const ErrorMessage = e instanceof Error ? e.message : String(e);
+    console.warn('Failed to parse SSE event data:', ErrorMessage);
     return {
-      events: [],
-      error: `JSON parse error: ${errorMessage}`,
+      Events: [],
+      Error: `JSON parse error: ${ErrorMessage}`,
     };
   }
 }
 
 /**
- * Parse a Redfish Event payload into normalized events.
+ * Parse a Redfish Event payload into EventRecord array.
  */
 function parseRedfishPayload(
-  payload: RedfishEventPayload,
-  eventId?: string,
+  Payload: Event,
+  FallbackEventId?: string,
 ): ParseResult {
-  const events: RedfishSSEEvent[] = [];
-  let specialEvent: SpecialEventType | undefined;
+  const Events: EventRecord[] = [];
+  let SpecialEvent: SpecialEventType | undefined;
 
   // Handle Events array (standard Redfish format)
-  if (Array.isArray(payload.Events)) {
-    for (const record of payload.Events) {
-      const parsed = parseEventRecord(record, eventId);
+  if (Array.isArray(Payload.Events)) {
+    for (const Record of Payload.Events) {
+      // Ensure EventId is present (use MemberId or fallback)
+      const ProcessedRecord = ensureEventId(Record, FallbackEventId);
 
       // Check for special events
-      const special = detectSpecialEvent(record);
-      if (special) {
-        specialEvent = special;
+      const Special = detectSpecialEvent(Record);
+      if (Special) {
+        SpecialEvent = Special;
       }
 
-      events.push(parsed);
+      Events.push(ProcessedRecord);
     }
   } else {
     // Some implementations send single event at top level
-    const parsed = parseEventRecord(payload as unknown as RedfishEventRecord, eventId);
-    const special = detectSpecialEvent(payload as unknown as RedfishEventRecord);
-    if (special) {
-      specialEvent = special;
+    const Record = Payload as unknown as EventRecord;
+    const ProcessedRecord = ensureEventId(Record, FallbackEventId);
+    const Special = detectSpecialEvent(Record);
+    if (Special) {
+      SpecialEvent = Special;
     }
-    events.push(parsed);
+    Events.push(ProcessedRecord);
   }
 
-  return { events, specialEvent };
+  return { Events, SpecialEvent };
 }
 
 /**
- * Parse a single Redfish event record into normalized format.
+ * Ensure EventId is present on the record.
+ * Redfish schema requires MemberId, but EventId may be missing.
  */
-function parseEventRecord(
-  record: RedfishEventRecord,
-  fallbackEventId?: string,
-): RedfishSSEEvent {
-  // Redfish uses both Severity and MessageSeverity depending on version
-  const rawSeverity = record.Severity ?? record.MessageSeverity;
+function ensureEventId(
+  Record: EventRecord,
+  FallbackEventId?: string,
+): EventRecord {
+  if (Record.EventId) {
+    return Record;
+  }
 
+  // Create a copy with EventId populated
   return {
-    // Identity
-    EventId: record.EventId ?? record.MemberId ?? fallbackEventId ?? generateEventId(),
-    EventTimestamp: record.EventTimestamp,
-    EventType: record.EventType,
-    // Message
-    MessageId: record.MessageId,
-    Message: record.Message,
-    MessageArgs: record.MessageArgs,
-    // Context
-    OriginOfCondition: record.OriginOfCondition?.['@odata.id'],
-    Severity: normalizeSeverity(rawSeverity),
-    Resolution: record.Resolution,
-    // Extended
-    LogEntry: record.LogEntry,
-    Oem: record.Oem,
-    // Internal
-    _raw: record,
+    ...Record,
+    EventId: Record.MemberId ?? FallbackEventId ?? generateEventId(),
   };
 }
 
@@ -165,49 +123,27 @@ function parseEventRecord(
  * Detect if an event record represents a special event type.
  * MessageId format: RegistryPrefix.Major.Minor.MessageKey
  */
-function detectSpecialEvent(record: RedfishEventRecord): SpecialEventType | undefined {
-  const messageId = record.MessageId ?? '';
+function detectSpecialEvent(Record: EventRecord): SpecialEventType | undefined {
+  const MessageId = Record.MessageId ?? '';
 
   // Check for heartbeat events
   // Matches: HeartbeatEvent.*.*, *.ServiceHeartbeat, *.HeartbeatEvent
   if (
-    messageId.startsWith('HeartbeatEvent.') ||
-    messageId.endsWith('.ServiceHeartbeat') ||
-    messageId.endsWith('.HeartbeatEvent') ||
-    record.EventType?.toLowerCase() === 'heartbeat'
+    MessageId.startsWith('HeartbeatEvent.') ||
+    MessageId.endsWith('.ServiceHeartbeat') ||
+    MessageId.endsWith('.HeartbeatEvent') ||
+    Record.EventType?.toLowerCase() === 'heartbeat'
   ) {
     return 'Heartbeat';
   }
 
   // Check for buffer exceeded
   // Matches: *.EventBufferExceeded (e.g., Base.1.18.EventBufferExceeded)
-  if (messageId.endsWith('.EventBufferExceeded')) {
+  if (MessageId.endsWith('.EventBufferExceeded')) {
     return 'EventBufferExceeded';
   }
 
   return undefined;
-}
-
-/**
- * Normalize severity values to consistent format.
- */
-function normalizeSeverity(severity?: string): string | undefined {
-  if (!severity) return undefined;
-
-  const normalized = severity.toLowerCase();
-
-  if (normalized === 'critical' || normalized === 'error') {
-    return 'Critical';
-  }
-  if (normalized === 'warning' || normalized === 'caution') {
-    return 'Warning';
-  }
-  if (normalized === 'ok' || normalized === 'informational' || normalized === 'info') {
-    return 'OK';
-  }
-
-  // Return original if not recognized
-  return severity;
 }
 
 /**
@@ -256,30 +192,39 @@ export function extractResourceType(originUri?: string): string | undefined {
  * Check if an event is related to a specific resource path.
  */
 export function isEventForResource(
-  event: RedfishSSEEvent,
-  resourcePath: string,
+  Event: EventRecord,
+  ResourcePath: string,
 ): boolean {
-  if (!event.OriginOfCondition) return false;
+  const OriginUri = Event.OriginOfCondition?.['@odata.id'];
+  if (!OriginUri) return false;
 
   // Normalize paths for comparison
-  const eventPath = event.OriginOfCondition.toLowerCase();
-  const targetPath = resourcePath.toLowerCase();
+  const EventPath = OriginUri.toLowerCase();
+  const TargetPath = ResourcePath.toLowerCase();
 
-  return eventPath.includes(targetPath) || targetPath.includes(eventPath);
+  return EventPath.includes(TargetPath) || TargetPath.includes(EventPath);
 }
 
 /**
  * Check if event matches a MessageId pattern.
  */
 export function matchesMessageId(
-  event: RedfishSSEEvent,
-  pattern: string | RegExp,
+  Event: EventRecord,
+  Pattern: string | RegExp,
 ): boolean {
-  if (!event.MessageId) return false;
+  if (!Event.MessageId) return false;
 
-  if (typeof pattern === 'string') {
-    return event.MessageId.toLowerCase().includes(pattern.toLowerCase());
+  if (typeof Pattern === 'string') {
+    return Event.MessageId.toLowerCase().includes(Pattern.toLowerCase());
   }
 
-  return pattern.test(event.MessageId);
+  return Pattern.test(Event.MessageId);
+}
+
+/**
+ * Extract the OriginOfCondition URI string from an EventRecord.
+ * Convenience helper for accessing the @odata.id.
+ */
+export function getOriginUri(Event: EventRecord): string | undefined {
+  return Event.OriginOfCondition?.['@odata.id'];
 }

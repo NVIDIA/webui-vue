@@ -4,14 +4,20 @@
  * Provides reactive SSE connection with:
  * - Automatic reconnection with exponential backoff
  * - Last-Event-Id replay support
- * - Auth failure handling (401/403 stops reconnection)
+ * - Auth failure handling (verifies 401/403 before logout)
  * - Integration with Pinia SSE store
  *
  * Uses browser-native EventSource (no external dependencies).
+ *
+ * Note: EventSource doesn't expose HTTP status codes on error, so after
+ * 5 failed reconnection attempts, we make a separate API call to verify
+ * if the session is still valid before triggering logout.
  */
-import { ref, watch, onUnmounted, computed, type Ref } from 'vue';
-import { useSSEStore, type RedfishSSEEvent } from '@/stores/sse';
+import { watch, computed, type Ref } from 'vue';
+import { useSSEStore } from '@/stores/sse';
 import { parseSSEEventData, type ParseResult } from './parseSSEEvent';
+import { apiInstance } from '@/api/mutator/axios-instance';
+import type { EventRecord } from '@/api/model/EventRecord';
 
 // ============================================================================
 // Types
@@ -45,7 +51,7 @@ export interface UseSSEOptions {
   /**
    * Callback when events are received.
    */
-  onEvent?: (events: RedfishSSEEvent[]) => void;
+  onEvent?: (Events: EventRecord[]) => void;
 
   /**
    * Callback when connection status changes.
@@ -57,6 +63,12 @@ export interface UseSSEOptions {
    * UI should trigger a full refresh.
    */
   onBufferExceeded?: () => void;
+
+  /**
+   * Callback when authentication failure is detected.
+   * UI should trigger logout.
+   */
+  onAuthFailed?: () => void;
 }
 
 export interface UseSSEReturn {
@@ -70,8 +82,8 @@ export interface UseSSEReturn {
   isConnected: Ref<boolean>;
   /** Error message if any */
   errorMessage: Ref<string | null>;
-  /** Latest received events */
-  events: Ref<RedfishSSEEvent[]>;
+  /** Latest received events (Redfish EventRecord) */
+  Events: Ref<EventRecord[]>;
   /** Whether buffer exceeded was detected */
   bufferExceeded: Ref<boolean>;
 }
@@ -83,7 +95,26 @@ export interface UseSSEReturn {
 const DEFAULT_ENDPOINT = '/redfish/v1/EventService/SSE';
 const MIN_RECONNECT_DELAY_MS = 1000;
 const MAX_RECONNECT_DELAY_MS = 30000;
-const AUTH_ERROR_CODES = [401, 403];
+const MIN_STABLE_CONNECTION_MS = 5000;
+
+// ============================================================================
+// Module-level singleton state (survives HMR updates)
+// ============================================================================
+
+// These are module-level to persist across HMR updates and component re-mounts
+let singletonEventSource: EventSource | null = null;
+let singletonReconnectTimeout: ReturnType<typeof setTimeout> | null = null;
+let singletonShouldReconnect = true;
+let singletonAuthFailed = false;
+let singletonConnectionOpenedAt: number | null = null;
+let singletonInitialized = false;
+let singletonWatchersCreated = false;
+
+// Store callbacks from the current active composable instance
+let activeOnEvent: ((Events: EventRecord[]) => void) | undefined;
+let activeOnStatusChange: ((status: string) => void) | undefined;
+let activeOnBufferExceeded: (() => void) | undefined;
+let activeOnAuthFailed: (() => void) | undefined;
 
 // ============================================================================
 // Composable Implementation
@@ -98,16 +129,18 @@ export function useSSE(options: UseSSEOptions = {}): UseSSEReturn {
     onEvent,
     onStatusChange,
     onBufferExceeded,
+    onAuthFailed,
   } = options;
+
+  // Store callbacks in module-level variables so they can be updated on HMR
+  // without recreating watchers
+  activeOnEvent = onEvent;
+  activeOnStatusChange = onStatusChange;
+  activeOnBufferExceeded = onBufferExceeded;
+  activeOnAuthFailed = onAuthFailed;
 
   // Store
   const sseStore = useSSEStore();
-
-  // Local state
-  const eventSource = ref<EventSource | null>(null);
-  const reconnectTimeout = ref<ReturnType<typeof setTimeout> | null>(null);
-  const shouldReconnect = ref(true);
-  const authFailed = ref(false);
 
   // -------------------------------------------------------------------------
   // Build SSE URL with query parameters
@@ -145,29 +178,32 @@ export function useSSE(options: UseSSEOptions = {}): UseSSEReturn {
 
   function connect() {
     // Don't connect if already connecting/connected
-    if (eventSource.value?.readyState === EventSource.CONNECTING ||
-        eventSource.value?.readyState === EventSource.OPEN) {
+    if (singletonEventSource?.readyState === EventSource.CONNECTING ||
+        singletonEventSource?.readyState === EventSource.OPEN) {
+      console.log('[SSE] Connect skipped - already connecting/connected');
       return;
     }
 
     // Don't connect if auth failed
-    if (authFailed.value) {
+    if (singletonAuthFailed) {
+      console.log('[SSE] Connect skipped - auth failed');
       return;
     }
 
     // Don't connect if not authenticated
     if (isAuthenticated && !isAuthenticated.value) {
+      console.log('[SSE] Connect skipped - not authenticated');
       return;
     }
 
-    // Clear any pending reconnect
-    if (reconnectTimeout.value) {
-      clearTimeout(reconnectTimeout.value);
-      reconnectTimeout.value = null;
+    // Don't connect if a reconnect is already scheduled (prevents HMR race)
+    if (singletonReconnectTimeout) {
+      console.log('[SSE] Connect skipped - reconnect already scheduled');
+      return;
     }
 
     sseStore.setStatus('connecting');
-    onStatusChange?.('connecting');
+    activeOnStatusChange?.('connecting');
 
     const url = buildSSEUrl();
 
@@ -179,24 +215,50 @@ export function useSSE(options: UseSSEOptions = {}): UseSSEReturn {
     // -----------------------------------------------------------------------
 
     es.onopen = () => {
+      singletonConnectionOpenedAt = Date.now();
       sseStore.setStatus('connected');
-      sseStore.resetReconnectAttempts();
-      onStatusChange?.('connected');
-      authFailed.value = false;
+      // Don't reset reconnect attempts immediately - wait for stable connection
+      // This prevents infinite reconnect loops when connection opens but fails quickly
+      activeOnStatusChange?.('connected');
+      singletonAuthFailed = false;
 
       // Send Last-Event-Id header on reconnection
       // Note: EventSource automatically sends Last-Event-Id if we've received events
     };
 
     es.onmessage = (event: MessageEvent) => {
+      // Reset attempts on successful message - connection is working
+      if (sseStore.reconnectAttempts > 0) {
+        console.log('[SSE] Message received, resetting reconnect attempts');
+        sseStore.resetReconnectAttempts();
+      }
       handleSSEMessage(event);
     };
 
     es.onerror = (error: Event) => {
+      const readyState = es.readyState;
+      const connectionDuration = singletonConnectionOpenedAt
+        ? Date.now() - singletonConnectionOpenedAt
+        : 0;
+
+      // Try to get more error details
+      const target = error.target as EventSource | null;
+      console.warn('[SSE] Error occurred', {
+        readyState: readyState === 0 ? 'CONNECTING' : readyState === 1 ? 'OPEN' : 'CLOSED',
+        connectionDurationMs: connectionDuration,
+        reconnectAttempts: sseStore.reconnectAttempts,
+        url: target?.url,
+        withCredentials: target?.withCredentials,
+        // If readyState is CONNECTING, the HTTP request itself failed
+        // This could be: 401/403, wrong content-type, or proxy issue
+        hint: readyState === 0
+          ? 'HTTP handshake failed - check Network tab for response status/headers'
+          : 'Connection established but then failed',
+      });
       handleSSEError(error, es);
     };
 
-    eventSource.value = es;
+    singletonEventSource = es;
   }
 
   // -------------------------------------------------------------------------
@@ -204,33 +266,60 @@ export function useSSE(options: UseSSEOptions = {}): UseSSEReturn {
   // -------------------------------------------------------------------------
 
   function handleSSEMessage(event: MessageEvent) {
-    const result: ParseResult = parseSSEEventData(
+    const Result: ParseResult = parseSSEEventData(
       event.data as string,
       event.lastEventId,
     );
 
-    if (result.error) {
-      console.warn('SSE parse error:', result.error);
+    if (Result.Error) {
+      console.warn('SSE parse error:', Result.Error);
       return;
     }
 
     // Handle special events
-    if (result.specialEvent) {
-      sseStore.handleSpecialEvent(result.specialEvent);
+    if (Result.SpecialEvent) {
+      sseStore.handleSpecialEvent(Result.SpecialEvent);
 
-      if (result.specialEvent === 'EventBufferExceeded') {
-        onBufferExceeded?.();
+      if (Result.SpecialEvent === 'EventBufferExceeded') {
+        activeOnBufferExceeded?.();
       }
     }
 
     // Add events to store
-    for (const evt of result.events) {
-      sseStore.addEvent(evt);
+    for (const Event of Result.Events) {
+      sseStore.addEvent(Event);
     }
 
     // Callback
-    if (result.events.length > 0) {
-      onEvent?.(result.events);
+    if (Result.Events.length > 0) {
+      activeOnEvent?.(Result.Events);
+    }
+  }
+
+  // -------------------------------------------------------------------------
+  // Verify auth status before logging out
+  // -------------------------------------------------------------------------
+
+  async function verifyAuthAndMaybeLogout(): Promise<void> {
+    try {
+      // Make a simple API call to check if session is still valid
+      await apiInstance({
+        url: '/redfish/v1/SessionService/Sessions',
+        method: 'GET',
+      });
+      // Session is valid - SSE failure was not auth-related
+      console.log('[SSE] Session verified - SSE failure is not auth-related');
+      // Don't log out, just leave SSE in error state
+    } catch (error) {
+      const axiosError = error as { response?: { status?: number } };
+      if (axiosError?.response?.status === 401 || axiosError?.response?.status === 403) {
+        // Confirmed auth failure - trigger logout
+        console.warn('[SSE] Session invalid (401/403) - triggering logout');
+        activeOnAuthFailed?.();
+      } else {
+        // Other error (network, server, etc.) - don't log out
+        console.log('[SSE] Session check failed with non-auth error:', axiosError?.response?.status);
+      }
     }
   }
 
@@ -243,34 +332,51 @@ export function useSSE(options: UseSSEOptions = {}): UseSSEReturn {
     // We infer auth errors from the readyState and connection behavior
 
     es.close();
-    eventSource.value = null;
+    singletonEventSource = null;
+
+    // Check if connection was stable (lasted more than MIN_STABLE_CONNECTION_MS)
+    const wasStable = singletonConnectionOpenedAt !== null &&
+      (Date.now() - singletonConnectionOpenedAt) >= MIN_STABLE_CONNECTION_MS;
+
+    singletonConnectionOpenedAt = null;
+
+    // If connection was stable, reset attempts (genuine network interruption)
+    if (wasStable) {
+      sseStore.resetReconnectAttempts();
+    }
 
     // Check if we should attempt reconnection
-    if (!shouldReconnect.value) {
+    if (!singletonShouldReconnect) {
       sseStore.setStatus('disconnected');
-      onStatusChange?.('disconnected');
+      activeOnStatusChange?.('disconnected');
       return;
     }
 
-    // If we were never connected, this might be an auth error
-    // After multiple quick failures, assume auth error
+    // Count this as a failure attempt
     sseStore.incrementReconnectAttempts();
 
     if (sseStore.reconnectAttempts >= 5) {
-      // Likely an auth error or server issue
-      sseStore.setStatus('error', 'Connection failed after multiple attempts');
-      authFailed.value = true;
-      onStatusChange?.('error');
+      // Stop reconnecting after 5 failed attempts
+      sseStore.setStatus('error', 'SSE connection failed after multiple attempts');
+      singletonAuthFailed = true;
+      activeOnStatusChange?.('error');
+      console.warn('[SSE] Stopping reconnection after 5 failed attempts');
+
+      // Don't automatically log out - verify auth status first
+      // SSE failures can happen for reasons other than auth (proxy issues, etc.)
+      verifyAuthAndMaybeLogout();
       return;
     }
 
-    sseStore.setStatus('error', 'Connection lost, reconnecting...');
-    onStatusChange?.('reconnecting');
+    sseStore.setStatus('reconnecting', 'Connection lost, reconnecting...');
+    activeOnStatusChange?.('reconnecting');
 
     // Schedule reconnection with backoff
     const delay = getReconnectDelay();
-    reconnectTimeout.value = setTimeout(() => {
-      if (shouldReconnect.value && (!isAuthenticated || isAuthenticated.value)) {
+    console.log(`[SSE] Reconnecting in ${Math.round(delay)}ms (attempt ${sseStore.reconnectAttempts}/5)`);
+    singletonReconnectTimeout = setTimeout(() => {
+      singletonReconnectTimeout = null;
+      if (singletonShouldReconnect && (!isAuthenticated || isAuthenticated.value)) {
         connect();
       }
     }, delay);
@@ -281,64 +387,72 @@ export function useSSE(options: UseSSEOptions = {}): UseSSEReturn {
   // -------------------------------------------------------------------------
 
   function disconnect() {
-    shouldReconnect.value = false;
+    singletonShouldReconnect = false;
 
-    if (reconnectTimeout.value) {
-      clearTimeout(reconnectTimeout.value);
-      reconnectTimeout.value = null;
+    if (singletonReconnectTimeout) {
+      clearTimeout(singletonReconnectTimeout);
+      singletonReconnectTimeout = null;
     }
 
-    if (eventSource.value) {
-      eventSource.value.close();
-      eventSource.value = null;
+    if (singletonEventSource) {
+      singletonEventSource.close();
+      singletonEventSource = null;
     }
 
     sseStore.setStatus('disconnected');
-    onStatusChange?.('disconnected');
+    activeOnStatusChange?.('disconnected');
   }
 
   // -------------------------------------------------------------------------
-  // Watch authentication state
+  // Watch authentication state (only create watchers once)
   // -------------------------------------------------------------------------
 
-  if (isAuthenticated) {
+  // Only create watchers once to prevent HMR issues with stale component references
+  if (!singletonWatchersCreated && isAuthenticated) {
+    singletonWatchersCreated = true;
+
     watch(isAuthenticated, (authenticated) => {
       if (authenticated && autoConnect && sseStore.enabled) {
-        authFailed.value = false;
-        shouldReconnect.value = true;
+        singletonAuthFailed = false;
+        singletonShouldReconnect = true;
         connect();
       } else if (!authenticated) {
-        // User logged out
+        // User logged out - this is the ONLY time we truly disconnect
         disconnect();
         sseStore.reset();
-        authFailed.value = false;
+        singletonAuthFailed = false;
+        singletonInitialized = false;
+        singletonWatchersCreated = false; // Allow watchers to be recreated after logout
       }
-    }, { immediate: autoConnect });
-  } else if (autoConnect) {
-    // No auth tracking, connect immediately
+    }, { immediate: autoConnect && !singletonInitialized });
+
+    // Mark as initialized to prevent re-running on HMR
+    if (autoConnect) {
+      singletonInitialized = true;
+    }
+
+    // Watch SSE enabled state (inside the same guard)
+    watch(() => sseStore.enabled, (enabled) => {
+      if (enabled && autoConnect && (!isAuthenticated || isAuthenticated.value)) {
+        singletonShouldReconnect = true;
+        connect();
+      } else if (!enabled) {
+        disconnect();
+      }
+    });
+  } else if (autoConnect && !singletonInitialized) {
+    // No auth tracking, connect immediately (only once)
+    singletonInitialized = true;
     connect();
   }
 
   // -------------------------------------------------------------------------
-  // Watch SSE enabled state
+  // Cleanup on unmount - DON'T disconnect during HMR
   // -------------------------------------------------------------------------
 
-  watch(() => sseStore.enabled, (enabled) => {
-    if (enabled && autoConnect && (!isAuthenticated || isAuthenticated.value)) {
-      shouldReconnect.value = true;
-      connect();
-    } else if (!enabled) {
-      disconnect();
-    }
-  });
-
-  // -------------------------------------------------------------------------
-  // Cleanup on unmount
-  // -------------------------------------------------------------------------
-
-  onUnmounted(() => {
-    disconnect();
-  });
+  // Note: We intentionally do NOT disconnect on unmount.
+  // The SSE connection is a singleton that should persist across HMR updates.
+  // Only explicit logout or disable should disconnect.
 
   // -------------------------------------------------------------------------
   // Return public API
@@ -350,7 +464,7 @@ export function useSSE(options: UseSSEOptions = {}): UseSSEReturn {
     status: computed(() => sseStore.status),
     isConnected: computed(() => sseStore.isConnected),
     errorMessage: computed(() => sseStore.errorMessage),
-    events: computed(() => sseStore.events),
+    Events: computed(() => sseStore.events),
     bufferExceeded: computed(() => sseStore.bufferExceeded),
   };
 }

@@ -38,8 +38,8 @@
         <b-button
           variant="primary"
           :class="{ disabled: allLogs.length === 0 }"
-          :download="exportFileNameByDate()"
-          :href="href"
+          :disabled="allLogs.length === 0"
+          @click="handleExportAll"
         >
           <icon-export /> {{ $t('global.action.exportAll') }}
         </b-button>
@@ -83,7 +83,7 @@
           thead-class="table-light"
           :sort-desc="[true]"
           show-empty
-          :sort-by="['id']"
+          :sort-by="['Id']"
           :fields="fields"
           :items="filteredLogs"
           :empty-text="$t('global.table.emptyMessage')"
@@ -141,27 +141,27 @@
                   <dl>
                     <!-- Name -->
                     <dt>{{ $t('pageEventLogs.table.name') }}:</dt>
-                    <dd>{{ dataFormatter(item.name) }}</dd>
+                    <dd>{{ dataFormatter(item.Name) }}</dd>
                   </dl>
                   <dl>
                     <!-- Type -->
                     <dt>{{ $t('pageEventLogs.table.type') }}:</dt>
-                    <dd>{{ dataFormatter(item.type) }}</dd>
+                    <dd>{{ dataFormatter(item.EntryType) }}</dd>
                   </dl>
                 </b-col>
                 <b-col>
                   <dl>
                     <!-- Modified date -->
                     <dt>{{ $t('pageEventLogs.table.modifiedDate') }}:</dt>
-                    <dd v-if="item.modifiedDate">
-                      {{ $filters.formatDate(item.modifiedDate) }}
-                      {{ $filters.formatTime(item.modifiedDate) }}
+                    <dd v-if="item.Modified">
+                      {{ $filters.formatDate(new Date(item.Modified)) }}
+                      {{ $filters.formatTime(new Date(item.Modified)) }}
                     </dd>
                     <dd v-else>--</dd>
                   </dl>
                 </b-col>
                 <b-col class="text-nowrap">
-                  <b-button @click="downloadEntry(item.additionalDataUri)">
+                  <b-button @click="downloadEntry(item.AdditionalDataURI)">
                     <icon-download />{{ $t('pageEventLogs.additionalDataUri') }}
                   </b-button>
                 </b-col>
@@ -170,7 +170,7 @@
           </template>
 
           <!-- Severity column -->
-          <template #cell(severity)="{ value }">
+          <template #cell(Severity)="{ value }">
             <status-icon v-if="value" :status="statusIcon(value)" />
             {{ value }}
           </template>
@@ -181,23 +181,20 @@
           </template>
 
           <!-- Status column -->
-          <template #cell(status)="row">
+          <template #cell(Resolved)="row">
             <b-form-checkbox
-              v-model="row.item.status"
+              v-model="row.item.Resolved"
               name="switch"
               switch
               @change="changelogStatus(row.item)"
             >
-              <span v-if="row.item.status">
+              <span v-if="row.item.Resolved">
                 {{ $t('pageEventLogs.resolved') }}
               </span>
               <span v-else>
                 {{ $t('pageEventLogs.unresolved') }}
               </span>
             </b-form-checkbox>
-          </template>
-          <template #cell(filterByStatus)="{ value }">
-            {{ value }}
           </template>
 
           <!-- Actions column -->
@@ -294,6 +291,7 @@ import SearchFilterMixin, {
 import i18n from '@/i18n';
 import { useModal } from 'bootstrap-vue-next';
 import { useEventLog } from '@/api/composables/useEventLog';
+import { downloadAsJson, downloadBlob } from '@/utilities/exportUtils';
 import { computed, toRefs } from 'vue';
 
 export default {
@@ -368,12 +366,12 @@ export default {
           sortable: false,
         },
         {
-          key: 'id',
+          key: 'Id',
           label: i18n.global.t('pageEventLogs.table.id'),
           sortable: true,
         },
         {
-          key: 'severity',
+          key: 'Severity',
           label: i18n.global.t('pageEventLogs.table.severity'),
           sortable: true,
           tdClass: 'text-nowrap',
@@ -385,14 +383,14 @@ export default {
           tdClass: 'text-nowrap',
         },
         {
-          key: 'description',
+          key: 'Message',
           label: i18n.global.t('pageEventLogs.table.description'),
           tdClass: 'text-break',
         },
         import.meta.env.VITE_EVENT_LOGS_TOGGLE_BUTTON_DISABLED === 'true'
           ? {}
           : {
-              key: 'status',
+              key: 'Resolved',
               label: i18n.global.t('pageEventLogs.table.status'),
             },
         {
@@ -406,21 +404,22 @@ export default {
         import.meta.env.VITE_EVENT_LOGS_TOGGLE_BUTTON_DISABLED === 'true'
           ? [
               {
-                key: 'severity',
+                key: 'Severity',
                 label: i18n.global.t('pageEventLogs.table.severity'),
                 values: ['OK', 'Warning', 'Critical'],
               },
             ]
           : [
               {
-                key: 'severity',
+                key: 'Severity',
                 label: i18n.global.t('pageEventLogs.table.severity'),
                 values: ['OK', 'Warning', 'Critical'],
               },
               {
-                key: 'filterByStatus',
+                key: 'Resolved',
                 label: i18n.global.t('pageEventLogs.table.status'),
-                values: ['Resolved', 'Unresolved'],
+                values: [true, false],
+                labels: ['Resolved', 'Unresolved'],
               },
             ],
       expandRowLabel,
@@ -455,9 +454,6 @@ export default {
     isBusy() {
       return this.isLoading;
     },
-    href() {
-      return `data:text/json;charset=utf-8,${this.exportAllLogs()}`;
-    },
     filteredRows() {
       return this.searchFilter
         ? this.searchTotalFilteredRows
@@ -468,6 +464,8 @@ export default {
       return this.eventLogEntries.map((event) => {
         return {
           ...event,
+          // Parse Created to Date for table filtering and display
+          date: event.Created ? new Date(event.Created) : new Date(),
           actions: this.hideDelete
             ? [
                 {
@@ -507,23 +505,25 @@ export default {
   },
   // Vue Query handles data fetching automatically, no need for created() hook
   methods: {
+    handleExportAll() {
+      // Export all logs using Blob (avoids data URI size limits)
+      // Omit UI-computed fields (date is parsed from Created, actions are UI-only)
+      const logsToExport = this.allLogs.map((log) =>
+        omit(log, ['actions', 'date']),
+      );
+      downloadAsJson(logsToExport, this.exportFileNameByDate());
+    },
     downloadEntry(uri) {
       let filename = uri?.split('LogServices/')?.[1];
       filename = filename?.replace(RegExp('/', 'g'), '_') || 'download';
       this.eventLogDownloadEntry(uri)
-        .then((blob) => {
-          const link = document.createElement('a');
-          link.href = URL.createObjectURL(blob);
-          link.download = filename;
-          link.click();
-          URL.revokeObjectURL(link.href);
-        })
+        .then((blob) => downloadBlob(blob, filename))
         .catch(({ message }) => this.errorToast(message));
     },
     changelogStatus(row) {
       this.eventLogUpdateLogStatus({
-        uri: row.uri,
-        status: row.status,
+        uri: row['@odata.id'],
+        Resolved: row.Resolved,
       })
         .then((success) => {
           this.successToast(success);
@@ -558,17 +558,10 @@ export default {
         });
       });
     },
-    exportAllLogs() {
-      // Use Vue Query data from the composable instead of Vuex
-      return this.eventLogEntries.map((eventLogs) => {
-        const allEventLogsString = JSON.stringify(eventLogs);
-        return allEventLogsString;
-      });
-    },
     onFilterChange({ activeFilters }) {
       this.activeFilters = activeFilters;
     },
-    onTableRowAction(action, { uri }) {
+    onTableRowAction(action, row) {
       if (action === 'delete') {
         this.confirmDialog(i18n.global.t('pageEventLogs.modal.deleteMessage'), {
           title: i18n.global.t('pageEventLogs.modal.deleteTitle'),
@@ -576,13 +569,13 @@ export default {
           cancelTitle: i18n.global.t('global.action.cancel'),
           autoFocusButton: 'ok',
         }).then((deleteConfirmed) => {
-          if (deleteConfirmed) this.deleteLogs([uri]);
+          if (deleteConfirmed) this.deleteLogs([row['@odata.id']]);
         });
       }
     },
     async onBatchAction(action) {
       if (action === 'delete') {
-        const uris = this.selectedRows.map((row) => row.uri);
+        const uris = this.selectedRows.map((row) => row['@odata.id']);
         const count = this.selectedRows.length;
         const ok = await this.confirmDialog(
           i18n.global.t('pageEventLogs.modal.deleteMessage', count),

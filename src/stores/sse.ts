@@ -7,6 +7,8 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 
+import type { EventRecord } from '@/api/model/EventRecord';
+
 // ============================================================================
 // Types - Following Redfish naming conventions (PascalCase)
 // ============================================================================
@@ -15,47 +17,8 @@ export type SSEConnectionStatus =
   | 'disconnected'
   | 'connecting'
   | 'connected'
+  | 'reconnecting'
   | 'error';
-
-/**
- * Normalized Redfish Event from SSE stream.
- * Preserves Redfish field names per workspace conventions.
- */
-export interface RedfishSSEEvent {
-  // --- Identity ---
-  /** Unique event ID from the SSE stream */
-  EventId: string;
-  /** ISO 8601 timestamp when event occurred */
-  EventTimestamp?: string;
-  /** Event type from Redfish EventType registry */
-  EventType?: string;
-
-  // --- Message ---
-  /** Message registry identifier (e.g., "ResourceEvent.1.0.ResourceCreated") */
-  MessageId?: string;
-  /** Human-readable message */
-  Message?: string;
-  /** Arguments to substitute into the message template */
-  MessageArgs?: string[];
-
-  // --- Context ---
-  /** URI of the resource that originated the event (extracted from @odata.id) */
-  OriginOfCondition?: string;
-  /** Event severity: OK, Warning, Critical (normalized from Severity or MessageSeverity) */
-  Severity?: string;
-  /** Suggested resolution for the event */
-  Resolution?: string;
-
-  // --- Extended ---
-  /** Reference to log entry if event was logged */
-  LogEntry?: unknown;
-  /** OEM-specific extensions */
-  Oem?: object;
-
-  // --- Internal ---
-  /** Raw event data for debugging */
-  _raw?: unknown;
-}
 
 /**
  * Special event types that require specific handling
@@ -83,7 +46,7 @@ export const useSSEStore = defineStore('sse', () => {
   const status = ref<SSEConnectionStatus>('disconnected');
 
   /** Circular buffer of received events (bounded to MAX_EVENTS_BUFFER) */
-  const events = ref<RedfishSSEEvent[]>([]);
+  const events = ref<EventRecord[]>([]);
 
   /** Last event ID for replay support */
   const lastEventId = ref<string | null>(null);
@@ -113,17 +76,20 @@ export const useSSEStore = defineStore('sse', () => {
   /** Whether SSE is attempting to connect */
   const isConnecting = computed(() => status.value === 'connecting');
 
+  /** Whether SSE is reconnecting after a connection loss */
+  const isReconnecting = computed(() => status.value === 'reconnecting');
+
   /** Whether SSE has an error */
   const hasError = computed(() => status.value === 'error');
 
   /** High priority events (Critical severity) */
   const criticalEvents = computed(() =>
-    events.value.filter((e) => e.Severity === 'Critical'),
+    events.value.filter((e) => e.MessageSeverity === 'Critical'),
   );
 
   /** Warning events */
   const warningEvents = computed(() =>
-    events.value.filter((e) => e.Severity === 'Warning'),
+    events.value.filter((e) => e.MessageSeverity === 'Warning'),
   );
 
   /** Most recent event */
@@ -137,6 +103,8 @@ export const useSSEStore = defineStore('sse', () => {
 
   /**
    * Set connection status
+   * Note: reconnectAttempts is NOT reset here - that's controlled by the
+   * useSSE composable based on connection stability and successful messages.
    */
   function setStatus(newStatus: SSEConnectionStatus, error?: string) {
     status.value = newStatus;
@@ -144,15 +112,16 @@ export const useSSEStore = defineStore('sse', () => {
 
     if (newStatus === 'connected') {
       lastConnectedAt.value = new Date();
-      reconnectAttempts.value = 0;
       bufferExceeded.value = false;
+      // Don't reset reconnectAttempts here - let useSSE decide based on
+      // connection stability (MIN_STABLE_CONNECTION_MS threshold)
     }
   }
 
   /**
    * Add an event to the buffer (maintains bounded size)
    */
-  function addEvent(event: RedfishSSEEvent) {
+  function addEvent(event: EventRecord) {
     // Update last event ID
     if (event.EventId) {
       lastEventId.value = event.EventId;
@@ -256,7 +225,7 @@ export const useSSEStore = defineStore('sse', () => {
 
       const savedEvents = localStorage.getItem(STORAGE_KEY_EVENTS);
       if (savedEvents) {
-        const parsed = JSON.parse(savedEvents) as RedfishSSEEvent[];
+        const parsed = JSON.parse(savedEvents) as EventRecord[];
         events.value = parsed;
       }
     } catch (e) {
@@ -297,6 +266,7 @@ export const useSSEStore = defineStore('sse', () => {
     // Getters
     isConnected,
     isConnecting,
+    isReconnecting,
     hasError,
     criticalEvents,
     warningEvents,

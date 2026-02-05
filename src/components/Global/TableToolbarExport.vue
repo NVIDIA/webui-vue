@@ -9,6 +9,8 @@
 </template>
 
 <script>
+import { downloadAsJson } from '@/utilities/exportUtils';
+
 export default {
   props: {
     data: {
@@ -22,20 +24,7 @@ export default {
   },
   methods: {
     exportData() {
-      const json = JSON.stringify(this.data, null, 2);
-      const blob = new Blob([json], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-
-      // Create a temporary link element and trigger download
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `${this.fileName}.json`;
-      document.body.appendChild(link);
-      link.click();
-
-      // Clean up
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
+      downloadAsJson(this.data, this.fileName);
     },
   },
 };

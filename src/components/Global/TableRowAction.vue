@@ -4,9 +4,8 @@
       v-if="value === 'export'"
       variant="link"
       class="align-bottom btn-icon-only py-0"
-      :download="download"
-      :href="href"
       :title="title"
+      @click="handleExport"
     >
       <slot name="icon">
         {{ $t('global.action.export') }}
@@ -59,6 +58,7 @@
 
 <script>
 import { omit } from 'lodash';
+import { downloadAsJson } from '@/utilities/exportUtils';
 
 export default {
   name: 'TableRowAction',
@@ -103,13 +103,13 @@ export default {
   emits: ['click-table-action'],
   computed: {
     dataForExport() {
-      return JSON.stringify(omit(this.rowData, 'actions'));
+      return omit(this.rowData, 'actions');
     },
-    download() {
-      return `${this.exportName}.json`;
-    },
-    href() {
-      return `data:text/json;charset=utf-8,${this.dataForExport}`;
+  },
+  methods: {
+    handleExport() {
+      // Export row data using Blob (avoids data URI size limits)
+      downloadAsJson(this.dataForExport, this.exportName);
     },
   },
 };
