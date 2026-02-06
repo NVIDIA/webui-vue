@@ -141,6 +141,8 @@ import ModalConfigureConnection from './ModalConfigureConnection';
 import NbdServer from '@/utilities/NBDServer';
 import FormFile from '@/components/Global/FormFile';
 import i18n from '@/i18n';
+import { useModal } from 'bootstrap-vue-next';
+import { useAuthStore } from '@/stores/auth';
 
 /**
  * @component VirtualMedia
@@ -159,6 +161,11 @@ export default {
   name: 'VirtualMedia',
   components: { PageTitle, PageSection, ModalConfigureConnection, FormFile },
   mixins: [BVToastMixin, LoadingBarMixin],
+  setup() {
+    const bvModal = useModal();
+    const authStore = useAuthStore();
+    return { bvModal, authStore };
+  },
   data() {
     return {
       modalConfigureConnection: null,
@@ -213,7 +220,7 @@ export default {
      * @param {string} device.WebSocketEndpoint - WebSocket endpoint for the device
      */
     startVM(device) {
-      const token = this.$store.getters['authentication/token'];
+      const token = this.authStore.token;
       const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
       device.nbd = new NbdServer(
         `${wsProtocol}//${window.location.host}${device.WebSocketEndpoint}`,

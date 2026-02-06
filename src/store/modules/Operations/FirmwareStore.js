@@ -16,6 +16,12 @@ const MAX_TASK_POLL_TIME = TASK_POLL_TIMEOUT / TASK_POLL_INTERVAL;
 const WAIT_FOR_READY_INTERVAL = envInt('VITE_WAIT_FOR_READY_INTERVAL', 8);
 const WAIT_FOR_READY_TIME = envInt('VITE_WAIT_FOR_READY_TIME', 40);
 
+/**
+ * Firmware Store
+ *
+ * Handles firmware upload operations and UpdateService settings.
+ * Firmware inventory fetching is now handled by useFirmwareInventory() composable.
+ */
 const FirmwareStore = {
   namespaced: true,
   state: {
@@ -302,7 +308,7 @@ const FirmwareStore = {
         });
     },
     async uploadFirmwareSimpleUpdate(
-      // eslint-disable-next-line no-unused-vars
+       
       { state, dispatch },
       { protocol, fileAddress, targets, username, forceUpdate },
     ) {
@@ -323,7 +329,7 @@ const FirmwareStore = {
           );
         });
     },
-    // eslint-disable-next-line no-unused-vars
+     
     extractResolutionForFailedCmd({ state }, error) {
       let resolutions = '';
       error?.response?.data?.error?.['@Message.ExtendedInfo']?.forEach(
@@ -467,7 +473,7 @@ const FirmwareStore = {
           return false;
         });
     },
-    // eslint-disable-next-line no-unused-vars
+     
     async extractResetRequired({ state }, resp) {
       const resolutionMsg = resp?.data?.Messages?.find((e) =>
         e?.MessageId?.includes('AwaitToActivate'),
@@ -541,7 +547,7 @@ const FirmwareStore = {
         }
       });
     },
-    // eslint-disable-next-line no-unused-vars
+     
     extractResolutionForFailedTask({ state }, resp) {
       let resolutions = '';
       resp?.data?.Messages?.forEach((msg) => {
@@ -554,7 +560,7 @@ const FirmwareStore = {
       if (resolutions.length > 0) return resolutions;
       else return i18n.global.t('pageFirmware.toast.errorCompleteUpdateFirmware');
     },
-    // eslint-disable-next-line no-unused-vars
+     
     sleep({ state }, seconds) {
       return new Promise((resolve) => setTimeout(resolve, seconds * 1000));
     },

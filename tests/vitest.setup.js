@@ -11,7 +11,7 @@ const SvgStub = {
 vi.mock('@/assets/images/logo-header.svg?component', () => ({
   default: SvgStub,
 }));
-vi.mock('@/assets/images/nvidia-logo-login.svg?component', () => ({
+vi.mock('@/assets/images/login-company-logo.svg?component', () => ({
   default: SvgStub,
 }));
 vi.mock('@/assets/images/built-on-openbmc-logo.svg?component', () => ({
@@ -28,6 +28,21 @@ vi.mock('@/env/version-info', () => ({
   default: {
     gitCommitSha: 'test-version',
   },
+}));
+
+// Mock vue-router - provide a minimal API for tests that import it
+vi.mock('vue-router', () => ({
+  createRouter: () => ({}),
+  createMemoryHistory: () => ({}),
+  useRouter: () => ({
+    push: vi.fn(),
+    replace: vi.fn(),
+  }),
+  useRoute: () => ({
+    params: {},
+    query: {},
+    meta: { title: '' },
+  }),
 }));
 
 // Use the real i18n instance - Vite's import.meta.glob works natively

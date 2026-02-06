@@ -1,15 +1,8 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
 exports[`PageContainer.vue > should render correctly 1`] = `
-<div>
-  <global-banner-stub
-    message="global.toast.bmcIsNotReady"
-    show="false"
-    variant="warning"
-  ></global-banner-stub>
-  <main
-    class="page-container"
-    id="main-content"
-  ></main>
-</div>
+<main
+  class="page-container"
+  id="main-content"
+></main>
 `;

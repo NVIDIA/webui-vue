@@ -44,7 +44,7 @@
               variant="link"
               size="sm"
               class="py-0 px-1 mt-2"
-              :disabled="isPageDisabled || !backup || !isServerOff"
+              :disabled="isPageDisabled || !BackupBmcFirmware || !isServerOff"
               @click="showSwitchToRunning = true"
             >
               <icon-switch class="d-none d-sm-inline-block" />
@@ -67,6 +67,7 @@ import IconSwitch from '@carbon/icons-vue/es/arrows--horizontal/20';
 import PageSection from '@/components/Global/PageSection';
 import LoadingBarMixin, { loading } from '@/components/Mixins/LoadingBarMixin';
 import BVToastMixin from '@/components/Mixins/BVToastMixin';
+import { useFirmwareInventory } from '@/api/composables/useFirmwareInventory';
 
 import ModalSwitchToRunning from './FirmwareModalSwitchToRunning';
 import i18n from '@/i18n';
@@ -86,6 +87,15 @@ export default {
       default: false,
     },
   },
+  setup() {
+    const firmware = useFirmwareInventory();
+    return {
+      // Redfish SoftwareInventory models
+      ActiveBmcFirmware: firmware.ActiveBmcFirmware,
+      BackupBmcFirmware: firmware.BackupBmcFirmware,
+      isSingleFileUploadEnabled: firmware.isSingleFileUploadEnabled,
+    };
+  },
   data() {
     return {
       loading,
@@ -98,22 +108,18 @@ export default {
     sectionTitle() {
       return this.$t('pageFirmware.sectionTitleBmcCards');
     },
-    running() {
-      return this.$store.getters['firmware/activeBmcFirmware'];
-    },
-    // TODO: Update the template to show an array of bmc images
+    // Use Redfish property names: Version, Status.Health
     backup() {
-      const backupFirmwares = this.$store.getters['firmware/backupBmcFirmware'];
-      return backupFirmwares?.[0] ?? null;
+      return this.BackupBmcFirmware || null;
     },
     runningVersion() {
-      return this.running?.version || '--';
+      return this.ActiveBmcFirmware?.Version || '--';
     },
     backupVersion() {
-      return this.backup?.version || '--';
+      return this.BackupBmcFirmware?.Version || '--';
     },
     backupStatus() {
-      return this.backup?.status || null;
+      return this.BackupBmcFirmware?.Status?.Health || null;
     },
     isBackupUpdateable() {
       return (

@@ -80,6 +80,7 @@
 import AppNavigationMixin from './AppNavigationMixin';
 import AppFooter from '@/components/Global/AppFooter';
 import eventBus from '@/eventBus';
+import { useAuthStore } from '@/stores/auth';
 
 export default {
   name: 'AppNavigation',
@@ -87,12 +88,20 @@ export default {
     AppFooter,
   },
   mixins: [AppNavigationMixin],
+  setup() {
+    const authStore = useAuthStore();
+    return { authStore };
+  },
   data() {
     return {
       isNavigationOpen: false,
-      currentUserRole: null,
       openSections: {},
     };
+  },
+  computed: {
+    currentUserRoles() {
+      return this.authStore.Roles;
+    },
   },
   watch: {
     $route: function () {
@@ -105,14 +114,12 @@ export default {
     },
   },
   mounted() {
-    this.getPrivilege();
-    this.toggleNavigationHandler = () => this.toggleIsOpen();
-    eventBus.$on('toggle-navigation', this.toggleNavigationHandler);
+    eventBus.$on('toggle-navigation', this.handleToggleNavigation);
     // Expand the parent section for the current route on initial load/refresh
     this.initializeOpenSectionsFromRoute();
   },
   beforeUnmount() {
-    eventBus.$off('toggle-navigation', this.toggleNavigationHandler);
+    eventBus.$off('toggle-navigation', this.handleToggleNavigation);
   },
   methods: {
     handleToggleNavigation() {
@@ -134,14 +141,13 @@ export default {
     toggleIsOpen() {
       this.isNavigationOpen = !this.isNavigationOpen;
     },
-    getPrivilege() {
-      this.currentUserRole = this.$store?.getters['global/userPrivilege'];
-    },
     filteredNavItem(navItem) {
-      if (this.currentUserRole) {
+      const userRoles = this.currentUserRoles;
+      if (userRoles.length > 0) {
         return navItem.filter(({ exclusiveToRoles }) => {
           if (!exclusiveToRoles?.length) return true;
-          return exclusiveToRoles.includes(this.currentUserRole);
+          // Check if any of the user's roles match the allowed roles
+          return userRoles.some((role) => exclusiveToRoles.includes(role));
         });
       } else return navItem;
     },

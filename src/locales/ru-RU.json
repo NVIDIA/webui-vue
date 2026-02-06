@@ -14,9 +14,11 @@
             "download": "Скачать",
             "edit": "Редактировать",
             "enable": "Включить",
-            "export": "Экспорт",
-            "exportAll": "Экспортировать все",
-            "filter": "Фильтр",
+            "export": "Экспортировать",
+            "exportAll": "Экспортировать всё",
+            "columns": "Столбцы",
+            "filter": "Фильтровать",
+            "showAll": "Показать все",
             "refresh": "Обновить",
             "replace": "Заменить",
             "reset": "Сбросить",
@@ -83,12 +85,15 @@
             "disabled": "Выключено",
             "enabled": "Включено",
             "error": "Ошибка",
+            "insufficientPrivileges": "Недостаточно привилегий",
+            "no": "Нет",
             "notAvailable": "Недоступно",
             "off": "Выкл.",
             "on": "Вкл.",
             "success": "Успешно",
             "warning": "Предупреждение",
-            "informational": "Информация"
+            "informational": "Информация",
+            "yes": "Да"
         },
         "statusState": {
             "Enabled": "Включено",
@@ -117,7 +122,8 @@
             "selectItem": "Выбрать объект",
             "selectedItems": "{filterCount} из {count} объектов",
             "toDate": "Заканчивая датой",
-            "viewAll": "Смотреть всё"
+            "viewAll": "Смотреть всё",
+            "visibleColumns": "Видимые столбцы"
         },
         "toast": {
             "unAuthTitle": "Недоступно",
@@ -311,6 +317,7 @@
         }
     },
     "pageEventLogs": {
+        "sseDisconnected": "Обновление в реальном времени недоступно. Данные могут быть устаревшими.",
         "additionalDataUri": "Загрузить дополнительные данные",
         "resolve": "Разрешить",
         "resolved": "Разрешено",
@@ -406,6 +413,7 @@
         "showAdvanced": "Показать дополнительные настройки",
         "hideAdvanced": "Скрыть дополнительные настройки",
         "alert": {
+            "missingPrivileges": "Для обновления прошивки требуются следующие привилегии: {privileges}",
             "operationInProgress": "Выполняется операция управления питанием сервера.",
             "serverMustBePoweredOffTo": "Сервер должен быть выключен, чтобы:",
             "serverMustBePoweredOnTo": "Сервер должен быть включен, чтобы:",
@@ -822,15 +830,20 @@
         }
     },
     "pageProfileSettings": {
+        "accountLocked": "Учётная запись заблокирована",
+        "accountStatus": "Статус учётной записи",
+        "accountTypes": "Типы учётной записи",
         "browserOffset": "Часовой пояс в браузере ({timezone})",
         "changePassword": "Изменить пароль",
         "confirmPassword": "Подтвердите новый пароль",
         "defaultUTC": "По умолчанию (UTC)",
+        "externalAccountMessage": "Учётная запись управляется внешним провайдером (LDAP/AD).",
         "newPassword": "Новый пароль",
         "currentPassword": "Текущий пароль",
         "newPassLabelTextInfo": "Пароль должен быть от {min} до {max} символов",
         "passwordsDoNotMatch": "Пароли не совпадают",
         "profileInfoTitle": "Информация о профиле",
+        "role": "Роль",
         "timezone": "Часовой пояс",
         "timezoneDisplay": "Выбор часового пояса для отображения",
         "timezoneDisplayDesc": "Выберите, как будет отображаться время на всех страницах",
@@ -1028,22 +1041,22 @@
     "pageSensors": {
         "exportFilePrefix": "sensors_",
         "searchForSensors": "Поиск датчиков",
-        "showLess": "Свернуть",
+        "showLess": "Показать меньше",
         "showMore": "Показать больше",
         "table": {
             "currentValue": "Текущее значение",
-            "lowerWarning": "Мин. значение",
+            "id": "ID",
             "lowerCritical": "Мин. крит. значение",
+            "lowerFatal": "Мин. фатальное значение",
+            "lowerWarning": "Мин. значение",
             "name": "Имя",
-            "status": "Статус",
             "state": "Состояние",
-            "upperWarning": "Макс. значение",
-            "upperCritical": "Макс. крит. значение",
+            "status": "Статус",
             "assertionsEnabled": "Включены уведомления",
             "deassertionsEnabled": "Включены сброс уведомлений",
-            "id": "Идентификатор",
-            "lowerFatal": "Нижний неустранимый",
-            "upperFatal": "Верхний неустранимый"
+            "upperCritical": "Макс. крит. значение",
+            "upperFatal": "Макс. фатальное значение",
+            "upperWarning": "Макс. значение"
         }
     },
     "pageSerialOverLan": {

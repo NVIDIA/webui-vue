@@ -37,8 +37,8 @@
 
       <b-form novalidate @submit.prevent="changePassword">
         <input
-          hidden
           id="username"
+          hidden
           type="text"
           autocomplete="username"
           name="username"
@@ -122,13 +122,16 @@ import VuelidateMixin from '@/components/Mixins/VuelidateMixin';
 import InputPasswordToggle from '@/components/Global/InputPasswordToggle';
 import BVToastMixin from '@/components/Mixins/BVToastMixin';
 import { useVuelidate } from '@vuelidate/core';
+import { useAuthStore } from '@/stores/auth';
 
 export default {
   name: 'ChangePassword',
   components: { Alert, InputPasswordToggle },
   mixins: [VuelidateMixin, BVToastMixin],
   setup() {
+    const authStore = useAuthStore();
     return {
+      authStore,
       v$: useVuelidate(),
     };
   },
@@ -155,7 +158,6 @@ export default {
     };
   },
   methods: {
-
     changePassword() {
       this.v$.$touch();
       if (this.v$.$invalid) return;

@@ -1,55 +1,27 @@
 <template>
   <div>
     <page-section>
-      <div style="display: flex; align-items: baseline;">
-        <h2 style="margin: 0;">{{ $t('pageFirmware.sectionTitleFirmwareInventory') }}</h2>
-        <b-button
-          variant="link"
-          :title="
-            isExpanded ? $t('pageFirmware.viewLess') : $t('pageFirmware.viewMore')
-          "
-          v-show="showViewButton"
-          class="btn-icon-only p-0 ms-3"
-          style="margin: 0"
-          @click="toggleExpand"
-        >
-          (
-            <u>
-              {{ firmwareInventory.length }}
-              {{
-                isExpanded ? $t('pageFirmware.collapse') : $t('pageFirmware.expand')
-              }}
-            </u>
-          )
-        </b-button>
-      </div>
-      <b-button
-        v-if="hideFirmwareTargets && hasFirmwareInventoryCheckbox && inventoryLoaded"
-        variant="link"
-        @click="toggleAdvanced"
-      >
-        {{
-          showAdvanced
-            ? $t('pageFirmware.hideAdvanced')
-            : $t('pageFirmware.showAdvanced')
-        }}
-      </b-button>
+      <h2>
+        {{ $t('pageFirmware.sectionTitleFirmwareInventory') }}
+        <span v-if="firmwareInventory.length" class="h6 text-muted ms-2">
+          ({{ firmwareInventory.length }})
+        </span>
+      </h2>
       <div class="mb-3">
         <b-table
-          :items="displayedFirmwareInventory"
+          :items="firmwareInventory"
           :fields="fields"
-          :style="tableStyle"
           responsive="sm"
         >
           <template #cell(select)="data">
             <b-form-checkbox
-              v-if="hasFirmwareInventoryCheckbox && (!hideFirmwareTargets || showAdvanced)"
+              v-if="hasFirmwareInventoryCheckbox"
               v-model="data.item.checked"
-              :disabled="data.item.updateable === false"
-              @change="handleCheckboxChange(data.item)"
               v-b-tooltip.hover.top="
                 data.item.updateable === false ? 'Not updateable' : ''
               "
+              :disabled="data.item.updateable === false"
+              @change="handleCheckboxChange(data.item)"
             ></b-form-checkbox>
           </template>
           <template #cell(name)="data">
@@ -69,17 +41,40 @@
 </template>
 
 <script>
+import { computed } from 'vue';
 import PageSection from '@/components/Global/PageSection';
 import BVToastMixin from '@/components/Mixins/BVToastMixin';
 import StatusIcon from '@/components/Global/StatusIcon';
 import DataFormatterMixin from '@/components/Mixins/DataFormatterMixin';
+import { useRedfishCollection } from '@/api/composables/useRedfishCollection';
 
 export default {
   components: { PageSection, StatusIcon },
   mixins: [BVToastMixin, DataFormatterMixin],
+  setup() {
+    // Fetch firmware inventory via Vue Query (deduplicates with Firmware.vue)
+    const { data } = useRedfishCollection(
+      '/redfish/v1/UpdateService/FirmwareInventory',
+      { $expand: '.' },
+    );
+
+    // Map raw Redfish SoftwareInventory to table rows
+    const firmwareInventory = computed(() => {
+      const members = data.value?.Members ?? [];
+      return members.map((item) => ({
+        name: item.Id || item['@odata.id']?.split('/').pop() || '',
+        version: item.Version || '--',
+        status: item.Status?.Health || 'N/A',
+        id: item['@odata.id'] || '',
+        updateable: item.Updateable !== false,
+        checked: false,
+      }));
+    });
+
+    return { firmwareInventory };
+  },
   data() {
     return {
-      isExpanded: false,
       fields: [
         { key: 'select', label: '' },
         { key: 'name', label: this.$t('pageFirmware.tableHeaderFirmware') },
@@ -91,42 +86,15 @@ export default {
       ],
       hasFirmwareInventoryCheckbox:
         import.meta.env.VITE_HIDE_FIRMWARE_INVENTORY_CHECKBOX !== 'true',
-      hideFirmwareTargets:
-        import.meta.env.VITE_HIDE_FIRMWARE_TARGETS === 'true',
-      showAdvanced: false,
     };
   },
-  computed: {
-    displayedFirmwareInventory() {
-      return this.isExpanded
-        ? this.firmwareInventory
-        : this.firmwareInventory.slice(0, 5);
-    },
-    firmwareInventory() {
-      return this.$store.getters['firmware/firmwareInventory'];
-    },
-    inventoryLoaded() {
-      return this.firmwareInventory.length > 0;
-    },
-    showViewButton() {
-      return this.firmwareInventory.length > 5;
-    },
-    tableStyle() {
-      if (this.isExpanded) {
-        return { display: 'block', overflowY: 'hidden' };
-      } else {
-        return { display: 'block', overflowY: 'scroll' };
-      }
-    },
+  beforeUnmount() {
+    this.$store.commit('firmware/setCheckedItems', []);
   },
   methods: {
-    toggleExpand() {
-      this.isExpanded = !this.isExpanded;
-    },
     handleCheckboxChange(item) {
       if (item.updateable === true) {
         this.updateCheckedItems();
-        return; // Add logic here for checkbox changes
       }
     },
     updateCheckedItems() {
@@ -135,12 +103,6 @@ export default {
         .map((item) => item.id);
       this.$store.commit('firmware/setCheckedItems', checkedItems);
     },
-    toggleAdvanced() {
-      this.showAdvanced = !this.showAdvanced;
-    },
-  },
-  beforeUnmount() {
-    this.$store.commit('firmware/setCheckedItems', []);
   },
 };
 </script>

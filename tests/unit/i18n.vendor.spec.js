@@ -19,7 +19,7 @@ describe('i18n vendor overlays', () => {
 
   test('falls back to vendor root overlays when env has hyphenated suffix', async () => {
     // Simulate running in nvidia-gb but having overlays only in src/env/locales/nvidia
-    vi.stubEnv('VITE_ENV_NAME', 'nvidia-vr');
+    vi.stubEnv('VITE_ENV_NAME', 'nvidia-gb');
 
     const { createI18nInstance } = await import('@/i18n');
     const vendorEn = await import('@/env/locales/nvidia/en-US.json');
@@ -39,7 +39,7 @@ describe('i18n vendor overlays', () => {
     const { createI18nInstance } = await import('@/i18n');
     const i18nInstance = createI18nInstance(undefined, 'en-US');
     // Suppress the expected "Not found" warning since we're intentionally testing missing keys
-    vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
     const translated = i18nInstance.global.t(
       'pageDumps.dumpTypes.systemHgxDump',
     );

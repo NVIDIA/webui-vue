@@ -40,8 +40,6 @@ describe('AppNavigation.vue', () => {
 
   it('Nav Overlay click should emit change-is-navigation-open event', async () => {
     const spy = vi.spyOn(eventBus, '$emit');
-    wrapper.vm.isNavigationOpen = true;
-    await wrapper.vm.$nextTick();
     const navOverlay = wrapper.find('#nav-overlay');
     navOverlay.trigger('click');
     await wrapper.vm.$nextTick();

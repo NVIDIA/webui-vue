@@ -48,7 +48,6 @@ export default {
       type: Boolean,
       default: true,
     },
-
     fileName: {
       type: String,
       default: 'data',

@@ -4,9 +4,8 @@
       v-if="value === 'export'"
       variant="link"
       class="align-bottom btn-icon-only py-0"
-      :download="download"
       :title="title"
-      @click="href()"
+      @click="handleExport"
     >
       <slot name="icon">
         {{ $t('global.action.export') }}
@@ -59,7 +58,7 @@
 
 <script>
 import { omit } from 'lodash';
-import { TextLogHandler } from '@/store/modules/Logs/TextLogHandler';
+import { downloadAsJson } from '@/utilities/exportUtils';
 
 export default {
   name: 'TableRowAction',
@@ -104,20 +103,13 @@ export default {
   emits: ['click-table-action'],
   computed: {
     dataForExport() {
-      return JSON.stringify(omit(this.rowData, 'actions'));
-    },
-    download() {
-      return `${this.exportName}.json`;
+      return omit(this.rowData, 'actions');
     },
   },
   methods: {
-    href() {
-      var data = TextLogHandler().exportDataFromJSON(
-        omit(this.rowData, 'actions'),
-        this.exportName,
-        null,
-      );
-      return `data:text/plain;charset=utf-8,${data}`;
+    handleExport() {
+      // Export row data using Blob (avoids data URI size limits)
+      downloadAsJson(this.dataForExport, this.exportName);
     },
   },
 };

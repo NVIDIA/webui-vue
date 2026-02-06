@@ -41,8 +41,8 @@
   </page-section>
 </template>
 <script>
-import PageSection from '@/components/Global/PageSection';
 import eventBus from '@/eventBus';
+import PageSection from '@/components/Global/PageSection';
 import BVToastMixin from '@/components/Mixins/BVToastMixin';
 
 export default {

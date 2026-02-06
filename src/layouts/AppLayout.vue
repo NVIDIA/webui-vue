@@ -22,6 +22,7 @@ import PageContainer from '@/components/Global/PageContainer';
 import ButtonBackToTop from '@/components/Global/ButtonBackToTop';
 import JumpLinkMixin from '@/components/Mixins/JumpLinkMixin';
 import eventBus from '@/eventBus';
+import { useSSEInit } from '@/api/composables/useSSEInit';
 
 export default {
   name: 'App',
@@ -32,6 +33,15 @@ export default {
     ButtonBackToTop,
   },
   mixins: [JumpLinkMixin],
+  setup() {
+    // Initialize SSE connection for real-time events
+    const sse = useSSEInit();
+
+    return {
+      sseStatus: sse.status,
+      sseIsConnected: sse.isConnected,
+    };
+  },
   data() {
     return {
       routerKey: 0,

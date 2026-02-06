@@ -1,5 +1,6 @@
 /// <reference types="vitest" />
 import { defineConfig, loadEnv } from 'vite';
+import { writeFileSync } from 'node:fs';
 import vue from '@vitejs/plugin-vue';
 import basicSsl from '@vitejs/plugin-basic-ssl';
 import svgLoader from 'vite-svg-loader';
@@ -7,6 +8,7 @@ import viteCompression from 'vite-plugin-compression';
 import { fileURLToPath, URL } from 'node:url';
 import path from 'node:path';
 import fs from 'node:fs';
+import https from 'node:https';
 
 // Plugin to remove crossorigin attribute from generated HTML
 // bmcweb doesn't return CORS headers for static files, which causes
@@ -17,6 +19,175 @@ function removeCrossorigin() {
     enforce: 'post',
     transformIndexHtml(html) {
       return html.replace(/ crossorigin/g, '');
+    },
+  };
+}
+
+/**
+ * Plugin to ensure /redfish paths are proxied directly to the BMC,
+ * bypassing Vite's SPA fallback which would otherwise serve index.html.
+ */
+function redfishProxyPlugin(baseUrl) {
+  return {
+    name: 'redfish-proxy',
+    configureServer(server) {
+      // Add middleware BEFORE Vite's internal middleware
+      // This runs before the SPA history fallback
+      server.middlewares.use((req, res, next) => {
+        if (!req.url?.startsWith('/redfish')) {
+          return next();
+        }
+
+        // Skip SSE endpoint - it's handled by a dedicated proxy with no timeout
+        if (req.url?.includes('/EventService/SSE')) {
+          return next();
+        }
+
+        // Parse the target URL
+        let targetUrl;
+        try {
+          targetUrl = new URL(baseUrl);
+        } catch {
+          console.error('[redfish-proxy] Invalid BASE_URL:', baseUrl);
+          return next();
+        }
+
+        // Build the proxy request options
+        const options = {
+          hostname: targetUrl.hostname,
+          port: targetUrl.port || 443,
+          path: req.url,
+          method: req.method,
+          headers: {
+            ...req.headers,
+            host: targetUrl.host,
+          },
+          rejectUnauthorized: false, // Allow self-signed certs
+        };
+
+        // Extract auth token from cookies
+        const cookies = req.headers.cookie;
+        if (cookies) {
+          const match = cookies.match(/X-Auth-Token=([^;]+)/);
+          if (match) {
+            options.headers['X-Auth-Token'] = match[1];
+          }
+        }
+
+        // Remove headers that shouldn't be forwarded
+        delete options.headers['x-forwarded-host'];
+        delete options.headers['x-forwarded-proto'];
+        delete options.headers['x-forwarded-port'];
+        delete options.headers['x-forwarded-for'];
+
+        // Create the proxy request
+        const proxyReq = https.request(options, (proxyRes) => {
+          // Remove HSTS header
+          delete proxyRes.headers['strict-transport-security'];
+
+          // Forward the response
+          res.writeHead(proxyRes.statusCode || 500, proxyRes.headers);
+          proxyRes.pipe(res);
+
+          // Handle errors during response streaming
+          proxyRes.on('error', (err) => {
+            console.error('[redfish-proxy] Response stream error:', err.message);
+            res.destroy();
+          });
+        });
+
+        proxyReq.on('error', (err) => {
+          console.error('[redfish-proxy] Error:', err.message);
+          // Only send error response if headers haven't been sent yet
+          if (!res.headersSent) {
+            res.writeHead(502);
+            res.end(`Proxy error: ${err.message}`);
+          } else {
+            // Headers already sent, just destroy the response to close the connection
+            res.destroy();
+          }
+        });
+
+        // Set a timeout on the proxy request (30 seconds)
+        proxyReq.setTimeout(30000, () => {
+          console.error('[redfish-proxy] Request timeout');
+          proxyReq.destroy(new Error('Request timeout'));
+        });
+
+        // Forward the request body
+        req.pipe(proxyReq);
+      });
+    },
+  };
+}
+
+// Plugin to track which src/api/ modules are included in the bundle
+function trackApiModules() {
+  const apiModules = new Set();
+
+  return {
+    name: 'track-api-modules',
+    moduleParsed(info) {
+      // Track modules from src/api/
+      if (info.id.includes('/src/api/')) {
+        // Normalize path to be relative to project root
+        const match = info.id.match(/src\/api\/.+/);
+        if (match) {
+          apiModules.add(match[0]);
+        }
+      }
+    },
+    generateBundle() {
+      if (apiModules.size > 0) {
+        const sorted = [...apiModules].sort();
+        writeFileSync(
+          'dist/api-modules-used.json',
+          JSON.stringify(sorted, null, 2),
+        );
+        console.log(`\n📊 API modules used: ${sorted.length}`);
+        console.log(`   Written to: dist/api-modules-used.json\n`);
+      }
+    },
+  };
+}
+
+/**
+ * Plugin to override default assets with environment-specific versions.
+ *
+ * When CUSTOM_STYLES is enabled, any asset imported from @/assets/ is checked
+ * for an env-specific override at src/env/assets/{envName}/... with the same
+ * relative path.  If the override exists it is used; otherwise the default
+ * asset is resolved normally.
+ *
+ * Example:
+ *   import Logo from '@/assets/images/logo-header.svg?component'
+ *   → resolves to src/env/assets/images/nvidia-vr/logo-header.svg
+ *     when VITE_ENV_NAME=nvidia-vr and that file exists.
+ */
+function envAssetOverrides(envName) {
+  const assetsDir = path.resolve(__dirname, 'src/assets');
+  const envAssetsDir = path.resolve(__dirname, `src/env/assets/${envName}`);
+
+  return {
+    name: 'env-asset-overrides',
+    enforce: 'pre',
+    resolveId(source) {
+      // Strip query params (e.g. ?component) to get the file path
+      const [filePath, ...queryParts] = source.split('?');
+      const query = queryParts.length ? '?' + queryParts.join('?') : '';
+
+      // Match imports under src/assets/ (already resolved from @/ alias)
+      if (!filePath.startsWith(assetsDir)) return null;
+
+      // Compute relative path from assets dir and check for env override
+      const relativePath = filePath.slice(assetsDir.length + 1);
+      const envPath = path.resolve(envAssetsDir, relativePath);
+
+      if (fs.existsSync(envPath)) {
+        return envPath + query;
+      }
+
+      return null;
     },
   };
 }
@@ -169,6 +340,12 @@ export default defineConfig(({ mode }) => {
   return {
     plugins: [
       versionInfoFallback(),
+      // Override default assets with env-specific versions (logo, etc.)
+      ...(hasCustomStyles && envName ? [envAssetOverrides(envName)] : []),
+      // Ensure /redfish paths bypass SPA fallback and proxy to BMC (dev only)
+      ...(mode !== 'production' && env.BASE_URL ? [redfishProxyPlugin(env.BASE_URL)] : []),
+      // Track API modules for build analysis (dev only)
+      ...(mode !== 'production' ? [trackApiModules()] : []),
       resolveDirectoryIndex(),
       vue(),
       svgLoader({
@@ -191,6 +368,17 @@ export default defineConfig(({ mode }) => {
 
     resolve: {
       alias: {
+        // In production, use the minimal dist endpoints file (committed to git)
+        // In development, prefer full file but fall back to dist if full doesn't exist
+        // NOTE: Specific aliases must come BEFORE the general '@' alias
+        ...(mode === 'production' ||
+        !fs.existsSync(fileURLToPath(new URL('./src/api/endpoints/redfish.gen.ts', import.meta.url)))
+          ? {
+              '@/api/endpoints/redfish.gen': fileURLToPath(
+                new URL('./src/api/endpoints/redfish.dist.ts', import.meta.url),
+              ),
+            }
+          : {}),
         '@': fileURLToPath(new URL('./src', import.meta.url)),
         ...customAliases,
       },
@@ -235,6 +423,39 @@ export default defineConfig(({ mode }) => {
         path: '/ws_hmr',
       },
       proxy: {
+        // SSE endpoint needs special handling - no timeout, no buffering
+        '/redfish/v1/EventService/SSE': {
+          target: env.BASE_URL,
+          changeOrigin: true,
+          secure: false,
+          // Disable proxy timeout for SSE (streaming connection)
+          timeout: 0,
+          proxyTimeout: 0,
+          configure: (proxy) => {
+            proxy.on('proxyReq', (proxyReq, req) => {
+              injectAuthToken(proxyReq, req);
+              // Remove headers that interfere with SSE
+              proxyReq.removeHeader('accept-encoding');
+              proxyReq.removeHeader('x-forwarded-host');
+              proxyReq.removeHeader('x-forwarded-proto');
+              proxyReq.removeHeader('x-forwarded-port');
+              proxyReq.removeHeader('x-forwarded-for');
+            });
+            proxy.on('proxyRes', (proxyRes, req, res) => {
+              removeHsts(proxyRes);
+              // Disable response buffering for SSE streaming
+              proxyRes.headers['x-accel-buffering'] = 'no';
+              proxyRes.headers['cache-control'] = 'no-cache';
+              // Remove content-encoding to prevent compression issues
+              delete proxyRes.headers['content-encoding'];
+              // Disable Node.js socket timeout
+              res.socket?.setTimeout(0);
+            });
+            proxy.on('error', (err, req, res) => {
+              console.error('[vite] SSE proxy error:', err.message);
+            });
+          },
+        },
         '/redfish': {
           target: env.BASE_URL,
           changeOrigin: true,
@@ -297,12 +518,34 @@ export default defineConfig(({ mode }) => {
           configure: (proxy) => {
             proxy.on('proxyRes', removeHsts);
             proxy.on('proxyReqWs', (proxyReq, req) => {
-              const cookies = req.headers.cookie;
-              if (cookies) {
-                const match = cookies.match(/X-Auth-Token=([^;]+)/);
-                if (match) {
-                  proxyReq.setHeader('X-Auth-Token', match[1]);
+              // Debug: log WebSocket connection details
+              console.log('[vite] /kvm WebSocket upgrade request to:', env.BASE_URL + req.url);
+              console.log('[vite] /kvm Sec-WebSocket-Protocol:', req.headers['sec-websocket-protocol'] ? 'present' : 'missing');
+
+              // Forward auth token from cookies to header
+              // bmcweb uses XSRF-TOKEN, other BMCs may use X-Auth-Token
+              const cookies = req.headers.cookie || '';
+              let authToken = null;
+
+              // Try XSRF-TOKEN first (bmcweb)
+              const xsrfMatch = cookies.match(/XSRF-TOKEN=([^;]+)/);
+              if (xsrfMatch) {
+                authToken = xsrfMatch[1];
+              }
+
+              // Fall back to X-Auth-Token cookie if present
+              if (!authToken) {
+                const xAuthMatch = cookies.match(/X-Auth-Token=([^;]+)/);
+                if (xAuthMatch) {
+                  authToken = xAuthMatch[1];
                 }
+              }
+
+              if (authToken) {
+                proxyReq.setHeader('X-Auth-Token', authToken);
+                console.log('[vite] /kvm X-Auth-Token header set from cookie');
+              } else {
+                console.log('[vite] /kvm No auth cookie found, relying on Sec-WebSocket-Protocol');
               }
             });
             proxy.on('error', (err) => {
@@ -318,13 +561,27 @@ export default defineConfig(({ mode }) => {
           configure: (proxy) => {
             proxy.on('proxyRes', removeHsts);
             proxy.on('proxyReqWs', (proxyReq, req) => {
-              // Forward the auth token from cookies for WebSocket connections
-              const cookies = req.headers.cookie;
-              if (cookies) {
-                const match = cookies.match(/X-Auth-Token=([^;]+)/);
-                if (match) {
-                  proxyReq.setHeader('X-Auth-Token', match[1]);
+              // Forward auth token from cookies to header
+              // bmcweb uses XSRF-TOKEN, other BMCs may use X-Auth-Token
+              const cookies = req.headers.cookie || '';
+              let authToken = null;
+
+              // Try XSRF-TOKEN first (bmcweb)
+              const xsrfMatch = cookies.match(/XSRF-TOKEN=([^;]+)/);
+              if (xsrfMatch) {
+                authToken = xsrfMatch[1];
+              }
+
+              // Fall back to X-Auth-Token cookie if present
+              if (!authToken) {
+                const xAuthMatch = cookies.match(/X-Auth-Token=([^;]+)/);
+                if (xAuthMatch) {
+                  authToken = xAuthMatch[1];
                 }
+              }
+
+              if (authToken) {
+                proxyReq.setHeader('X-Auth-Token', authToken);
               }
             });
             proxy.on('error', (err) => {
@@ -340,12 +597,27 @@ export default defineConfig(({ mode }) => {
           configure: (proxy) => {
             proxy.on('proxyRes', removeHsts);
             proxy.on('proxyReqWs', (proxyReq, req) => {
-              const cookies = req.headers.cookie;
-              if (cookies) {
-                const match = cookies.match(/X-Auth-Token=([^;]+)/);
-                if (match) {
-                  proxyReq.setHeader('X-Auth-Token', match[1]);
+              // Forward auth token from cookies to header
+              // bmcweb uses XSRF-TOKEN, other BMCs may use X-Auth-Token
+              const cookies = req.headers.cookie || '';
+              let authToken = null;
+
+              // Try XSRF-TOKEN first (bmcweb)
+              const xsrfMatch = cookies.match(/XSRF-TOKEN=([^;]+)/);
+              if (xsrfMatch) {
+                authToken = xsrfMatch[1];
+              }
+
+              // Fall back to X-Auth-Token cookie if present
+              if (!authToken) {
+                const xAuthMatch = cookies.match(/X-Auth-Token=([^;]+)/);
+                if (xAuthMatch) {
+                  authToken = xAuthMatch[1];
                 }
+              }
+
+              if (authToken) {
+                proxyReq.setHeader('X-Auth-Token', authToken);
               }
             });
             proxy.on('error', (err) => {
@@ -380,6 +652,8 @@ export default defineConfig(({ mode }) => {
       modulePreload: {
         polyfill: false,
       },
+      // Generate manifest for build analysis (dev only, not needed in production)
+      manifest: mode !== 'production',
       // Generate hashed filenames
       rollupOptions: {
         output: {

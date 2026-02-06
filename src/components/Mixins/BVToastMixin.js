@@ -102,12 +102,10 @@ const BVToastMixin = {
         const bodyText = Array.isArray(body)
           ? body.map((n) => n?.children || n).join('\n')
           : String(body);
-        /* eslint-disable no-console */
         console[variant === 'danger' ? 'error' : 'log'](
           `[toast:${variant}]`,
           bodyText,
         );
-        /* eslint-enable no-console */
       }
     },
     successToast(

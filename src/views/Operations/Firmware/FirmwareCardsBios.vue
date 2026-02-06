@@ -45,26 +45,32 @@
 
 <script>
 import PageSection from '@/components/Global/PageSection';
+import StatusIcon from '@/components/Global/StatusIcon';
+import { useFirmwareInventory } from '@/api/composables/useFirmwareInventory';
 
 export default {
-  components: { PageSection },
+  components: { PageSection, StatusIcon },
+  setup() {
+    const firmware = useFirmwareInventory();
+    return {
+      // Redfish SoftwareInventory models
+      ActiveBiosFirmware: firmware.ActiveBiosFirmware,
+      BackupBiosFirmware: firmware.BackupBiosFirmware,
+    };
+  },
   computed: {
-    running() {
-      return this.$store.getters['firmware/activeBiosFirmware'];
-    },
-    // TODO: Update the template to show an array of bmc images
+    // Use Redfish property names: Version, Status.Health
     backup() {
-      const biosFirmwares = this.$store.getters['firmware/backupBiosFirmware'];
-      return biosFirmwares && biosFirmwares[0] ? biosFirmwares[0] : null;
+      return this.BackupBiosFirmware || null;
     },
     runningVersion() {
-      return this.running && this.running.version ? this.running.version : '--';
+      return this.ActiveBiosFirmware?.Version || '--';
     },
     backupVersion() {
-      return this.backup && this.backup.version ? this.backup.version : '--';
+      return this.BackupBiosFirmware?.Version || '--';
     },
     backupStatus() {
-      return this.backup && this.backup.status ? this.backup.status : null;
+      return this.BackupBiosFirmware?.Status?.Health || null;
     },
     showBackupImageStatus() {
       return (

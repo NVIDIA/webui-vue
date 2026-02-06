@@ -1,7 +1,6 @@
 import { createStore } from 'vuex';
 
 import GlobalStore from './modules/GlobalStore';
-import AuthenticationStore from './modules/Authentication/AuthenticanStore';
 import SessionsStore from './modules/SecurityAndAccess/SessionsStore';
 import LdapStore from './modules/SecurityAndAccess/LdapStore';
 import UserManagementStore from './modules/SecurityAndAccess/UserManagementStore';
@@ -15,7 +14,6 @@ import NetworkStore from './modules/Settings/NetworkStore';
 import EventLogStore from './modules/Logs/EventLogStore';
 import SelLogStore from './modules/Logs/SelLogStore';
 import DumpsStore from './modules/Logs/DumpsStore';
-import SensorsStore from './modules/HardwareStatus/SensorsStore';
 import ServerLedStore from './modules/HardwareStatus/ServerLedStore';
 import SystemStore from './modules/HardwareStatus/SystemStore';
 import PowerSupplyStore from './modules/HardwareStatus/PowerSupplyStore';
@@ -43,7 +41,6 @@ const store = createStore({
   actions: {},
   modules: {
     global: GlobalStore,
-    authentication: AuthenticationStore,
     sessions: SessionsStore,
     dateTime: DateTimeStore,
     ldap: LdapStore,
@@ -58,7 +55,6 @@ const store = createStore({
     eventLog: EventLogStore,
     selLog: SelLogStore,
     dumps: DumpsStore,
-    sensors: SensorsStore,
     serverLed: ServerLedStore,
     snmpAlerts: SnmpAlertsStore,
     certificates: CertificatesStore,

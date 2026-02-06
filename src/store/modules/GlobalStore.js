@@ -8,12 +8,6 @@ const HOST_STATE = {
   diagnosticMode: 'xyz.openbmc_project.State.Host.HostState.DiagnosticMode',
 };
 
-const privilegesId = {
-  admin: 'Administrator',
-  operator: 'Operator',
-  readOnly: 'ReadOnly',
-};
-
 const serverStateMapper = (hostState) => {
   switch (hostState) {
     case HOST_STATE.on:
@@ -50,6 +44,8 @@ const GlobalStore = {
     system: null,
     chassisPath: null,
     lastPowerOperationTime: null,
+    // Cached Manager resource (for multiple lookups)
+    manager: null,
   },
   getters: {
     assetTag: (state) => state.system?.AssetTag || null,
@@ -72,6 +68,7 @@ const GlobalStore = {
     locationIndicatorActive: (state) => state.system?.LocationIndicatorActive || null,
     lastPowerOperationTime: (state) => state.lastPowerOperationTime,
     manufacturer: (state) => state.system?.Manufacturer || null,
+    manager: (state) => state.manager,
   },
   mutations: {
     setServiceRoot: (state, serviceRoot) => {
@@ -97,6 +94,7 @@ const GlobalStore = {
     setSystem: (state, system) => (state.system = system),
     setLastPowerOperationTime: (state, lastPowerOperationTime) => 
       (state.lastPowerOperationTime = lastPowerOperationTime),
+    setManager: (state, manager) => (state.manager = manager),
   },
   actions: {
     async fetchServiceRoot({ commit }) {
@@ -185,6 +183,15 @@ const GlobalStore = {
       }
       return state.bmcPath;
     },
+    async getManagerProvidingService({ state, commit, dispatch }) {
+      // Return cached Manager if available
+      if (state.manager) {
+        return state.manager;
+      }
+      const manager = await api.get(`${await dispatch('getBmcPath')}`);
+      commit('setManager', manager);
+      return manager;
+    },
     async getSystemPath({ state, commit, dispatch }) {
       // Ensure serviceRoot is available
       if (!state.serviceRoot) await dispatch('fetchServiceRoot');
@@ -220,6 +227,9 @@ const GlobalStore = {
       commit('setChassisPath', chassisPath);
       return chassisPath;
     },
+    async getManagedSystem({ dispatch }) {
+      return api.get(`${await dispatch('getSystemPath')}`);
+    },
     async getSystemInfo({ commit, dispatch, state }) {
       if (!state.systemPath) await dispatch('getSystemPath');
       return api
@@ -243,6 +253,6 @@ const GlobalStore = {
     },
   },
 };
-export { GlobalStore, serverStateMapper, privilegesId };
+export { GlobalStore, serverStateMapper };
 
 export default GlobalStore;

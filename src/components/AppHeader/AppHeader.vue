@@ -6,10 +6,10 @@
         href="#main-content"
         @click="setFocus"
       >
-        {{ $t('appHeader.skipToContent') }}
+        {{ t('appHeader.skipToContent') }}
       </a>
 
-      <b-navbar type="dark" :aria-label="$t('appHeader.applicationHeader')">
+      <b-navbar type="dark" :aria-label="t('appHeader.applicationHeader')">
         <!-- Left aligned nav items -->
         <b-button
           id="app-header-trigger"
@@ -22,11 +22,11 @@
         >
           <icon-close
             v-if="isNavigationOpen"
-            :title="$t('appHeader.titleHideNavigation')"
+            :title="t('appHeader.titleHideNavigation')"
           />
           <icon-menu
             v-if="!isNavigationOpen"
-            :title="$t('appHeader.titleShowNavigation')"
+            :title="t('appHeader.titleShowNavigation')"
           />
         </b-button>
         <b-navbar-nav>
@@ -39,45 +39,24 @@
           </b-navbar-brand>
           <div v-if="isNavTagPresent" :key="routerKey" class="ps-2 nav-tags">
             <span>|</span>
-            <span class="ps-3 asset-tag">{{ assetTag }}</span>
-            <span class="ps-3">{{ modelType }}</span>
-            <span class="ps-3">{{ serialNumber }}</span>
+            <span class="ps-3 asset-tag">{{ AssetTag }}</span>
+            <span class="ps-3">{{ Model }}</span>
+            <span class="ps-3">{{ SerialNumber }}</span>
           </div>
         </b-navbar-nav>
         <!-- Right aligned nav items -->
         <b-navbar-nav class="ms-auto helper-menu">
-          <b-nav-item
-            to="/logs/event-logs"
-            data-test-id="appHeader-container-health"
-          >
-            <status-icon :status="healthStatusIcon" />
-            {{ $t('appHeader.health') }}
-          </b-nav-item>
-          <b-nav-item
-            to="/operations/server-power-operations"
-            data-test-id="appHeader-container-power"
-          >
-            <span id="tooltip-target-power">
-              <power-icon :status="powerStateIcon" />
-              {{ $t('appHeader.power') }}
-            </span>
-            <b-tooltip target="tooltip-target-power" triggers="hover">
-              <div>
-                {{
-                  $t('pageServerPowerOperations.powerState') +
-                  ' : ' +
-                  powerState
-                }}
-              </div>
-              <div>
-                {{
-                  $t('pageServerPowerOperations.systemStatus') +
-                  ' : ' +
-                  (serverStatus && serverStatus.State ? serverStatus.State : '')
-                }}
-              </div>
-            </b-tooltip>
-          </b-nav-item>
+          <!-- SSE Status Indicator (only shows when not connected) -->
+          <li class="nav-item d-flex align-items-center">
+            <s-s-e-status-indicator />
+          </li>
+
+          <!-- Health Rollup Icon with tooltip -->
+          <health-rollup-icon />
+
+          <!-- Power State Icon with dropdown -->
+          <power-state-icon />
+
           <!-- Redfish Logger button - Red when recording, Gray when not -->
           <li v-if="isRedfishLoggerFeatureEnabled" class="nav-item">
             <b-button
@@ -85,14 +64,16 @@
               variant="link"
               data-test-id="appHeader-button-redfishLogger"
               :class="{ 'recording': isLoggingEnabled }"
+              :title="isLoggingEnabled ? t('appHeader.clickToStopRecording') : t('appHeader.clickToStartRecording')"
               @click="toggleLogging"
-              :title="isLoggingEnabled ? $t('appHeader.clickToStopRecording') : $t('appHeader.clickToStartRecording')"
             >
-              <icon-recording v-if="isLoggingEnabled" class="recording-icon" :title="$t('appHeader.recording')" />
-              <icon-recording-filled v-else class="not-recording-icon" :title="$t('appHeader.notRecording')" />
-              <span class="responsive-text">{{ $t('appHeader.redfishLogger') }}</span>
+              <icon-recording v-if="isLoggingEnabled" class="recording-icon" :title="t('appHeader.recording')" />
+              <icon-recording-filled v-else class="not-recording-icon" :title="t('appHeader.notRecording')" />
+              <span class="responsive-text">{{ t('appHeader.redfishLogger') }}</span>
             </b-button>
           </li>
+
+          <!-- Refresh button -->
           <li class="nav-item">
             <b-button
               id="app-header-refresh"
@@ -100,34 +81,13 @@
               data-test-id="appHeader-button-refresh"
               @click="refresh"
             >
-              <icon-renew :title="$t('appHeader.titleRefresh')" />
-              <span class="responsive-text">{{ $t('appHeader.refresh') }}</span>
+              <icon-renew :title="t('appHeader.titleRefresh')" />
+              <span class="responsive-text">{{ t('appHeader.refresh') }}</span>
             </b-button>
           </li>
-          <li class="nav-item">
-            <b-dropdown
-              id="app-header-user"
-              variant="link"
-              right
-              data-test-id="appHeader-container-user"
-            >
-              <template #button-content>
-                <icon-avatar :title="$t('appHeader.titleProfile')" />
-                <span class="responsive-text">{{ username }}</span>
-              </template>
-              <b-dropdown-item
-                to="/profile-settings"
-                data-test-id="appHeader-link-profile"
-                >{{ $t('appHeader.profileSettings') }}
-              </b-dropdown-item>
-              <b-dropdown-item
-                data-test-id="appHeader-link-logout"
-                @click="logout"
-              >
-                {{ $t('appHeader.logOut') }}
-              </b-dropdown-item>
-            </b-dropdown>
-          </li>
+
+          <!-- User Menu with dropdown -->
+          <user-menu />
         </b-navbar-nav>
       </b-navbar>
     </header>
@@ -135,149 +95,118 @@
   </div>
 </template>
 
-<script>
-import BVToastMixin from '@/components/Mixins/BVToastMixin';
-import IconAvatar from '@carbon/icons-vue/es/user--avatar/20';
+<script setup lang="ts">
+import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue';
+import { storeToRefs } from 'pinia';
+import { useI18n } from 'vue-i18n';
+import { useToast } from 'bootstrap-vue-next';
+
 import IconClose from '@carbon/icons-vue/es/close/20';
 import IconMenu from '@carbon/icons-vue/es/menu/20';
 import IconRenew from '@carbon/icons-vue/es/renew/20';
 import IconRecording from '@carbon/icons-vue/es/recording/20';
 import IconRecordingFilled from '@carbon/icons-vue/es/recording--filled/20';
-import StatusIcon from '@/components/Global/StatusIcon';
-import PowerIcon from '@/components/Global/PowerIcon';
-import LoadingBar from '@/components/Global/LoadingBar';
+
+import LoadingBar from '@/components/Global/LoadingBar.vue';
 import LogoHeader from '@/assets/images/logo-header.svg?component';
-import { mapState, mapGetters, mapActions } from 'vuex';
-import i18n from '@/i18n';
 import eventBus from '@/eventBus';
+import { useAuthStore } from '@/stores/auth';
+import { useGlobalStore } from '@/stores/global';
+import { useEventLog } from '@/api/composables/useEventLog';
+import { useStore } from 'vuex';
 
-export default {
-  name: 'AppHeader',
-  components: {
-    IconAvatar,
-    IconClose,
-    IconMenu,
-    IconRenew,
-    IconRecording,
-    IconRecordingFilled,
-    StatusIcon,
-    PowerIcon,
-    LoadingBar,
-    LogoHeader,
-  },
-  mixins: [BVToastMixin],
-  props: {
-    routerKey: {
-      type: Number,
-      default: 0,
-    },
-  },
-  emits: ['refresh'],
-  data() {
-    return {
-      isNavigationOpen: false,
-      altLogo: import.meta.env.VITE_COMPANY_NAME || 'Built on OpenBMC',
-    };
-  },
-  computed: {
-    ...mapState('authentication', ['consoleWindow']),
-    ...mapGetters('global', ['assetTag', 'modelType', 'serialNumber', 'isAuthorized',
-     'userPrivilege', 'serverStatus', 'powerState', 'username', 'healthStatus']),
-    ...mapGetters('redfishLogger', {
-      isRedfishLoggerFeatureEnabled: 'isFeatureEnabled',
-      isLoggingEnabled: 'isLoggingEnabled',
-      isLoggerVisible: 'isLoggerVisible',
-    }),
-    isNavTagPresent() {
-      return this.assetTag || this.modelType || this.serialNumber;
-    },
-    powerStateIcon() {
-      switch (this.powerState) {
-        case 'On':
-        case 'PoweringOff':
-          return 'on';
-        case 'PoweringOn':
-          return 'on blink';
-        case 'Paused':
-          return 'on blink 1Hz';
-        case 'Off':
-          return 'off';
-        case 'Secondary':
-        default:
-          return 'secondary';
-      }
-    },
-    healthStatusIcon() {
-      switch (this.healthStatus) {
-        case 'OK':
-          return 'success';
-        case 'Warning':
-          return 'warning';
-        case 'Critical':
-          return 'danger';
-        default:
-          return 'secondary';
-      }
-    },
-  },
-  watch: {
-    consoleWindow() {
-      if (this.consoleWindow === false && this.$eventBus && this.$eventBus.$consoleWindow) {
-        this.$eventBus.$consoleWindow.close();
-      }
-    },
-    isAuthorized(value) {
-      if (value === false) {
-        this.errorToast(i18n.global.t('global.toast.unAuthDescription'), {
-          title: i18n.global.t('global.toast.unAuthTitle'),
-        });
-      }
-    },
-  },
-  created() {
-    // Reset auth state to check if user is authenticated based
-    // on available browser cookies
-    this.$store.dispatch('authentication/resetStoreState');
-    this.getSystemInfo();
-    this.getHealthStatus();
-    this.getEvents();
+// Sub-components
+import HealthRollupIcon from './HealthRollupIcon.vue';
+import PowerStateIcon from './PowerStateIcon.vue';
+import UserMenu from './UserMenu.vue';
+import SSEStatusIndicator from '@/components/Global/SSEStatusIndicator.vue';
 
-  },
-  mounted() {
-    this.navigationOpenHandler = (isNavigationOpen) => {
-      this.isNavigationOpen = isNavigationOpen;
-    };
-    eventBus.$on('change-is-navigation-open', this.navigationOpenHandler);
-  },
-  beforeUnmount() {
-    eventBus.$off('change-is-navigation-open', this.navigationOpenHandler);
-  },
-  methods: {
-    getHealthStatus() {
-      this.$store.dispatch('global/fetchHealthStatus');
-    },
-    getSystemInfo() {
-      this.$store.dispatch('global/getSystemInfo');
-    },
-    getEvents() {
-      this.$store.dispatch('eventLog/getLogData');
-    },
-    refresh() {
-      this.$emit('refresh');
-    },
-    logout() {
-      this.$store.dispatch('authentication/logout');
-    },
-    toggleNavigation() {
-      eventBus.$emit('toggle-navigation');
-    },
-    setFocus(event) {
-      event.preventDefault();
-      eventBus.$emit('skip-navigation');
-    },
-    ...mapActions('redfishLogger', ['toggleLogging']),
-  },
-};
+// Props
+defineProps<{
+  routerKey?: number;
+}>();
+
+// Emits
+const emit = defineEmits<{
+  refresh: [];
+}>();
+
+// Composables
+const { t } = useI18n();
+const toast = useToast();
+const authStore = useAuthStore();
+const store = useStore();
+
+// Global Store - Managed System (AssetTag, Model, SerialNumber)
+const globalStore = useGlobalStore();
+const { AssetTag, Model, SerialNumber } = storeToRefs(globalStore);
+
+// Vue Query - Event Log (for refresh)
+const { refetch: refetchEventLog } = useEventLog();
+
+// Redfish Logger (Vuex store)
+const isRedfishLoggerFeatureEnabled = computed(() => store.getters['redfishLogger/isFeatureEnabled']);
+const isLoggingEnabled = computed(() => store.getters['redfishLogger/isLoggingEnabled']);
+function toggleLogging() {
+  store.dispatch('redfishLogger/toggleLogging');
+}
+
+// Reactive state
+const isNavigationOpen = ref(false);
+
+// Vendor branding from environment
+const altLogo =
+  import.meta.env.VITE_COMPANY_NAME || 'Built on OpenBMC';
+
+// Computed - Auth store (replaced Vuex getters)
+const consoleWindow = computed(() => authStore.consoleWindow);
+
+// Computed - Nav tags presence
+const isNavTagPresent = computed(
+  () => AssetTag.value || Model.value || SerialNumber.value,
+);
+
+// Watchers
+watch(consoleWindow, (value) => {
+  if (value === false) {
+    eventBus.$consoleWindow?.close();
+  }
+});
+
+// Methods
+function handleNavigationChange(navigationOpen: unknown) {
+  isNavigationOpen.value = navigationOpen as boolean;
+}
+
+function refresh() {
+  // Refetch system data via Vue Query
+  globalStore.refetch();
+  // Refetch event log data via Vue Query
+  refetchEventLog();
+  emit('refresh');
+}
+
+function toggleNavigation() {
+  eventBus.$emit('toggle-navigation');
+}
+
+function setFocus(event: Event) {
+  event.preventDefault();
+  eventBus.$emit('skip-navigation');
+}
+
+// Lifecycle - reset auth store state on mount
+authStore.resetStoreState();
+
+// Lifecycle - mounted
+onMounted(() => {
+  eventBus.$on('change-is-navigation-open', handleNavigationChange);
+});
+
+// Lifecycle - beforeUnmount
+onBeforeUnmount(() => {
+  eventBus.$off('change-is-navigation-open', handleNavigationChange);
+});
 </script>
 
 <style lang="scss">

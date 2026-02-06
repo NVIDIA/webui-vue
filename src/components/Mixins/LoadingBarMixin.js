@@ -18,7 +18,7 @@ const LoadingBarMixin = {
       this.loading = true;
     },
     startLoader() {
-      eventBus.$emit('loader-start', [0, 100]);
+      eventBus.$emit('loader-start');
       this.loading = true;
     },
     endLoader() {

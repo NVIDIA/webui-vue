@@ -41,8 +41,8 @@
 </template>
 
 <script>
-import BVToastMixin from '@/components/Mixins/BVToastMixin';
 import eventBus from '@/eventBus';
+import BVToastMixin from '@/components/Mixins/BVToastMixin';
 import LoadingBarMixin from '@/components/Mixins/LoadingBarMixin';
 import IconAdd from '@carbon/icons-vue/es/add--alt/20';
 import IconEdit from '@carbon/icons-vue/es/edit/20';

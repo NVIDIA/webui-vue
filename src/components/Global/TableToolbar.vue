@@ -10,12 +10,12 @@
           <b-button
             v-for="(action, index) in actions"
             :key="index"
+            v-b-tooltip.hover
             :data-test-id="`table-button-${action.value}Selected`"
             :disabled="!action.enabled"
             :title="action.hover"
             variant="primary"
             class="d-block"
-            v-b-tooltip.hover
             @click="$emit('batch-action', action.value)"
           >
             {{ action.label }}
@@ -33,8 +33,15 @@
   </transition>
 </template>
 
-<script>
-export default {
+<script lang="ts">
+import { defineComponent, type PropType, type SlotsType } from 'vue';
+
+interface TableToolbarAction {
+  value: string;
+  label: string;
+}
+
+export default defineComponent({
   name: 'TableToolbar',
   props: {
     selectedItemsCount: {
@@ -42,19 +49,14 @@ export default {
       required: true,
     },
     actions: {
-      type: Array,
+      type: Array as PropType<TableToolbarAction[]>,
       default: () => [],
-      validator: (prop) => {
-        return prop.every((action) => {
-          return (
-            Object.prototype.hasOwnProperty.call(action, 'value') &&
-            Object.prototype.hasOwnProperty.call(action, 'label')
-          );
-        });
-      },
     },
   },
   emits: ['batch-action', 'clear-selected'],
+  slots: Object as SlotsType<{
+    'toolbar-buttons'?: () => unknown;
+  }>,
   data() {
     return {
       isToolbarActive: false,
@@ -69,7 +71,7 @@ export default {
       }
     },
   },
-};
+});
 </script>
 
 <style lang="scss" scoped>
@@ -88,10 +90,9 @@ $toolbar-height: 46px;
   // Use CSS variable for theme-ability, with Bootstrap primary as fallback
   background-color: var(--colors-brand, #{theme-color('primary')});
   color: $white;
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 0;
+  // Keep the toolbar in normal document flow so it doesn't overlap
+  // content above (e.g., the Sensors controls row).
+  position: relative;
   display: flex;
   flex-direction: row;
   justify-content: space-between;

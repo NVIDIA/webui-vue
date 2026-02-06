@@ -24,11 +24,37 @@ yarn-error.log*
 *.sw?
 .env
 
-# OpenAPI schema - downloaded from npm install
-src/api/schema/openapi.yaml
-mcp/cache/schema-index.json
-mcp/pid/mcp.log
-mcp/pid/mcp.pid
+# Version info - generated from package.json
 scripts/generate-version-info.js
-
 src/env/version-info.js
+
+# OpenAPI schema - downloaded from npm install
+src/api/schema/
+src/api/registries/
+
+# Generated API files (Orval)
+# Full files are generated locally, only minimal dist file is committed
+# See docs/guide/quickstart/api-client.md for details
+src/api/model/*
+!src/api/model/AccountService.ts
+!src/api/model/ActionInfoParameters.ts
+!src/api/model/ComputerSystemResetRequestBody.ts
+!src/api/model/Event.ts
+!src/api/model/EventRecord.ts
+!src/api/model/LogEntry.ts
+!src/api/model/MetricReport.ts
+!src/api/model/ResourceHealth.ts
+!src/api/model/ResourcePowerState.ts
+!src/api/model/ResourceResetType.ts
+!src/api/model/Role.ts
+!src/api/model/Sensor.ts
+!src/api/model/ServiceRoot.ts
+!src/api/model/Session.ts
+!src/api/model/SoftwareInventory.ts
+!src/api/model/Task.ts
+!src/api/model/UpdateService.ts
+src/api/endpoints/redfish.gen.ts
+# Barrel exports are dev-only - use explicit import paths instead
+src/api/index.ts
+# Keep the dist file - it's small and enables fast CI builds
+!src/api/endpoints/redfish.dist.ts

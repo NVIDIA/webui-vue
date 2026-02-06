@@ -5,12 +5,13 @@
     "type": "module",
     "description": "OpenBMC Web UI using the Vue.js front-end framework",
     "scripts": {
+        "check-api": "node scripts/check-api-generated.js",
         "dev": "vite --mode development",
         "serve": "vite --mode development",
         "prebuild": "node scripts/generate-version-info.cjs",
         "build": "vite build",
         "preview": "vite preview",
-        "lint": "eslint src",
+        "lint": "eslint src scripts",
         "i18n:report": "vue-i18n-extract report --vueFiles './src/**/*.?(js|vue)' --languageFiles './src/locales/**/*.json'",
         "test": "vitest run",
         "test:unit": "vitest run",
@@ -18,17 +19,21 @@
         "test:coverage": "vitest run --coverage",
         "docs:build": "vuepress build docs",
         "docs:serve": "vuepress dev docs",
-        "postinstall": "node ./scripts/api/schema/download-openapi.cjs && node mcp/init-schema.cjs",
         "generate-version": "node scripts/generate-version-info.cjs",
         "validate-translations": "node scripts/validate-translations.cjs",
-        "mcp": "node mcp/mcp-server.cjs",
-        "mcp:start": "./scripts/start_mcp_server.sh",
-        "mcp:stop": "./scripts/stop_mcp_server.sh",
+        "schema:setup": "npm run schema:download && npm run schema:bundle && npm run generate-api",
+        "schema:download": "npx tsx scripts/api/download-openapi.ts",
+        "schema:bundle": "npx redocly bundle src/api/schema/openapi.yaml --ext json -o src/api/schema/openapi.json",
+        "schema:preprocess": "npx tsx scripts/api/preprocess-schema.ts",
+        "generate-api": "node scripts/api/generate-api.js",
+        "generate-api:dist": "npx tsx scripts/api/generate-dist-endpoints.ts",
         "prepare": "simple-git-hooks"
     },
     "dependencies": {
         "@carbon/icons-vue": "10.49.1",
         "@novnc/novnc": "1.3.0",
+        "@tanstack/vue-query": "5.92.8",
+        "@tanstack/vue-table": "8.21.3",
         "@vuelidate/core": "2.0.3",
         "@vuelidate/validators": "2.0.4",
         "@xterm/addon-attach": "0.12.0",
@@ -44,12 +49,18 @@
         "js-cookie": "3.0.1",
         "lodash": "4.17.21",
         "mitt": "3.0.1",
+        "pinia": "3.0.4",
         "vue": "3.5.24",
         "vue-i18n": "11.2.8",
         "vue-router": "4.6.3",
         "vuex": "4.1.0"
     },
     "devDependencies": {
+        "@redocly/cli": "2.15.1",
+        "@types/js-cookie": "3.0.6",
+        "@types/node": "25.0.3",
+        "@types/pluralize": "0.0.33",
+        "@typescript-eslint/parser": "8.53.1",
         "@vitejs/plugin-basic-ssl": "2.1.3",
         "@vitejs/plugin-vue": "5.2.4",
         "@vitest/coverage-v8": "3.2.4",
@@ -66,9 +77,13 @@
         "js-yaml": "^4.1.0",
         "jsdom": "26.1.0",
         "lint-staged": "16.0.0",
+        "orval": "7.19.0",
+        "pluralize": "8.0.0",
         "prettier": "3.4.2",
         "sass": "1.97.2",
         "simple-git-hooks": "2.13.1",
+        "tsx": "4.21.0",
+        "typescript": "5.9.3",
         "vite": "6.4.1",
         "vite-plugin-compression": "0.5.1",
         "vite-svg-loader": "5.1.0",
@@ -78,10 +93,10 @@
         "vuepress": "1.9.7"
     },
     "engines": {
-        "node": ">=18.18.0"
+        "node": ">=22.16.0"
     },
     "lint-staged": {
-        "*.{js,vue}": [
+        "*.{js,vue,ts}": [
             "eslint --fix"
         ],
         "*.md": [
@@ -89,7 +104,7 @@
         ]
     },
     "simple-git-hooks": {
-        "pre-commit": "npx lint-staged"
+        "pre-commit": "npx lint-staged && [ -f scripts/pre-commit-api.js ] && node scripts/pre-commit-api.js || true"
     },
     "tasks": [
         {

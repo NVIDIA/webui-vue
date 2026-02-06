@@ -216,6 +216,7 @@
 </template>
 
 <script>
+import eventBus from '@/eventBus';
 import PageTitle from '@/components/Global/PageTitle';
 import PageSection from '@/components/Global/PageSection';
 import BVToastMixin from '@/components/Mixins/BVToastMixin';
@@ -223,8 +224,10 @@ import BootSettings from './BootSettings';
 import LoadingBarMixin from '@/components/Mixins/LoadingBarMixin';
 import Alert from '@/components/Global/Alert';
 import InfoTooltip from '@/components/Global/InfoTooltip';
-import { privilegesId } from '@/store/modules/GlobalStore';
 import { mapGetters } from 'vuex';
+import i18n from '@/i18n';
+import { useModal } from 'bootstrap-vue-next';
+import { useSessionPrivileges } from '@/api/composables/useSessionPrivileges';
 
 export default {
   name: 'ServerPowerOperations',
@@ -234,6 +237,11 @@ export default {
     this.hideLoader();
     next();
   },
+  setup() {
+    const bvModal = useModal();
+    const privileges = useSessionPrivileges();
+    return { bvModal, privileges };
+  },
   data() {
     return {
       selectedResetType: null,
@@ -242,9 +250,9 @@ export default {
     };
   },
   computed: {
-    ...mapGetters('global', ['userPrivilege']),
     isButtonDisable() {
-      return this.userPrivilege === privilegesId.readOnly;
+      // Disable if user lacks ConfigureComponents privilege (needed for power operations)
+      return !this.privileges.includes('ConfigureComponents');
     },
     // Debug property - comment out in production
     /*
@@ -486,18 +494,6 @@ export default {
       return recommendations.find(op => availableResetTypes.includes(op)) || null;
     },
   },
-  created() {
-    this.startLoader();
-    Promise.all([
-      this.$store.dispatch('global/getSystemInfo'),
-      this.$store.dispatch('serverBootSettings/getBootSettings'),
-      this.$store.dispatch('controls/fetchSystemActions')
-    ]).finally(() => {
-      this.endLoader();
-      // After data is loaded, select the recommended operation
-      this.autoSelectRecommendedOperation();
-    });
-  },
   watch: {
     // Watch for changes in recommendedOperation 
     // (which happens when reset types or power state changes)
@@ -529,6 +525,21 @@ export default {
         });
       }
     }
+  },
+  created() {
+    this.startLoader();
+    const bootSettingsPromise = new Promise((resolve) => {
+      eventBus.$once('server-power-operations-boot-settings-complete', resolve);
+    });
+    Promise.all([
+      this.$store.dispatch('global/getSystemInfo'),
+      this.$store.dispatch('serverBootSettings/getBootSettings'),
+      this.$store.dispatch('controls/fetchSystemActions')
+    ]).finally(() => {
+      this.endLoader();
+      // After data is loaded, select the recommended operation
+      this.autoSelectRecommendedOperation();
+    });
   },
   methods: {
     executeReset() {

@@ -52,6 +52,7 @@
 </template>
 
 <script>
+import eventBus from '@/eventBus';
 import { mapState } from 'vuex';
 import BVToastMixin from '@/components/Mixins/BVToastMixin';
 import LoadingBarMixin from '@/components/Mixins/LoadingBarMixin';
@@ -122,6 +123,13 @@ export default {
         oneTimeBoot: {},
       },
     };
+  },
+  created() {
+    this.$store
+      .dispatch('serverBootSettings/getBootSettings')
+      .finally(() =>
+        eventBus.$emit('server-power-operations-boot-settings-complete'),
+      );
   },
   methods: {
     handleSubmit() {

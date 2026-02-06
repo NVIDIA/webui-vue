@@ -31,8 +31,7 @@
         <b-button
           variant="primary"
           :disabled="allLogs.length === 0"
-          :download="exportFileNameByDate()"
-          @click="href()"
+          @click="handleExportAll"
         >
           <icon-export />
           {{ $t('pagePostCodeLogs.button.exportAll') }}
@@ -176,6 +175,7 @@ import IconDelete from '@carbon/icons-vue/es/trash-can/20';
 import IconDownload from '@carbon/icons-vue/es/download/20';
 import IconExport from '@carbon/icons-vue/es/document--export/20';
 import { omit } from 'lodash';
+import { downloadAsJson, downloadBlob } from '@/utilities/exportUtils';
 import PageTitle from '@/components/Global/PageTitle';
 import Search from '@/components/Global/Search';
 import TableCellCount from '@/components/Global/TableCellCount';
@@ -185,7 +185,6 @@ import TableToolbar from '@/components/Global/TableToolbar';
 import TableToolbarExport from '@/components/Global/TableToolbarExport';
 import LoadingBarMixin from '@/components/Mixins/LoadingBarMixin';
 import TableFilterMixin from '@/components/Mixins/TableFilterMixin';
-import { TextLogHandler } from '@/store/modules/Logs/TextLogHandler';
 import BVPaginationMixin, {
   currentPage,
   perPage,
@@ -328,17 +327,18 @@ export default {
     });
   },
   methods: {
+    handleExportAll() {
+      // Export all logs using Blob (avoids data URI size limits)
+      const logsToExport = this.$store.getters['postCodeLogs/allPostCodes'].map(
+        (postCode) => omit(postCode, ['actions']),
+      );
+      downloadAsJson(logsToExport, this.exportFileNameByDate());
+    },
     onRowAction(action, item) {
       if (action === 'download') {
         this.$store
           .dispatch('postCodeLogs/downloadEntry', item.uri)
-          .then((blob) => {
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.download = this.exportFileNameByDate('download');
-            link.click();
-            URL.revokeObjectURL(link.href);
-          })
+          .then((blob) => downloadBlob(blob, this.exportFileNameByDate('download')))
           .catch(({ message }) => this.errorToast(message));
       }
     },
@@ -359,26 +359,6 @@ export default {
           .then((message) => this.successToast(message))
           .catch(({ message }) => this.errorToast(message));
       }
-    },
-    exportAllLogsString() {
-      {
-        return this.$store.getters['postCodeLogs/allPostCodes'].map(
-          (postCodes) => {
-            const allLogsString = JSON.stringify(postCodes);
-            return allLogsString;
-          },
-        );
-      }
-    },
-    exportAllLogs() {
-      return this.$store.getters['postCodeLogs/allPostCodes'];
-    },
-    href() {
-      TextLogHandler().exportDataFromJSON(
-        this.exportAllLogs(),
-        this.exportFileNameByDate(null),
-        null,
-      );
     },
     onFilterChange({ activeFilters }) {
       this.activeFilters = activeFilters;

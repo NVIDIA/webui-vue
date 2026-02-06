@@ -1,4 +1,7 @@
 import { createApp } from 'vue';
+import { createPinia } from 'pinia';
+import { VueQueryPlugin, useQueryClient } from '@tanstack/vue-query';
+import { setQueryClient } from '@/api/mutator/axios-instance';
 
 import App from './App.vue';
 import i18n from './i18n';
@@ -77,6 +80,9 @@ import {
 
 const app = createApp(App);
 
+// Create Pinia instance for modern state management (SSE store)
+const pinia = createPinia();
+
 // Note: We register only the components/directives we need
 
 // Use createBootstrap for all bootstrap-vue-next plugins in 0.40.7+
@@ -145,7 +151,17 @@ app.directive('b-modal', vBModal);
 
 app.use(i18n);
 app.use(router);
+app.use(pinia);
 app.use(store);
+app.use(VueQueryPlugin);
+
+// Connect the Vue Query client to the Axios instance so that all Redfish GET
+// responses (including bare get*() calls) populate the Vue Query cache.
+// This enables SSE-driven cache invalidation for every Redfish read.
+app.runWithContext(() => {
+  setQueryClient(useQueryClient());
+});
+
 app.use(ToastPlugin);
 
 app.config.globalProperties.$eventBus = eventBus;

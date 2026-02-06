@@ -27,6 +27,7 @@
 <script>
 import OverviewCard from './OverviewCard';
 import DataFormatterMixin from '@/components/Mixins/DataFormatterMixin';
+import { useFirmwareInventory } from '@/api/composables/useFirmwareInventory';
 
 export default {
   name: 'Firmware',
@@ -34,6 +35,15 @@ export default {
     OverviewCard,
   },
   mixins: [DataFormatterMixin],
+  setup() {
+    const firmware = useFirmwareInventory();
+
+    return {
+      ActiveBmcFirmware: firmware.ActiveBmcFirmware,
+      BackupBmcFirmware: firmware.BackupBmcFirmware,
+      firmwareLoading: firmware.isLoading,
+    };
+  },
   computed: {
     showBackup() {
       return (
@@ -44,35 +54,30 @@ export default {
     showBios() {
       return !!this.firmwareVersion;
     },
-    // TODO: Update the template to show an array of bmc images
-    backupBmcFirmware() {
-      const backupFirmwares =
-        this.$store.getters['firmware/backupBmcFirmware'];
-      return backupFirmwares && backupFirmwares[0] ? backupFirmwares[0] : null;
+    server() {
+      return this.$store.state.system.systems[0];
     },
     backupVersion() {
-      return this.backupBmcFirmware && this.backupBmcFirmware.version ? this.backupBmcFirmware.version : null;
-    },
-    activeBmcFirmware() {
-      return this.$store.getters['firmware/activeBmcFirmware'];
-    },
-    activeBiosFirmware() {
-      return this.$store.getters['firmware/activeBiosFirmware'];
+      return this.BackupBmcFirmware?.Version;
     },
     firmwareVersion() {
-      if (import.meta.env.VITE_ENV_NAME === 'nvidia-bluefield') {
-        return this.activeBiosFirmware?.version;
-      }
-      return this.activeBiosFirmware?.version;
+      return this.server?.firmwareVersion;
     },
     runningVersion() {
-      return this.activeBmcFirmware && this.activeBmcFirmware.version ? this.activeBmcFirmware.version : null;
+      return this.ActiveBmcFirmware?.Version;
     },
   },
   created() {
-    this.$store.dispatch('firmware/getFirmwareInformation').finally(() => {
-      this.$eventBus.$emit('overview-firmware-complete');
-    });
+    // Watch for loading completion and emit event
+    this.$watch(
+      'firmwareLoading',
+      (loading) => {
+        if (!loading) {
+          this.$eventBus.$emit('overview-firmware-complete');
+        }
+      },
+      { immediate: true },
+    );
   },
 };
 </script>

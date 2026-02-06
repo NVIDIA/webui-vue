@@ -34,6 +34,8 @@
 </template>
 
 <script>
+import { useFirmwareInventory } from '@/api/composables/useFirmwareInventory';
+
 export default {
   props: {
     targets: {
@@ -46,6 +48,13 @@ export default {
     },
   },
   emits: ['ok', 'update:modelValue'],
+  setup() {
+    const firmware = useFirmwareInventory();
+    return {
+      ActiveBmcFirmware: firmware.ActiveBmcFirmware,
+      isSingleFileUploadEnabled: firmware.isSingleFileUploadEnabled,
+    };
+  },
   computed: {
     isModalVisible: {
       get() {

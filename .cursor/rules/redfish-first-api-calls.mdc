@@ -1,0 +1,69 @@
+---
+description: Enforce Redfish-first API pattern - use generated endpoints, not raw apiInstance
+globs: src/**/*.{ts,vue,js}
+alwaysApply: false
+---
+
+# Redfish-First API Calls
+
+All Redfish API calls MUST use the generated endpoint functions from `@/api/endpoints/redfish.gen` (or `redfish.dist.ts` in production). Direct `apiInstance` calls bypass Vue Query caching and break SSE-driven cache invalidation.
+
+## Why This Matters
+
+This project uses SSE events to invalidate Vue Query caches in real-time (see `useSSEQueryInvalidation.ts`). Generated endpoints produce **deterministic query keys** tied to Redfish resource URIs. When an SSE event arrives, the invalidation system matches the event's `OriginOfCondition` to these keys and triggers re-fetches. Raw `apiInstance` calls are invisible to this system — their results go stale silently.
+
+## Rules
+
+1. **NEVER** use `apiInstance` directly for standard Redfish resource reads. Use the generated function instead.
+2. **If a generated endpoint is missing** from `redfish.dist.ts`, **add it** — do not work around it with raw calls. Run the dist generator or add the export manually.
+3. For **dynamic endpoints** (runtime-discovered URIs, collection expansion, query strings), use the Vue Query composables in `@/api/composables/` (e.g., `useRedfishCollection`), or wrap the call with `useQuery`/`useMutation` from `@tanstack/vue-query` so it participates in the cache.
+4. The **only acceptable uses** of raw `apiInstance` are inside composables/utilities that themselves integrate with Vue Query (e.g., inside `useRedfishCollection.ts`).
+
+## Examples
+
+```typescript
+// ❌ BAD — raw apiInstance, invisible to Vue Query cache & SSE invalidation
+import { apiInstance } from '@/api/mutator/axios-instance';
+
+const data = await apiInstance<UpdateService>({
+  url: '/redfish/v1/UpdateService',
+  method: 'GET',
+});
+
+const tasks = await apiInstance<{ Members: Array<{ '@odata.id': string }> }>({
+  url: '/redfish/v1/TaskService/Tasks',
+  method: 'GET',
+});
+
+// ✅ GOOD — generated endpoint (query key auto-registered for SSE invalidation)
+import {
+  getUpdateService,
+  getTaskServiceTasks,
+  getTaskServiceTaskById,
+} from '@/api/endpoints/redfish.gen';
+
+const data = await getUpdateService();
+const tasks = await getTaskServiceTasks();
+const task = await getTaskServiceTaskById(taskId);
+
+// ✅ GOOD — dynamic URI with Vue Query composable
+import { useRedfishCollection } from '@/api/composables/useRedfishCollection';
+
+const { data: members } = useRedfishCollection(collectionUri);
+
+// ✅ GOOD — one-off dynamic call wrapped in useQuery
+import { useQuery } from '@tanstack/vue-query';
+import { apiInstance } from '@/api/mutator/axios-instance';
+
+const { data } = useQuery({
+  queryKey: ['Redfish', dynamicUri],
+  queryFn: () => apiInstance({ url: dynamicUri, method: 'GET' }),
+});
+```
+
+## When Reviewing Code
+
+Flag any `apiInstance<...>({ url: '/redfish/v1/...` call that reads a standard Redfish resource. Ask:
+1. Does a generated endpoint exist for this resource? → Use it.
+2. Is the endpoint missing from `redfish.dist.ts`? → Add it; don't bypass.
+3. Is the URI truly dynamic (discovered at runtime)? → Wrap with `useQuery` or a composable.
