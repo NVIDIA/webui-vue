@@ -4,9 +4,15 @@ globs:
 ---
 
 # Your rule content
-
-- You can @ files here
-- You can use markdown but dont have to
-Use [openapi.yaml](mdc:src/api/schema/openapi.yaml) as model API interaction for this project.
 Redfish is a DMTF standard.
-Enforce Redfish CamelCase naming stype for API properties.
+Enforce Redfish CamelCase naming style for API Types and properties.
+
+Developer Redfish environment must be set up with `npm run schema:setup`
+After schema:setup:
+- Use [openapi.yaml](mdc:src/api/schema/openapi.yaml) as model API interaction for this project.
+- All generated Redfish endpoints are located src/api/endpoints/redfish.gen.ts
+    - stripped version for check-in/building is always here: src/api/endpoints/redfish.dist.ts
+- All generated Redfish Models are located here: src/api/model
+
+Do not create intermediate models for UI use, *always* use/extend generated Redfish models.
+

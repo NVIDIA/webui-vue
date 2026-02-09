@@ -38,8 +38,10 @@ src/api/registries/
 src/api/model/*
 !src/api/model/AccountService.ts
 !src/api/model/ActionInfoParameters.ts
+!src/api/model/Chassis.ts
 !src/api/model/ComputerSystemBootProgressTypes.ts
 !src/api/model/ComputerSystemResetRequestBody.ts
+!src/api/model/EnvironmentMetrics.ts
 !src/api/model/Event.ts
 !src/api/model/EventRecord.ts
 !src/api/model/LogEntry.ts

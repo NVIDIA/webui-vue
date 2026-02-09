@@ -192,6 +192,7 @@
         "virtualMedia": "@:appPageTitle.virtualMedia",
         "snmpAlerts": "@:appPageTitle.snmpAlerts",
         "power": "@:appPageTitle.power",
+        "powerLimit": "@:appPageTitle.powerLimit",
         "keyClear": "@:appPageTitle.keyClear"
     },
     "appPageTitle": {
@@ -225,7 +226,25 @@
         "certificates": "Certificates",
         "snmpAlerts": "SNMP Alerts",
         "virtualMedia": "Virtual media",
-        "keyClear": "Key clear"
+        "keyClear": "Key clear",
+        "powerLimit": "Power limiting"
+    },
+    "pagePowerLimit": {
+        "description": "Manage CPU and GPU power limits for this system.",
+        "cpuSectionTitle": "CPU power limits",
+        "gpuSectionTitle": "GPU power limits",
+        "currentPower": "current",
+        "cpuLimitLabel": "CPU limit (TDP)",
+        "gpuLimitLabel": "GPU limit (TGP)",
+        "basePowerLabel": "GPU base power",
+        "limitRange": "Allowed range: {min}–{max} W",
+        "gpuViewCpuLimit": "GPU view of CPU limit",
+        "effectiveTgp": "Effective TGP",
+        "noProcessors": "No processors found.",
+        "toast": {
+            "successSave": "Power limits saved.",
+            "errorSave": "Unable to save power limits."
+        }
     },
     "pageChangePassword": {
         "changePassword": "Change password",

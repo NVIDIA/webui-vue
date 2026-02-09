@@ -180,6 +180,18 @@ const AppNavigationMixin = {
             },
           ],
         },
+        {
+          id: 'resource-management',
+          label: this.$t('appNavigation.resourceManagement'),
+          icon: 'iconResourceManagement',
+          children: [
+            {
+              id: 'power-limit',
+              label: this.$t('appNavigation.powerLimit'),
+              route: '/resource-management/power-limit',
+            },
+          ],
+        },
       ],
     };
   },

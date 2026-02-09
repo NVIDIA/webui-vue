@@ -32,6 +32,7 @@ import VirtualMedia from '@/views/Operations/VirtualMedia';
 import i18n from '@/i18n';
 // Custom components
 import Dumps from '@/views/Logs/Dumps';
+import PowerLimit from '@/views/ResourceManagement/PowerLimit';
 const routes = [
   {
     path: '/login',
@@ -214,6 +215,14 @@ const routes = [
         component: Network,
         meta: {
           title: i18n.global.t('appPageTitle.network'),
+        },
+      },
+      {
+        path: '/resource-management/power-limit',
+        name: 'power-limit',
+        component: PowerLimit,
+        meta: {
+          title: i18n.global.t('appPageTitle.powerLimit'),
         },
       },
       {

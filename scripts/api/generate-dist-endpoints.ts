@@ -407,7 +407,7 @@ async function main() {
         '',
         metadataMarker,
         '// This metadata enables runtime privilege checking.',
-        '// Generated from endpoint function names.',
+        '// Entity names are derived from apiInstance<ReturnType>.',
         '',
         kept.join('\n'),
         '',

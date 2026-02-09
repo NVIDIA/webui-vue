@@ -1,4 +1,4 @@
-// TODO - put nvidia specific api calls/store stuff here
+// TODO - put nvidia-vr specific api calls/store stuff here
 
 import store from '@/store';
 // import DumpsStore from '@/store/modules/Logs/DumpsStore';
