@@ -25,6 +25,7 @@ Severity: Warning
    - **Solution:** Explanation of how the changes solve the problem
    - **Testing:** Description of testing performed to verify the changes
    - **Fixes** Reference to JIRA or nvbug issue, or other tracking ID (if applicable)
+      - It MUST match this pattern: "Fixes nvbug|jira http(s)://<url>"
 
 ## Benefits
 

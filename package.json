@@ -105,7 +105,8 @@
         ]
     },
     "simple-git-hooks": {
-        "pre-commit": "npx lint-staged && [ -f scripts/pre-commit-api.js ] && node scripts/pre-commit-api.js || true"
+        "pre-commit": "npx lint-staged && [ -f scripts/pre-commit-api.js ] && node scripts/pre-commit-api.js || true",
+        "commit-msg": "sh scripts/commit-msg-change-id.sh \"$1\""
     },
     "tasks": [
         {

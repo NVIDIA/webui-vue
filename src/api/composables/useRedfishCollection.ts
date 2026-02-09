@@ -215,8 +215,15 @@ async function checkExpandSupport(
 }
 
 /**
- * Check if the BMC supports $select based on ServiceRoot ProtocolFeaturesSupported.
+ * Check if the BMC supports $filter based on ServiceRoot ProtocolFeaturesSupported.
  */
+export async function checkFilterSupport(
+  queryClient: ReturnType<typeof useQueryClient>,
+): Promise<boolean> {
+  const features = await getProtocolFeatures(queryClient);
+  return features?.FilterQuery === true;
+}
+
 /**
  * Get ProtocolFeaturesSupported from ServiceRoot.
  * Exported for use in other composables.

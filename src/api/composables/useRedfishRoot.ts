@@ -56,10 +56,15 @@ export function useRedfishRoot() {
     () => (ProtocolFeatures.value?.ExpandQuery?.MaxLevels ?? 0) > 0,
   );
 
+  const supportsFilter = computed(
+    () => ProtocolFeatures.value?.FilterQuery === true,
+  );
+
   return {
     ServiceRoot,
     ProtocolFeatures,
     supportsExpand,
+    supportsFilter,
     isLoading,
     error,
   };

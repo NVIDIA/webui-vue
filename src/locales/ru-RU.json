@@ -187,7 +187,8 @@
         "snmpAlerts": "@:appPageTitle.snmpAlerts",
         "power": "@:appPageTitle.power",
         "powerLimit": "@:appPageTitle.powerLimit",
-        "keyClear": "@:appPageTitle.keyClear"
+        "keyClear": "@:appPageTitle.keyClear",
+        "bootProgress": "@:appPageTitle.bootProgress"
     },
     "appPageTitle": {
         "changePassword": "Изменить пароль",
@@ -221,7 +222,46 @@
         "virtualMedia": "Виртуальные носители",
         "keyClear": "Удаление ключей",
         "localUsers": "Управление пользователями",
-        "powerLimit": "Ограничение мощности"
+        "powerLimit": "Ограничение мощности",
+        "bootProgress": "Прогресс загрузки"
+    },
+    "pageBootProgress": {
+        "loading": "Загрузка прогресса загрузки...",
+        "stats": {
+            "power": "Питание",
+            "stage": "Этап",
+            "elapsed": "Прошло",
+            "entries": "Записей",
+            "errors": "Ошибки"
+        },
+        "action": {
+            "openConsole": "Открыть SOL консоль",
+            "reset": "Сброс"
+        },
+        "legend": {
+            "pending": "Ожидание",
+            "running": "Выполняется",
+            "complete": "Завершено",
+            "error": "Ошибка",
+            "runtime": "Работа"
+        },
+        "socket": {
+            "processors": "Процессоры",
+            "stages": "Этапы"
+        },
+        "details": {
+            "state": "Состояние",
+            "runtime": "Среда выполнения",
+            "exceptionLevel": "Уровень исключения",
+            "dependencies": "Зависимости",
+            "postCodes": "POST коды",
+            "moreEntries": "... и ещё {count}"
+        },
+        "banner": {
+            "booting": "Выполняется загрузка системы",
+            "viewDetails": "Просмотр прогресса загрузки",
+            "openConsole": "Открыть SOL консоль"
+        }
     },
     "pagePowerLimit": {
         "description": "Управление ограничениями мощности CPU и GPU для этой системы.",

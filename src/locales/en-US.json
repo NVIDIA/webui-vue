@@ -193,7 +193,8 @@
         "snmpAlerts": "@:appPageTitle.snmpAlerts",
         "power": "@:appPageTitle.power",
         "powerLimit": "@:appPageTitle.powerLimit",
-        "keyClear": "@:appPageTitle.keyClear"
+        "keyClear": "@:appPageTitle.keyClear",
+        "bootProgress": "@:appPageTitle.bootProgress"
     },
     "appPageTitle": {
         "changePassword": "Change password",
@@ -227,7 +228,46 @@
         "snmpAlerts": "SNMP Alerts",
         "virtualMedia": "Virtual media",
         "keyClear": "Key clear",
-        "powerLimit": "Power limiting"
+        "powerLimit": "Power limiting",
+        "bootProgress": "Boot progress"
+    },
+    "pageBootProgress": {
+        "loading": "Loading boot progress...",
+        "stats": {
+            "power": "Power",
+            "stage": "Stage",
+            "elapsed": "Elapsed",
+            "entries": "Entries",
+            "errors": "Errors"
+        },
+        "action": {
+            "openConsole": "Open SOL console",
+            "reset": "Reset"
+        },
+        "legend": {
+            "pending": "Pending",
+            "running": "Running",
+            "complete": "Complete",
+            "error": "Error",
+            "runtime": "Runtime"
+        },
+        "socket": {
+            "processors": "Processors",
+            "stages": "Stages"
+        },
+        "details": {
+            "state": "State",
+            "runtime": "Runtime",
+            "exceptionLevel": "Exception level",
+            "dependencies": "Dependencies",
+            "postCodes": "POST codes",
+            "moreEntries": "... and {count} more"
+        },
+        "banner": {
+            "booting": "System boot in progress",
+            "viewDetails": "View boot progress",
+            "openConsole": "Open SOL console"
+        }
     },
     "pagePowerLimit": {
         "description": "Manage CPU and GPU power limits for this system.",

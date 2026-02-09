@@ -11,6 +11,7 @@
 import { computed, watch, type Ref, type ComputedRef } from 'vue';
 import { useMutation, useQueryClient, useQueries } from '@tanstack/vue-query';
 import { apiInstance } from '@/api/mutator/axios-instance';
+import { checkFilterSupport } from './useRedfishCollection';
 import { useSSEStore } from '@/stores/sse';
 import { getOriginUri } from './parseSSEEvent';
 import type { LogEntry } from '@/api/model/LogEntry';
@@ -273,9 +274,11 @@ export function useEventLog(options: UseEventLogOptions = {}): UseEventLogReturn
             const currentCollection = queryClient.getQueryData<LogEntryCollection>(queryKey);
             const currentEntries = Array.from(currentCollection?.Members ?? []);
             const latestId = getLatestLogId(currentEntries);
-            const url = latestId
-              ? `${getEntriesUri(target.systemId, target.logServiceId)}?$filter=Id gt '${latestId}'`
-              : getEntriesUri(target.systemId, target.logServiceId);
+            const canFilter = await checkFilterSupport(queryClient);
+            const entriesUri = getEntriesUri(target.systemId, target.logServiceId);
+            const url = (canFilter && latestId)
+              ? `${entriesUri}?$filter=Id gt '${latestId}'`
+              : entriesUri;
             const response = await apiInstance<LogEntryCollection>({
               url,
               method: 'GET',

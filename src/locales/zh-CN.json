@@ -179,7 +179,8 @@
         "snmpAlerts": "@:appPageTitle.snmpAlerts",
         "power": "@:appPageTitle.power",
         "powerLimit": "@:appPageTitle.powerLimit",
-        "keyClear": "@:appPageTitle.keyClear"
+        "keyClear": "@:appPageTitle.keyClear",
+        "bootProgress": "@:appPageTitle.bootProgress"
     },
     "appPageTitle": {
         "changePassword": "更改密码",
@@ -213,7 +214,46 @@
         "snmpAlerts": "SNMP警报",
         "virtualMedia": "虚拟媒体",
         "keyClear": "清除密钥",
-        "powerLimit": "功率限制"
+        "powerLimit": "功率限制",
+        "bootProgress": "启动进度"
+    },
+    "pageBootProgress": {
+        "loading": "正在加载启动进度...",
+        "stats": {
+            "power": "电源",
+            "stage": "阶段",
+            "elapsed": "已用时间",
+            "entries": "条目",
+            "errors": "错误"
+        },
+        "action": {
+            "openConsole": "打开SOL控制台",
+            "reset": "重置"
+        },
+        "legend": {
+            "pending": "等待中",
+            "running": "运行中",
+            "complete": "已完成",
+            "error": "错误",
+            "runtime": "运行时"
+        },
+        "socket": {
+            "processors": "处理器",
+            "stages": "阶段"
+        },
+        "details": {
+            "state": "状态",
+            "runtime": "运行时",
+            "exceptionLevel": "异常级别",
+            "dependencies": "依赖",
+            "postCodes": "POST代码",
+            "moreEntries": "... 还有 {count} 条"
+        },
+        "banner": {
+            "booting": "系统正在启动",
+            "viewDetails": "查看启动进度",
+            "openConsole": "打开SOL控制台"
+        }
     },
     "pagePowerLimit": {
         "description": "管理此系统的 CPU 和 GPU 功率限制。",

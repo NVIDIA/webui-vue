@@ -1,0 +1,232 @@
+{
+  "columnWidth": 15,
+  "totalColumns": 60,
+  "sockets": [
+    {
+      "id": "cpu0",
+      "name": "Socket 0 (CPU0)",
+      "enabled": true,
+      "processors": [
+        {
+          "id": "psc",
+          "name": "PSC",
+          "row": 1,
+          "type": "Boot Manager",
+          "description": "Platform Security Controller",
+          "color": "#76b900",
+          "stages": [
+            {
+              "id": "pscfmc",
+              "name": "PSC FMC",
+              "position": 1,
+              "span": 15,
+              "runtime": false,
+              "dependsOn": [],
+              "triggers": ["rasfw", "oobhubfw", "mb1"]
+            },
+            {
+              "id": "pscfw",
+              "name": "PSC FW",
+              "position": 16,
+              "span": 44,
+              "runtime": true,
+              "dependsOn": ["pscfmc"],
+              "triggers": ["mb2"]
+            }
+          ]
+        },
+        {
+          "id": "oob",
+          "name": "OOB HUB",
+          "row": 2,
+          "type": "Management",
+          "description": "Out-of-Band Management Hub",
+          "color": "#f59e0b",
+          "stages": [
+            {
+              "id": "oobhubfw",
+              "name": "OOB HUB",
+              "position": 3,
+              "span": 57,
+              "runtime": true,
+              "dependsOn": ["pscfmc"],
+              "triggers": []
+            }
+          ]
+        },
+        {
+          "id": "ras",
+          "name": "RAS FW",
+          "row": 3,
+          "type": "Reliability",
+          "description": "Reliability, Availability, Serviceability",
+          "color": "#3b82f6",
+          "stages": [
+            {
+              "id": "rasfw",
+              "name": "RAS FW",
+              "position": 4,
+              "span": 56,
+              "runtime": true,
+              "dependsOn": ["pscfmc"],
+              "triggers": []
+            }
+          ]
+        },
+        {
+          "id": "bpmp",
+          "name": "BPMP",
+          "row": 4,
+          "type": "Boot & Power",
+          "description": "Boot and Power Management Processor",
+          "color": "#a855f7",
+          "stages": [
+            {
+              "id": "mb1",
+              "name": "MB1",
+              "position": 6,
+              "span": 10,
+              "runtime": false,
+              "dependsOn": ["pscfmc"],
+              "triggers": ["mb2"]
+            },
+            {
+              "id": "bpmpfw",
+              "name": "BPMP FW",
+              "position": 16,
+              "span": 44,
+              "runtime": true,
+              "dependsOn": ["pscfw", "mb1"],
+              "triggers": []
+            }
+          ]
+        },
+        {
+          "id": "mseq",
+          "name": "MSEQ",
+          "row": 5,
+          "type": "Memory Sequencer",
+          "description": "Memory Sequencer Controller",
+          "color": "#06b6d4",
+          "stages": [
+            {
+              "id": "mseq",
+              "name": "MSEQ",
+              "position": 8,
+              "span": 52,
+              "runtime": true,
+              "dependsOn": ["pscfmc"],
+              "triggers": []
+            }
+          ]
+        },
+        {
+          "id": "pxir",
+          "name": "PXIR",
+          "row": 6,
+          "type": "PCIe Controller",
+          "description": "PCIe Express Interface Router",
+          "color": "#ec4899",
+          "stages": [
+            {
+              "id": "pxir",
+              "name": "PXIR",
+              "position": 10,
+              "span": 50,
+              "runtime": true,
+              "dependsOn": ["pscfmc"],
+              "triggers": []
+            }
+          ]
+        },
+        {
+          "id": "ccplex",
+          "name": "CCPLEX",
+          "row": 7,
+          "type": "ARM Cores",
+          "description": "CPU Complex - ARM Cortex Cores",
+          "color": "#10b981",
+          "hasELLevels": true,
+          "stages": [
+            {
+              "id": "mb2",
+              "name": "MB2",
+              "position": 24,
+              "span": 6,
+              "el": 3,
+              "runtime": false,
+              "dependsOn": ["mb1", "pscfw"],
+              "triggers": ["atf"]
+            },
+            {
+              "id": "atf",
+              "name": "ATF",
+              "position": 30,
+              "span": 12,
+              "el": 3,
+              "runtime": false,
+              "dependsOn": ["mb2"],
+              "triggers": ["rmm", "hafnium", "uefi"]
+            },
+            {
+              "id": "rmm",
+              "name": "RMM",
+              "position": 32,
+              "span": 4,
+              "el": 2,
+              "runtime": true,
+              "dependsOn": ["atf"],
+              "triggers": []
+            },
+            {
+              "id": "hafnium",
+              "name": "Hafnium SP",
+              "position": 37,
+              "span": 4,
+              "el": 2,
+              "runtime": true,
+              "dependsOn": ["atf"],
+              "triggers": []
+            },
+            {
+              "id": "uefi",
+              "name": "UEFI",
+              "position": 42,
+              "span": 7,
+              "el": 2,
+              "runtime": true,
+              "dependsOn": ["atf"],
+              "triggers": ["kernel"]
+            },
+            {
+              "id": "kernel",
+              "name": "Kernel",
+              "position": 49,
+              "span": 6,
+              "el": 1,
+              "runtime": true,
+              "dependsOn": ["uefi"],
+              "triggers": ["os"]
+            },
+            {
+              "id": "os",
+              "name": "OS",
+              "position": 55,
+              "span": 5,
+              "el": 1,
+              "runtime": true,
+              "dependsOn": ["kernel"],
+              "triggers": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "cpu1",
+      "name": "Socket 1 (CPU1)",
+      "enabled": false,
+      "processors": []
+    }
+  ]
+}

@@ -150,7 +150,8 @@
         "snmpAlerts": "@:appPageTitle.snmpAlerts",
         "power": "@:appPageTitle.power",
         "powerLimit": "@:appPageTitle.powerLimit",
-        "keyClear": "@:appPageTitle.keyClear"
+        "keyClear": "@:appPageTitle.keyClear",
+        "bootProgress": "@:appPageTitle.bootProgress"
     },
     "appPageTitle": {
         "changePassword": "პაროლის შეცვლა",
@@ -181,7 +182,46 @@
         "snmpAlerts": "SNMP გაფრთხილებები",
         "virtualMedia": "ვირტუალური მედია",
         "keyClear": "გასაღების გასუფთავება",
-        "powerLimit": "სიმძლავრის შეზღუდვა"
+        "powerLimit": "სიმძლავრის შეზღუდვა",
+        "bootProgress": "ჩატვირთვის პროგრესი"
+    },
+    "pageBootProgress": {
+        "loading": "ჩატვირთვის პროგრესის ჩატვირთვა...",
+        "stats": {
+            "power": "კვება",
+            "stage": "ეტაპი",
+            "elapsed": "გასული",
+            "entries": "ჩანაწერები",
+            "errors": "შეცდომები"
+        },
+        "action": {
+            "openConsole": "SOL კონსოლის გახსნა",
+            "reset": "გადატვირთვა"
+        },
+        "legend": {
+            "pending": "მომლოდინე",
+            "running": "მიმდინარე",
+            "complete": "დასრულებული",
+            "error": "შეცდომა",
+            "runtime": "მუშაობა"
+        },
+        "socket": {
+            "processors": "პროცესორები",
+            "stages": "ეტაპები"
+        },
+        "details": {
+            "state": "მდგომარეობა",
+            "runtime": "გაშვების დრო",
+            "exceptionLevel": "გამონაკლისის დონე",
+            "dependencies": "დამოკიდებულებები",
+            "postCodes": "POST კოდები",
+            "moreEntries": "... და კიდევ {count}"
+        },
+        "banner": {
+            "booting": "სისტემის ჩატვირთვა მიმდინარეობს",
+            "viewDetails": "ჩატვირთვის პროგრესის ნახვა",
+            "openConsole": "SOL კონსოლის გახსნა"
+        }
     },
     "pagePowerLimit": {
         "description": "ამ სისტემის CPU და GPU სიმძლავრის ლიმიტების მართვა.",

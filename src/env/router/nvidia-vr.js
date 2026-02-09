@@ -24,6 +24,7 @@ import RebootBmc from '@/views/Operations/RebootBmc';
 import Policies from '@/views/SecurityAndAccess/Policies';
 import KeyClear from '@/views/Operations/KeyClear';
 import Sensors from '@/views/HardwareStatus/Sensors';
+import BootProgress from '@/views/Operations/BootProgress';
 import SerialOverLan from '@/views/Operations/SerialOverLan';
 import SerialOverLanConsole from '@/views/Operations/SerialOverLan/SerialOverLanConsole';
 import ServerPowerOperations from '@/views/Operations/ServerPowerOperations';
@@ -199,6 +200,14 @@ const routes = [
         component: DateTime,
         meta: {
           title: i18n.global.t('appPageTitle.dateTime'),
+        },
+      },
+      {
+        path: '/operations/boot-progress',
+        name: 'boot-progress',
+        component: BootProgress,
+        meta: {
+          title: i18n.global.t('appPageTitle.bootProgress'),
         },
       },
       {

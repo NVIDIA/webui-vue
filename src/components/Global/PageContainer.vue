@@ -5,6 +5,7 @@
       :message="managerBannerMessage"
       variant="warning"
     />
+    <boot-progress-banner />
     <main id="main-content" class="page-container">
       <slot />
     </main>
@@ -15,12 +16,13 @@
 import { mapState } from 'vuex';
 import JumpLinkMixin from '@/components/Mixins/JumpLinkMixin';
 import GlobalBanner from '@/components/Global/GlobalBanner';
+import BootProgressBanner from '@/components/Global/BootProgressBanner';
 import { startManagerStatusCheck } from '@/services/ManagerStatusService';
 import eventBus from '@/eventBus';
 
 export default {
   name: 'PageContainer',
-  components: { GlobalBanner },
+  components: { GlobalBanner, BootProgressBanner },
   mixins: [JumpLinkMixin],
   computed: {
     isManagerReady() {

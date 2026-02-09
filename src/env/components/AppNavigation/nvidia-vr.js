@@ -83,6 +83,11 @@ const AppNavigationMixin = {
           icon: 'iconControl',
           children: [
             {
+              id: 'boot-progress',
+              label: this.$t('appNavigation.bootProgress'),
+              route: '/operations/boot-progress',
+            },
+            {
               id: 'factory-reset',
               label: this.$t('appNavigation.factoryReset'),
               route: '/operations/factory-reset',
