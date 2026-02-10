@@ -1,7 +1,8 @@
-import { mount } from '@vue/test-utils';
+import { shallowMount } from '@vue/test-utils';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { ref, computed } from 'vue';
 import { VueQueryPlugin, QueryClient } from '@tanstack/vue-query';
+import i18n from '@/i18n';
 import eventBus from '@/eventBus';
 import { createStore } from 'vuex';
 import AppHeader from '@/components/AppHeader';
@@ -33,6 +34,23 @@ vi.mock('@/stores/auth', () => ({
     consoleWindow: ref(null),
     resetStoreState: vi.fn(),
     logout: vi.fn(),
+  }),
+}));
+
+// Mock Pinia global store (used by AppHeader for PowerState, etc.)
+vi.mock('@/stores/global', () => ({
+  useGlobalStore: () => ({
+    PowerState: ref('On'),
+    BootProgressState: ref('OSRunning'),
+    BootProgressOemState: ref(null),
+    IsBooting: ref(false),
+    isBootPolling: ref(false),
+    HealthStatus: ref('OK'),
+    AssetTag: ref(''),
+    Model: ref(''),
+    SerialNumber: ref(''),
+    ManagedSystem: ref(null),
+    refetch: vi.fn(),
   }),
 }));
 
@@ -145,12 +163,9 @@ describe('AppHeader.vue', () => {
 
   beforeEach(() => {
     store.dispatch = vi.fn();
-    wrapper = mount(AppHeader, {
+    wrapper = shallowMount(AppHeader, {
       global: {
-        plugins: [store, [VueQueryPlugin, { queryClient }]],
-      },
-      mocks: {
-        $t: (key) => key,
+        plugins: [i18n, store, [VueQueryPlugin, { queryClient }]],
       },
     });
   });
@@ -176,23 +191,17 @@ describe('AppHeader.vue', () => {
     expect(spy).toHaveBeenCalledWith('toggle-navigation');
   });
 
-  it('logout button should dispatch authentication/logout', async () => {
-    wrapper.get('[data-test-id="appHeader-link-logout"]').trigger('click');
-    await wrapper.vm.$nextTick();
-    // Now uses Pinia authStore.logout() instead of Vuex dispatch
-    // Just verify the element is clickable
-    expect(wrapper.find('[data-test-id="appHeader-link-logout"]').exists()).toBe(true);
+  it('should render UserMenu component', () => {
+    // With shallowMount, UserMenu is stubbed. Verify it's present.
+    expect(wrapper.findComponent({ name: 'UserMenu' }).exists()).toBe(true);
   });
 
   it('change:isNavigationOpen event should set isNavigationOpen prop to false', async () => {
     const spy = vi.spyOn(eventBus, '$on');
     // Re-mount to capture the $on call
-    const testWrapper = mount(AppHeader, {
+    const testWrapper = shallowMount(AppHeader, {
       global: {
-        plugins: [store],
-        mocks: {
-          $t: (key) => key,
-        },
+        plugins: [i18n, store, [VueQueryPlugin, { queryClient }]],
       },
     });
     const navigationOpenHandler = spy.mock.calls.find(

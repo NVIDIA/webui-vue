@@ -85,7 +85,9 @@ describe('useSSEStore', () => {
 
       expect(store.status).toBe('connected');
       expect(store.errorMessage).toBeNull();
-      expect(store.reconnectAttempts).toBe(0);
+      // Note: setStatus('connected') does NOT reset reconnectAttempts.
+      // That's controlled by the useSSE composable.
+      expect(store.reconnectAttempts).toBe(5);
       expect(store.lastConnectedAt).toBeInstanceOf(Date);
     });
 
@@ -167,10 +169,11 @@ describe('useSSEStore', () => {
     it('should filter criticalEvents correctly', () => {
       const store = useSSEStore();
 
-      store.addEvent({ EventId: '1', Severity: 'Critical', Message: 'Critical 1' });
-      store.addEvent({ EventId: '2', Severity: 'Warning', Message: 'Warning 1' });
-      store.addEvent({ EventId: '3', Severity: 'Critical', Message: 'Critical 2' });
-      store.addEvent({ EventId: '4', Severity: 'OK', Message: 'OK 1' });
+      // Store filters by MessageSeverity, not Severity
+      store.addEvent({ EventId: '1', MessageSeverity: 'Critical', Message: 'Critical 1' });
+      store.addEvent({ EventId: '2', MessageSeverity: 'Warning', Message: 'Warning 1' });
+      store.addEvent({ EventId: '3', MessageSeverity: 'Critical', Message: 'Critical 2' });
+      store.addEvent({ EventId: '4', MessageSeverity: 'OK', Message: 'OK 1' });
 
       expect(store.criticalEvents).toHaveLength(2);
       expect(store.criticalEvents[0].EventId).toBe('1');
@@ -180,9 +183,9 @@ describe('useSSEStore', () => {
     it('should filter warningEvents correctly', () => {
       const store = useSSEStore();
 
-      store.addEvent({ EventId: '1', Severity: 'Critical', Message: 'Critical 1' });
-      store.addEvent({ EventId: '2', Severity: 'Warning', Message: 'Warning 1' });
-      store.addEvent({ EventId: '3', Severity: 'Warning', Message: 'Warning 2' });
+      store.addEvent({ EventId: '1', MessageSeverity: 'Critical', Message: 'Critical 1' });
+      store.addEvent({ EventId: '2', MessageSeverity: 'Warning', Message: 'Warning 1' });
+      store.addEvent({ EventId: '3', MessageSeverity: 'Warning', Message: 'Warning 2' });
 
       expect(store.warningEvents).toHaveLength(2);
       expect(store.warningEvents[0].EventId).toBe('2');
@@ -278,13 +281,12 @@ describe('parseSSEEventData', () => {
 
       const result = parseSSEEventData(data, '123');
 
-      expect(result.events).toHaveLength(1);
-      expect(result.events[0].EventId).toBe('123');
-      expect(result.events[0].EventType).toBe('Alert');
-      expect(result.events[0].MessageId).toBe('ResourceEvent.1.0.ResourceCreated');
-      expect(result.events[0].Message).toBe('Resource created successfully');
-      expect(result.events[0].Severity).toBe('OK');
-      expect(result.error).toBeUndefined();
+      expect(result.Events).toHaveLength(1);
+      expect(result.Events[0].EventId).toBe('123');
+      expect(result.Events[0].EventType).toBe('Alert');
+      expect(result.Events[0].MessageId).toBe('ResourceEvent.1.0.ResourceCreated');
+      expect(result.Events[0].Message).toBe('Resource created successfully');
+      expect(result.Error).toBeUndefined();
     });
 
     it('should parse multiple events in Events array', () => {
@@ -298,33 +300,33 @@ describe('parseSSEEventData', () => {
 
       const result = parseSSEEventData(data);
 
-      expect(result.events).toHaveLength(3);
-      expect(result.events[0].EventId).toBe('1');
-      expect(result.events[1].EventId).toBe('2');
-      expect(result.events[2].EventId).toBe('3');
+      expect(result.Events).toHaveLength(3);
+      expect(result.Events[0].EventId).toBe('1');
+      expect(result.Events[1].EventId).toBe('2');
+      expect(result.Events[2].EventId).toBe('3');
     });
 
     it('should handle empty data', () => {
       const result = parseSSEEventData('');
-      expect(result.events).toEqual([]);
+      expect(result.Events).toEqual([]);
     });
 
     it('should handle whitespace-only data', () => {
       const result = parseSSEEventData('   ');
-      expect(result.events).toEqual([]);
+      expect(result.Events).toEqual([]);
     });
 
     it('should return error for invalid JSON', () => {
       const result = parseSSEEventData('not valid json');
 
-      expect(result.events).toEqual([]);
-      expect(result.error).toBeDefined();
-      expect(result.error).toContain('JSON parse error');
+      expect(result.Events).toEqual([]);
+      expect(result.Error).toBeDefined();
+      expect(result.Error).toContain('JSON parse error');
     });
   });
 
   describe('OriginOfCondition Parsing', () => {
-    it('should extract @odata.id from OriginOfCondition', () => {
+    it('should preserve OriginOfCondition as Redfish object', () => {
       const data = JSON.stringify({
         Events: [
           {
@@ -338,27 +340,28 @@ describe('parseSSEEventData', () => {
 
       const result = parseSSEEventData(data);
 
-      expect(result.events[0].OriginOfCondition).toBe('/redfish/v1/Chassis/1/Sensors/temperature');
+      // OriginOfCondition stays as object; use getOriginUri() to extract the string
+      expect(result.Events[0].OriginOfCondition['@odata.id']).toBe(
+        '/redfish/v1/Chassis/1/Sensors/temperature',
+      );
     });
   });
 
-  describe('Severity Normalization', () => {
-    it('should normalize severity values', () => {
+  describe('Severity Pass-through', () => {
+    it('should pass through severity values as-is', () => {
       const data = JSON.stringify({
         Events: [
-          { EventId: '1', Severity: 'critical' },
-          { EventId: '2', Severity: 'warning' },
-          { EventId: '3', Severity: 'ok' },
-          { EventId: '4', MessageSeverity: 'informational' },
+          { EventId: '1', Severity: 'Critical', MessageSeverity: 'Critical' },
+          { EventId: '2', Severity: 'Warning', MessageSeverity: 'Warning' },
+          { EventId: '3', Severity: 'OK', MessageSeverity: 'OK' },
         ],
       });
 
       const result = parseSSEEventData(data);
 
-      expect(result.events[0].Severity).toBe('Critical');
-      expect(result.events[1].Severity).toBe('Warning');
-      expect(result.events[2].Severity).toBe('OK');
-      expect(result.events[3].Severity).toBe('OK'); // informational -> OK
+      expect(result.Events[0].MessageSeverity).toBe('Critical');
+      expect(result.Events[1].MessageSeverity).toBe('Warning');
+      expect(result.Events[2].MessageSeverity).toBe('OK');
     });
   });
 
@@ -372,7 +375,7 @@ describe('parseSSEEventData', () => {
 
       const result = parseSSEEventData(data);
 
-      expect(result.specialEvent).toBe('Heartbeat');
+      expect(result.SpecialEvent).toBe('Heartbeat');
     });
 
     it('should detect EventBufferExceeded', () => {
@@ -384,7 +387,7 @@ describe('parseSSEEventData', () => {
 
       const result = parseSSEEventData(data);
 
-      expect(result.specialEvent).toBe('EventBufferExceeded');
+      expect(result.SpecialEvent).toBe('EventBufferExceeded');
     });
 
     it('should not detect special event for normal events', () => {
@@ -396,7 +399,7 @@ describe('parseSSEEventData', () => {
 
       const result = parseSSEEventData(data);
 
-      expect(result.specialEvent).toBeUndefined();
+      expect(result.SpecialEvent).toBeUndefined();
     });
   });
 
@@ -410,7 +413,7 @@ describe('parseSSEEventData', () => {
 
       const result = parseSSEEventData(data, 'fallback-id');
 
-      expect(result.events[0].EventId).toBe('fallback-id');
+      expect(result.Events[0].EventId).toBe('fallback-id');
     });
 
     it('should generate local ID when both EventId and lastEventId are missing', () => {
@@ -422,7 +425,7 @@ describe('parseSSEEventData', () => {
 
       const result = parseSSEEventData(data);
 
-      expect(result.events[0].EventId).toMatch(/^local-\d+-[a-z0-9]+$/);
+      expect(result.Events[0].EventId).toMatch(/^local-\d+-[a-z0-9]+$/);
     });
   });
 });

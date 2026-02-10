@@ -27,6 +27,7 @@ describe('PageContainer.vue', () => {
       },
       stubs: {
         GlobalBanner: true,
+        BootProgressBanner: true,
       },
     },
   });

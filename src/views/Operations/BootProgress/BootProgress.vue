@@ -379,6 +379,92 @@ function stageStyle(stage) {
   };
 }
 
+// ---------------------------------------------------------------------------
+// Early processor state inference
+//
+// The BMC's PostCodes/Entries endpoint only contains UEFI status codes from
+// the CCPLEX. Early boot processors (PSC, BPMP, OOB, RAS, MSEQ, PXIR) don't
+// report through this mechanism — their boot progress is visible via SOL
+// terminal streams (as in LogBench) but not via Redfish POST codes.
+//
+// We infer their state from the Redfish BootProgressState and the presence
+// of ANY POST code data (which means the CCPLEX has started, implying all
+// early processors finished).
+// ---------------------------------------------------------------------------
+
+/** Processors whose state must be inferred (no POST code data available) */
+const EARLY_PROCESSORS = new Set(['psc', 'oob', 'ras', 'bpmp', 'mseq', 'pxir']);
+
+/**
+ * Infer processor stage state when no POST code data exists for it.
+ *
+ * Logic:
+ *   - If system is Off or no boot progress → pending
+ *   - If POST codes exist (CCPLEX has started) → early processors are
+ *     complete/runtime (they finished before the first UEFI code)
+ *   - If BootProgressState is OSRunning → everything is complete/runtime
+ *   - During active boot with POST codes → early processors are complete,
+ *     CCPLEX stages use POST code data (handled by getStageState)
+ */
+function inferStateFromBootProgress(processorId, stageId) {
+  const power = powerState.value;
+  const boot = globalStore.BootProgressState;
+  const hasPostCodes = CurrentBootEntries.value.length > 0;
+
+  // System is off or no boot progress at all → pending
+  if (power !== 'On' || !boot || boot === 'None') {
+    return 'pending';
+  }
+
+  // Early processors: if POST codes exist OR boot stage is past early
+  // boot, these processors have completed.
+  if (EARLY_PROCESSORS.has(processorId)) {
+    const stageConfig = findStageConfig(processorId, stageId);
+
+    if (hasPostCodes || boot === 'OSRunning') {
+      // All early processors are done — return runtime or complete
+      // based on the stage's runtime flag
+      if (stageConfig?.runtime) return 'runtime';
+      return 'complete';
+    }
+
+    // Boot is in progress but no POST codes yet — early processors
+    // could still be running. Use boot stage to narrow down.
+    // Any stage past PrimaryProcessorInit means PSC/BPMP are done.
+    if (boot !== 'PrimaryProcessorInitializationStarted') {
+      if (stageConfig?.runtime) return 'runtime';
+      return 'complete';
+    }
+
+    // Very early boot — could be running
+    if (isBooting.value) return 'running';
+    return 'pending';
+  }
+
+  // CCPLEX with no POST codes: infer from boot stage
+  if (processorId === 'ccplex') {
+    if (boot === 'OSRunning' && !isBooting.value) {
+      const stageConfig = findStageConfig(processorId, stageId);
+      if (stageConfig?.runtime) return 'runtime';
+      return 'complete';
+    }
+  }
+
+  return 'pending';
+}
+
+/** Helper: find stage config by processor and stage ID */
+function findStageConfig(processorId, stageId) {
+  for (const socket of enabledSockets.value) {
+    for (const proc of socket.processors) {
+      if (proc.id === processorId) {
+        return proc.stages.find((s) => s.id === stageId) || null;
+      }
+    }
+  }
+  return null;
+}
+
 /**
  * Determine stage state based on POST code data.
  *
@@ -398,9 +484,18 @@ function stageStyle(stage) {
 function getStageState(processorId, stageId) {
   const stats = processorStats.value[processorId];
 
-  // No POST codes for this processor → pending
+  // No POST codes for this processor — infer state from boot progress.
+  //
+  // The BMC's PostCodes/Entries endpoint only contains UEFI status codes
+  // from the CCPLEX. Early boot processors (PSC, BPMP, OOB, RAS, MSEQ,
+  // PXIR) don't report through POST codes — their state is inferred from
+  // the Redfish BootProgressState / power state.
+  //
+  // If the system is powered on and boot has progressed to any meaningful
+  // stage, all early processors have necessarily completed (they run
+  // before the CCPLEX generates its first POST code).
   if (!stats || stats.count === 0) {
-    return 'pending';
+    return inferStateFromBootProgress(processorId, stageId);
   }
 
   // Find the stage config

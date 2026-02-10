@@ -110,17 +110,41 @@ function deriveQueryKey(url: string): string[] {
 }
 
 // Response interceptor: sync successful GET /redfish/* responses into Vue Query cache
-api.interceptors.response.use((response) => {
-  if (
-    _queryClient &&
-    response.config.method?.toLowerCase() === "get" &&
-    response.config.url?.startsWith("/redfish/")
-  ) {
-    const queryKey = deriveQueryKey(response.config.url);
-    _queryClient.setQueryData(queryKey, response.data);
-  }
-  return response;
-});
+// and redirect to /login on 401 responses.
+api.interceptors.response.use(
+  (response) => {
+    if (
+      _queryClient &&
+      response.config.method?.toLowerCase() === "get" &&
+      response.config.url?.startsWith("/redfish/")
+    ) {
+      const queryKey = deriveQueryKey(response.config.url);
+      _queryClient.setQueryData(queryKey, response.data);
+    }
+    return response;
+  },
+  async (error) => {
+    const response = error?.response;
+    const status = response?.status;
+
+    if (!status) {
+      return Promise.reject(error);
+    }
+
+    if (status === 401) {
+      const isLoginAttempt =
+        response.config?.method === "post" &&
+        response.config?.url?.endsWith("/SessionService/Sessions");
+      if (!isLoginAttempt) {
+        const { useAuthStore } = await import("@/stores/auth");
+        const authStore = useAuthStore();
+        await authStore.logout(true);
+      }
+    }
+
+    return Promise.reject(error);
+  },
+);
 
 export const apiInstance = <T>(config: AxiosRequestConfig): Promise<T> => {
   const source = Axios.CancelToken.source();

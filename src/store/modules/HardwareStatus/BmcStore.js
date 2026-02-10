@@ -33,6 +33,9 @@ const BmcStore = {
     bmcUpTime: null,
     managersLoading: false,
     managersError: null,
+    // Cached values — these are resolved once and never change
+    _cachedBmcPath: null,
+    _cachedManagerMembers: null,
   },
   getters: {
     bmc: (state) => state.bmc,
@@ -106,9 +109,19 @@ const BmcStore = {
   actions: {
     async getBmcInfo({ commit, dispatch, state }) {
       try {
-        const bmcPath = `${await this.dispatch('global/getBmcPath')}`;
-        const { data: { Members = [] } } = await api.get('/redfish/v1/Managers');
-        const bmcPromises = Members.map((member, idx) =>
+        // Resolve bmcPath once — it never changes after initial discovery
+        if (!state._cachedBmcPath) {
+          state._cachedBmcPath = `${await this.dispatch('global/getBmcPath')}`;
+        }
+        const bmcPath = state._cachedBmcPath;
+
+        // Fetch Manager collection members once — hardware-static list
+        if (!state._cachedManagerMembers) {
+          const { data: { Members = [] } } = await api.get('/redfish/v1/Managers');
+          state._cachedManagerMembers = Members;
+        }
+
+        const bmcPromises = state._cachedManagerMembers.map((member, idx) =>
           api.get(getOdataId(member)).then(async ({ data }) => {
             commit('setBmcInfo', { ...data, index: idx });
             
@@ -221,9 +234,64 @@ const BmcStore = {
           }
         });
     },
-    async checkManagerStatus({ dispatch, state }) {
-      await dispatch('getBmcInfo');
-      return state.isManagerReady
+    async checkManagerStatus({ dispatch, state, commit }) {
+      // First call: do a full getBmcInfo to populate all data and caches
+      if (!state._cachedManagerMembers) {
+        await dispatch('getBmcInfo');
+        return state.isManagerReady;
+      }
+
+      // Already confirmed ready — nothing to do
+      if (state.isManagerReady) return true;
+
+      // Identify managers that aren't Enabled yet (skip ready ones)
+      const notReadyEntries = state._cachedManagerMembers
+        .map((member, idx) => ({ member, idx }))
+        .filter(({ idx }) => {
+          const existing = state.bmc[idx];
+          return !existing || existing.statusState !== 'Enabled';
+        });
+
+      // All are Enabled from previous data
+      if (notReadyEntries.length === 0) {
+        commit('setManagerReady', true);
+        commit('setManagerNotReadyDetails', '');
+        return true;
+      }
+
+      // Only fetch the non-ready manager(s)
+      try {
+        const results = await Promise.all(
+          notReadyEntries.map(({ member, idx }) =>
+            api.get(getOdataId(member)).then(({ data }) => {
+              // Update stored BMC info so subsequent checks see the new state
+              commit('setBmcInfo', { ...data, index: idx });
+              state.Managers[idx] = data;
+              return data;
+            }),
+          ),
+        );
+
+        const stillNotReady = results.filter(
+          (m) => m?.Status?.State !== 'Enabled',
+        );
+        const allReady = stillNotReady.length === 0;
+        commit('setManagerReady', allReady);
+
+        if (!allReady) {
+          const details = stillNotReady
+            .map((m) => `${m.Id}.Status.State = "${m.Status?.State}"`)
+            .join(', ');
+          commit('setManagerNotReadyDetails', details);
+        } else {
+          commit('setManagerNotReadyDetails', '');
+        }
+
+        return allReady;
+      } catch (error) {
+        console.log(error);
+        return false;
+      }
     },
     async calculateUpTime({ commit }, { currentDate, lastResetTime}) {
       // Get BMC path from the global store if needed

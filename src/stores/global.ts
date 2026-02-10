@@ -112,6 +112,7 @@ export const useGlobalStore = defineStore('global', () => {
   const isBootPolling = ref(false);
   const bootPollInterval = ref(BOOT_POLL_INTERVAL);
   let bootPollTimer: ReturnType<typeof setTimeout> | null = null;
+  let bootPollStabilityTimer: ReturnType<typeof setTimeout> | null = null;
   let bootPollStartTime = 0;
 
   // ---------------------------------------------------------------------------
@@ -334,6 +335,10 @@ export const useGlobalStore = defineStore('global', () => {
       clearTimeout(bootPollTimer);
       bootPollTimer = null;
     }
+    if (bootPollStabilityTimer) {
+      clearTimeout(bootPollStabilityTimer);
+      bootPollStabilityTimer = null;
+    }
   };
 
   const scheduleBootPollingBackoff = () => {
@@ -416,6 +421,21 @@ export const useGlobalStore = defineStore('global', () => {
       clearTimeout(bootPollTimer);
       bootPollTimer = null;
     }
+    // Schedule a delayed stability check after BOOT_POLL_MIN_DURATION.
+    // The reactive watch on [PowerState, BootProgressState] suppresses
+    // the stability check during the min-duration window. If the system
+    // reaches a stable state within that window, the watch won't fire
+    // again (values stop changing). This timer ensures we re-check.
+    if (bootPollStabilityTimer) {
+      clearTimeout(bootPollStabilityTimer);
+    }
+    bootPollStabilityTimer = setTimeout(() => {
+      bootPollStabilityTimer = null;
+      if (!isBootPolling.value) return;
+      if (isSystemStable(PowerState.value, BootProgressState.value)) {
+        stopBootPolling();
+      }
+    }, BOOT_POLL_MIN_DURATION + 1000); // +1s buffer
     scheduleBootPollingBackoff();
     // Immediate refetch so the UI updates right away
     await refetchManagedSystem();
@@ -531,6 +551,9 @@ export const useGlobalStore = defineStore('global', () => {
     isLoading,
     isLoaded,
     error,
+
+    // Boot polling state (used by LoadingBar to suppress during boot)
+    isBootPolling,
 
     // Actions
     refetch,

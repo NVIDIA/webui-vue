@@ -10,7 +10,7 @@ exports[`Search.vue > should render correctly 1`] = `
     "
     label="global.form.search"
     label-class="invisible"
-    label-for="searchInput-4fzzzxjylrx"
+    label-for="searchInput-test-uid"
   >
     <div
       class="
@@ -26,7 +26,7 @@ exports[`Search.vue > should render correctly 1`] = `
           search-input
           search-input
         "
-        id="searchInput-4fzzzxjylrx"
+        id="searchInput-test-uid"
         modelvalue=""
         placeholder="Search"
         type="text"

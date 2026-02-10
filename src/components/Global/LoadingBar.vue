@@ -27,7 +27,15 @@ let timeoutId: ReturnType<typeof setTimeout> | null = null;
 const manualLoadingCount = ref(0);
 
 const isFetchingCount = useIsFetching({
-  predicate: (query) => !query.options.meta?.hideLoadingBar,
+  predicate: (query) => {
+    if (query.options.meta?.hideLoadingBar) return false;
+    // Suppress background refetches (SSE invalidations, stale refetches).
+    // These queries already have cached data displayed — the refetch
+    // happens silently and the UI updates reactively when data arrives.
+    // Only show the loading bar for initial fetches (no data yet).
+    if (query.state.dataUpdatedAt > 0) return false;
+    return true;
+  },
 });
 const isMutatingCount = useIsMutating({
   predicate: (mutation) => !mutation.options.meta?.hideLoadingBar,

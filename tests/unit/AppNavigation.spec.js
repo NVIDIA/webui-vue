@@ -5,6 +5,15 @@ import AppNavigation from '@/components/AppNavigation';
 import { createStore } from 'vuex';
 import { createRouter, createMemoryHistory } from 'vue-router';
 
+// Mock Pinia auth store so AppNavigation doesn't need a real Pinia instance
+vi.mock('@/stores/auth', () => ({
+  useAuthStore: () => ({
+    isLoggedIn: true,
+    Roles: [],
+    consoleWindow: null,
+  }),
+}));
+
 describe('AppNavigation.vue', () => {
   let wrapper;
   const router = createRouter({

@@ -1,85 +1,70 @@
 /**
- * PostCodeDecoder - Lightweight client-side POST code decoder
+ * PostCodeDecoder - POST code decoder supporting both:
+ *   - 9-byte UEFI PI status codes (e.g. "0x010000000000010200")
+ *   - 32-bit OEM compressed codes (e.g. "0x70C0C001")
  *
- * Two-layer approach for embedded BMC bundle-size constraints:
- *   Layer 1: Bit math to extract processor source, type, and package (~0KB)
- *   Layer 2: Curated milestone map for stage-boundary labels (~1KB)
+ * 9-byte UEFI format (OpenBMC phosphor-post-code-manager):
+ *   Bytes 0-3: EFI_STATUS_CODE_TYPE (LE uint32)
+ *     0x01 = Progress, 0x02 = Error, 0x03 = Debug
+ *   Bytes 4-7: EFI_STATUS_CODE_VALUE (LE uint32)
+ *     Bits 31:24 = Class, 23:16 = SubClass, 15:0 = Operation
+ *   Byte 8: Extended data (typically 0x00)
  *
- * Bit field layout (32-bit OEM POST codes):
+ * 32-bit OEM format (NVIDIA TB50x progress codes):
  *   Bits 31:30 = Status Type (0x1=Progress, 0x2=Error, 0x3=Debug)
- *   Bits 29:24 = Class (0x1C=OEM with pkg bit, 0x03=EFI/UEFI)
- *   Bits 23:16 = Subclass/Source (PSC_ROM=0xC0, PSC_FMC=0xC1, etc.)
+ *   Bits 29:24 = Class (0x30=Pkg0, 0x31=Pkg1)
+ *   Bits 23:16 = Source (0xC0=PSCROM, 0xC1=PSCFMC, ...)
  *   Bits 15:0  = Operation[5:0] + Instance[12:6]
  *
- * Package/socket is determined by bit 24:
- *   0x70... = Package 0,  0x71... = Package 1
+ * Source byte assignments (from TB50x Progress Code Format spec):
+ *   0xC0 = PSCROM, 0xC1 = PSCFMC, 0xC2 = PSCRT,
+ *   0xC3 = MB1, 0xC4 = BPMP-FW, 0xC5 = MB2,
+ *   0xC6 = ATF/BL31, 0xC7 = RMM, 0xC8 = Hafnium,
+ *   0xC9 = UEFI, 0xCA = UEFI-StMM, 0xCB = OOBHUB-FW,
+ *   0xCC = RAS-FW, 0xCD = MSEQ-FW, 0xCE-0xD3 = PCORE0-5-FW
  */
 
 // ---------------------------------------------------------------------------
-// Source byte → processor row mapping
+// Source byte → processor row mapping (32-bit OEM codes)
+//
+// Maps NVIDIA OEM source bytes to boot-progress config processor IDs.
+// Matches TB50x Progress Codes spec via LogBench reference implementation.
 // ---------------------------------------------------------------------------
 
-const SOURCE_MAP: Record<number, string> = {
-  0xC0: 'psc', // PSC_ROM
-  0xC1: 'psc', // PSC_FMC (both map to PSC processor row)
-  0xC3: 'oob', // OOB HUB
-  0xC4: 'bpmp', // MB1 / BPMP FW
-  0xC5: 'mseq', // Memory Sequencer
+const OEM_SOURCE_TO_PROCESSOR: Record<number, string> = {
+  0xc0: 'psc', // PSCROM
+  0xc1: 'psc', // PSCFMC
+  0xc2: 'psc', // PSCRT
+  0xc3: 'bpmp', // MB1 → BPMP processor row (first stage)
+  0xc4: 'bpmp', // BPMP-FW → BPMP processor row (second stage)
+  0xc5: 'ccplex', // MB2 → CCPLEX row
+  0xc6: 'ccplex', // ATF/BL31
+  0xc7: 'ccplex', // RMM
+  0xc8: 'ccplex', // Hafnium
+  0xc9: 'ccplex', // UEFI
+  0xca: 'ccplex', // UEFI-StMM
+  0xcb: 'oob', // OOBHUB-FW
+  0xcc: 'ras', // RAS-FW
+  0xcd: 'mseq', // MSEQ-FW
+  0xce: 'pxir', // PCORE0-FW
+  0xcf: 'pxir', // PCORE1-FW
+  0xd0: 'pxir', // PCORE2-FW
+  0xd1: 'pxir', // PCORE3-FW
+  0xd2: 'pxir', // PCORE4-FW
+  0xd3: 'pxir', // PCORE5-FW
 };
 
-// ---------------------------------------------------------------------------
-// Curated milestone codes (~20-30 stage-boundary markers)
-//
-// Keyed by masked value: strip package bit (24) and instance bits [12:6]
-// using mask 0xFEFF003F so both pkg0/pkg1 variants match.
-//
-// Populated from reference CSV — only codes that mark visible stage
-// transitions in real boot logs.
-// ---------------------------------------------------------------------------
-
-const MILESTONES: Record<number, string> = {
-  // PSC_ROM (source 0xC0)
-  0x70C0C001: 'PSC ROM: I2C Ext Msg Init',
-  0x70C0C003: 'PSC ROM: Boot Mode Detect',
-  0x70C0C004: 'PSC ROM: BCT Loaded',
-  0x70C0C007: 'PSC ROM: FMC Auth Start',
-  0x70C0C008: 'PSC ROM: FMC Auth Done',
-  0x70C0C009: 'PSC ROM: FMC Loaded',
-  0x70C0C00A: 'PSC ROM: Handoff to FMC',
-  0x70C0C00B: 'PSC ROM: Unhalt BPMP',
-
-  // PSC_FMC (source 0xC1)
-  0x70C1C001: 'PSC FMC: Init Start',
-  0x70C1C003: 'PSC FMC: DRAM Init',
-  0x70C1C006: 'PSC FMC: FW Handoff',
-  0x70C1C008: 'PSC FMC: Stage Progress',
-  0x70C1C052: 'PSC FMC: MB2 Load Start',
-  0x70C1C053: 'PSC FMC: MB2 Load Done',
-  0x70C1C00C: 'PSC FMC: Boot Complete',
-
-  // BPMP / MB1 (source 0xC4)
-  0x70C4C000: 'MB1: Init Start',
-  0x70C4C001: 'MB1: C2C LPI Init',
-  0x70C4C002: 'MB1: SDRAM Config',
-  0x70C4C003: 'MB1: SDRAM Init',
-  0x70C4C004: 'MB1: Finished → BPMP FW',
-  0x70C4C005: 'BPMP FW: Init Start',
-  0x70C4C006: 'BPMP FW: Clock Setup',
-  0x70C4C007: 'BPMP FW: IPC Init',
-  0x70C4C008: 'BPMP FW: Module Load',
-  0x70C4C009: 'BPMP FW: Init Complete',
-  0x70C4C00A: 'BPMP FW: Runtime',
-  0x70C4C03F: 'BPMP FW: All Done',
-
-  // OOB HUB (source 0xC3)
-  0x70C3C001: 'OOB HUB: Init',
-
-  // MSEQ (source 0xC5)
-  0x70C5C001: 'MSEQ: Init',
-
-  // Errors (type bits = 0x2, masked to pkg0)
-  0xB0C0C001: 'PSC ROM: I2C Fail',
-  0xB0C1C011: 'PSC FMC: SPE Error',
+/**
+ * Source byte → CCPLEX sub-stage mapping (for OEM codes within the CCPLEX).
+ * Allows finer-grained stage identification when OEM codes are available.
+ */
+export const OEM_SOURCE_TO_STAGE: Record<number, string> = {
+  0xc5: 'mb2',
+  0xc6: 'atf',
+  0xc7: 'rmm',
+  0xc8: 'hafnium',
+  0xc9: 'uefi',
+  0xca: 'uefi',
 };
 
 // ---------------------------------------------------------------------------
@@ -89,14 +74,52 @@ const MILESTONES: Record<number, string> = {
 export interface DecodedPostCode {
   /** Processor row identifier (matches boot-progress config IDs) */
   processor: string;
-  /** True if this is an error code (type bits = 0x2) */
+  /** True if this is an error code */
   isError: boolean;
-  /** True if this is a progress code (type bits = 0x1) */
+  /** True if this is a progress code */
   isProgress: boolean;
   /** Package/socket number (0 or 1) */
   pkg: number;
   /** Human-readable label for milestone codes, null otherwise */
   label: string | null;
+  /** CCPLEX sub-stage if identifiable (e.g. 'mb2', 'atf', 'uefi') */
+  stage: string | null;
+  /** Code format: 'uefi9' for 9-byte UEFI, 'oem32' for 32-bit OEM */
+  format: 'uefi9' | 'oem32';
+}
+
+// ---------------------------------------------------------------------------
+// Hex parsing helpers (safe for arbitrary-length hex strings)
+// ---------------------------------------------------------------------------
+
+/**
+ * Extract a byte from a hex string at a given byte position.
+ * Byte 0 is the leftmost pair of hex chars.
+ */
+function hexByte(hex: string, bytePos: number): number {
+  const offset = bytePos * 2;
+  if (offset + 2 > hex.length) return 0;
+  return parseInt(hex.slice(offset, offset + 2), 16);
+}
+
+/**
+ * Extract a 32-bit little-endian value from 4 consecutive bytes in a hex string.
+ */
+function hexLE32(hex: string, startByte: number): number {
+  const b0 = hexByte(hex, startByte);
+  const b1 = hexByte(hex, startByte + 1);
+  const b2 = hexByte(hex, startByte + 2);
+  const b3 = hexByte(hex, startByte + 3);
+  return ((b3 << 24) | (b2 << 16) | (b1 << 8) | b0) >>> 0;
+}
+
+/**
+ * Normalize a POST code string to bare hex digits (no 0x prefix, lowercase).
+ */
+function normalizeHex(input: string): string {
+  const trimmed = input.trim().toLowerCase();
+  if (trimmed.startsWith('0x')) return trimmed.slice(2);
+  return trimmed;
 }
 
 // ---------------------------------------------------------------------------
@@ -104,40 +127,116 @@ export interface DecodedPostCode {
 // ---------------------------------------------------------------------------
 
 /**
- * Decode a hex POST code string into processor, type, and milestone info.
+ * Decode a POST code string from MessageArgs[2].
  *
- * @param hex - Hex string from MessageArgs[2], e.g. "0x70C4C000"
- * @returns Decoded POST code information
+ * Automatically detects the format:
+ *   - >8 hex chars → 9-byte UEFI PI format (all entries map to 'ccplex')
+ *   - ≤8 hex chars → 32-bit OEM format (source byte identifies processor)
  */
-export function decodePostCode(hex: string): DecodedPostCode {
-  const value = parseInt(hex, 16) >>> 0;
+export function decodePostCode(input: string): DecodedPostCode {
+  const hex = normalizeHex(input);
+
+  // 9-byte UEFI PI format (18 hex chars = 9 bytes)
+  if (hex.length > 8) {
+    return decodeUefi9(hex);
+  }
+
+  // 32-bit OEM format (≤8 hex chars = 4 bytes)
+  return decodeOem32(hex);
+}
+
+/**
+ * Decode a 9-byte UEFI PI status code.
+ *
+ * All entries from this format originate from the CCPLEX (UEFI firmware).
+ * The early boot processors (PSC, BPMP, OOB, etc.) don't report through
+ * the PostCodes/Entries endpoint — their state must be inferred from
+ * BootProgressState/OemState instead.
+ */
+function decodeUefi9(hex: string): DecodedPostCode {
+  // Bytes 0-3 (LE): EFI_STATUS_CODE_TYPE
+  const codeType = hexLE32(hex, 0);
+  const isError = codeType === 0x02;
+  const isProgress = codeType === 0x01;
+
+  // Bytes 4-7 (LE): EFI_STATUS_CODE_VALUE
+  const codeValue = hexLE32(hex, 4);
+  const uefiClass = (codeValue >>> 24) & 0xff;
+  const uefiSubclass = (codeValue >>> 16) & 0xff;
+
+  // Byte 8: typically 0x00 (severity/padding)
+  const severityByte = hexByte(hex, 8);
+
+  // Error codes have severity 0x80 in byte 8
+  const isErrorFromSeverity = severityByte === 0x80;
+
+  return {
+    processor: 'ccplex',
+    isError: isError || isErrorFromSeverity,
+    isProgress,
+    pkg: 0,
+    label: uefiClass > 0 ? `UEFI ${uefiClass}.${uefiSubclass}` : null,
+    stage: null, // UEFI status codes don't distinguish CCPLEX sub-stages
+    format: 'uefi9',
+  };
+}
+
+/**
+ * Decode a 32-bit OEM compressed POST code (NVIDIA TB50x format).
+ *
+ * When the BMC reports OEM codes (e.g. 0x70C0C001), this identifies
+ * the exact processor and stage. Currently the BMC only reports UEFI
+ * format codes, but this path is kept for future firmware support.
+ */
+function decodeOem32(hex: string): DecodedPostCode {
+  const padded = hex.padStart(8, '0');
+  const value = parseInt(padded, 16) >>> 0;
+
+  // Sentinel / padding values
+  if (value === 0xffffffff || value === 0x00000000) {
+    return {
+      processor: 'padding',
+      isError: false,
+      isProgress: false,
+      pkg: 0,
+      label: null,
+      stage: null,
+      format: 'oem32',
+    };
+  }
+
   const typeBits = (value >>> 30) & 0x3;
   const classBits = (value >>> 24) & 0x3f;
   const source = (value >>> 16) & 0xff;
-  const pkg = (value >>> 24) & 0x1;
+  const pkg = classBits & 0x1; // bit 24: 0x30=pkg0, 0x31=pkg1
 
-  // EFI class (0x03) = UEFI / CCPLEX codes — different bit layout
-  if (classBits === 0x03) {
+  // Standard EFI class (0x00-0x03) — non-OEM CCPLEX codes
+  if (classBits <= 0x03) {
     return {
       processor: 'ccplex',
       isError: false,
       isProgress: true,
-      pkg,
+      pkg: 0,
       label: null,
+      stage: null,
+      format: 'oem32',
     };
   }
 
-  // Mask out package bit (24) and instance bits [12:6] for milestone lookup
-  // Mask: keep bits 31:25, 23:13, 5:0 → 0xFEFF003F
-  const maskedForLookup = (value & 0xfeff003f) >>> 0;
-  const label = MILESTONES[maskedForLookup] || null;
+  // OEM class (0x20-0x3F) with NVIDIA source byte in bits 23:16
+  const isOemClass = classBits >= 0x20;
+  const processor =
+    OEM_SOURCE_TO_PROCESSOR[source] || (isOemClass ? 'unknown' : 'ccplex');
+  const stage = OEM_SOURCE_TO_STAGE[source] || null;
 
   return {
-    processor: SOURCE_MAP[source] || 'unknown',
-    isError: typeBits === 2,
-    isProgress: typeBits === 1,
+    processor,
+    isError: isOemClass && typeBits === 2,
+    isProgress: isOemClass ? typeBits === 1 : true,
     pkg,
-    label,
+    label: null,
+    stage,
+    format: 'oem32',
   };
 }
 
