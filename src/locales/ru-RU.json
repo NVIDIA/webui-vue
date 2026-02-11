@@ -86,6 +86,7 @@
             "enabled": "Включено",
             "error": "Ошибка",
             "insufficientPrivileges": "Недостаточно привилегий",
+            "loading": "Загрузка...",
             "no": "Нет",
             "notAvailable": "Недоступно",
             "off": "Выкл.",
@@ -186,7 +187,6 @@
         "virtualMedia": "@:appPageTitle.virtualMedia",
         "snmpAlerts": "@:appPageTitle.snmpAlerts",
         "power": "@:appPageTitle.power",
-        "powerLimit": "@:appPageTitle.powerLimit",
         "keyClear": "@:appPageTitle.keyClear",
         "bootProgress": "@:appPageTitle.bootProgress"
     },
@@ -222,7 +222,6 @@
         "virtualMedia": "Виртуальные носители",
         "keyClear": "Удаление ключей",
         "localUsers": "Управление пользователями",
-        "powerLimit": "Ограничение мощности",
         "bootProgress": "Прогресс загрузки"
     },
     "pageBootProgress": {
@@ -261,23 +260,6 @@
             "booting": "Выполняется загрузка системы",
             "viewDetails": "Просмотр прогресса загрузки",
             "openConsole": "Открыть SOL консоль"
-        }
-    },
-    "pagePowerLimit": {
-        "description": "Управление ограничениями мощности CPU и GPU для этой системы.",
-        "cpuSectionTitle": "Ограничения мощности CPU",
-        "gpuSectionTitle": "Ограничения мощности GPU",
-        "currentPower": "текущая",
-        "cpuLimitLabel": "Лимит CPU (TDP)",
-        "gpuLimitLabel": "Лимит GPU (TGP)",
-        "basePowerLabel": "Базовая мощность GPU",
-        "limitRange": "Допустимый диапазон: {min}–{max} Вт",
-        "gpuViewCpuLimit": "Лимит CPU с точки зрения GPU",
-        "effectiveTgp": "Эффективная TGP",
-        "noProcessors": "Процессоры не найдены.",
-        "toast": {
-            "successSave": "Ограничения мощности сохранены.",
-            "errorSave": "Не удалось сохранить ограничения мощности."
         }
     },
     "pageChangePassword": {

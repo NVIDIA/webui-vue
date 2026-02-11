@@ -1,4 +1,10 @@
 {
+    "appNavigation": {
+        "powerLimit": "Power limiting"
+    },
+    "appPageTitle": {
+        "powerLimit": "Power limiting"
+    },
     "pageDumps": {
         "dumpTypes": {
             "bmcDump": "BMC dump",
@@ -6,6 +12,30 @@
             "systemBmcDump": "System [BMC] dump (disruptive)",
             "systemHgxDump": "System [HGX] dump (disruptive)",
             "systemDump": "System [BMC] dump (disruptive)"
+        }
+    },
+    "pageOverview": {
+        "powerLimitInformation": "Power limiting",
+        "totalGpuPower": "Total GPU power",
+        "totalCpuPower": "Total CPU power",
+        "gpuCount": "GPUs",
+        "cpuCount": "CPUs"
+    },
+    "pagePowerLimit": {
+        "description": "Manage CPU and GPU power limits for this system.",
+        "cpuSectionTitle": "CPU power limits",
+        "gpuSectionTitle": "GPU power limits",
+        "currentPower": "current",
+        "cpuLimitLabel": "CPU limit (TDP)",
+        "gpuLimitLabel": "GPU limit (TGP)",
+        "basePowerLabel": "GPU base power",
+        "limitRange": "Allowed range: {min}–{max} W",
+        "gpuViewCpuLimit": "GPU view of CPU limit",
+        "effectiveTgp": "Effective TGP",
+        "noProcessors": "No processors found.",
+        "toast": {
+            "successSave": "Power limits saved.",
+            "errorSave": "Unable to save power limits."
         }
     }
 }

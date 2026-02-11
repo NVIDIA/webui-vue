@@ -21,6 +21,9 @@
         <b-col v-if="showPower" class="mb-3">
           <overview-power class="h-100" />
         </b-col>
+        <b-col v-if="showPowerLimit" class="mb-3">
+          <overview-power-limit class="h-100" />
+        </b-col>
       </b-row>
     </page-section>
     <page-section :section-title="$t('pageOverview.statusInformation')">
@@ -59,6 +62,7 @@
 </template>
 
 <script>
+import { defineAsyncComponent } from 'vue';
 import LoadingBarMixin from '@/components/Mixins/LoadingBarMixin';
 import eventBus from '@/eventBus';
 import OverviewDumps from './OverviewDumps.vue';
@@ -72,6 +76,13 @@ import OverviewServer from './OverviewServer';
 import PageSection from '@/components/Global/PageSection';
 import PageTitle from '@/components/Global/PageTitle';
 
+// Vendor-specific components (build-time tree-shaken for non-matching environments)
+const OverviewPowerLimit = import.meta.env.VITE_ENV_NAME === 'nvidia-vr'
+  ? defineAsyncComponent(() =>
+      import('@/env/components/nvidia/OverviewPowerLimit.vue'),
+    )
+  : null;
+
 export default {
   name: 'Overview',
   components: {
@@ -81,6 +92,7 @@ export default {
     OverviewInventory,
     OverviewNetwork,
     OverviewPower,
+    ...(OverviewPowerLimit ? { OverviewPowerLimit } : {}),
     OverviewQuickLinks,
     OverviewServer,
     PageSection,
@@ -102,6 +114,7 @@ export default {
       showSelLog: ['nvidia-bluefield', 'nvidia-igx', 'nvidia-gb', 'nvidia-vr'].includes(
         import.meta.env.VITE_ENV_NAME,
       ),
+      showPowerLimit: import.meta.env.VITE_ENV_NAME === 'nvidia-vr',
     };
   },
   created() {
@@ -122,6 +135,7 @@ export default {
     if (this.showDumps) promises.push(waitFor('overview-dumps-complete'));
     if (this.showInventory) promises.push(waitFor('overview-inventory-complete'));
     if (this.showPower) promises.push(waitFor('overview-power-complete'));
+    if (this.showPowerLimit) promises.push(waitFor('overview-power-limit-complete'));
     if (this.showSelLog) promises.push(waitFor('overview-sel-complete'));
 
     Promise.all(promises).finally(() => {

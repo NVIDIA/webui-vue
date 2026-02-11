@@ -561,7 +561,7 @@ function createWebSocketConnection() {
     const wsUrl = `${wsProtocol}://${window.location.host}/console/default?t=${Date.now()}`;
 
     try {
-      ws = new WebSocket(wsUrl, [token]);
+      ws = token ? new WebSocket(wsUrl, [token]) : new WebSocket(wsUrl);
     } catch (err) {
       console.error('WebSocket creation failed:', err);
       return;

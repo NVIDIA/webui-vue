@@ -1,4 +1,10 @@
 {
+    "appNavigation": {
+        "powerLimit": "功率限制"
+    },
+    "appPageTitle": {
+        "powerLimit": "功率限制"
+    },
     "pageDumps": {
         "dumpTypes": {
             "bmcDump": "BMC 转储",
@@ -6,6 +12,30 @@
             "systemBmcDump": "系统 [BMC] 转储（破坏性）",
             "systemHgxDump": "系统 [HGX] 转储（破坏性）",
             "systemDump": "系统 [BMC] 转储（破坏性）"
+        }
+    },
+    "pageOverview": {
+        "powerLimitInformation": "功率限制",
+        "totalGpuPower": "GPU 总功率",
+        "totalCpuPower": "CPU 总功率",
+        "gpuCount": "GPU",
+        "cpuCount": "CPU"
+    },
+    "pagePowerLimit": {
+        "description": "管理此系统的 CPU 和 GPU 功率限制。",
+        "cpuSectionTitle": "CPU 功率限制",
+        "gpuSectionTitle": "GPU 功率限制",
+        "currentPower": "当前",
+        "cpuLimitLabel": "CPU 限制 (TDP)",
+        "gpuLimitLabel": "GPU 限制 (TGP)",
+        "basePowerLabel": "GPU 基础功率",
+        "limitRange": "允许范围：{min}–{max} W",
+        "gpuViewCpuLimit": "GPU 视角的 CPU 限制",
+        "effectiveTgp": "有效 TGP",
+        "noProcessors": "未找到处理器。",
+        "toast": {
+            "successSave": "功率限制已保存。",
+            "errorSave": "无法保存功率限制。"
         }
     }
 }

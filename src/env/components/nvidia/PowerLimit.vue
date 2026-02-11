@@ -2,7 +2,10 @@
   <b-container fluid="xl">
     <page-title :description="$t('pagePowerLimit.description')" />
     <b-overlay :show="isLoading" rounded="sm">
-      <b-container v-if="!hasData">
+      <b-container v-if="isLoading">
+        <em>{{ $t('global.status.loading') }}</em>
+      </b-container>
+      <b-container v-else-if="!hasData">
         {{ $t('pagePowerLimit.noProcessors') }}
       </b-container>
 
@@ -308,7 +311,7 @@ function syncEdits() {
   );
 }
 
-watch(modules, syncEdits, { deep: true });
+watch(modules, syncEdits, { deep: true, immediate: true });
 
 // ---------------------------------------------------------------------------
 // Display helpers

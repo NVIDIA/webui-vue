@@ -33,7 +33,7 @@ import VirtualMedia from '@/views/Operations/VirtualMedia';
 import i18n from '@/i18n';
 // Custom components
 import Dumps from '@/views/Logs/Dumps';
-import PowerLimit from '@/views/ResourceManagement/PowerLimit';
+import PowerLimit from '@/env/components/nvidia/PowerLimit';
 const routes = [
   {
     path: '/login',

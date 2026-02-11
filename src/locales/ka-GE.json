@@ -67,6 +67,7 @@
             "enabled": "ჩართულია",
             "error": "შეცდომა",
             "insufficientPrivileges": "არასაკმარისი პრივილეგიები",
+            "loading": "იტვირთება...",
             "no": "არა",
             "notAvailable": "ხელმისაწვდომი არაა",
             "off": "გამორთ",
@@ -149,7 +150,6 @@
         "virtualMedia": "@:appPageTitle.virtualMedia",
         "snmpAlerts": "@:appPageTitle.snmpAlerts",
         "power": "@:appPageTitle.power",
-        "powerLimit": "@:appPageTitle.powerLimit",
         "keyClear": "@:appPageTitle.keyClear",
         "bootProgress": "@:appPageTitle.bootProgress"
     },
@@ -182,7 +182,6 @@
         "snmpAlerts": "SNMP გაფრთხილებები",
         "virtualMedia": "ვირტუალური მედია",
         "keyClear": "გასაღების გასუფთავება",
-        "powerLimit": "სიმძლავრის შეზღუდვა",
         "bootProgress": "ჩატვირთვის პროგრესი"
     },
     "pageBootProgress": {
@@ -221,23 +220,6 @@
             "booting": "სისტემის ჩატვირთვა მიმდინარეობს",
             "viewDetails": "ჩატვირთვის პროგრესის ნახვა",
             "openConsole": "SOL კონსოლის გახსნა"
-        }
-    },
-    "pagePowerLimit": {
-        "description": "ამ სისტემის CPU და GPU სიმძლავრის ლიმიტების მართვა.",
-        "cpuSectionTitle": "CPU სიმძლავრის ლიმიტები",
-        "gpuSectionTitle": "GPU სიმძლავრის ლიმიტები",
-        "currentPower": "მიმდინარე",
-        "cpuLimitLabel": "CPU ლიმიტი (TDP)",
-        "gpuLimitLabel": "GPU ლიმიტი (TGP)",
-        "basePowerLabel": "GPU ბაზისური სიმძლავრე",
-        "limitRange": "დასაშვები დიაპაზონი: {min}–{max} ვტ",
-        "gpuViewCpuLimit": "CPU ლიმიტი GPU-ს ხედვით",
-        "effectiveTgp": "ეფექტური TGP",
-        "noProcessors": "პროცესორები ვერ მოიძებნა.",
-        "toast": {
-            "successSave": "სიმძლავრის ლიმიტები შენახულია.",
-            "errorSave": "სიმძლავრის ლიმიტების შენახვა ვერ მოხერხდა."
         }
     },
     "pageChangePassword": {

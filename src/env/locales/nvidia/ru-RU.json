@@ -1,4 +1,10 @@
 {
+    "appNavigation": {
+        "powerLimit": "Ограничение мощности"
+    },
+    "appPageTitle": {
+        "powerLimit": "Ограничение мощности"
+    },
     "pageDumps": {
         "dumpTypes": {
             "bmcDump": "BMC дамп",
@@ -6,6 +12,30 @@
             "systemBmcDump": "Системный [BMC] дамп (разрушительный)",
             "systemHgxDump": "Системный [HGX] дамп (разрушительный)",
             "systemDump": "Системный [BMC] дамп (разрушительный)"
+        }
+    },
+    "pageOverview": {
+        "powerLimitInformation": "Ограничение мощности",
+        "totalGpuPower": "Общая мощность GPU",
+        "totalCpuPower": "Общая мощность CPU",
+        "gpuCount": "GPU",
+        "cpuCount": "CPU"
+    },
+    "pagePowerLimit": {
+        "description": "Управление ограничениями мощности CPU и GPU для этой системы.",
+        "cpuSectionTitle": "Ограничения мощности CPU",
+        "gpuSectionTitle": "Ограничения мощности GPU",
+        "currentPower": "текущая",
+        "cpuLimitLabel": "Лимит CPU (TDP)",
+        "gpuLimitLabel": "Лимит GPU (TGP)",
+        "basePowerLabel": "Базовая мощность GPU",
+        "limitRange": "Допустимый диапазон: {min}–{max} Вт",
+        "gpuViewCpuLimit": "Лимит CPU с точки зрения GPU",
+        "effectiveTgp": "Эффективная TGP",
+        "noProcessors": "Процессоры не найдены.",
+        "toast": {
+            "successSave": "Ограничения мощности сохранены.",
+            "errorSave": "Не удалось сохранить ограничения мощности."
         }
     }
 }

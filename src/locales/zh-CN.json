@@ -83,6 +83,7 @@
         "disabled": "已禁用",
         "enabled": "已启用",
         "error": "错误",
+        "loading": "加载中...",
         "notAvailable": "不可用",
         "off": "关闭",
         "on": "开启",
@@ -178,7 +179,6 @@
         "virtualMedia": "@:appPageTitle.virtualMedia",
         "snmpAlerts": "@:appPageTitle.snmpAlerts",
         "power": "@:appPageTitle.power",
-        "powerLimit": "@:appPageTitle.powerLimit",
         "keyClear": "@:appPageTitle.keyClear",
         "bootProgress": "@:appPageTitle.bootProgress"
     },
@@ -214,7 +214,6 @@
         "snmpAlerts": "SNMP警报",
         "virtualMedia": "虚拟媒体",
         "keyClear": "清除密钥",
-        "powerLimit": "功率限制",
         "bootProgress": "启动进度"
     },
     "pageBootProgress": {
@@ -253,23 +252,6 @@
             "booting": "系统正在启动",
             "viewDetails": "查看启动进度",
             "openConsole": "打开SOL控制台"
-        }
-    },
-    "pagePowerLimit": {
-        "description": "管理此系统的 CPU 和 GPU 功率限制。",
-        "cpuSectionTitle": "CPU 功率限制",
-        "gpuSectionTitle": "GPU 功率限制",
-        "currentPower": "当前",
-        "cpuLimitLabel": "CPU 限制 (TDP)",
-        "gpuLimitLabel": "GPU 限制 (TGP)",
-        "basePowerLabel": "GPU 基础功率",
-        "limitRange": "允许范围：{min}–{max} W",
-        "gpuViewCpuLimit": "GPU 视角的 CPU 限制",
-        "effectiveTgp": "有效 TGP",
-        "noProcessors": "未找到处理器。",
-        "toast": {
-            "successSave": "功率限制已保存。",
-            "errorSave": "无法保存功率限制。"
         }
     },
     "pageChangePassword": {

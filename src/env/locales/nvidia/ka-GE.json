@@ -1,4 +1,10 @@
 {
+    "appNavigation": {
+        "powerLimit": "სიმძლავრის შეზღუდვა"
+    },
+    "appPageTitle": {
+        "powerLimit": "სიმძლავრის შეზღუდვა"
+    },
     "pageDumps": {
         "dumpTypes": {
             "bmcDump": "BMC-ის დამპი",
@@ -6,6 +12,30 @@
             "systemBmcDump": "სისტემის [BMC] დამპი (დროებით წყვეტს სისტემის მუშაობას)",
             "systemHgxDump": "სისტემის [HGX] დამპი (დროებით წყვეტს სისტემის მუშაობას)",
             "systemDump": "სისტემის [BMC] დამპი (დროებით წყვეტს სისტემის მუშაობას)"
+        }
+    },
+    "pageOverview": {
+        "powerLimitInformation": "სიმძლავრის შეზღუდვა",
+        "totalGpuPower": "GPU-ს ჯამური სიმძლავრე",
+        "totalCpuPower": "CPU-ს ჯამური სიმძლავრე",
+        "gpuCount": "GPU-ები",
+        "cpuCount": "CPU-ები"
+    },
+    "pagePowerLimit": {
+        "description": "ამ სისტემის CPU და GPU სიმძლავრის ლიმიტების მართვა.",
+        "cpuSectionTitle": "CPU სიმძლავრის ლიმიტები",
+        "gpuSectionTitle": "GPU სიმძლავრის ლიმიტები",
+        "currentPower": "მიმდინარე",
+        "cpuLimitLabel": "CPU ლიმიტი (TDP)",
+        "gpuLimitLabel": "GPU ლიმიტი (TGP)",
+        "basePowerLabel": "GPU ბაზისური სიმძლავრე",
+        "limitRange": "დასაშვები დიაპაზონი: {min}–{max} ვტ",
+        "gpuViewCpuLimit": "CPU ლიმიტი GPU-ს ხედვით",
+        "effectiveTgp": "ეფექტური TGP",
+        "noProcessors": "პროცესორები ვერ მოიძებნა.",
+        "toast": {
+            "successSave": "სიმძლავრის ლიმიტები შენახულია.",
+            "errorSave": "სიმძლავრის ლიმიტების შენახვა ვერ მოხერხდა."
         }
     }
 }

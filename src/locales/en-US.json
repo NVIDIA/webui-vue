@@ -88,6 +88,7 @@
             "enabled": "Enabled",
             "error": "Error",
             "insufficientPrivileges": "Insufficient Privileges",
+            "loading": "Loading...",
             "no": "No",
             "notAvailable": "Not available",
             "off": "Off",
@@ -192,7 +193,6 @@
         "virtualMedia": "@:appPageTitle.virtualMedia",
         "snmpAlerts": "@:appPageTitle.snmpAlerts",
         "power": "@:appPageTitle.power",
-        "powerLimit": "@:appPageTitle.powerLimit",
         "keyClear": "@:appPageTitle.keyClear",
         "bootProgress": "@:appPageTitle.bootProgress"
     },
@@ -228,7 +228,6 @@
         "snmpAlerts": "SNMP Alerts",
         "virtualMedia": "Virtual media",
         "keyClear": "Key clear",
-        "powerLimit": "Power limiting",
         "bootProgress": "Boot progress"
     },
     "pageBootProgress": {
@@ -267,23 +266,6 @@
             "booting": "System boot in progress",
             "viewDetails": "View boot progress",
             "openConsole": "Open SOL console"
-        }
-    },
-    "pagePowerLimit": {
-        "description": "Manage CPU and GPU power limits for this system.",
-        "cpuSectionTitle": "CPU power limits",
-        "gpuSectionTitle": "GPU power limits",
-        "currentPower": "current",
-        "cpuLimitLabel": "CPU limit (TDP)",
-        "gpuLimitLabel": "GPU limit (TGP)",
-        "basePowerLabel": "GPU base power",
-        "limitRange": "Allowed range: {min}–{max} W",
-        "gpuViewCpuLimit": "GPU view of CPU limit",
-        "effectiveTgp": "Effective TGP",
-        "noProcessors": "No processors found.",
-        "toast": {
-            "successSave": "Power limits saved.",
-            "errorSave": "Unable to save power limits."
         }
     },
     "pageChangePassword": {

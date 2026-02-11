@@ -80,6 +80,11 @@ function redfishProxyPlugin(baseUrl) {
         delete options.headers['x-forwarded-port'];
         delete options.headers['x-forwarded-for'];
 
+        // Force JSON from HMC: aggregated resources return HTML when they see
+        // browser Accept/User-Agent. Override so the BMC/HMC returns JSON.
+        options.headers['Accept'] = 'application/json';
+        options.headers['X-Requested-With'] = 'XMLHttpRequest';
+
         // Create the proxy request
         // Remove caching headers to prevent stale 304 responses
         delete options.headers['if-none-match'];
@@ -471,17 +476,12 @@ export default defineConfig(({ mode }) => {
             proxy.on('proxyReq', (proxyReq, req) => {
               injectAuthToken(proxyReq, req);
 
-              // Detect if this is a browser navigation vs an API call
-              const isApiCall =
-                req.headers['x-requested-with'] === 'XMLHttpRequest';
-
-              if (!isApiCall) {
-                proxyReq.setHeader(
-                  'Accept',
-                  'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-                );
-                proxyReq.removeHeader('accept-encoding');
-              }
+              // Force JSON responses from the HMC. Aggregated resources
+              // (e.g. HGX Chassis/Processors) return HTML when the HMC sees
+              // browser-like Accept headers. Explicitly requesting JSON and
+              // marking as XHR prevents the HTML rendering.
+              proxyReq.setHeader('Accept', 'application/json');
+              proxyReq.setHeader('X-Requested-With', 'XMLHttpRequest');
 
               // Fix referer to match BMC host
               if (req.headers.referer && env.BASE_URL) {
