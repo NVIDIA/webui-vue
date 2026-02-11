@@ -7,12 +7,15 @@
  * Provides centralized access to:
  * - Manager (ManagerProvidingService) - The BMC providing this Redfish service
  * - ManagedSystem (ManagerForServers[0]) - The primary system managed by this BMC
+ * - ManagedChassis (ManagerForChassis[0]) - The primary chassis managed by this BMC
  *
  * Navigation follows Redfish best practices:
  * ServiceRoot → ManagerProvidingService → ManagerForServers[0] → System
+ *                                       → ManagerForChassis[0] → Chassis
  *
  * Fallback chain when ManagerProvidingService is not available:
  * ServiceRoot → Managers[0] → Links.ManagerForServers[0] → System
+ *                            → Links.ManagerForChassis[0] → Chassis
  */
 import { defineStore } from 'pinia';
 import { computed, ref, watch } from 'vue';
@@ -23,11 +26,14 @@ import {
   useGetManagersById,
   useGetSystems,
   useGetSystemsById,
+  useGetChassis,
+  useGetChassisById,
 } from '@/api/endpoints/redfish.gen';
 import {
   clearServiceRootCache,
   clearManagersCache,
   clearSystemsCache,
+  clearChassisCache,
 } from '@/api/mutator/axios-instance';
 import type { ServiceRoot } from '@/api/model/ServiceRoot';
 import type { ResourcePowerState } from '@/api/model/ResourcePowerState';
@@ -46,6 +52,7 @@ export const globalStoreKeys = {
   serviceRoot: () => [...globalStoreKeys.all, 'serviceRoot'] as const,
   manager: () => [...globalStoreKeys.all, 'manager'] as const,
   managedSystem: () => [...globalStoreKeys.all, 'managedSystem'] as const,
+  managedChassis: () => [...globalStoreKeys.all, 'managedChassis'] as const,
 };
 
 // ============================================================================
@@ -218,6 +225,47 @@ export const useGlobalStore = defineStore('global', () => {
   const ManagedSystem = computed(() => ManagedSystemQuery.data.value ?? null);
 
   // ---------------------------------------------------------------------------
+  // Vue Query: ManagedChassis (with fallback to first in collection)
+  // ---------------------------------------------------------------------------
+
+  // First, try to get ChassisId from ManagerForChassis
+  const ChassisIdFromManager = computed(() =>
+    extractIdFromUri(
+      ManagerQuery.data.value?.Links?.ManagerForChassis?.[0]?.['@odata.id'],
+    ),
+  );
+
+  // Fallback: fetch Chassis collection if ManagerForChassis not available
+  const ChassisCollectionQuery = useGetChassis({
+    query: {
+      enabled: computed(
+        () => ManagerQuery.isSuccess.value && !ChassisIdFromManager.value,
+      ),
+      staleTime: Infinity,
+    },
+  });
+
+  // Final ChassisId: from Manager or first in collection
+  const ChassisId = computed(() => {
+    if (ChassisIdFromManager.value) {
+      return ChassisIdFromManager.value;
+    }
+    return extractIdFromUri(
+      ChassisCollectionQuery.data.value?.Members?.[0]?.['@odata.id'],
+    );
+  });
+
+  // Fetch the Chassis by ID
+  const ManagedChassisQuery = useGetChassisById(ChassisId, {
+    query: {
+      enabled: computed(() => !!ChassisId.value),
+      staleTime: 5 * 60 * 1000, // 5 minutes
+    },
+  });
+
+  const ManagedChassis = computed(() => ManagedChassisQuery.data.value ?? null);
+
+  // ---------------------------------------------------------------------------
   // Computed: Status
   // ---------------------------------------------------------------------------
 
@@ -225,17 +273,22 @@ export const useGlobalStore = defineStore('global', () => {
     () =>
       ServiceRootQuery.isLoading.value ||
       ManagerQuery.isLoading.value ||
-      ManagedSystemQuery.isLoading.value,
+      ManagedSystemQuery.isLoading.value ||
+      ManagedChassisQuery.isLoading.value,
   );
 
   const isLoaded = computed(
-    () => Manager.value !== null && ManagedSystem.value !== null,
+    () =>
+      Manager.value !== null &&
+      ManagedSystem.value !== null &&
+      ManagedChassis.value !== null,
   );
 
   const error = computed(() => {
     if (ServiceRootQuery.error.value) return ServiceRootQuery.error.value;
     if (ManagerQuery.error.value) return ManagerQuery.error.value;
     if (ManagedSystemQuery.error.value) return ManagedSystemQuery.error.value;
+    if (ManagedChassisQuery.error.value) return ManagedChassisQuery.error.value;
     return null;
   });
 
@@ -246,6 +299,9 @@ export const useGlobalStore = defineStore('global', () => {
   const ManagerURI = computed(() => Manager.value?.['@odata.id'] ?? null);
   const ManagedSystemURI = computed(
     () => ManagedSystem.value?.['@odata.id'] ?? null,
+  );
+  const ManagedChassisURI = computed(
+    () => ManagedChassis.value?.['@odata.id'] ?? null,
   );
 
   // ---------------------------------------------------------------------------
@@ -450,6 +506,7 @@ export const useGlobalStore = defineStore('global', () => {
       clearServiceRootCache(),
       clearManagersCache(),
       clearSystemsCache(),
+      clearChassisCache(),
     ]);
 
     // Then invalidate Vue Query cache (triggers refetch)
@@ -457,6 +514,7 @@ export const useGlobalStore = defineStore('global', () => {
       queryClient.invalidateQueries({ queryKey: [], exact: true }),
       queryClient.invalidateQueries({ queryKey: ['Managers'] }),
       queryClient.invalidateQueries({ queryKey: ['Systems'] }),
+      queryClient.invalidateQueries({ queryKey: ['Chassis'] }),
     ]);
   }
 
@@ -477,6 +535,16 @@ export const useGlobalStore = defineStore('global', () => {
     await clearSystemsCache();
     await queryClient.invalidateQueries({
       queryKey: ['Systems', SystemId.value],
+    });
+  }
+
+  /**
+   * Invalidate only the ManagedChassis query (Vue Query + axios cache).
+   */
+  async function refetchManagedChassis(): Promise<void> {
+    await clearChassisCache();
+    await queryClient.invalidateQueries({
+      queryKey: ['Chassis', ChassisId.value],
     });
   }
 
@@ -517,6 +585,24 @@ export const useGlobalStore = defineStore('global', () => {
     });
   }
 
+  /**
+   * Get ManagedChassis, waiting for Vue Query to complete if still loading.
+   * For imperative use in other Pinia stores.
+   */
+  async function getManagedChassis(): Promise<typeof ManagedChassis.value> {
+    // If already loaded, return immediately
+    if (ManagedChassis.value) return ManagedChassis.value;
+
+    // Wait for query to complete
+    return new Promise((resolve) => {
+      ManagedChassisQuery.suspense().then(() => {
+        resolve(ManagedChassisQuery.data.value ?? null);
+      }).catch(() => {
+        resolve(null);
+      });
+    });
+  }
+
   // ---------------------------------------------------------------------------
   // Return
   // ---------------------------------------------------------------------------
@@ -526,14 +612,17 @@ export const useGlobalStore = defineStore('global', () => {
     ServiceRoot,
     Manager,
     ManagedSystem,
+    ManagedChassis,
 
     // IDs (for query key construction)
     ManagerId,
     SystemId,
+    ChassisId,
 
     // URIs
     ManagerURI,
     ManagedSystemURI,
+    ManagedChassisURI,
 
     // Derived state
     PowerState,
@@ -559,10 +648,12 @@ export const useGlobalStore = defineStore('global', () => {
     refetch,
     refetchManager,
     refetchManagedSystem,
+    refetchManagedChassis,
     startBootPolling,
 
     // Imperative getters (for other Pinia stores)
     getManager,
     getManagedSystem,
+    getManagedChassis,
   };
 });

@@ -31,6 +31,20 @@ const PRIVILEGE_MAPPINGS: Record<string, Record<string, string[][]>> = {
     PUT: [['ConfigureUsers']],
     DELETE: [['ConfigureUsers']],
   },
+  Chassis: {
+    GET: [['Login']],
+    POST: [['ConfigureComponents']],
+    PATCH: [['ConfigureComponents']],
+    PUT: [['ConfigureComponents']],
+    DELETE: [['ConfigureComponents']],
+  },
+  ChassisCollection: {
+    GET: [['Login']],
+    POST: [['ConfigureComponents']],
+    PATCH: [['ConfigureComponents']],
+    PUT: [['ConfigureComponents']],
+    DELETE: [['ConfigureComponents']],
+  },
   ComputerSystem: {
     GET: [['Login']],
     POST: [['ConfigureComponents']],

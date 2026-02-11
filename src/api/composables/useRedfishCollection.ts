@@ -205,13 +205,23 @@ async function getServiceRoot(
 }
 
 /**
+ * Get the maximum $expand levels supported by the BMC.
+ * Returns 0 if $expand is not supported.
+ */
+async function getExpandMaxLevels(
+  queryClient: ReturnType<typeof useQueryClient>,
+): Promise<number> {
+  const serviceRoot = await getServiceRoot(queryClient);
+  return serviceRoot?.ProtocolFeaturesSupported?.ExpandQuery?.MaxLevels ?? 0;
+}
+
+/**
  * Check if the BMC supports $expand based on ServiceRoot ProtocolFeaturesSupported.
  */
 async function checkExpandSupport(
   queryClient: ReturnType<typeof useQueryClient>,
 ): Promise<boolean> {
-  const serviceRoot = await getServiceRoot(queryClient);
-  return (serviceRoot?.ProtocolFeaturesSupported?.ExpandQuery?.MaxLevels ?? 0) > 0;
+  return (await getExpandMaxLevels(queryClient)) > 0;
 }
 
 /**
@@ -331,8 +341,193 @@ export function useRedfishCollection<T>(
 }
 
 // ============================================================================
+// Generic Single Sub-Resource Fetcher
+// ============================================================================
+
+/**
+ * Fetch a single sub-resource from a parent Redfish resource by following
+ * the link advertised in the parent object.
+ *
+ * Optimization strategy:
+ * 1. If $expand is supported, fetch the parent with `$expand=*` so the
+ *    sub-resource is returned inline — a single request instead of two.
+ * 2. If $expand is not supported or the expanded response doesn't contain
+ *    the sub-resource data, fall back to link navigation: read the parent,
+ *    find the sub-resource `@odata.id` link, and fetch that URI.
+ *
+ * Example:
+ *   const metrics = await fetchSubResource<EnvironmentMetrics>(
+ *     "/redfish/v1/Systems/HGX_Baseboard_0/Processors/CPU_0",
+ *     "EnvironmentMetrics",
+ *     queryClient,
+ *   );
+ *
+ * @param resourcePath - URI of the parent resource
+ * @param subResource - Property name of the sub-resource (e.g., "EnvironmentMetrics")
+ * @param queryClient - Vue Query client (for checking $expand support)
+ * @returns The fetched sub-resource, or null if the link is not present
+ */
+export async function fetchSubResource<T>(
+  resourcePath: string,
+  subResource: string,
+  queryClient: ReturnType<typeof useQueryClient>,
+): Promise<T | null> {
+  const supportsExpand = await checkExpandSupport(queryClient);
+
+  // Strategy 1: Use $expand=* to get the sub-resource inline in one request
+  if (supportsExpand) {
+    try {
+      const expanded = await apiInstance<Record<string, unknown>>({
+        url: `${resourcePath}?$expand=*`,
+        method: 'GET',
+      });
+
+      // Check if the sub-resource was expanded inline (has more than just @odata.id)
+      const subResourceData = expanded?.[subResource] as
+        | Record<string, unknown>
+        | undefined;
+      if (
+        subResourceData &&
+        typeof subResourceData === 'object' &&
+        Object.keys(subResourceData).length > 1
+      ) {
+        return subResourceData as T;
+      }
+      // $expand returned but sub-resource wasn't expanded — fall through
+    } catch (e: unknown) {
+      const err = e as { response?: { status?: number } };
+      // 400/501 = $expand not supported by this endpoint, fall through
+      if (!(err?.response?.status === 400 || err?.response?.status === 501)) {
+        throw e;
+      }
+    }
+  }
+
+  // Strategy 2: Fetch the parent resource, follow the sub-resource link
+  const parent = await apiInstance<Record<string, unknown>>({
+    url: resourcePath,
+    method: 'GET',
+  });
+
+  // Extract the sub-resource @odata.id link
+  const subResourceRef = parent?.[subResource] as
+    | { '@odata.id'?: string }
+    | undefined;
+  const subResourceUri = subResourceRef?.['@odata.id'];
+
+  if (!subResourceUri) {
+    return null;
+  }
+
+  // Fetch the sub-resource using the discovered URI
+  return apiInstance<T>({ url: subResourceUri, method: 'GET' });
+}
+
+/**
+ * Vue Query hook for fetching a single sub-resource from a parent Redfish
+ * resource by following the link advertised in the parent object.
+ *
+ * Example: Fetch EnvironmentMetrics from a Processor
+ *   useSubResource<EnvironmentMetrics>(processorUri, "EnvironmentMetrics")
+ *
+ * @param resourcePath - URI of the parent resource (can be a ref for reactivity)
+ * @param subResource - Property name of the sub-resource (e.g., "EnvironmentMetrics")
+ * @returns Vue Query result with the sub-resource data
+ */
+export function useSubResource<T>(
+  resourcePath: MaybeRef<string | undefined | null>,
+  subResource: string,
+) {
+  const pathValue = computed(() => unref(resourcePath));
+  const queryClient = useQueryClient();
+
+  return useQuery({
+    queryKey: computed(
+      () => ['subResource', pathValue.value, subResource] as const,
+    ),
+    queryFn: () =>
+      fetchSubResource<T>(pathValue.value!, subResource, queryClient),
+    enabled: computed(() => !!pathValue.value),
+    retry: shouldRetry,
+    staleTime: 30000,
+  });
+}
+
+// ============================================================================
 // Generic Sub-Resource Collection Fetcher
 // ============================================================================
+
+/**
+ * Extract leaf items from deeply-expanded collection members by walking
+ * through a chain of nested property names.
+ *
+ * E.g., for nestedProperties = ['EnvironmentMetrics'] and a Processor member
+ * that has EnvironmentMetrics expanded inline, this extracts the
+ * EnvironmentMetrics object from each member.
+ *
+ * Only returns items that are actually expanded (more than just @odata.id).
+ */
+function extractNestedItems<T>(
+  members: Record<string, unknown>[],
+  nestedProperties: string[],
+): T[] {
+  return members
+    .map((member) => {
+      let current: unknown = member;
+      for (const prop of nestedProperties) {
+        if (!current || typeof current !== 'object') return null;
+        current = (current as Record<string, unknown>)[prop];
+      }
+      // Verify the leaf is actually expanded (not just an @odata.id ref)
+      if (
+        current &&
+        typeof current === 'object' &&
+        Object.keys(current as object).length > 1
+      ) {
+        return current as T;
+      }
+      return null;
+    })
+    .filter((item): item is T => item !== null);
+}
+
+/**
+ * Fetch leaf items by following @odata.id links through a chain of nested
+ * property names. Used as fallback when deep $expand is not available.
+ *
+ * For each member, walks through nestedProperties one at a time:
+ *   member -> member[prop0]['@odata.id'] -> fetch -> result[prop1]['@odata.id'] -> fetch -> ...
+ */
+async function fetchNestedItems<T>(
+  members: Record<string, unknown>[],
+  nestedProperties: string[],
+): Promise<T[]> {
+  let currentResources: Record<string, unknown>[] = members;
+
+  for (const prop of nestedProperties) {
+    const nextResources = await Promise.all(
+      currentResources.map(async (resource) => {
+        const ref = resource?.[prop] as { '@odata.id'?: string } | undefined;
+        const uri = ref?.['@odata.id'];
+        if (!uri) return null;
+        try {
+          return await apiInstance<Record<string, unknown>>({
+            url: uri,
+            method: 'GET',
+          });
+        } catch {
+          return null;
+        }
+      }),
+    );
+
+    currentResources = nextResources.filter(
+      (r): r is Record<string, unknown> => r !== null,
+    );
+  }
+
+  return currentResources as unknown as T[];
+}
 
 /**
  * Fetch all URIs for a sub-resource from all members of a collection.
@@ -416,17 +611,25 @@ export async function fetchAllSubResourceUris(
 /**
  * Fetch all items from a sub-resource across all members of a parent collection.
  *
- * Example: Fetch all Sensors from all Chassis
- *   fetchAllSubResources<Sensor>("/redfish/v1/Chassis", "Sensors", queryClient)
+ * Supports both simple and nested sub-resource paths:
  *
- * Uses optimized fetching:
- * 1. Gets sub-resource URIs using $select optimization (if supported)
- * 2. Fetches each sub-resource collection using $expand optimization (if supported)
+ *   Simple:  fetchAllSubResources<Sensor>("/redfish/v1/Chassis", "Sensors", qc)
+ *     → Discovers Sensors collections on each Chassis, fetches all Sensor members.
+ *
+ *   Nested:  fetchAllSubResources<EnvironmentMetrics>(
+ *              "/redfish/v1/Systems", "Processors/EnvironmentMetrics", qc)
+ *     → Discovers Processors collections on each System, then fetches the
+ *       EnvironmentMetrics sub-resource from each Processor member.
+ *
+ * Optimization strategy for nested paths:
+ *   If the BMC reports MaxLevels >= depth of the path, uses a single deep
+ *   $expand (e.g., `$expand=.($levels=2)`) to get everything in one call per
+ *   collection. Falls back to individual link-navigation fetches otherwise.
  *
  * @param collectionPath - Parent collection path (e.g., "/redfish/v1/Chassis")
- * @param subResource - Name of the sub-resource property (e.g., "Sensors")
+ * @param subResource - Sub-resource property path (e.g., "Sensors" or "Processors/EnvironmentMetrics")
  * @param queryClient - Vue Query client
- * @returns Flat array of all sub-resource items
+ * @returns Flat array of all leaf sub-resource items
  */
 export async function fetchAllSubResources<
   T extends { Name?: string; Id?: string; '@odata.id'?: string },
@@ -436,6 +639,14 @@ export async function fetchAllSubResources<
   queryClient: ReturnType<typeof useQueryClient>,
   queryKey?: readonly unknown[],
 ): Promise<T[]> {
+  // Parse nested sub-resource path
+  const segments = subResource.split('/');
+  const collectionProperty = segments[0]; // e.g., 'Processors'
+  const nestedProperties = segments.slice(1); // e.g., ['EnvironmentMetrics']
+  const levelsNeeded = segments.length; // e.g., 2
+
+  const maxLevels = await getExpandMaxLevels(queryClient);
+
   function mergeInto(existing: T[], incoming: T[]): T[] {
     if (incoming.length === 0) return existing;
 
@@ -465,10 +676,14 @@ export async function fetchAllSubResources<
     return merged;
   }
 
-  // Step 1: Get all sub-resource URIs
-  const subResourceUris = await fetchAllSubResourceUris(collectionPath, subResource, queryClient);
+  // Step 1: Get all collection URIs for the first segment
+  const collectionUris = await fetchAllSubResourceUris(
+    collectionPath,
+    collectionProperty,
+    queryClient,
+  );
 
-  if (subResourceUris.length === 0) return [];
+  if (collectionUris.length === 0) return [];
 
   // Seed cache with existing data so the UI can render while fetching
   if (queryKey) {
@@ -476,26 +691,52 @@ export async function fetchAllSubResources<
     queryClient.setQueryData(queryKey, existing);
   }
 
-  // Step 2: Fetch all sub-resource collections in parallel using $expand optimization.
-  // As each sub-resource resolves, push partial results into the cache so the UI updates
+  // Choose $expand depth: use deep expand if supported for nested paths,
+  // otherwise expand one level (collection Members only).
+  const canDeepExpand =
+    nestedProperties.length > 0 && maxLevels >= levelsNeeded;
+  const expandParam = canDeepExpand ? `.($levels=${levelsNeeded})` : '.';
+
+  // Step 2: Fetch all collections in parallel.
+  // As each resolves, push partial results into the cache so the UI updates
   // incrementally (rather than waiting for all requests to finish).
   const results = await Promise.all(
-    subResourceUris.map(async (uri) => {
+    collectionUris.map(async (uri) => {
       try {
-        const collection = await fetchRedfishCollection<T>(
-          uri,
-          { $expand: '.' },
-          queryClient,
-        );
-        const Members = (collection.Members ?? []) as T[];
+        const collection = await fetchRedfishCollection<
+          Record<string, unknown>
+        >(uri, { $expand: expandParam }, queryClient);
+        const rawMembers = (collection.Members ?? []) as Record<
+          string,
+          unknown
+        >[];
+
+        let items: T[];
+
+        if (nestedProperties.length === 0) {
+          // Simple case: Members ARE the items
+          items = rawMembers as unknown as T[];
+        } else if (canDeepExpand) {
+          // Deep expand: extract leaf items from expanded members
+          items = extractNestedItems<T>(rawMembers, nestedProperties);
+
+          // If extraction found nothing but we have members, the expand
+          // didn't go deep enough — fall back to individual fetches
+          if (items.length === 0 && rawMembers.length > 0) {
+            items = await fetchNestedItems<T>(rawMembers, nestedProperties);
+          }
+        } else {
+          // No deep expand: follow links individually
+          items = await fetchNestedItems<T>(rawMembers, nestedProperties);
+        }
 
         if (queryKey) {
           queryClient.setQueryData<T[]>(queryKey, (old) =>
-            mergeInto(old ?? [], Members),
+            mergeInto(old ?? [], items),
           );
         }
 
-        return { uri, Members, error: undefined as unknown };
+        return { uri, Members: items, error: undefined as unknown };
       } catch (error: unknown) {
         return { uri, Members: [] as T[], error };
       }
@@ -509,7 +750,7 @@ export async function fetchAllSubResources<
   const failed = results.filter((r) => r.error !== undefined);
   if (items.length === 0 && failed.length > 0) {
     const error = new Error(
-      `Failed to fetch ${subResource} collections (${failed.length}/${results.length} requests failed).`,
+      `Failed to fetch ${subResource} (${failed.length}/${results.length} requests failed).`,
     );
     (error as { cause?: unknown }).cause = failed[0]?.error;
     throw error;

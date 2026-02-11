@@ -12,7 +12,10 @@ import { apiInstance } from '@/api/mutator/axios-instance';
 import type { Chassis } from '@/api/model/Chassis';
 import type { EnvironmentMetrics } from '@/api/model/EnvironmentMetrics';
 
-import { fetchAllSubResources, useRedfishCollection } from './useRedfishCollection';
+import {
+  fetchAllSubResources,
+  useRedfishCollection,
+} from './useRedfishCollection';
 
 // ---------------------------------------------------------------------------
 // OEM extension types (not in generated models)
@@ -136,7 +139,9 @@ export function usePowerLimits() {
   const queryClient = useQueryClient();
 
   // ------ Query 1: Fetch all processor EnvironmentMetrics ------------------
-  // Discovers Processors across ALL Systems, then fetches EnvironmentMetrics.
+  // Discovers Processors across ALL Systems and fetches their
+  // EnvironmentMetrics in one pass. Uses deep $expand when supported
+  // (e.g., Processors?$expand=.($levels=2)) to minimize round trips.
   const {
     data: MetricsData,
     isLoading: MetricsLoading,
@@ -144,38 +149,13 @@ export function usePowerLimits() {
     refetch,
   } = useQuery({
     queryKey: POWER_LIMITS_KEY,
-    queryFn: async (): Promise<ProcessorEnvironmentMetrics[]> => {
-      const Processors = await fetchAllSubResources<{
-        '@odata.id': string;
-        Name?: string;
-        Id?: string;
-      }>('/redfish/v1/Systems', 'Processors', queryClient);
-
-      if (Processors.length === 0) return [];
-
-      // Dynamic URIs discovered at runtime -- no generated endpoint exists
-      // for per-processor EnvironmentMetrics. Raw apiInstance is acceptable
-      // here because the call is inside a useQuery queryFn (see
-      // redfish-first-api-calls.mdc, exception #3).
-      const results = await Promise.all(
-        Processors.map(async (Processor) => {
-          const uri = Processor['@odata.id'];
-          if (!uri) return null;
-          try {
-            return await apiInstance<ProcessorEnvironmentMetrics>({
-              url: `${uri}/EnvironmentMetrics`,
-              method: 'GET',
-            });
-          } catch {
-            return null;
-          }
-        }),
-      );
-
-      return results.filter(
-        (m): m is ProcessorEnvironmentMetrics => m !== null,
-      );
-    },
+    queryFn: () =>
+      fetchAllSubResources<ProcessorEnvironmentMetrics>(
+        '/redfish/v1/Systems',
+        'Processors/EnvironmentMetrics',
+        queryClient,
+        POWER_LIMITS_KEY,
+      ),
     retry: shouldRetry,
     staleTime: 30000,
   });

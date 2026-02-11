@@ -212,6 +212,12 @@ export const clearSystemsCache = (): Promise<void> =>
   clearAxiosCache(/\/redfish\/v1\/Systems/);
 
 /**
+ * Clear axios cache for Chassis endpoints.
+ */
+export const clearChassisCache = (): Promise<void> =>
+  clearAxiosCache(/\/redfish\/v1\/Chassis/);
+
+/**
  * Clear axios cache for ServiceRoot.
  */
 export const clearServiceRootCache = (): Promise<void> =>

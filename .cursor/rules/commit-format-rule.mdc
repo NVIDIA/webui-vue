@@ -19,13 +19,13 @@ Severity: Warning
 1. The first line should be a concise summary of 50 characters or less
 2. The second line should be blank
 3. The main body should wrap at 72 characters
-4. The body must include the following sections:
+4. The body **must** include the following sections:
    - **Changes added:** Brief description of what was added or changed
    - **Problem:** Description of the issue being addressed
    - **Solution:** Explanation of how the changes solve the problem
    - **Testing:** Description of testing performed to verify the changes
-   - **Fixes** Reference to JIRA or nvbug issue, or other tracking ID (if applicable)
-      - It MUST match this pattern: "Fixes nvbug|jira http(s)://<url>"
+   - **Fixes** This line is **required** on every commit. It MUST match the pattern: `Fixes jira|nvbug http(s)://<url>`. If you have a real JIRA key or nvbug number, use it (e.g., `Fixes jira https://jirasw.nvidia.com/browse/PROJ-123`). If no ticket exists, create a descriptive placeholder URI that summarizes the commit title (e.g., `Fixes jira https://add_chassis_store`).
+5. The message must end with a proper signature.  Use commit -s
 
 ## Benefits
 
