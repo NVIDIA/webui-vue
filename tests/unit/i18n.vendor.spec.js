@@ -30,7 +30,7 @@ describe('i18n vendor overlays', () => {
     const translated = i18nInstance.global.t(
       'pageDumps.dumpTypes.systemHgxDump',
     );
-    expect(translated).toBe('System [HGX] dump (disruptive)');
+    expect(translated).toBe('System [HGX] dump');
   });
 
   test('base locales do not contain vendor-only keys', async () => {

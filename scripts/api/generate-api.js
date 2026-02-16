@@ -163,7 +163,7 @@ function runCommand(command, args, options = {}) {
 
 async function main() {
   const startTime = Date.now();
-  const totalSteps = 8;
+  const totalSteps = 9;
 
   log(
     '\n╔════════════════════════════════════════════════════════════════╗',
@@ -227,21 +227,26 @@ async function main() {
     await runCommand('npx', ['tsx', 'scripts/api/pascal-case-models.ts']);
     logSuccess('Model names converted');
 
-    // Step 5: Fix JSDoc formatting
-    logStep(5, totalSteps, 'Fixing JSDoc formatting...');
+    // Step 5: Generate missing transitive model dependencies
+    logStep(5, totalSteps, 'Generating missing transitive model files...');
+    await runCommand('npx', ['tsx', 'scripts/api/generate-missing-models.ts']);
+    logSuccess('Missing model files generated');
+
+    // Step 6: Fix JSDoc formatting
+    logStep(6, totalSteps, 'Fixing JSDoc formatting...');
     await runCommand('npx', ['tsx', 'scripts/api/fix-jsdoc-format.ts']);
     logSuccess('JSDoc formatting fixed');
 
-    // Step 6: Add privilege metadata to endpoint functions
-    logStep(6, totalSteps, 'Adding privilege metadata to endpoints...');
+    // Step 7: Add privilege metadata to endpoint functions
+    logStep(7, totalSteps, 'Adding privilege metadata to endpoints...');
     await runCommand('npx', [
       'tsx',
       'src/api/transformer/add-privilege-metadata.ts',
     ]);
     logSuccess('Privilege metadata added');
 
-    // Step 7: Format model directory with Prettier
-    logStep(7, totalSteps, 'Formatting model files with Prettier...');
+    // Step 8: Format model directory with Prettier
+    logStep(8, totalSteps, 'Formatting model files with Prettier...');
     await runCommand(
       'node',
       [
@@ -258,8 +263,8 @@ async function main() {
     );
     logSuccess('Model files formatted');
 
-    // Step 8: Format endpoints directory with Prettier
-    logStep(8, totalSteps, 'Formatting endpoint files with Prettier...');
+    // Step 9: Format endpoints directory with Prettier
+    logStep(9, totalSteps, 'Formatting endpoint files with Prettier...');
     await runCommand(
       'node',
       [

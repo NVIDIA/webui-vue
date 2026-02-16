@@ -39,7 +39,10 @@ src/api/model/*
 !src/api/model/AccountService.ts
 !src/api/model/ActionInfoParameters.ts
 !src/api/model/Chassis.ts
+!src/api/model/ChassisCollection.ts
+!src/api/model/ComputerSystem.ts
 !src/api/model/ComputerSystemBootProgressTypes.ts
+!src/api/model/ComputerSystemCollection.ts
 !src/api/model/ComputerSystemResetRequestBody.ts
 !src/api/model/EnvironmentMetrics.ts
 !src/api/model/Event.ts
@@ -47,7 +50,12 @@ src/api/model/*
 !src/api/model/LogEntry.ts
 !src/api/model/LogEntryCollection.ts
 !src/api/model/LogServiceCollection.ts
+!src/api/model/Manager.ts
+!src/api/model/ManagerAccount.ts
+!src/api/model/ManagerCollection.ts
 !src/api/model/MetricReport.ts
+!src/api/model/MetricReportCollection.ts
+!src/api/model/RedfishError.ts
 !src/api/model/ResourceHealth.ts
 !src/api/model/ResourcePowerState.ts
 !src/api/model/ResourceResetType.ts
@@ -57,6 +65,9 @@ src/api/model/*
 !src/api/model/Session.ts
 !src/api/model/SoftwareInventory.ts
 !src/api/model/Task.ts
+!src/api/model/TaskCollection.ts
+!src/api/model/TaskService.ts
+!src/api/model/TelemetryService.ts
 !src/api/model/UpdateService.ts
 src/api/endpoints/redfish.gen.ts
 # Barrel exports are dev-only - use explicit import paths instead

@@ -93,6 +93,16 @@ export const ToastPlugin = {
           },
         });
       },
+      hideAll(trigger = 'programmatic') {
+        for (const [id, promise] of toastInstances) {
+          try {
+            promise?.hide?.(trigger);
+          } catch (e) {
+            console.warn('Failed to hide toast:', id, e);
+          }
+        }
+        toastInstances.clear();
+      },
     };
 
     // Backward-compatible alias for legacy code paths that still call $bvToast.hide(id)

@@ -13,6 +13,7 @@ import { useAuthStore } from '@/stores/auth';
 import { useFirmwareStore } from '@/stores/firmware';
 import { useGlobalStore } from '@/stores/global';
 import { apiInstance } from '@/api/mutator/axios-instance';
+import eventBus from '@/eventBus';
 import type { EventRecord } from '@/api/model/EventRecord';
 import { getOriginUri } from './parseSSEEvent';
 
@@ -278,6 +279,12 @@ export function useSSEInit(options: UseSSEInitOptions = {}) {
 
         // Handle firmware update events
         handleFirmwareEvent(Event);
+
+        // Notify listeners when any task completes successfully.
+        // Pattern: *.TaskCompletedOK (e.g., TaskEvent.1.0.TaskCompletedOK)
+        if (Event.MessageId?.endsWith('.TaskCompletedOK')) {
+          eventBus.$emit('sse-task-completed-ok', Event);
+        }
       }
     },
     onBufferExceeded: () => {

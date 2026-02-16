@@ -9,9 +9,15 @@
         "dumpTypes": {
             "bmcDump": "BMC дамп",
             "hmcDump": "HMC дамп",
-            "systemBmcDump": "Системный [BMC] дамп (разрушительный)",
-            "systemHgxDump": "Системный [HGX] дамп (разрушительный)",
-            "systemDump": "Системный [BMC] дамп (разрушительный)"
+            "systemBmcDump": "Системный [BMC] дамп",
+            "systemHgxDump": "Системный [HGX] дамп",
+            "systemDump": "Системный [BMC] дамп"
+        },
+        "form": {
+            "systemDumpInfo": "Системные дампы будут выгружены в операционную систему и не появятся в таблице ниже."
+        },
+        "toast": {
+            "successStartSystemDump": "Создание дампа займёт некоторое время. Дамп будет выгружен в операционную систему."
         }
     },
     "pageOverview": {

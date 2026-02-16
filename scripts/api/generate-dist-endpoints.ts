@@ -415,6 +415,77 @@ async function main() {
     }
   }
 
+  // Filter the model import block to only include types used by extracted exports.
+  // The full gen file imports hundreds of model types; we only need the subset
+  // referenced by the endpoints we kept.
+  const exportBody = extractedSections.join('\n') + metadataBlock;
+  const importLines = lines.slice(0, importsEndLine);
+
+  // Locate the `import type { ... } from '../model'` block
+  let modelImportStart = -1;
+  let modelImportEnd = -1;
+  for (let i = 0; i < importLines.length; i++) {
+    if (modelImportStart === -1 && /^\s*import\s+type\s*\{/.test(importLines[i])) {
+      // Could be the model import or the tanstack import; check subsequent lines
+      // for the '../model' specifier
+      for (let j = i; j < importLines.length; j++) {
+        if (importLines[j].includes("from '../model'") || importLines[j].includes('from "../model"')) {
+          modelImportStart = i;
+          modelImportEnd = j;
+          break;
+        }
+        // If we hit another import statement, this block isn't the model import
+        if (j > i && /^\s*import\s/.test(importLines[j])) break;
+      }
+    }
+    if (modelImportStart !== -1) break;
+  }
+
+  let filteredImportLines: string[];
+  const distModelTypes = new Set<string>();
+
+  if (modelImportStart !== -1 && modelImportEnd !== -1) {
+    // Extract all type names from the model import block
+    const modelBlock = importLines.slice(modelImportStart, modelImportEnd + 1).join('\n');
+    const typeNameRegex = /^\s+(\w+),?$/gm;
+    let m;
+    const allModelTypes: string[] = [];
+    while ((m = typeNameRegex.exec(modelBlock)) !== null) {
+      allModelTypes.push(m[1]);
+    }
+
+    // Keep only types referenced in the extracted exports
+    const usedModelTypes = allModelTypes.filter(t => new RegExp(`\\b${t}\\b`).test(exportBody));
+    for (const t of usedModelTypes) {
+      distModelTypes.add(t);
+    }
+
+    // Rebuild the model import block with only used types
+    const filteredModelImport = usedModelTypes.length > 0
+      ? [
+          'import type {',
+          ...usedModelTypes.map(t => `    ${t},`),
+          "} from '../model';",
+        ]
+      : [];
+
+    // Reassemble: lines before model import + filtered model import + lines after model import
+    filteredImportLines = [
+      ...importLines.slice(0, modelImportStart),
+      ...filteredModelImport,
+      ...importLines.slice(modelImportEnd + 1),
+    ];
+
+    console.log(`\n🧹 Filtered model imports: ${allModelTypes.length} → ${usedModelTypes.length} types`);
+  } else {
+    filteredImportLines = importLines;
+  }
+
+  // Merge dist model types into usedModels so .gitignore is updated
+  for (const t of distModelTypes) {
+    usedModels.add(t);
+  }
+
   // Build dist file
   const distContent = [
     '/**',
@@ -428,8 +499,8 @@ async function main() {
     ' * For full API, use redfish.gen.ts (development only)',
     ' */',
     '',
-    // Import section from original
-    lines.slice(0, importsEndLine).join('\n'),
+    // Filtered import section
+    filteredImportLines.join('\n'),
     '',
     // Extracted exports
     ...extractedSections,

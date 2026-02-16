@@ -226,6 +226,7 @@ export default {
   data() {
     return {
       isBusy: true,
+      isRefreshingFromSse: false,
       fields: [
         {
           key: 'checkbox',
@@ -352,8 +353,29 @@ export default {
       this.endLoader();
       this.isBusy = false;
     });
+
+    this.sseTaskCompletedHandler = (event) => {
+      this.refreshDumpsOnTaskCompleted(event);
+    };
+    this.$eventBus.$on('sse-task-completed-ok', this.sseTaskCompletedHandler);
+  },
+  beforeUnmount() {
+    this.$eventBus.$off('sse-task-completed-ok', this.sseTaskCompletedHandler);
   },
   methods: {
+    async refreshDumpsOnTaskCompleted(event) {
+      if (this.isRefreshingFromSse) return;
+
+      this.isRefreshingFromSse = true;
+      this.isBusy = true;
+      this.$toast?.hideAll();
+      try {
+        await this.$store.dispatch('dumps/getAllDumps');
+      } finally {
+        this.isBusy = false;
+        this.isRefreshingFromSse = false;
+      }
+    },
     getSelectedItemsCount(index) {
       const rows = this.selectedRowsMap[index];
       return Array.isArray(rows) ? rows.length : 0;

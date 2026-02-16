@@ -46,31 +46,46 @@ export default {
   components: { StatusIcon },
   mixins: [VuelidateMixin],
   props: {
-    requireConfirmation: {
+    modelValue: {
       type: Boolean,
       default: false,
     },
   },
-  emits: ['ok'],
+  emits: ['ok', 'update:modelValue'],
   setup() {
     return {
-      v$: useVuelidate(),
+      // Keep modal validation local so parent form submit
+      // is not blocked by modal-only fields.
+      v$: useVuelidate({ $stopPropagation: true }),
     };
   },
   data() {
     return {
       confirmed: false,
-      isOpen: this.requireConfirmation,
     };
   },
   validations() {
-    return this.isOpen
-      ? {
-          confirmed: {
-            mustBeTrue: (value) => value === true,
-          },
+    return {
+      confirmed: {
+        mustBeTrue: (value) => value === true,
+      },
+    };
+  },
+  watch: {
+    modelValue: {
+      handler(newValue) {
+        if (newValue) {
+          this.$nextTick(() => {
+            this.$refs.modal?.show();
+          });
+        } else {
+          this.$nextTick(() => {
+            this.$refs.modal?.hide();
+          });
         }
-      : {};
+      },
+      immediate: true,
+    },
   },
   methods: {
     closeModal() {
@@ -86,8 +101,8 @@ export default {
     },
     resetForm() {
       this.confirmed = false;
-      this.isOpen = false;
       this.v$.$reset();
+      this.$emit('update:modelValue', false);
     },
   },
 };

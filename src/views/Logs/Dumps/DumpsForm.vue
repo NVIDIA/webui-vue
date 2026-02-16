@@ -1,7 +1,8 @@
 <template>
   <div class="form-background p-3">
-    <b-spinner class="spinner-wrapper"
-      v-if="!dumpTypeOptions.length"
+    <b-spinner
+v-if="!dumpTypeOptions.length"
+      class="spinner-wrapper"
       label="Spinning"
       aria-label="Loading dump type options"
     >
@@ -11,16 +12,16 @@
       v-else 
       id="form-new-dump" 
       novalidate 
-      @submit.prevent="handleSubmit"
       aria-label="Create new dump form"
+      @submit.prevent="handleSubmit"
     >
       <b-alert
         v-if="formError"
         variant="danger"
         show
         dismissible
-        @dismissed="formError = null"
         role="alert"
+        @dismissed="formError = null"
       >
         {{ formError }}
       </b-alert>
@@ -61,7 +62,7 @@
           >
             <!-- Show static text for single-option parameters -->
             <div v-if="param.AllowableValues && param.AllowableValues.length === 1">
-              <b-form-text tag="div" :id="`param-${param.Name}`">
+              <b-form-text :id="`param-${param.Name}`" tag="div">
                 {{ param.AllowableValues[0] }}
               </b-form-text>
             </div>
@@ -72,8 +73,8 @@
               v-model="parameterValues[param.Name]"
               :options="param.AllowableValues"
               :state="getValidationState(v$.parameterValues[param.Name])"
-              @change="resetParameterValidation(param.Name)"
               :aria-required="param.Required"
+              @change="resetParameterValidation(param.Name)"
             >
               <template #first>
                 <b-form-select-option :value="null" disabled>
@@ -82,9 +83,9 @@
               </template>
             </b-form-select>
             <b-form-invalid-feedback 
+              v-if="param.Required" 
               :id="`param-${param.Name}-error`" 
-              role="alert" 
-              v-if="param.Required"
+              role="alert"
             >
               {{ $t('global.form.required') }}
             </b-form-invalid-feedback>
@@ -142,6 +143,10 @@ export default {
   name: 'DumpsForm',
   components: { Alert, ModalConfirmation },
   mixins: [BVToastMixin, VuelidateMixin],
+
+  props: {
+    // Add if needed based on component requirements
+  },
   setup() {
     return {
       v$: useVuelidate(),
@@ -218,6 +223,26 @@ export default {
   },
 
   /**
+   * @lifecycle
+   * @description Fetches dump type options when component is created
+   */
+  created() {
+    this.$store.dispatch('dumps/getDumpTypeOptions');
+    // Add listener once during component creation
+    this.modalListener = (bvEvent, modalId) => {
+      if (modalId === 'modal-confirmation') {
+        this.isSubmitting = false;
+      }
+    };
+    this.$eventBus.$on('bv::modal::hide', this.modalListener);
+  },
+
+  beforeUnmount() {
+    // Clean up listener
+    this.$eventBus.$off('bv::modal::hide', this.modalListener);
+  },
+
+  /**
    * @method handleSubmit
    * @description Handles form submission, validates input, and dispatches appropriate dump creation action
    */
@@ -231,14 +256,11 @@ export default {
       this.formError = null;
 
       try {
-        const DUMP_TYPES = {
-          SYSTEM: 'System',
-          BMC: 'Bmc'
-        };
+        const selectedType = this.selectedDumpType?.type?.toLowerCase();
 
-        if (this.selectedDumpType.type === DUMP_TYPES.SYSTEM) {
+        if (selectedType === 'system') {
           this.showConfirmationModal();
-        } else if (this.selectedDumpType.type === DUMP_TYPES.BMC) {
+        } else if (selectedType === 'bmc') {
           const payload = this._createPayload();
           this.$store
             .dispatch('dumps/createDump', payload)
@@ -255,6 +277,9 @@ export default {
             .finally(() => {
               this.isSubmitting = false;
             });
+        } else {
+          this.formError = this.$t('global.form.invalidFormat');
+          this.isSubmitting = false;
         }
       } catch (error) {
         this.formError = error.message;
@@ -267,7 +292,12 @@ export default {
      * @description Shows confirmation modal for System dump creation
      */
     showConfirmationModal() {
-      this.showConfirmation = true;
+      // Always toggle to force a re-open even if already true.
+      this.showConfirmation = false;
+      this.$nextTick(() => {
+        this.showConfirmation = true;
+        this.$bvModal?.show('modal-confirmation');
+      });
     },
 
     /** @group Form Submission */
@@ -333,30 +363,6 @@ export default {
       this.v$.$reset();
     },
 
-  },
-
-  /**
-   * @lifecycle
-   * @description Fetches dump type options when component is created
-   */
-  created() {
-    this.$store.dispatch('dumps/getDumpTypeOptions');
-    // Add listener once during component creation
-    this.modalListener = (bvEvent, modalId) => {
-      if (modalId === 'modal-confirmation') {
-        this.isSubmitting = false;
-      }
-    };
-    this.$eventBus.$on('bv::modal::hide', this.modalListener);
-  },
-
-  beforeUnmount() {
-    // Clean up listener
-    this.$eventBus.$off('bv::modal::hide', this.modalListener);
-  },
-
-  props: {
-    // Add if needed based on component requirements
   },
 };
 </script>

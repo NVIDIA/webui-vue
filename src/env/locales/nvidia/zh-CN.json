@@ -9,9 +9,15 @@
         "dumpTypes": {
             "bmcDump": "BMC 转储",
             "hmcDump": "HMC 转储",
-            "systemBmcDump": "系统 [BMC] 转储（破坏性）",
-            "systemHgxDump": "系统 [HGX] 转储（破坏性）",
-            "systemDump": "系统 [BMC] 转储（破坏性）"
+            "systemBmcDump": "系统 [BMC] 转储",
+            "systemHgxDump": "系统 [HGX] 转储",
+            "systemDump": "系统 [BMC] 转储"
+        },
+        "form": {
+            "systemDumpInfo": "系统转储将被卸载到操作系统，不会出现在下面的表格中。"
+        },
+        "toast": {
+            "successStartSystemDump": "转储将需要一些时间才能完成。转储将被卸载到操作系统。"
         }
     },
     "pageOverview": {

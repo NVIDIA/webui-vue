@@ -9,9 +9,15 @@
         "dumpTypes": {
             "bmcDump": "BMC dump",
             "hmcDump": "HMC dump",
-            "systemBmcDump": "System [BMC] dump (disruptive)",
-            "systemHgxDump": "System [HGX] dump (disruptive)",
-            "systemDump": "System [BMC] dump (disruptive)"
+            "systemBmcDump": "System [BMC] dump",
+            "systemHgxDump": "System [HGX] dump",
+            "systemDump": "System [BMC] dump"
+        },
+        "form": {
+            "systemDumpInfo": "System dumps may take some time.  When completed, they will appear in the System Dump table below.  You may need to refresh the page."
+        },
+        "toast": {
+            "successStartSystemDump": "System dumps may take some time.  When completed, they will appear in the System Dump table below.  You may need to refresh the page."
         }
     },
     "pageOverview": {
