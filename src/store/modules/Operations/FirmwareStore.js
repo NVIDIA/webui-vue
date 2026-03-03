@@ -219,7 +219,7 @@ const FirmwareStore = {
         .get('/redfish/v1/UpdateService')
         .then(async ({ data }) => {
           const applyTime =
-            data.HttpPushUriOptions.HttpPushUriApplyTime.ApplyTime;
+            data.HttpPushUriOptions?.HttpPushUriApplyTime?.ApplyTime;
           commit('setApplyTime', applyTime);
           const httpPushUri = data.HttpPushUri;
           commit('setHttpPushUri', httpPushUri);
@@ -520,6 +520,7 @@ const FirmwareStore = {
       const members = resp?.data?.Members;
       if (!(members?.length > 0)) return null;
 
+      const terminalStates = ['Completed', 'Exception', 'Killed', 'Cancelled'];
       for (let i = members.length - 1; i >= 0; i--) {
         const taskHandle = getOdataId(members[i]);
         const taskInfo = await api.get(taskHandle).catch((error) => {
@@ -531,8 +532,10 @@ const FirmwareStore = {
           (targetUri === state.multipartHttpPushUri ||
             targetUri === state.simpleUpdateUri ||
             targetUri === state.httpPushUri)
-        )
+        ) {
+          if (terminalStates.includes(taskInfo?.data?.TaskState)) continue;
           return taskHandle;
+        }
       }
       return null;
     },
