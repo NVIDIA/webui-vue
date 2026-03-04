@@ -619,6 +619,22 @@ function setupTerminal() {
     cursor: 'rgba(83, 146, 255, .5)',
     cursorAccent: '#19273c',
     selection: 'rgba(83, 146, 255, 0.3)',
+    black: '#4c566a',
+    red: '#ff5f5f',
+    green: '#76b900',
+    yellow: '#ebcb8b',
+    blue: '#81a1c1',
+    magenta: '#b48ead',
+    cyan: '#88c0d0',
+    white: '#e5e9f0',
+    brightBlack: '#7b88a1',
+    brightRed: '#ff8080',
+    brightGreen: '#a3be8c',
+    brightYellow: '#ffd700',
+    brightBlue: '#88c6ff',
+    brightMagenta: '#d0a9e5',
+    brightCyan: '#8be9fd',
+    brightWhite: '#ffffff',
   };
 
   const terminal = new Terminal({
@@ -936,9 +952,11 @@ onBeforeUnmount(() => {
 });
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 @import '@xterm/xterm/css/xterm.css';
+</style>
 
+<style lang="scss" scoped>
 // ============================================================================
 // ENTERPRISE SOL CONSOLE STYLES
 // A modern, polished interface for Serial Over LAN operations
@@ -1438,9 +1456,4 @@ $card-border: #e9ecef;
   }
 }
 
-// Fix xterm helper textarea visibility in @xterm/xterm v6+
-// The textarea must remain functional for keyboard input
-:deep(.xterm-helper-textarea) {
-  opacity: 0 !important;
-}
 </style>
