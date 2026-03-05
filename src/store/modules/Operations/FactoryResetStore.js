@@ -16,16 +16,23 @@ const FactoryResetStore = {
   },
   actions: {
     async preloadResetBiosTargets({ commit }) {
-      const results = await this.dispatch('system/getSystemsProp', {
+      const systems = await this.dispatch('system/getSystemsWithProp', {
         prop: 'Bios',
       });
-      const resetBiosUris = results.flatMap(
-        (bios) => {
-          const uri = bios.Actions?.["#Bios.ResetBios"]?.['target'];
-          if (uri) return { Id: bios.Id, target: uri }
+      const promises = systems.map(async (system) => {
+        const biosUri = system.Bios?.['@odata.id'];
+        if (!biosUri) return null;
+        try {
+          const { data: bios } = await api.get(biosUri);
+          const target = bios.Actions?.['#Bios.ResetBios']?.target;
+          if (target) return { Id: system.Id, target };
+        } catch {
+          return null;
         }
-      );
-      commit('setResetBiosUris', resetBiosUris);
+        return null;
+      });
+      const results = await Promise.all(promises);
+      commit('setResetBiosUris', results.filter(Boolean));
     },
     async resetToDefaults(_context, target) {
       return await api
