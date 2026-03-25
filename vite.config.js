@@ -274,6 +274,156 @@ function resolveDirectoryIndex() {
   };
 }
 
+/**
+ * Build the BMC proxy configuration used by both dev and preview servers.
+ * Extracted so the proxy rules are defined once and shared.
+ */
+function bmcProxyConfig(env, injectAuthToken, removeHsts) {
+  if (!env.BASE_URL) return {};
+
+  const wsAuthConfigure = (proxy, label) => {
+    proxy.on('proxyRes', removeHsts);
+    proxy.on('proxyReqWs', (proxyReq, req) => {
+      if (label === '/kvm') {
+        console.log(`[vite] ${label} WebSocket upgrade request to:`, env.BASE_URL + req.url);
+        console.log(`[vite] ${label} Sec-WebSocket-Protocol:`, req.headers['sec-websocket-protocol'] ? 'present' : 'missing');
+      }
+
+      const cookies = req.headers.cookie || '';
+      let authToken = null;
+
+      const xsrfMatch = cookies.match(/XSRF-TOKEN=([^;]+)/);
+      if (xsrfMatch) authToken = xsrfMatch[1];
+
+      if (!authToken) {
+        const xAuthMatch = cookies.match(/X-Auth-Token=([^;]+)/);
+        if (xAuthMatch) authToken = xAuthMatch[1];
+      }
+
+      if (authToken) {
+        proxyReq.setHeader('X-Auth-Token', authToken);
+        if (label === '/kvm') console.log(`[vite] ${label} X-Auth-Token header set from cookie`);
+      } else if (label === '/kvm') {
+        console.log(`[vite] ${label} No auth cookie found, relying on Sec-WebSocket-Protocol`);
+      }
+    });
+    proxy.on('error', (err) => {
+      console.error(`[vite] ${label} proxy error:`, err.message);
+    });
+  };
+
+  return {
+    '/redfish/v1/EventService/SSE': {
+      target: env.BASE_URL,
+      changeOrigin: true,
+      secure: false,
+      timeout: 0,
+      proxyTimeout: 0,
+      configure: (proxy) => {
+        proxy.on('proxyReq', (proxyReq, req) => {
+          injectAuthToken(proxyReq, req);
+          proxyReq.removeHeader('accept-encoding');
+          proxyReq.removeHeader('x-forwarded-host');
+          proxyReq.removeHeader('x-forwarded-proto');
+          proxyReq.removeHeader('x-forwarded-port');
+          proxyReq.removeHeader('x-forwarded-for');
+        });
+        proxy.on('proxyRes', (proxyRes, req, res) => {
+          removeHsts(proxyRes);
+          proxyRes.headers['x-accel-buffering'] = 'no';
+          proxyRes.headers['cache-control'] = 'no-cache';
+          delete proxyRes.headers['content-encoding'];
+          res.socket?.setTimeout(0);
+        });
+        proxy.on('error', (err) => {
+          console.error('[vite] SSE proxy error:', err.message);
+        });
+      },
+    },
+    '/redfish': {
+      target: env.BASE_URL,
+      changeOrigin: true,
+      secure: false,
+      configure: (proxy) => {
+        proxy.on('proxyReq', (proxyReq, req) => {
+          injectAuthToken(proxyReq, req);
+          proxyReq.setHeader('Accept', 'application/json');
+          proxyReq.setHeader('X-Requested-With', 'XMLHttpRequest');
+
+          if (req.headers.referer && env.BASE_URL) {
+            try {
+              const refererUrl = new URL(req.headers.referer);
+              const bmcUrl = new URL(env.BASE_URL);
+              refererUrl.protocol = bmcUrl.protocol;
+              refererUrl.hostname = bmcUrl.hostname;
+              refererUrl.port = bmcUrl.port;
+              proxyReq.setHeader('Referer', refererUrl.toString());
+            } catch (e) {
+              // If URL parsing fails, leave referer unchanged
+            }
+          }
+
+          proxyReq.removeHeader('x-forwarded-host');
+          proxyReq.removeHeader('x-forwarded-proto');
+          proxyReq.removeHeader('x-forwarded-port');
+          proxyReq.removeHeader('x-forwarded-for');
+        });
+        proxy.on('proxyRes', (proxyRes) => {
+          removeHsts(proxyRes);
+          delete proxyRes.headers['content-encoding'];
+        });
+      },
+    },
+    '/login': {
+      target: env.BASE_URL,
+      changeOrigin: true,
+      secure: false,
+      configure: (proxy) => {
+        proxy.on('proxyRes', removeHsts);
+      },
+    },
+    '/kvm': {
+      target: env.BASE_URL,
+      changeOrigin: true,
+      secure: false,
+      ws: true,
+      configure: (proxy) => wsAuthConfigure(proxy, '/kvm'),
+    },
+    '/console': {
+      target: env.BASE_URL,
+      changeOrigin: true,
+      secure: false,
+      ws: true,
+      configure: (proxy) => wsAuthConfigure(proxy, '/console'),
+    },
+    '/vm': {
+      target: env.BASE_URL,
+      changeOrigin: true,
+      secure: false,
+      ws: true,
+      configure: (proxy) => wsAuthConfigure(proxy, '/vm'),
+    },
+    '/styles/redfish.css': {
+      target: env.BASE_URL,
+      changeOrigin: true,
+      secure: false,
+      configure: (proxy) => {
+        proxy.on('proxyReq', injectAuthToken);
+        proxy.on('proxyRes', removeHsts);
+      },
+    },
+    '/images/DMTF_Redfish_logo_2017.svg': {
+      target: env.BASE_URL,
+      changeOrigin: true,
+      secure: false,
+      configure: (proxy) => {
+        proxy.on('proxyReq', injectAuthToken);
+        proxy.on('proxyRes', removeHsts);
+      },
+    },
+  };
+}
+
 export default defineConfig(({ mode }) => {
   // Load env file based on `mode` in the current working directory.
   const env = loadEnv(mode, process.cwd(), '');
@@ -434,222 +584,14 @@ export default defineConfig(({ mode }) => {
       hmr: {
         path: '/ws_hmr',
       },
-      proxy: {
-        // SSE endpoint needs special handling - no timeout, no buffering
-        '/redfish/v1/EventService/SSE': {
-          target: env.BASE_URL,
-          changeOrigin: true,
-          secure: false,
-          // Disable proxy timeout for SSE (streaming connection)
-          timeout: 0,
-          proxyTimeout: 0,
-          configure: (proxy) => {
-            proxy.on('proxyReq', (proxyReq, req) => {
-              injectAuthToken(proxyReq, req);
-              // Remove headers that interfere with SSE
-              proxyReq.removeHeader('accept-encoding');
-              proxyReq.removeHeader('x-forwarded-host');
-              proxyReq.removeHeader('x-forwarded-proto');
-              proxyReq.removeHeader('x-forwarded-port');
-              proxyReq.removeHeader('x-forwarded-for');
-            });
-            proxy.on('proxyRes', (proxyRes, req, res) => {
-              removeHsts(proxyRes);
-              // Disable response buffering for SSE streaming
-              proxyRes.headers['x-accel-buffering'] = 'no';
-              proxyRes.headers['cache-control'] = 'no-cache';
-              // Remove content-encoding to prevent compression issues
-              delete proxyRes.headers['content-encoding'];
-              // Disable Node.js socket timeout
-              res.socket?.setTimeout(0);
-            });
-            proxy.on('error', (err, req, res) => {
-              console.error('[vite] SSE proxy error:', err.message);
-            });
-          },
-        },
-        '/redfish': {
-          target: env.BASE_URL,
-          changeOrigin: true,
-          secure: false,
-          configure: (proxy) => {
-            proxy.on('proxyReq', (proxyReq, req) => {
-              injectAuthToken(proxyReq, req);
+      proxy: bmcProxyConfig(env, injectAuthToken, removeHsts),
+    },
 
-              // Force JSON responses from the HMC. Aggregated resources
-              // (e.g. HGX Chassis/Processors) return HTML when the HMC sees
-              // browser-like Accept headers. Explicitly requesting JSON and
-              // marking as XHR prevents the HTML rendering.
-              proxyReq.setHeader('Accept', 'application/json');
-              proxyReq.setHeader('X-Requested-With', 'XMLHttpRequest');
-
-              // Fix referer to match BMC host
-              if (req.headers.referer && env.BASE_URL) {
-                try {
-                  const refererUrl = new URL(req.headers.referer);
-                  const bmcUrl = new URL(env.BASE_URL);
-                  refererUrl.protocol = bmcUrl.protocol;
-                  refererUrl.hostname = bmcUrl.hostname;
-                  refererUrl.port = bmcUrl.port;
-                  proxyReq.setHeader('Referer', refererUrl.toString());
-                } catch (e) {
-                  // If URL parsing fails, leave referer unchanged
-                }
-              }
-
-              // Remove x-forwarded headers
-              proxyReq.removeHeader('x-forwarded-host');
-              proxyReq.removeHeader('x-forwarded-proto');
-              proxyReq.removeHeader('x-forwarded-port');
-              proxyReq.removeHeader('x-forwarded-for');
-            });
-            proxy.on('proxyRes', (proxyRes) => {
-              removeHsts(proxyRes);
-              delete proxyRes.headers['content-encoding'];
-            });
-          },
-        },
-        '/login': {
-          target: env.BASE_URL,
-          changeOrigin: true,
-          secure: false,
-          configure: (proxy) => {
-            proxy.on('proxyRes', removeHsts);
-          },
-        },
-        '/kvm': {
-          target: env.BASE_URL,
-          changeOrigin: true,
-          secure: false,
-          ws: true,
-          configure: (proxy) => {
-            proxy.on('proxyRes', removeHsts);
-            proxy.on('proxyReqWs', (proxyReq, req) => {
-              // Debug: log WebSocket connection details
-              console.log('[vite] /kvm WebSocket upgrade request to:', env.BASE_URL + req.url);
-              console.log('[vite] /kvm Sec-WebSocket-Protocol:', req.headers['sec-websocket-protocol'] ? 'present' : 'missing');
-
-              // Forward auth token from cookies to header
-              // bmcweb uses XSRF-TOKEN, other BMCs may use X-Auth-Token
-              const cookies = req.headers.cookie || '';
-              let authToken = null;
-
-              // Try XSRF-TOKEN first (bmcweb)
-              const xsrfMatch = cookies.match(/XSRF-TOKEN=([^;]+)/);
-              if (xsrfMatch) {
-                authToken = xsrfMatch[1];
-              }
-
-              // Fall back to X-Auth-Token cookie if present
-              if (!authToken) {
-                const xAuthMatch = cookies.match(/X-Auth-Token=([^;]+)/);
-                if (xAuthMatch) {
-                  authToken = xAuthMatch[1];
-                }
-              }
-
-              if (authToken) {
-                proxyReq.setHeader('X-Auth-Token', authToken);
-                console.log('[vite] /kvm X-Auth-Token header set from cookie');
-              } else {
-                console.log('[vite] /kvm No auth cookie found, relying on Sec-WebSocket-Protocol');
-              }
-            });
-            proxy.on('error', (err) => {
-              console.error('[vite] /kvm proxy error:', err.message);
-            });
-          },
-        },
-        '/console': {
-          target: env.BASE_URL,
-          changeOrigin: true,
-          secure: false,
-          ws: true,
-          configure: (proxy) => {
-            proxy.on('proxyRes', removeHsts);
-            proxy.on('proxyReqWs', (proxyReq, req) => {
-              // Forward auth token from cookies to header
-              // bmcweb uses XSRF-TOKEN, other BMCs may use X-Auth-Token
-              const cookies = req.headers.cookie || '';
-              let authToken = null;
-
-              // Try XSRF-TOKEN first (bmcweb)
-              const xsrfMatch = cookies.match(/XSRF-TOKEN=([^;]+)/);
-              if (xsrfMatch) {
-                authToken = xsrfMatch[1];
-              }
-
-              // Fall back to X-Auth-Token cookie if present
-              if (!authToken) {
-                const xAuthMatch = cookies.match(/X-Auth-Token=([^;]+)/);
-                if (xAuthMatch) {
-                  authToken = xAuthMatch[1];
-                }
-              }
-
-              if (authToken) {
-                proxyReq.setHeader('X-Auth-Token', authToken);
-              }
-            });
-            proxy.on('error', (err) => {
-              console.error('[vite] /console proxy error:', err.message);
-            });
-          },
-        },
-        '/vm': {
-          target: env.BASE_URL,
-          changeOrigin: true,
-          secure: false,
-          ws: true,
-          configure: (proxy) => {
-            proxy.on('proxyRes', removeHsts);
-            proxy.on('proxyReqWs', (proxyReq, req) => {
-              // Forward auth token from cookies to header
-              // bmcweb uses XSRF-TOKEN, other BMCs may use X-Auth-Token
-              const cookies = req.headers.cookie || '';
-              let authToken = null;
-
-              // Try XSRF-TOKEN first (bmcweb)
-              const xsrfMatch = cookies.match(/XSRF-TOKEN=([^;]+)/);
-              if (xsrfMatch) {
-                authToken = xsrfMatch[1];
-              }
-
-              // Fall back to X-Auth-Token cookie if present
-              if (!authToken) {
-                const xAuthMatch = cookies.match(/X-Auth-Token=([^;]+)/);
-                if (xAuthMatch) {
-                  authToken = xAuthMatch[1];
-                }
-              }
-
-              if (authToken) {
-                proxyReq.setHeader('X-Auth-Token', authToken);
-              }
-            });
-            proxy.on('error', (err) => {
-              console.error('[vite] /vm proxy error:', err.message);
-            });
-          },
-        },
-        '/styles/redfish.css': {
-          target: env.BASE_URL,
-          changeOrigin: true,
-          secure: false,
-          configure: (proxy) => {
-            proxy.on('proxyReq', injectAuthToken);
-            proxy.on('proxyRes', removeHsts);
-          },
-        },
-        '/images/DMTF_Redfish_logo_2017.svg': {
-          target: env.BASE_URL,
-          changeOrigin: true,
-          secure: false,
-          configure: (proxy) => {
-            proxy.on('proxyReq', injectAuthToken);
-            proxy.on('proxyRes', removeHsts);
-          },
-        },
+    preview: {
+      port: 4173,
+      proxy: bmcProxyConfig(env, injectAuthToken, removeHsts),
+      headers: {
+        'Content-Security-Policy': "style-src 'self'",
       },
     },
 
