@@ -924,8 +924,8 @@
             "confirmTitle": "Подтвердить сброс BMC"
         },
         "toast": {
-            "errorRebootStart": "Ошибка сброса BMC.",
-            "successRebootStart": "Сброс BMC.",
+            "errorRebootStart": "Ошибка сброса %{device}.",
+            "successRebootStart": "Сброс %{device}.",
             "errorInvalidManager": "Выбран неверный менеджер."
         },
         "error": {

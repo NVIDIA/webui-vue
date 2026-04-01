@@ -931,8 +931,8 @@
             "confirmTitle": "Confirm BMC reset"
         },
         "toast": {
-            "errorRebootStart": "Error resetting BMC.",
-            "successRebootStart": "Resetting BMC.",
+            "errorRebootStart": "Error resetting %{device}.",
+            "successRebootStart": "Resetting %{device}.",
             "errorInvalidManager": "Invalid manager selected."
         },
         "error": {

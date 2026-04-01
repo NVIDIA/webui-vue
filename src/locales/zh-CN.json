@@ -930,8 +930,8 @@
             "confirmTitle": "确认 BMC 重置"
         },
         "toast": {
-            "errorRebootStart": "重置 BMC 时出错。",
-            "successRebootStart": "正在重置 BMC。",
+            "errorRebootStart": "重置 %{device} 时出错。",
+            "successRebootStart": "正在重置 %{device}。",
             "errorInvalidManager": "选择了无效的管理器。"
         },
         "error": {

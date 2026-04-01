@@ -119,6 +119,9 @@ const ControlStore = {
     async rebootBmc({ commit, dispatch }, payload) {
       // Extract target and parameters from payload
       const { target, parameters= { ResetType: 'GracefulRestart' } } = payload;
+      const displayName = payload.managerId === 'BMC_0' ? 'BMC' :
+        payload.managerId === 'HGX_BMC_0' ? 'HMC' :
+        payload.managerId;
 
       return await api
         .post(target, parameters)
@@ -131,11 +134,11 @@ const ControlStore = {
               console.log(error);
             }
           }, 5000);
-          return i18n.t('pageRebootBmc.toast.successRebootStart')
+          return i18n.t('pageRebootBmc.toast.successRebootStart', { device: displayName })
         })
         .catch((error) => {
           console.log(error);
-          throw new Error(i18n.t('pageRebootBmc.toast.errorRebootStart'));
+          throw new Error(i18n.t('pageRebootBmc.toast.errorRebootStart', { device: displayName }));
         });
     },
     async executeSystemAction({ state, commit, dispatch, rootGetters }, { actionName, parameters, waitForState }) {
