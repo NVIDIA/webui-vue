@@ -8,6 +8,7 @@ import viteCompression from 'vite-plugin-compression';
 import { fileURLToPath, URL } from 'node:url';
 import path from 'node:path';
 import fs from 'node:fs';
+import http from 'node:http';
 import https from 'node:https';
 
 // Plugin to remove crossorigin attribute from generated HTML
@@ -24,112 +25,152 @@ function removeCrossorigin() {
 }
 
 /**
- * Plugin to ensure /redfish paths are proxied directly to the BMC,
- * bypassing Vite's SPA fallback which would otherwise serve index.html.
+ * Normalize BASE_URL for use as an http-proxy target (no trailing slash).
+ */
+function normalizeBaseUrl(baseUrl) {
+  if (!baseUrl) return '';
+  return baseUrl.replace(/\/+$/, '');
+}
+
+/**
+ * Extract auth token from request cookies (XSRF-TOKEN first, then X-Auth-Token).
+ * Matches bmcweb session cookie precedence used elsewhere in this config.
+ */
+function authTokenFromCookies(cookieHeader) {
+  if (!cookieHeader) return null;
+  const xsrfMatch = cookieHeader.match(/XSRF-TOKEN=([^;]+)/);
+  if (xsrfMatch) return xsrfMatch[1];
+  const xAuthMatch = cookieHeader.match(/X-Auth-Token=([^;]+)/);
+  if (xAuthMatch) return xAuthMatch[1];
+  return null;
+}
+
+/**
+ * Middleware that proxies /redfish requests directly to the BMC,
+ * bypassing Vite's SPA fallback (which would otherwise serve index.html).
+ */
+function createRedfishProxyMiddleware(baseUrl) {
+  const target = normalizeBaseUrl(baseUrl);
+
+  return (req, res, next) => {
+    if (!req.url?.startsWith('/redfish')) {
+      return next();
+    }
+
+    // SSE is handled by the dedicated proxy rule (no timeout / buffering).
+    if (req.url?.includes('/EventService/SSE')) {
+      return next();
+    }
+
+    if (!target) {
+      console.error('[redfish-proxy] BASE_URL is not set — cannot proxy', req.url);
+      if (!res.headersSent) {
+        res.writeHead(502);
+        res.end('Proxy error: BASE_URL is not configured');
+      }
+      return;
+    }
+
+    let targetUrl;
+    try {
+      targetUrl = new URL(target);
+    } catch {
+      console.error('[redfish-proxy] Invalid BASE_URL:', baseUrl);
+      return next();
+    }
+
+    const isHttps = targetUrl.protocol === 'https:';
+    const request = isHttps ? https.request : http.request;
+    const targetPath = targetUrl.pathname.replace(/\/$/, '');
+    const requestPath = req.url.startsWith('/') ? req.url : `/${req.url}`;
+
+    const options = {
+      hostname: targetUrl.hostname,
+      port: targetUrl.port || (isHttps ? 443 : 80),
+      path: `${targetPath}${requestPath}`,
+      method: req.method,
+      headers: {
+        ...req.headers,
+        host: targetUrl.host,
+      },
+      ...(isHttps ? { rejectUnauthorized: false } : {}),
+    };
+
+    const authToken = authTokenFromCookies(req.headers.cookie);
+    if (authToken) {
+      options.headers['X-Auth-Token'] = authToken;
+    }
+
+    delete options.headers['x-forwarded-host'];
+    delete options.headers['x-forwarded-proto'];
+    delete options.headers['x-forwarded-port'];
+    delete options.headers['x-forwarded-for'];
+    delete options.headers['if-none-match'];
+    delete options.headers['if-modified-since'];
+
+    options.headers['Accept'] = 'application/json';
+    options.headers['X-Requested-With'] = 'XMLHttpRequest';
+
+    if (req.headers.referer) {
+      try {
+        const refererUrl = new URL(req.headers.referer);
+        refererUrl.protocol = targetUrl.protocol;
+        refererUrl.hostname = targetUrl.hostname;
+        refererUrl.port = targetUrl.port;
+        options.headers['Referer'] = refererUrl.toString();
+      } catch {
+        // leave referer unchanged
+      }
+    }
+
+    const proxyReq = request(options, (proxyRes) => {
+      delete proxyRes.headers['strict-transport-security'];
+      delete proxyRes.headers['etag'];
+      delete proxyRes.headers['last-modified'];
+      proxyRes.headers['cache-control'] = 'no-cache, no-store, must-revalidate';
+
+      res.writeHead(proxyRes.statusCode || 502, proxyRes.headers);
+      proxyRes.pipe(res);
+
+      proxyRes.on('error', (err) => {
+        console.error('[redfish-proxy] Response stream error:', err.message);
+        res.destroy();
+      });
+    });
+
+    proxyReq.on('error', (err) => {
+      console.error(`[redfish-proxy] ${req.method} ${req.url} → ${target}:`, err.message);
+      if (!res.headersSent) {
+        res.writeHead(502);
+        res.end(`Proxy error: ${err.message}`);
+      } else {
+        res.destroy();
+      }
+    });
+
+    proxyReq.setTimeout(30000, () => {
+      console.error('[redfish-proxy] Request timeout:', req.url);
+      proxyReq.destroy(new Error('Request timeout'));
+    });
+
+    req.pipe(proxyReq);
+  };
+}
+
+/**
+ * Plugin to ensure /redfish paths are proxied directly to the BMC on both
+ * the dev server and the preview server.
  */
 function redfishProxyPlugin(baseUrl) {
+  const middleware = createRedfishProxyMiddleware(baseUrl);
+  const attach = (server) => {
+    server.middlewares.use(middleware);
+  };
+
   return {
     name: 'redfish-proxy',
-    configureServer(server) {
-      // Add middleware BEFORE Vite's internal middleware
-      // This runs before the SPA history fallback
-      server.middlewares.use((req, res, next) => {
-        if (!req.url?.startsWith('/redfish')) {
-          return next();
-        }
-
-        // Skip SSE endpoint - it's handled by a dedicated proxy with no timeout
-        if (req.url?.includes('/EventService/SSE')) {
-          return next();
-        }
-
-        // Parse the target URL
-        let targetUrl;
-        try {
-          targetUrl = new URL(baseUrl);
-        } catch {
-          console.error('[redfish-proxy] Invalid BASE_URL:', baseUrl);
-          return next();
-        }
-
-        // Build the proxy request options
-        const options = {
-          hostname: targetUrl.hostname,
-          port: targetUrl.port || 443,
-          path: req.url,
-          method: req.method,
-          headers: {
-            ...req.headers,
-            host: targetUrl.host,
-          },
-          rejectUnauthorized: false, // Allow self-signed certs
-        };
-
-        // Extract auth token from cookies
-        const cookies = req.headers.cookie;
-        if (cookies) {
-          const match = cookies.match(/X-Auth-Token=([^;]+)/);
-          if (match) {
-            options.headers['X-Auth-Token'] = match[1];
-          }
-        }
-
-        // Remove headers that shouldn't be forwarded
-        delete options.headers['x-forwarded-host'];
-        delete options.headers['x-forwarded-proto'];
-        delete options.headers['x-forwarded-port'];
-        delete options.headers['x-forwarded-for'];
-
-        // Force JSON from HMC: aggregated resources return HTML when they see
-        // browser Accept/User-Agent. Override so the BMC/HMC returns JSON.
-        options.headers['Accept'] = 'application/json';
-        options.headers['X-Requested-With'] = 'XMLHttpRequest';
-
-        // Create the proxy request
-        // Remove caching headers to prevent stale 304 responses
-        delete options.headers['if-none-match'];
-        delete options.headers['if-modified-since'];
-
-        const proxyReq = https.request(options, (proxyRes) => {
-          // Remove HSTS header and caching headers
-          delete proxyRes.headers['strict-transport-security'];
-          delete proxyRes.headers['etag'];
-          delete proxyRes.headers['last-modified'];
-          proxyRes.headers['cache-control'] = 'no-cache, no-store, must-revalidate';
-
-          // Forward the response
-          res.writeHead(proxyRes.statusCode || 500, proxyRes.headers);
-          proxyRes.pipe(res);
-
-          // Handle errors during response streaming
-          proxyRes.on('error', (err) => {
-            console.error('[redfish-proxy] Response stream error:', err.message);
-            res.destroy();
-          });
-        });
-
-        proxyReq.on('error', (err) => {
-          console.error('[redfish-proxy] Error:', err.message);
-          // Only send error response if headers haven't been sent yet
-          if (!res.headersSent) {
-            res.writeHead(502);
-            res.end(`Proxy error: ${err.message}`);
-          } else {
-            // Headers already sent, just destroy the response to close the connection
-            res.destroy();
-          }
-        });
-
-        // Set a timeout on the proxy request (30 seconds)
-        proxyReq.setTimeout(30000, () => {
-          console.error('[redfish-proxy] Request timeout');
-          proxyReq.destroy(new Error('Request timeout'));
-        });
-
-        // Forward the request body
-        req.pipe(proxyReq);
-      });
-    },
+    configureServer: attach,
+    configurePreviewServer: attach,
   };
 }
 
@@ -279,26 +320,19 @@ function resolveDirectoryIndex() {
  * Extracted so the proxy rules are defined once and shared.
  */
 function bmcProxyConfig(env, injectAuthToken, removeHsts) {
-  if (!env.BASE_URL) return {};
+  const target = normalizeBaseUrl(env.BASE_URL);
+  if (!target) return {};
 
   const wsAuthConfigure = (proxy, label) => {
     proxy.on('proxyRes', removeHsts);
     proxy.on('proxyReqWs', (proxyReq, req) => {
       if (label === '/kvm') {
-        console.log(`[vite] ${label} WebSocket upgrade request to:`, env.BASE_URL + req.url);
+        console.log(`[vite] ${label} WebSocket upgrade request to:`, target + req.url);
         console.log(`[vite] ${label} Sec-WebSocket-Protocol:`, req.headers['sec-websocket-protocol'] ? 'present' : 'missing');
       }
 
       const cookies = req.headers.cookie || '';
-      let authToken = null;
-
-      const xsrfMatch = cookies.match(/XSRF-TOKEN=([^;]+)/);
-      if (xsrfMatch) authToken = xsrfMatch[1];
-
-      if (!authToken) {
-        const xAuthMatch = cookies.match(/X-Auth-Token=([^;]+)/);
-        if (xAuthMatch) authToken = xAuthMatch[1];
-      }
+      let authToken = authTokenFromCookies(cookies);
 
       if (authToken) {
         proxyReq.setHeader('X-Auth-Token', authToken);
@@ -314,7 +348,7 @@ function bmcProxyConfig(env, injectAuthToken, removeHsts) {
 
   return {
     '/redfish/v1/EventService/SSE': {
-      target: env.BASE_URL,
+      target,
       changeOrigin: true,
       secure: false,
       timeout: 0,
@@ -341,7 +375,7 @@ function bmcProxyConfig(env, injectAuthToken, removeHsts) {
       },
     },
     '/redfish': {
-      target: env.BASE_URL,
+      target,
       changeOrigin: true,
       secure: false,
       configure: (proxy) => {
@@ -350,10 +384,10 @@ function bmcProxyConfig(env, injectAuthToken, removeHsts) {
           proxyReq.setHeader('Accept', 'application/json');
           proxyReq.setHeader('X-Requested-With', 'XMLHttpRequest');
 
-          if (req.headers.referer && env.BASE_URL) {
+          if (req.headers.referer) {
             try {
               const refererUrl = new URL(req.headers.referer);
-              const bmcUrl = new URL(env.BASE_URL);
+              const bmcUrl = new URL(target);
               refererUrl.protocol = bmcUrl.protocol;
               refererUrl.hostname = bmcUrl.hostname;
               refererUrl.port = bmcUrl.port;
@@ -375,7 +409,7 @@ function bmcProxyConfig(env, injectAuthToken, removeHsts) {
       },
     },
     '/login': {
-      target: env.BASE_URL,
+      target,
       changeOrigin: true,
       secure: false,
       configure: (proxy) => {
@@ -383,28 +417,28 @@ function bmcProxyConfig(env, injectAuthToken, removeHsts) {
       },
     },
     '/kvm': {
-      target: env.BASE_URL,
+      target,
       changeOrigin: true,
       secure: false,
       ws: true,
       configure: (proxy) => wsAuthConfigure(proxy, '/kvm'),
     },
     '/console': {
-      target: env.BASE_URL,
+      target,
       changeOrigin: true,
       secure: false,
       ws: true,
       configure: (proxy) => wsAuthConfigure(proxy, '/console'),
     },
     '/vm': {
-      target: env.BASE_URL,
+      target,
       changeOrigin: true,
       secure: false,
       ws: true,
       configure: (proxy) => wsAuthConfigure(proxy, '/vm'),
     },
     '/styles/redfish.css': {
-      target: env.BASE_URL,
+      target,
       changeOrigin: true,
       secure: false,
       configure: (proxy) => {
@@ -413,7 +447,7 @@ function bmcProxyConfig(env, injectAuthToken, removeHsts) {
       },
     },
     '/images/DMTF_Redfish_logo_2017.svg': {
-      target: env.BASE_URL,
+      target,
       changeOrigin: true,
       secure: false,
       configure: (proxy) => {
@@ -482,12 +516,9 @@ export default defineConfig(({ mode }) => {
 
   // Helper to inject auth token from cookie
   const injectAuthToken = (proxyReq, req) => {
-    const cookies = req.headers.cookie;
-    if (cookies) {
-      const match = cookies.match(/X-Auth-Token=([^;]+)/);
-      if (match) {
-        proxyReq.setHeader('X-Auth-Token', match[1]);
-      }
+    const authToken = authTokenFromCookies(req.headers.cookie);
+    if (authToken) {
+      proxyReq.setHeader('X-Auth-Token', authToken);
     }
   };
 
@@ -495,6 +526,8 @@ export default defineConfig(({ mode }) => {
   const removeHsts = (proxyRes) => {
     delete proxyRes.headers['strict-transport-security'];
   };
+
+  const bmcTarget = normalizeBaseUrl(env.BASE_URL);
 
   // Check if HTTPS should be enabled (default: true)
   const useHttps = env.DEV_HTTPS !== 'false';
@@ -504,8 +537,28 @@ export default defineConfig(({ mode }) => {
       versionInfoFallback(),
       // Override default assets with env-specific versions (logo, etc.)
       ...(hasCustomStyles && envName ? [envAssetOverrides(envName)] : []),
-      // Ensure /redfish paths bypass SPA fallback and proxy to BMC (dev only)
-      ...(mode !== 'production' && env.BASE_URL ? [redfishProxyPlugin(env.BASE_URL)] : []),
+      // Ensure /redfish paths bypass SPA fallback and proxy to BMC (dev + preview)
+      ...(mode !== 'production' && bmcTarget ? [redfishProxyPlugin(bmcTarget)] : []),
+      // Warn when preview/dev starts without a BMC proxy target configured
+      ...(mode !== 'production'
+        ? [{
+            name: 'bmc-proxy-status',
+            configureServer(server) {
+              if (bmcTarget) {
+                console.log(`[vite] BMC proxy target: ${bmcTarget}`);
+              } else {
+                console.warn('[vite] BASE_URL is not set — /redfish, /login, and /console will not be proxied');
+              }
+            },
+            configurePreviewServer(server) {
+              if (bmcTarget) {
+                console.log(`[vite preview] BMC proxy target: ${bmcTarget}`);
+              } else {
+                console.warn('[vite preview] BASE_URL is not set — /redfish, /login, and /console will not be proxied');
+              }
+            },
+          }]
+        : []),
       // Track API modules for build analysis (dev only)
       ...(mode !== 'production' ? [trackApiModules()] : []),
       resolveDirectoryIndex(),

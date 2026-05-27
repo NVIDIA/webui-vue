@@ -10,6 +10,7 @@
         "serve": "vite --mode development",
         "prebuild": "node scripts/generate-version-info.cjs",
         "build": "vite build",
+        "prepreview": "vite build --mode development",
         "preview": "vite preview --mode development",
         "lint": "eslint src scripts",
         "i18n:report": "vue-i18n-extract report --vueFiles './src/**/*.?(js|vue)' --languageFiles './src/locales/**/*.json'",
@@ -36,11 +37,10 @@
         "@tanstack/vue-table": "8.21.3",
         "@vuelidate/core": "2.0.3",
         "@vuelidate/validators": "2.0.4",
-        "@xterm/addon-attach": "0.12.0",
-        "@xterm/addon-canvas": "0.7.0",
-        "@xterm/addon-fit": "0.11.0",
-        "@xterm/addon-search": "0.16.0",
-        "@xterm/xterm": "6.0.0",
+        "xterm": "4.19.0",
+        "xterm-addon-attach": "0.6.0",
+        "xterm-addon-fit": "0.5.0",
+        "xterm-addon-search": "0.9.0",
         "axios": "1.13.2",
         "axios-cache-interceptor": "1.11.2",
         "bootstrap": "5.3.8",
@@ -108,11 +108,6 @@
     "simple-git-hooks": {
         "pre-commit": "npx lint-staged && npm test && [ -f scripts/pre-commit-api.js ] && node scripts/pre-commit-api.js || true",
         "commit-msg": "sh scripts/commit-msg-change-id.sh \"$1\""
-    },
-    "overrides": {
-        "@xterm/addon-canvas": {
-            "@xterm/xterm": "$@xterm/xterm"
-        }
     },
     "tasks": [
         {

@@ -181,11 +181,10 @@
 import { ref, shallowRef, computed, watch, nextTick, onMounted, onBeforeUnmount } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useToast } from 'bootstrap-vue-next';
-import { AttachAddon } from '@xterm/addon-attach';
-import { CanvasAddon } from '@xterm/addon-canvas';
-import { FitAddon } from '@xterm/addon-fit';
-import { SearchAddon } from '@xterm/addon-search';
-import { Terminal } from '@xterm/xterm';
+import { AttachAddon } from 'xterm-addon-attach';
+import { FitAddon } from 'xterm-addon-fit';
+import { SearchAddon } from 'xterm-addon-search';
+import { Terminal } from 'xterm';
 // @ts-expect-error — lodash has no bundled types; @types/lodash not installed
 import { throttle } from 'lodash';
 import IconLaunch from '@carbon/icons-vue/es/launch/20';
@@ -275,7 +274,6 @@ const term = shallowRef<Terminal | null>(null);
 // ---------------------------------------------------------------------------
 
 let ws: WebSocket | null = null;
-let canvasAddon: CanvasAddon | null = null;
 let fitAddon: FitAddon | null = null;
 let searchAddon: SearchAddon | null = null;
 let attachAddon: AttachAddon | null = null;
@@ -656,11 +654,6 @@ function setupTerminal() {
   terminal.loadAddon(searchAddon);
 
   if (panel.value) {
-    // Load canvas renderer before open() to bypass the DOM renderer entirely.
-    // The DOM renderer injects dynamic <style> elements that are blocked by
-    // bmcweb's Content-Security-Policy (style-src 'self').
-    canvasAddon = new CanvasAddon();
-    terminal.loadAddon(canvasAddon);
     terminal.open(panel.value);
     terminalOpened = true;
     fitAddon.fit();
@@ -718,10 +711,6 @@ function closeTerminal() {
       try { attachAddon.dispose(); } catch (e) { /* ignore */ }
       attachAddon = null;
     }
-    if (canvasAddon) {
-      try { canvasAddon.dispose(); } catch (e) { /* ignore */ }
-      canvasAddon = null;
-    }
     if (searchAddon) {
       try { searchAddon.dispose(); } catch (e) { /* ignore */ }
       searchAddon = null;
@@ -737,7 +726,6 @@ function closeTerminal() {
     terminalOpened = false;
   } else {
     attachAddon = null;
-    canvasAddon = null;
     searchAddon = null;
     fitAddon = null;
     term.value = null;
@@ -965,7 +953,7 @@ onBeforeUnmount(() => {
 </script>
 
 <style lang="scss">
-@import '@xterm/xterm/css/xterm.css';
+@import 'xterm/css/xterm.css';
 </style>
 
 <style lang="scss" scoped>
