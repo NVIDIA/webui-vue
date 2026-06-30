@@ -75,6 +75,8 @@ export interface FirmwareUpdateInfo extends Partial<Omit<Task, 'PercentComplete'
   State: FirmwareUpdateState;
   /** Whether this client initiated the update */
   Initiator: boolean;
+  /** True after this session performed an automatic activation reset */
+  ActivationResetPerformed: boolean;
   /** Toggle to trigger reactivity on updates */
   Touch: boolean;
   /** Upload progress (0-100) before task is created */
@@ -108,6 +110,7 @@ export const useFirmwareStore = defineStore('firmware', () => {
     // UI-specific fields
     State: null,
     Initiator: false,
+    ActivationResetPerformed: false,
     Touch: false,
     UploadProgress: 0,
     // Redfish Task fields (initialized to defaults)
@@ -185,6 +188,20 @@ export const useFirmwareStore = defineStore('firmware', () => {
     ) as string;
   }
 
+  function findComponentUpdateSkipped(resp: { data?: Task } | null) {
+    return resp?.data?.Messages?.find((msg) =>
+      msg?.MessageId?.includes('ComponentUpdateSkipped'),
+    );
+  }
+
+  function skippedUpdateMessage(
+    skippedMsg: NonNullable<ReturnType<typeof findComponentUpdateSkipped>>,
+  ): string {
+    const resolution = skippedMsg?.Resolution;
+    if (resolution != null && resolution !== 'None.') return resolution;
+    return skippedMsg?.Message ?? '';
+  }
+
   // ---------------------------------------------------------------------------
   // Actions
   // ---------------------------------------------------------------------------
@@ -201,13 +218,14 @@ export const useFirmwareStore = defineStore('firmware', () => {
     firmwareUpdateInfo.value.State = params.TaskState;
     firmwareUpdateInfo.value.PercentComplete = 0;
     firmwareUpdateInfo.value.Messages = undefined;
+    firmwareUpdateInfo.value.ActivationResetPerformed = false;
 
-    // Check sessionStorage for initiator status (persists across page refresh)
-    const storedInitiator =
-      params.Initiator ||
-      sessionStorage.getItem('firmwareUpdateInitiator') === 'true';
-    firmwareUpdateInfo.value.Initiator = storedInitiator;
-    sessionStorage.setItem('firmwareUpdateInitiator', String(storedInitiator));
+    const resolvedInitiator =
+      params.Initiator !== undefined
+        ? params.Initiator
+        : sessionStorage.getItem('firmwareUpdateInitiator') === 'true';
+    firmwareUpdateInfo.value.Initiator = resolvedInitiator;
+    sessionStorage.setItem('firmwareUpdateInitiator', String(resolvedInitiator));
   }
 
   /**
@@ -271,12 +289,27 @@ export const useFirmwareStore = defineStore('firmware', () => {
       resp?.data?.TaskStatus !== 'OK'
     ) {
       console.warn('[Firmware] Task failed or incomplete:', resp?.data);
-      // Store the task's Messages for error extraction
       firmwareUpdateInfo.value.Messages = resp?.data?.Messages;
+      firmwareUpdateInfo.value.PercentComplete = 0;
       firmwareUpdateInfo.value.State = 'TaskFailed';
       firmwareUpdateInfo.value.Initiator = false;
       sessionStorage.setItem('firmwareUpdateInitiator', 'false');
     } else {
+      const skippedMsg = findComponentUpdateSkipped(resp);
+      if (skippedMsg) {
+        firmwareUpdateInfo.value.Messages = [
+          {
+            Message: skippedUpdateMessage(skippedMsg),
+            Resolution: skippedMsg.Resolution,
+            MessageId: skippedMsg.MessageId,
+          },
+        ];
+        firmwareUpdateInfo.value.PercentComplete = 0;
+        firmwareUpdateInfo.value.State = 'TaskFailed';
+        firmwareUpdateInfo.value.Initiator = false;
+        sessionStorage.setItem('firmwareUpdateInitiator', 'false');
+        return;
+      }
       firmwareUpdateInfo.value.State = 'TaskCompleted';
       await waitToActivate(resp);
     }
@@ -288,29 +321,28 @@ export const useFirmwareStore = defineStore('firmware', () => {
   async function waitToActivate(
     resp: { data?: Task } | null,
   ): Promise<void> {
-    // Only initiator should trigger reset
-    if (firmwareUpdateInfo.value.Initiator) {
-      const resetSuccess = await resetIfRequired(resp);
-      if (!resetSuccess) {
-        firmwareUpdateInfo.value.State = 'ResetFailed';
+    if ((await resetIfRequired(resp)) === false) {
+      firmwareUpdateInfo.value.State = 'ResetFailed';
+      firmwareUpdateInfo.value.Initiator = false;
+      sessionStorage.setItem('firmwareUpdateInitiator', 'false');
+      return;
+    }
+
+    // Only wait for the manager after an automatic activation reset. Otherwise
+    // offer manual reset actions on the firmware form as soon as flash completes.
+    if (firmwareUpdateInfo.value.ActivationResetPerformed) {
+      const ready = await waitForReady();
+      if (!ready) {
+        firmwareUpdateInfo.value.State = 'WaitReadyFailed';
         firmwareUpdateInfo.value.Initiator = false;
         sessionStorage.setItem('firmwareUpdateInitiator', 'false');
         return;
       }
     }
 
-    // Wait for BMC to become ready
-    const ready = await waitForReady();
-    if (!ready) {
-      firmwareUpdateInfo.value.State = 'WaitReadyFailed';
-      firmwareUpdateInfo.value.Initiator = false;
-      sessionStorage.setItem('firmwareUpdateInitiator', 'false');
-      return;
-    }
-
     firmwareUpdateInfo.value.State = 'Done';
-    firmwareUpdateInfo.value.Initiator = false;
-    sessionStorage.setItem('firmwareUpdateInitiator', 'false');
+    firmwareUpdateInfo.value.PercentComplete = 0;
+    // Keep Initiator set so callers can show manual activation actions.
   }
 
   /**
@@ -381,6 +413,7 @@ export const useFirmwareStore = defineStore('firmware', () => {
           method: 'POST',
           data: { ResetType: args[1] },
         });
+        firmwareUpdateInfo.value.ActivationResetPerformed = true;
         return true;
       } catch (error) {
         console.error('[Firmware] Reset failed:', error);
@@ -392,9 +425,41 @@ export const useFirmwareStore = defineStore('firmware', () => {
   }
 
   /**
+   * Determine whether a task's Payload.TargetUri belongs to a firmware update.
+   *
+   * Prefers an exact match against the loaded UpdateService URIs, but falls back
+   * to substring matching so detection still works when those URIs have not been
+   * loaded yet (or failed to load). Mirrors useSSEInit.checkAndAttachFirmwareTask.
+   * '/UpdateService/update' covers both HttpPushUri and MultipartHttpPushUri.
+   */
+  function isFirmwareUpdateTargetUri(
+    targetUri: string | null | undefined,
+  ): boolean {
+    if (targetUri == null) return false;
+    if (
+      targetUri === multipartHttpPushUri.value ||
+      targetUri === simpleUpdateUri.value ||
+      targetUri === httpPushUri.value
+    ) {
+      return true;
+    }
+    return (
+      targetUri.includes('/UpdateService/update') ||
+      targetUri.includes('/UpdateService/Actions/UpdateService.SimpleUpdate') ||
+      targetUri.includes('/UpdateService/Actions/UpdateService.StartUpdate')
+    );
+  }
+
+  /**
    * Find an existing firmware update task that may have been started before
    */
   async function findExistingUpdateTask(): Promise<string | null> {
+    const terminalStates: string[] = [
+      'Completed',
+      'Exception',
+      'Killed',
+      'Cancelled',
+    ];
     try {
       const tasksResp = await getTaskServiceTasks();
 
@@ -414,12 +479,9 @@ export const useFirmwareStore = defineStore('firmware', () => {
           const taskInfo = await getTaskServiceTaskById(taskId);
 
           const targetUri = taskInfo?.Payload?.TargetUri;
-          if (
-            targetUri != null &&
-            (targetUri === multipartHttpPushUri.value ||
-              targetUri === simpleUpdateUri.value ||
-              targetUri === httpPushUri.value)
-          ) {
+          if (isFirmwareUpdateTargetUri(targetUri)) {
+            if (terminalStates.includes((taskInfo?.TaskState as string) ?? ''))
+              continue;
             return taskHandle;
           }
         } catch {
@@ -439,12 +501,20 @@ export const useFirmwareStore = defineStore('firmware', () => {
   async function attachExistingUpdateTask(): Promise<void> {
     if (isFirmwareUpdateInProgress.value) return;
 
+    // Ensure the UpdateService URIs are loaded before scanning so TargetUri
+    // matching is precise. findExistingUpdateTask also falls back to substring
+    // matching if these are still unset, so this is belt-and-suspenders.
+    if (multipartHttpPushUri.value == null && httpPushUri.value == null) {
+      await getUpdateServiceSettings();
+    }
+
     const TaskHandle = await findExistingUpdateTask();
     if (TaskHandle) {
       console.log('[Firmware] Found existing task, attaching:', TaskHandle);
       await setFirmwareUpdateTask({
         TaskHandle,
-        Initiator: false,
+        Initiator:
+          sessionStorage.getItem('firmwareUpdateInitiator') === 'true',
       });
     }
   }
@@ -515,6 +585,7 @@ export const useFirmwareStore = defineStore('firmware', () => {
       // UI-specific fields
       State: null,
       Initiator: false,
+      ActivationResetPerformed: false,
       Touch: false,
       UploadProgress: 0,
       // Redfish Task fields (initialized to defaults)
@@ -525,6 +596,18 @@ export const useFirmwareStore = defineStore('firmware', () => {
 
   /**
    * Set upload progress (for upload progress bar)
+   *
+   * MIGRATION NOTE: The multipart upload POST itself still lives in the Vuex
+   * FirmwareStore (uploadFirmwareMultipartHttpPush). When that upload is
+   * migrated into this Pinia store, the multipart FormData must, per the NVIDIA
+   * Firmware Update Guide (DU-12685-001):
+   *   1. Append 'UpdateParameters' BEFORE 'UpdateFile' — the bmcweb streaming
+   *      multipart parser rejects any other order with
+   *      Base.1.19.UnrecognizedRequestBody.
+   *   2. Send 'UpdateParameters' with Content-Type: application/json (append a
+   *      typed Blob, not a plain string) — a part without a Content-Type is
+   *      rejected with Base.1.19.HeaderMissing.
+   * See nvbug 6348756 / 6342623.
    */
   function setUploadProgress(progress: number): void {
     firmwareUpdateInfo.value.UploadProgress = progress;

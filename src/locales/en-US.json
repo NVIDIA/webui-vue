@@ -1,5 +1,10 @@
 {
     "global": {
+        "systemRecovery": {
+            "title": "System is restarting",
+            "message": "The system is restarting and will be offline briefly. The web interface will reconnect and refresh automatically when the system is back online.",
+            "timeoutMessage": "The system is taking longer than expected to come back online. You can wait or refresh the page manually."
+        },
         "action": {
             "add": "Add",
             "absent": "Absent",
@@ -449,6 +454,7 @@
         "cardTitleBackup": "Backup image",
         "cardTitleRunning": "Running image",
         "sectionTitleBmcCards": "BMC",
+        "sectionTitleHmcCards": "HMC",
         "sectionTitleBmcCardsCombined": "BMC and server",
         "sectionTitleHostCards": "Host",
         "sectionTitleBiosCards": "BIOS",
@@ -464,6 +470,16 @@
         "collapse": "Collapse",
         "showAdvanced": "Show advanced",
         "hideAdvanced": "Hide advanced",
+        "banner": {
+            "updating": "Firmware update in progress",
+            "viewDetails": "View task output",
+            "starting": "Starting",
+            "activating": "Waiting for firmware activation",
+            "taskOutput": "Firmware update task",
+            "statusWithPercent": "Firmware update in progress: Task {taskId} - {percent}%",
+            "statusStarting": "Firmware update in progress: Task {taskId} - Starting",
+            "statusActivating": "Firmware update in progress: Task {taskId} - Activating"
+        },
         "alert": {
             "missingPrivileges": "You need the following privileges to update firmware: {privileges}",
             "operationInProgress": "Server power operation in progress.",
@@ -486,13 +502,21 @@
                 "imageFile": "Image file",
                 "forceUpdate": "Force Update",
                 "startUpdate": "Start update",
+                "taskInProgress": "Applying firmware update",
+                "waitingForActivation": "Waiting for firmware activation",
                 "server": "server",
                 "workstation": "Local file",
                 "confirmCheckedMessage": "Specifying targets is normally not required. By default all firmware included in a bundle will be flashed. Continue to update only the selected Target(s)?",
                 "apiErrorResponse": "API Error Response",
                 "clickToViewApiResponse": "click to view api error response",
                 "invalidFileAddress": "Invalid File Address",
-                "invalidTargetSelection": "Invalid Target Selection"
+                "invalidTargetSelection": "Invalid Target Selection",
+                "applyOnReset": "Apply on next reset (stage update)",
+                "retryWithForce": "Retry with force update",
+                "restartBmc": "Restart BMC",
+                "auxResetSystem": "AUX reset system",
+                "confirmRestartBmcMessage": "Restart the BMC now to activate the updated firmware? The application may be unresponsive during the reboot.",
+                "confirmAuxResetMessage": "Perform an AUX power cycle on the system now to activate the updated firmware? This resets the system."
             }
         },
         "modal": {
@@ -521,10 +545,13 @@
             "rebootStartedMessage": "Successfully started reboot from backup image.",
             "updateStarted": "Update started",
             "updateStartedMessage": "Wait for the firmware update notification before making any changes.",
+            "updateSkipped": "Update skipped",
             "verifySwitch": "Verify switch",
             "verifySwitchMessage": "Refresh the application to verify the running and backup images switched.",
             "verifyUpdate": "Verify update",
-            "verifyUpdateMessage": "Refresh the application to verify firmware updated successfully"
+            "verifyUpdateMessage": "Refresh the application to verify firmware updated successfully",
+            "auxResetStarted": "AUX reset started",
+            "auxResetStartedMessage": "AUX power reset started."
         }
     },
     "pageInventory": {
@@ -985,6 +1012,8 @@
         "rebootBmc": "Reset BMC",
         "reset": "Reset",
         "rebootInformation": "When you reset the BMC, your web browser loses contact with the BMC for several minutes. When the BMC is back online, you may need to log in again.",
+        "auxPowerReset": "AUX power reset",
+        "auxPowerResetInformation": "Perform an AUX power cycle (AC cycle) of the system to activate staged firmware. This resets the system and disrupts any running workloads.",
         "form": {
             "selectResetType": "Select reset type",
             "resetType": "Reset type"
@@ -997,7 +1026,8 @@
         "modal": {
             "confirmMessage": "Are you sure you want to reset the BMC?",
             "dynamicConfirmMessage": "Are you sure you want to reset {manager} using {type}?",
-            "confirmTitle": "Confirm BMC reset"
+            "confirmTitle": "Confirm BMC reset",
+            "auxPowerResetConfirmMessage": "Are you sure you want to perform an AUX power cycle on the system? This will reset the system and disrupt any running workloads."
         },
         "toast": {
             "errorRebootStart": "Error resetting BMC.",

@@ -72,14 +72,14 @@
             {{ $t('pageRebootBmc.rebootInformation') }}
           </p>
           <b-form-group
+            v-if="availableManagers.length && !isManagersLoading"
             :label="hasOnlyOneOption ? $t('pageRebootBmc.form.resetType') : $t('pageRebootBmc.form.selectResetType')"
             label-for="selectResetType"
             label-class="h4 mb-4"
-            v-if="availableManagers.length && !isManagersLoading"
           >
             <!-- Display static text when only one option is available -->
             <div v-if="hasOnlyOneOption">
-              <b-form-text tag="div" id="selectResetType">
+              <b-form-text id="selectResetType" tag="div">
                 {{ singleOption.label }}: {{ singleOption.type }}
               </b-form-text>
             </div>
@@ -118,13 +118,30 @@
             variant="primary"
             class="d-block mt-3"
             data-test-id="rebootBmc-button-reboot"
-            @click="onClick"
             :disabled="(!selectedResetType && !hasOnlyOneOption) || isManagersLoading"
+            @click="onClick"
           >
             {{ selectedResetType ? $t('pageRebootBmc.reset') + ' ' + selectedResetType.manager : $t('pageRebootBmc.rebootBmc') }}
             </b-button>
           </b-col>
         </b-row>
+
+          <b-row v-if="isNvidia" class="mt-4">
+            <b-col md="8" lg="8" xl="6">
+              <h4 class="mb-3">{{ $t('pageRebootBmc.auxPowerReset') }}</h4>
+              <p class="my-3">
+                {{ $t('pageRebootBmc.auxPowerResetInformation') }}
+              </p>
+              <b-button
+                variant="danger"
+                class="d-block mt-3"
+                data-test-id="rebootBmc-button-auxPowerReset"
+                @click="onAuxPowerReset"
+              >
+                {{ $t('pageRebootBmc.auxPowerReset') }}
+              </b-button>
+            </b-col>
+          </b-row>
         </page-section>
       </b-col>
     </b-row>
@@ -138,6 +155,7 @@ import Alert from '@/components/Global/Alert';
 import BVToastMixin from '@/components/Mixins/BVToastMixin';
 import LoadingBarMixin from '@/components/Mixins/LoadingBarMixin';
 import { mapGetters } from 'vuex';
+import { isNvidiaPlatform } from '@/i18n';
 
 export default {
   name: 'RebootBmc',
@@ -147,8 +165,25 @@ export default {
     this.hideLoader();
     next();
   },
+  data() {
+    return {
+      selectedResetType: null,
+    };
+  },
   computed: {
     ...mapGetters('controls', ['Managers', 'managersError', 'isManagersLoading']),
+
+    isNvidia() {
+      return isNvidiaPlatform();
+    },
+
+    managerFields() {
+      return [
+        { key: 'manager', label: this.$t('pageRebootBmc.table.manager') },
+        { key: 'timestamp', label: this.$t('pageRebootBmc.table.timestamp') },
+        { key: 'upTime', label: this.$t('pageRebootBmc.table.upTime') },
+      ];
+    },
     
     // Managers with reset options
     availableManagers() {
@@ -175,16 +210,6 @@ export default {
         target: manager.resetOptions && manager.resetOptions.target ? manager.resetOptions.target : ''
       };
     }
-  },
-  data() {
-    return {
-      selectedResetType: null,
-      managerFields: [
-        { key: 'manager', label: this.$t('pageRebootBmc.table.manager') || 'Manager' },
-        { key: 'timestamp', label: this.$t('pageRebootBmc.table.timestamp') || 'Timestamp' },
-        { key: 'upTime', label: this.$t('pageRebootBmc.table.upTime') || 'Up time' }
-      ],
-    };
   },
   created() {
     this.startLoader();
@@ -252,8 +277,38 @@ export default {
       
       this.$store
         .dispatch('controls/rebootBmc', payload)
-        .then((message) => this.successToast(message))
+        .then(async (message) => {
+          this.successToast(message);
+          // If we reset the BMC that serves this UI, show the recovery modal
+          // and refresh once it's back. Resetting the HMC doesn't take the UI
+          // offline, so skip recovery in that case. Compare Redfish Id values,
+          // not URL path segments (e.g. "bmc" vs "BMC_0").
+          const { data: primaryManager } =
+            await this.$store.dispatch('global/getManagerProvidingService');
+          if (manager.id === primaryManager?.Id) {
+            this.$store.dispatch('global/waitForBmcRecovery');
+          }
+        })
         .catch(({ message }) => this.errorToast(message));
+    },
+    onAuxPowerReset() {
+      this.$confirm(
+        this.$t('pageRebootBmc.modal.auxPowerResetConfirmMessage'),
+        {
+          okVariant: 'danger',
+          cancelVariant: 'secondary',
+          title: this.$t('pageRebootBmc.auxPowerReset'),
+          okTitle: this.$t('global.action.confirm'),
+          cancelTitle: this.$t('global.action.cancel'),
+          autoFocusButton: 'ok',
+        },
+      ).then((confirmed) => {
+        if (!confirmed) return;
+        this.$store
+          .dispatch('firmware/auxPowerResetSystem')
+          .then((message) => this.successToast(message))
+          .catch(({ message }) => this.errorToast(message));
+      });
     },
     retryFetchManagers() {
       // Clear the error state to hide the alert

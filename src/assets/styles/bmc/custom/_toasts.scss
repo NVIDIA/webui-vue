@@ -1,8 +1,11 @@
-// Toast container positioning - below AppHeader
+// Toast container positioning - below AppHeader and any visible page banners
 .b-toaster,
 .toast-container {
-  top: calc(#{$header-height} + #{$spacer}) !important; // position below AppHeader (48px + spacing)
+  top: calc(
+    #{$header-height} + var(--app-banner-offset, 0px) + #{$spacer}
+  ) !important;
   z-index: $zindex-dropdown + 5 !important; // make sure toasts do not go over app navigation dropdowns
+  transition: top 0.2s ease;
 }
 
 // Toast component and status icon style

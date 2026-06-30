@@ -2,6 +2,15 @@
   <b-container fluid="xl">
     <page-title />
 
+    <b-alert
+      v-if="showFirmwareUpdateAlert"
+      variant="info"
+      :model-value="true"
+      class="mb-3"
+    >
+      {{ firmwareUpdateAlertMessage }}
+    </b-alert>
+
     <!-- Privilege alert - shown when user lacks required privileges -->
     <b-alert v-if="!privilegeCheck.allowed" variant="warning" :model-value="true">
       <strong>{{ $t('global.status.insufficientPrivileges') }}</strong>
@@ -18,14 +27,13 @@
     <!-- Firmware cards -->
     <b-row>
       <b-col xl="10">
-        <!-- BMC Firmware -->
-        <bmc-cards
-          :is-page-disabled="isPageDisabled"
-          :is-server-off="isServerOff"
-        />
-
-        <!-- Bios Firmware -->
-        <bios-cards v-if="isBiosFirmwareAvailable" />
+        <div class="firmware-card-sections">
+          <bmc-cards
+            :is-page-disabled="isPageDisabled"
+            :is-server-off="isServerOff"
+          />
+          <bios-cards v-if="isBiosFirmwareAvailable" />
+        </div>
       </b-col>
     </b-row>
 
@@ -94,6 +102,7 @@ export default {
     return {
       privilegeCheck: computed(() => privilegeCheck.value),
       isSingleFileUploadEnabled: firmware.isSingleFileUploadEnabled,
+      isBiosFirmwareAvailable: firmware.isBiosFirmwareAvailable,
       firmwareLoading: firmware.isLoading,
     };
   },
@@ -106,6 +115,28 @@ export default {
     };
   },
   computed: {
+    firmwareUpdateState() {
+      return this.$store.state.firmware.firmwareUpdateInfo.state;
+    },
+    firmwareTaskPercent() {
+      return this.$store.state.firmware.firmwareUpdateInfo.taskPercent;
+    },
+    showFirmwareUpdateAlert() {
+      return (
+        this.firmwareUpdateState === 'TaskStarted' ||
+        this.firmwareUpdateState === 'TaskCompleted'
+      );
+    },
+    firmwareUpdateAlertMessage() {
+      if (this.firmwareUpdateState === 'TaskCompleted') {
+        return this.$t('pageFirmware.form.updateFirmware.waitingForActivation');
+      }
+      const percent = this.firmwareTaskPercent;
+      if (percent > 0) {
+        return `${this.$t('pageFirmware.form.updateFirmware.taskInProgress')} — ${percent}%`;
+      }
+      return this.$t('pageFirmware.form.updateFirmware.taskInProgress');
+    },
     powerState() {
       return this.$store.getters['global/powerState'];
     },
@@ -127,9 +158,6 @@ export default {
       }
       return this.firmwareLoading || this.isOperationInProgress;
     },
-    isBiosFirmwareAvailable() {
-      return this.$store.getters['firmware/isBiosFirmwareAvailable'];
-    },
   },
   created() {
     // Loading bar is now managed by Vue Query's isLoading state
@@ -141,3 +169,10 @@ export default {
   },
 };
 </script>
+
+<style lang="scss" scoped>
+// Uniform 16px spacing between BMC/HMC/BIOS card sections.
+.firmware-card-sections :deep(.page-section) {
+  margin-bottom: $spacer;
+}
+</style>

@@ -45,7 +45,13 @@ const BVToastMixin = {
         () => i18n.global.t('global.action.refresh'),
       );
     },
-    $_BVToastMixin_initToast(body, title, variant, useRichContent = false) {
+    $_BVToastMixin_initToast(
+      body,
+      title,
+      variant,
+      useRichContent = false,
+      toastId,
+    ) {
       // Use global toast plugin (works with Options API)
 
       // Extract title text from VNode
@@ -60,6 +66,7 @@ const BVToastMixin = {
           // Use slots.default for interactive content (links, buttons, etc.)
           this.$toast.show({
             props: {
+              ...(toastId ? { id: toastId } : {}),
               title: titleText,
               variant,
               isStatus: true,
@@ -87,6 +94,7 @@ const BVToastMixin = {
           this.$toast.show({
             body: bodyText,
             props: {
+              ...(toastId ? { id: toastId } : {}),
               title: titleText,
               variant,
               isStatus: true,
@@ -123,7 +131,12 @@ const BVToastMixin = {
         body.push(' '); // Extra newline for spacing above timestamp
         body.push(this.$_BVToastMixin_createTimestamp());
       }
-      this.$_BVToastMixin_initToast(body, title, 'success');
+      this.$_BVToastMixin_initToast(
+        body,
+        title,
+        'success',
+        !!(refreshAction || timestamp),
+      );
     },
     errorToast(
       message,
@@ -172,8 +185,13 @@ const BVToastMixin = {
         body.push(' '); // Extra newline for spacing above timestamp
         body.push(this.$_BVToastMixin_createTimestamp());
       }
-      // Use rich content mode when redfishError is provided for interactive links
-      this.$_BVToastMixin_initToast(body, title, 'danger', !!redfishError);
+      // Use rich content mode when interactive or VNode body content is present
+      this.$_BVToastMixin_initToast(
+        body,
+        title,
+        'danger',
+        !!(redfishError || refreshAction || timestamp),
+      );
     },
     warningToast(
       message,
@@ -221,8 +239,13 @@ const BVToastMixin = {
         body.push(' '); // Extra newline for spacing above timestamp
         body.push(this.$_BVToastMixin_createTimestamp());
       }
-      // Use rich content mode when detailsData is provided for interactive links
-      this.$_BVToastMixin_initToast(body, title, 'warning', !!detailsData);
+      // Use rich content mode when interactive or VNode body content is present
+      this.$_BVToastMixin_initToast(
+        body,
+        title,
+        'warning',
+        !!(detailsData || refreshAction || timestamp),
+      );
     },
     infoToast(
       message,
@@ -230,6 +253,7 @@ const BVToastMixin = {
         title: t = i18n.global.t('global.status.informational'),
         timestamp,
         refreshAction,
+        id,
       } = {},
     ) {
       const body = this.$_BVToastMixin_createBody(message);
@@ -239,7 +263,13 @@ const BVToastMixin = {
         body.push(' '); // Extra newline for spacing above timestamp
         body.push(this.$_BVToastMixin_createTimestamp());
       }
-      this.$_BVToastMixin_initToast(body, title, 'info');
+      this.$_BVToastMixin_initToast(
+        body,
+        title,
+        'info',
+        !!(refreshAction || timestamp),
+        id,
+      );
     },
     // Method to show error details in a modal or alert
     showErrorDetails(errorId) {

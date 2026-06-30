@@ -8,7 +8,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { setActivePinia, createPinia } from 'pinia';
 import { useSSEStore } from '@/stores/sse';
-import { parseSSEEventData, extractResourceType, matchesMessageId } from '@/api/composables/parseSSEEvent';
+import { parseSSEEventData, extractResourceType, matchesMessageId, getOriginUri } from '@/api/composables/parseSSEEvent';
 
 // ============================================================================
 // SSE Store Tests
@@ -343,6 +343,32 @@ describe('parseSSEEventData', () => {
       // OriginOfCondition stays as object; use getOriginUri() to extract the string
       expect(result.Events[0].OriginOfCondition['@odata.id']).toBe(
         '/redfish/v1/Chassis/1/Sensors/temperature',
+      );
+      expect(getOriginUri(result.Events[0])).toBe(
+        '/redfish/v1/Chassis/1/Sensors/temperature',
+      );
+    });
+
+    it('should extract OriginOfCondition when sent as a plain URI string', () => {
+      const data = JSON.stringify({
+        '@odata.type': '#Event.v1_4_0.Event',
+        Events: [
+          {
+            EventId: 1018,
+            MemberId: '0',
+            Message: "The task with Id '0' has started.",
+            MessageId: 'TaskEvent.1.0.TaskStarted',
+            OriginOfCondition: '/redfish/v1/TaskService/Tasks/0',
+          },
+        ],
+        Id: 1018,
+        Name: 'Event Log',
+      });
+
+      const result = parseSSEEventData(data);
+
+      expect(getOriginUri(result.Events[0])).toBe(
+        '/redfish/v1/TaskService/Tasks/0',
       );
     });
   });

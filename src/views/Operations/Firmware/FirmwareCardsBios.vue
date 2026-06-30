@@ -80,9 +80,3 @@ export default {
   },
 };
 </script>
-
-<style lang="scss" scoped>
-.page-section {
-  margin-top: -$spacer * 1.5;
-}
-</style>

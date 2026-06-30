@@ -1,6 +1,10 @@
 <template>
   <div>
-    <page-section :section-title="sectionTitle">
+    <page-section
+      v-for="group in BmcGroups"
+      :key="group.key"
+      :section-title="$t(group.sectionTitleKey)"
+    >
       <b-row class="row-cols-1 row-cols-md-2">
         <!-- Running image -->
         <b-col class="mb-3">
@@ -12,13 +16,13 @@
             </template>
             <dl class="mb-0">
               <dt>{{ $t('pageFirmware.cardBodyVersion') }}</dt>
-              <dd class="mb-0">{{ runningVersion }}</dd>
+              <dd class="mb-0">{{ runningVersion(group) }}</dd>
             </dl>
           </b-card>
         </b-col>
 
         <!-- Backup image -->
-        <b-col v-if="backup" class="mb-3">
+        <b-col v-if="group.backupFirmware" class="mb-3">
           <b-card class="h-100">
             <template #header>
               <p class="fw-bold m-0">
@@ -28,24 +32,35 @@
             <dl>
               <dt>{{ $t('pageFirmware.cardBodyVersion') }}</dt>
               <dd>
-                <status-icon v-if="showBackupImageStatus" status="danger" />
+                <status-icon
+                  v-if="showBackupImageStatus(group)"
+                  status="danger"
+                />
                 <span
-                  v-if="showBackupImageStatus"
+                  v-if="showBackupImageStatus(group)"
                   class="visually-hidden-focusable"
                 >
-                  {{ backupStatus }}
+                  {{ backupStatus(group) }}
                 </span>
-                {{ backupVersion }}
+                {{ backupVersion(group) }}
               </dd>
             </dl>
             <b-btn
-              v-if="!switchToBackupImageDisabled && isBackupUpdateable"
+              v-if="
+                group.switchSupported &&
+                  !switchToBackupImageDisabled &&
+                  isBackupUpdateable(group)
+              "
               data-test-id="firmware-button-switchToRunning"
               variant="link"
               size="sm"
               class="py-0 px-1 mt-2"
-              :disabled="isPageDisabled || !BackupBmcFirmware || !isServerOff"
-              @click="showSwitchToRunning = true"
+              :disabled="
+                isPageDisabled ||
+                  !group.backupFirmware ||
+                  !isServerOff
+              "
+              @click="switchToRunning(group)"
             >
               <icon-switch class="d-none d-sm-inline-block" />
               {{ $t('pageFirmware.cardActionSwitchToRunning') }}
@@ -56,8 +71,8 @@
     </page-section>
     <modal-switch-to-running
       v-model="showSwitchToRunning"
-      :backup="backupVersion"
-      @ok="switchToRunning"
+      :backup="switchBackupVersion"
+      @ok="confirmSwitchToRunning"
     />
   </div>
 </template>
@@ -90,9 +105,7 @@ export default {
   setup() {
     const firmware = useFirmwareInventory();
     return {
-      // Redfish SoftwareInventory models
-      ActiveBmcFirmware: firmware.ActiveBmcFirmware,
-      BackupBmcFirmware: firmware.BackupBmcFirmware,
+      BmcGroups: firmware.BmcGroups,
       isSingleFileUploadEnabled: firmware.isSingleFileUploadEnabled,
     };
   },
@@ -102,40 +115,49 @@ export default {
       switchToBackupImageDisabled:
         import.meta.env.VITE_SWITCH_TO_BACKUP_IMAGE_DISABLED === 'true',
       showSwitchToRunning: false,
+      switchBackupVersion: '--',
+      pendingSwitchGroup: null,
     };
   },
-  computed: {
-    sectionTitle() {
-      return this.$t('pageFirmware.sectionTitleBmcCards');
-    },
-    // Use Redfish property names: Version, Status.Health
-    backup() {
-      return this.BackupBmcFirmware || null;
-    },
-    runningVersion() {
-      return this.ActiveBmcFirmware?.Version || '--';
-    },
-    backupVersion() {
-      return this.BackupBmcFirmware?.Version || '--';
-    },
-    backupStatus() {
-      return this.BackupBmcFirmware?.Status?.Health || null;
-    },
-    isBackupUpdateable() {
-      return (
-        typeof this.backup?.updateable === 'undefined' ||
-        this.backup?.updateable === true
-      );
-    },
-    showBackupImageStatus() {
-      return (
-        this.backupStatus === 'Critical' || this.backupStatus === 'Warning'
-      );
-    },
-  },
   methods: {
-    // TODO: Modify to accept a specific backup location as a parameter
-    switchToRunning() {
+    runningVersion(group) {
+      return group.activeFirmware?.Version || '--';
+    },
+    backupVersion(group) {
+      return group.backupFirmware?.Version || '--';
+    },
+    backupStatus(group) {
+      return group.backupFirmware?.Status?.Health || null;
+    },
+    isBackupUpdateable(group) {
+      const backup = group.backupFirmware;
+      return (
+        typeof backup?.Updateable === 'undefined' ||
+        backup?.Updateable === true
+      );
+    },
+    showBackupImageStatus(group) {
+      const status = this.backupStatus(group);
+      return status === 'Critical' || status === 'Warning';
+    },
+    switchToRunning(group) {
+      this.pendingSwitchGroup = group;
+      this.switchBackupVersion = this.backupVersion(group);
+      this.showSwitchToRunning = true;
+    },
+    confirmSwitchToRunning() {
+      const group = this.pendingSwitchGroup;
+      if (!group?.backupFirmware) {
+        this.errorToast(this.$t('pageFirmware.toast.errorNoBackupImage'));
+        return;
+      }
+
+      const backupLocation = group.backupFirmware['@odata.id'];
+      if (!backupLocation) {
+        this.errorToast(this.$t('pageFirmware.toast.errorNoBackupImage'));
+        return;
+      }
+
       this.startLoader();
       const timerId = setTimeout(() => {
         this.endLoader();
@@ -148,14 +170,6 @@ export default {
         );
       }, 60000);
 
-      const backupFirmwares = this.$store.getters['firmware/backupBmcFirmware'];
-      if (backupFirmwares?.length === 0) {
-        this.errorToast(this.$t('pageFirmware.toast.errorNoBackupImage'));
-        clearTimeout(timerId);
-        this.endLoader();
-        return;
-      }
-      const backupLocation = backupFirmwares[0].location;
       this.$store
         .dispatch('firmware/switchBmcFirmwareAndReboot', backupLocation)
         .then(() =>
@@ -170,6 +184,9 @@ export default {
           this.errorToast(message);
           clearTimeout(timerId);
           this.endLoader();
+        })
+        .finally(() => {
+          this.pendingSwitchGroup = null;
         });
     },
   },

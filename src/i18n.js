@@ -87,6 +87,12 @@ export function createI18nInstance(
 }
 
 const envName = import.meta.env.VITE_ENV_NAME;
+
+/** True when VITE_ENV_NAME is an NVIDIA build (nvidia-gb, nvidia-vr, etc.). */
+export function isNvidiaPlatform() {
+  return String(envName ?? '').toLowerCase().startsWith('nvidia');
+}
+
 // Get default locale from local storage
 const stored = window.localStorage.getItem('storedLanguage');
 export default createI18nInstance(envName, stored);

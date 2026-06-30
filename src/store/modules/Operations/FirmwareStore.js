@@ -2,6 +2,7 @@ import api from '@/store/api';
 import i18n from '@/i18n';
 import { startManagerStatusCheck } from '@/services/ManagerStatusService';
 import { getOdataId } from '@/utilities/redfishUtils';
+import { isFirmwareUpdateTargetUri } from '@/utilities/firmwareUpdateTargetUri';
 
 function envInt(key, defaultValue) {
   if (import.meta.env[key] == null) return defaultValue;
@@ -15,6 +16,54 @@ const TASK_POLL_TIMEOUT = envInt('VITE_FIRMWARE_UPDATE_POLL_TIMEOUT', 1200);
 const MAX_TASK_POLL_TIME = TASK_POLL_TIMEOUT / TASK_POLL_INTERVAL;
 const WAIT_FOR_READY_INTERVAL = envInt('VITE_WAIT_FOR_READY_INTERVAL', 8);
 const WAIT_FOR_READY_TIME = envInt('VITE_WAIT_FOR_READY_TIME', 40);
+
+const TERMINAL_TASK_STATES = ['Completed', 'Exception', 'Killed', 'Cancelled'];
+
+/** Prevent duplicate poll loops for the same task handle. */
+let activeFirmwarePollTaskHandle = null;
+
+/** Detect firmware tasks before Payload.TargetUri is populated. */
+function isLikelyFirmwareUpdateTask(taskData) {
+  if (!taskData || TERMINAL_TASK_STATES.includes(taskData.TaskState)) {
+    return false;
+  }
+  const messages = taskData.Messages;
+  if (!Array.isArray(messages)) return false;
+  return messages.some((msg) => msg?.MessageId?.startsWith('Update.'));
+}
+
+function applyTaskPollSnapshot(commit, state, taskHandle, taskData) {
+  if (!taskData) return;
+  commit('setFirmwareUpdateTaskHandle', taskHandle);
+  commit('setFirmwareUpdateTaskResponse', taskData);
+  const percent = parsePercentComplete(taskData.PercentComplete);
+  if (percent != null && percent !== state.firmwareUpdateInfo.taskPercent) {
+    commit('setFirmwareUpdateTaskPercent', percent);
+    commit('setFirmwareUpdateTouch');
+  }
+}
+
+/** NVIDIA Update.1.0.ComponentUpdateSkipped — identical image, needs force. */
+function findComponentUpdateSkipped(resp) {
+  return resp?.data?.Messages?.find((msg) =>
+    msg?.MessageId?.includes('ComponentUpdateSkipped'),
+  );
+}
+
+function skippedUpdateMessage(skippedMsg) {
+  const resolution = skippedMsg?.Resolution;
+  if (resolution != null && resolution !== 'None.') return resolution;
+  return skippedMsg?.Message ?? null;
+}
+
+function parsePercentComplete(value) {
+  if (typeof value === 'number' && !Number.isNaN(value)) return value;
+  if (typeof value === 'string' && value.trim() !== '') {
+    const parsed = Number(value);
+    if (!Number.isNaN(parsed)) return parsed;
+  }
+  return null;
+}
 
 /**
  * Firmware Store
@@ -55,6 +104,8 @@ const FirmwareStore = {
       touch: false,
       uploadProgress: 0,
       jsonErrMsg: null,
+      taskResponse: null,
+      activationResetPerformed: false,
     },
   },
   getters: {
@@ -137,6 +188,10 @@ const FirmwareStore = {
       (state.firmwareUpdateInfo.uploadProgress = progress),
     setFirmwareUpdateJsonErrMsg: (state, jsonErrMsg) =>
       (state.firmwareUpdateInfo.jsonErrMsg = jsonErrMsg),
+    setFirmwareUpdateTaskResponse: (state, taskResponse) =>
+      (state.firmwareUpdateInfo.taskResponse = taskResponse),
+    setFirmwareActivationResetPerformed: (state, performed) =>
+      (state.firmwareUpdateInfo.activationResetPerformed = performed),
   },
   actions: {
     async getFirmwareInformation({ dispatch }) {
@@ -215,7 +270,12 @@ const FirmwareStore = {
         });
     },
     async getUpdateServiceSettings({ commit, dispatch }) {
-      api
+      // Return the promise so callers can await it. findExistingUpdateTask /
+      // attachExistingUpdateTask match a task's Payload.TargetUri against
+      // multipartHttpPushUri (et al), so those URIs must be populated before the
+      // task scan runs — otherwise the comparison is against null and silently
+      // fails to attach an in-progress update on page load.
+      return api
         .get('/redfish/v1/UpdateService')
         .then(async ({ data }) => {
           const applyTime =
@@ -279,7 +339,6 @@ const FirmwareStore = {
     ) {
       commit('setFirmwareUploadProgress', 0);
       const formData = new FormData();
-      formData.append('UpdateFile', image);
       const params = {};
       if (targets != null && targets.length > 0) {
         params.Targets = targets;
@@ -288,7 +347,19 @@ const FirmwareStore = {
       // Let the server decide the default target
       if (forceUpdate) params.ForceUpdate = true;
       params['@Redfish.OperationApplyTime'] = applyTime;
-      formData.append('UpdateParameters', JSON.stringify(params));
+      // Per the NVIDIA Firmware Update Guide (DU-12685-001), the UpdateParameters
+      // part must be appended before UpdateFile AND must declare a Content-Type
+      // of application/json. The bmcweb streaming multipart parser rejects any
+      // other part order with Base.1.19.UnrecognizedRequestBody, and an
+      // UpdateParameters part sent without a Content-Type (e.g. a plain string,
+      // which FormData emits as text/plain with no type) with Base.1.19.HeaderMissing.
+      // Appending a typed Blob makes the browser emit Content-Type: application/json
+      // for this part, matching the documented `;type=application/json` form.
+      formData.append(
+        'UpdateParameters',
+        new Blob([JSON.stringify(params)], { type: 'application/json' }),
+      );
+      formData.append('UpdateFile', image);
       return await api
         .post(state.multipartHttpPushUri, formData, {
           headers: { 'Content-Type': 'multipart/form-data' },
@@ -345,82 +416,156 @@ const FirmwareStore = {
       else return i18n.global.t('pageFirmware.toast.errorUpdateFirmware');
     },
     initFirmwareUpdate({ commit }, { taskHandle, taskState, initiator }) {
+      activeFirmwarePollTaskHandle = null;
       commit('setFirmwareUpdateTaskHandle', taskHandle);
       commit('setFirmwareUpdateState', taskState);
       commit('setFirmwareUpdateTaskPercent', 0);
       commit('setFirmwareUpdateErrMsg', null);
-      initiator =
-        initiator ||
-        sessionStorage.getItem('firmwareUpdateInitiator') === 'true';
-      commit('setFirmwareUpdateInitiator', initiator);
+      commit('setFirmwareUpdateTaskResponse', null);
+      commit('setFirmwareActivationResetPerformed', false);
+      const resolvedInitiator =
+        initiator !== undefined
+          ? initiator
+          : sessionStorage.getItem('firmwareUpdateInitiator') === 'true';
+      commit('setFirmwareUpdateInitiator', resolvedInitiator);
     },
     async setFirmwareUpdateTask(
-      { state, dispatch, getters },
+      { state, dispatch, commit, getters },
       { taskHandle, initiator },
     ) {
-      if (getters.isFirmwareUpdateInProgress) return;
-      dispatch('initFirmwareUpdate', {
+      const isCurrentTask =
+        state.firmwareUpdateInfo.taskHandle === taskHandle;
+      const inProgress = getters.isFirmwareUpdateInProgress;
+      const clientState = state.firmwareUpdateInfo.state;
+
+      if (inProgress && !isCurrentTask) return;
+
+      const resp = await api.get(taskHandle).catch(() => null);
+      const bmcState = resp?.data?.TaskState;
+      const bmcStillActive =
+        bmcState &&
+        !TERMINAL_TASK_STATES.includes(bmcState) &&
+        bmcState !== 'Completed';
+
+      if (inProgress && isCurrentTask) {
+        applyTaskPollSnapshot(commit, state, taskHandle, resp?.data);
+        if (
+          bmcStillActive &&
+          clientState !== 'TaskStarted' &&
+          clientState !== 'TaskCompleted'
+        ) {
+          commit('setFirmwareUpdateState', 'TaskStarted');
+        }
+        if (bmcStillActive && clientState === 'TaskStarted') {
+          dispatch('pollTask', taskHandle);
+        }
+        return;
+      }
+
+      if (!bmcStillActive) return;
+
+      await dispatch('initFirmwareUpdate', {
         taskHandle: taskHandle,
         taskState: 'TaskStarted',
         initiator: initiator,
       });
-      dispatch('pollTask', state.firmwareUpdateInfo.taskHandle);
+      applyTaskPollSnapshot(commit, state, taskHandle, resp?.data);
+      dispatch('pollTask', taskHandle);
     },
     async pollTask({ state, commit, dispatch }, taskHandle) {
+      if (activeFirmwarePollTaskHandle === taskHandle) return;
+      activeFirmwarePollTaskHandle = taskHandle;
+
       let resp = null;
       let percent = 0;
       let consecutiveFailCount = 0;
-      for (let i = 0; i < MAX_TASK_POLL_TIME; i++) {
-        resp = await api.get(taskHandle).catch((error) => {
-          console.log(error);
-        });
-        percent = resp?.data?.PercentComplete;
-        if (typeof percent !== 'number') {
-          console.log(resp);
-          percent = state.firmwareUpdateInfo.taskPercent;
-          consecutiveFailCount++;
-          if (consecutiveFailCount >= 3) break;
-        } else {
-          consecutiveFailCount = 0;
+      try {
+        for (let i = 0; i < MAX_TASK_POLL_TIME; i++) {
+          resp = await api.get(taskHandle).catch((error) => {
+            console.log(error);
+            return null;
+          });
+          const parsedPercent = parsePercentComplete(resp?.data?.PercentComplete);
+          if (parsedPercent == null) {
+            console.log(resp);
+            percent = state.firmwareUpdateInfo.taskPercent;
+            consecutiveFailCount++;
+            if (consecutiveFailCount >= 3) break;
+          } else {
+            percent = parsedPercent;
+            consecutiveFailCount = 0;
+          }
+          percent = percent <= 100 ? percent : 100;
+          const prevPercent = state.firmwareUpdateInfo.taskPercent;
+          if (percent !== prevPercent) {
+            commit('setFirmwareUpdateTaskPercent', percent);
+            commit('setFirmwareUpdateTouch');
+          }
+          if (resp?.data) {
+            commit('setFirmwareUpdateTaskResponse', resp.data);
+          }
+          const taskStatus = resp?.data?.TaskStatus;
+          if (
+            (resp?.data && percent >= 100) ||
+            (taskStatus != null && taskStatus !== 'OK')
+          ) {
+            break;
+          }
+          await dispatch('sleep', TASK_POLL_INTERVAL);
         }
-        percent = percent <= 100 ? percent : 100;
-        commit('setFirmwareUpdateTaskPercent', percent);
-        commit('setFirmwareUpdateTouch'); // Touch it, then watch in firmware page can be triggerred
-        if (percent >= 100 || resp?.data?.TaskStatus !== 'OK') break;
-        await dispatch('sleep', TASK_POLL_INTERVAL);
-      }
 
-      if (
-        percent < 100 ||
-        resp?.data?.TaskState !== 'Completed' ||
-        resp?.data?.TaskStatus !== 'OK'
-      ) {
-        console.log(resp);
-        const errMsg = await dispatch('extractResolutionForFailedTask', resp);
-        commit('setFirmwareUpdateErrMsg', errMsg);
-        commit('setFirmwareUpdateJsonErrMsg', resp?.data);
-        commit('setFirmwareUpdateState', 'TaskFailed');
-        commit('setFirmwareUpdateInitiator', false);
-      } else {
-        commit('setFirmwareUpdateState', 'TaskCompleted');
-        dispatch('waitToActive', resp);
+        if (
+          percent < 100 ||
+          resp?.data?.TaskState !== 'Completed' ||
+          resp?.data?.TaskStatus !== 'OK'
+        ) {
+          console.log(resp);
+          const errMsg = await dispatch('extractResolutionForFailedTask', resp);
+          commit('setFirmwareUpdateErrMsg', errMsg);
+          commit('setFirmwareUpdateJsonErrMsg', resp?.data);
+          commit('setFirmwareUpdateTaskPercent', 0);
+          commit('setFirmwareUpdateState', 'TaskFailed');
+          commit('setFirmwareUpdateInitiator', false);
+        } else {
+          const skippedMsg = findComponentUpdateSkipped(resp);
+          if (skippedMsg) {
+            commit('setFirmwareUpdateErrMsg', skippedUpdateMessage(skippedMsg));
+            commit('setFirmwareUpdateJsonErrMsg', resp?.data);
+            commit('setFirmwareUpdateTaskPercent', 0);
+            commit('setFirmwareUpdateState', 'TaskFailed');
+            commit('setFirmwareUpdateInitiator', false);
+          } else {
+            commit('setFirmwareUpdateState', 'TaskCompleted');
+            await dispatch('waitToActive', resp);
+          }
+        }
+      } finally {
+        if (activeFirmwarePollTaskHandle === taskHandle) {
+          activeFirmwarePollTaskHandle = null;
+        }
       }
     },
-    async waitToActive({ commit, dispatch }, resp) {
+    async waitToActive({ commit, dispatch, state }, resp) {
       if ((await dispatch('resetIfRequired', resp)) === false) {
         commit('setFirmwareUpdateState', 'ResetFailed');
         commit('setFirmwareUpdateInitiator', false);
         return;
       }
 
-      if ((await dispatch('waitForReady', resp)) == false) {
-        commit('setFirmwareUpdateState', 'WaitReadyFailed');
-        commit('setFirmwareUpdateInitiator', false);
-        return;
+      // Only wait for the manager to become ready when this session already
+      // performed an automatic activation reset. Otherwise offer manual reset
+      // actions on the firmware form as soon as the flash task completes.
+      if (state.firmwareUpdateInfo.activationResetPerformed) {
+        if ((await dispatch('waitForReady', resp)) === false) {
+          commit('setFirmwareUpdateState', 'WaitReadyFailed');
+          commit('setFirmwareUpdateInitiator', false);
+          return;
+        }
       }
 
       commit('setFirmwareUpdateState', 'Done');
-      commit('setFirmwareUpdateInitiator', false);
+      commit('setFirmwareUpdateTaskPercent', 0);
+      // Keep initiator set so FirmwareFormUpdate can show activation actions.
     },
     async waitForReady({ dispatch }, resp) {
       for (let i = 0; i < WAIT_FOR_READY_TIME; i++) {
@@ -435,24 +580,23 @@ const FirmwareStore = {
         .then((resp) => resp?.data?.Status?.State === 'Enabled')
         .catch(() => console.log('No response yet from Manager'));
     },
-    async resetIfRequired({ state, dispatch }, resp) {
+    async resetIfRequired({ state, commit, dispatch }, resp) {
       if (!state.firmwareUpdateInfo.initiator) return true;
       const resetRequired = await dispatch('extractResetRequired', resp);
       if (resetRequired == null) return true;
       const { resetUri, resetType, deviceId } = resetRequired;
 
+      const bmcPath = await dispatch('global/getBmcPath');
+      const isBmcManagerReset =
+        resetUri === `${bmcPath}/Actions/Manager.Reset`;
+
       let promise = null;
-      if (
-        resetUri ===
-        `${await this.dispatch('global/getBmcPath')}/Actions/Manager.Reset`
-      ) {
-        // Create payload with target and parameters
-        const payload = {
+      if (isBmcManagerReset) {
+        promise = dispatch('controls/rebootBmc', {
           target: resetUri,
           parameters: { ResetType: resetType },
           managerId: deviceId,
-        };
-        promise = this.dispatch('controls/rebootBmc', payload);
+        });
       } else {
         promise = api.post(resetUri, { ResetType: resetType });
         setTimeout(() => {
@@ -466,6 +610,12 @@ const FirmwareStore = {
 
       return await promise
         .then(() => {
+          commit('setFirmwareActivationResetPerformed', true);
+          if (isBmcManagerReset) {
+            // Match restartBmc / auxPowerResetSystem: show recovery modal while
+            // the BMC is offline and reload once it responds again.
+            dispatch('global/waitForBmcRecovery');
+          }
           return true;
         })
         .catch((error) => {
@@ -520,7 +670,6 @@ const FirmwareStore = {
       const members = resp?.data?.Members;
       if (!(members?.length > 0)) return null;
 
-      const terminalStates = ['Completed', 'Exception', 'Killed', 'Cancelled'];
       for (let i = members.length - 1; i >= 0; i--) {
         const taskHandle = getOdataId(members[i]);
         const taskInfo = await api.get(taskHandle).catch((error) => {
@@ -528,27 +677,28 @@ const FirmwareStore = {
         });
         const targetUri = taskInfo?.data?.Payload?.TargetUri;
         if (
-          targetUri != null &&
-          (targetUri === state.multipartHttpPushUri ||
-            targetUri === state.simpleUpdateUri ||
-            targetUri === state.httpPushUri)
+          isFirmwareUpdateTargetUri(targetUri, state) ||
+          isLikelyFirmwareUpdateTask(taskInfo?.data)
         ) {
-          if (terminalStates.includes(taskInfo?.data?.TaskState)) continue;
+          if (TERMINAL_TASK_STATES.includes(taskInfo?.data?.TaskState)) continue;
           return taskHandle;
         }
       }
       return null;
     },
-    async attachExistingUpdateTask({ dispatch, getters }) {
-      if (getters.isFirmwareUpdateInProgress) return;
-      dispatch('findExistingUpdateTask').then((taskHandle) => {
-        if (taskHandle != null) {
-          dispatch('setFirmwareUpdateTask', {
-            taskHandle: taskHandle,
-            initiator: false,
-          });
-        }
-      });
+    async attachExistingUpdateTask({ state, dispatch }) {
+      if (state.multipartHttpPushUri == null && state.httpPushUri == null) {
+        await dispatch('getUpdateServiceSettings');
+      }
+      const taskHandle = await dispatch('findExistingUpdateTask');
+      if (taskHandle != null) {
+        await dispatch('setFirmwareUpdateTask', {
+          taskHandle,
+          // Preserve initiator across refresh when this session started the update.
+          initiator:
+            sessionStorage.getItem('firmwareUpdateInitiator') === 'true',
+        });
+      }
     },
      
     extractResolutionForFailedTask({ state }, resp) {
@@ -581,6 +731,45 @@ const FirmwareStore = {
           console.log(error);
           throw new Error(
             i18n.global.t('pageFirmware.toast.errorSwitchImages'),
+          );
+        });
+    },
+    async restartBmc() {
+      const bmcPath = await this.dispatch('global/getBmcPath');
+      const message = await this.dispatch('controls/rebootBmc', {
+        target: `${bmcPath}/Actions/Manager.Reset`,
+        parameters: { ResetType: 'GracefulRestart' },
+      });
+      // Restarting the BMC takes the UI offline; show the recovery modal and
+      // refresh the WebUI once it's back (shared with the AUX reset flow).
+      this.dispatch('global/waitForBmcRecovery');
+      return message;
+    },
+    // AUX power cycle (AC cycle) of the system chassis to activate staged
+    // firmware. Uses the NVIDIA OEM action until a standard Chassis
+    // FullPowerCycle ResetType is available. The OEM action lives on the BMC
+    // chassis, which shares the BMC manager's id (derived from bmcPath).
+    async auxPowerResetSystem({ dispatch }) {
+      const bmcPath = await this.dispatch('global/getBmcPath');
+      const bmcId = bmcPath?.split('/').filter(Boolean).pop();
+      return await api
+        .post(
+          `/redfish/v1/Chassis/${bmcId}/Actions/Oem/NvidiaChassis.AuxPowerReset`,
+          { ResetType: 'AuxPowerCycleForce' },
+        )
+        .then(() => {
+          // The AC cycle takes the system (and BMC) offline briefly. The
+          // session stays valid, so we must NOT log out on the resulting
+          // timeouts — instead poll until the BMC responds again and then
+          // refresh the whole WebUI (shared recovery flow used by BMC reset
+          // too). Fire-and-forget so the toast shows now.
+          this.dispatch('global/waitForBmcRecovery');
+          return i18n.global.t('pageFirmware.toast.auxResetStartedMessage');
+        })
+        .catch(async (error) => {
+          console.log(error);
+          throw new Error(
+            await dispatch('extractResolutionForFailedCmd', error),
           );
         });
     },

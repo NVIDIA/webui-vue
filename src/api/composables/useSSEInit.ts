@@ -10,12 +10,13 @@ import { useSSE, buildSSEFilter } from './useSSE';
 import { useSSEQueryInvalidation, invalidateAllSSEQueries } from './useSSEQueryInvalidation';
 import { useSSEStore } from '@/stores/sse';
 import { useAuthStore } from '@/stores/auth';
-import { useFirmwareStore } from '@/stores/firmware';
 import { useGlobalStore } from '@/stores/global';
 import { apiInstance } from '@/api/mutator/axios-instance';
+import store from '@/store';
 import eventBus from '@/eventBus';
 import type { EventRecord } from '@/api/model/EventRecord';
 import { getOriginUri } from './parseSSEEvent';
+import { isFirmwareUpdateTargetUri } from '@/utilities/firmwareUpdateTargetUri';
 
 export interface UseSSEInitOptions {
   /**
@@ -50,7 +51,6 @@ export function useSSEInit(options: UseSSEInitOptions = {}) {
 
   const authStore = useAuthStore();
   const sseStore = useSSEStore();
-  const firmwareStore = useFirmwareStore();
   const queryClient = useQueryClient();
 
   // Build SSE filter - empty arrays = no filtering (receive all events)
@@ -181,36 +181,65 @@ export function useSSEInit(options: UseSSEInitOptions = {}) {
    */
   async function checkAndAttachFirmwareTask(taskHandle: string): Promise<void> {
     try {
-      // Fetch task details to check TargetUri
-      const taskInfo = await apiInstance<{
-        Payload?: { TargetUri?: string };
-        TaskState?: string;
-      }>({
-        url: taskHandle,
-        method: 'GET',
-      });
+      // Load UpdateService URIs for exact TargetUri matching.
+      await store.dispatch('firmware/getUpdateServiceSettings').catch(() => {});
 
-      const targetUri = taskInfo?.Payload?.TargetUri ?? '';
+      const TASK_ATTACH_RETRIES = 5;
+      const TASK_ATTACH_DELAY_MS = 1000;
 
-      // Check if TargetUri matches firmware update endpoints
-      const isFirmwareTask =
-        targetUri.includes('/UpdateService/update') ||
-        targetUri.includes('/UpdateService/Actions/UpdateService.SimpleUpdate') ||
-        targetUri.includes('/UpdateService/Actions/UpdateService.StartUpdate');
+      for (let attempt = 0; attempt < TASK_ATTACH_RETRIES; attempt++) {
+        const taskInfo = await apiInstance<{
+          Payload?: { TargetUri?: string };
+          TaskState?: string;
+        }>({
+          url: taskHandle,
+          method: 'GET',
+        });
 
-      if (!isFirmwareTask) {
-        console.log('[SSE] Task is not firmware-related, ignoring:', taskHandle, 'TargetUri:', targetUri);
+        const targetUri = taskInfo?.Payload?.TargetUri ?? '';
+
+        if (isFirmwareUpdateTargetUri(targetUri, store.state.firmware)) {
+          if (store.getters['firmware/isFirmwareUpdateInProgress']) {
+            console.log(
+              '[SSE] Firmware update already tracked, ignoring task:',
+              taskHandle,
+            );
+            return;
+          }
+
+          console.log(
+            '[SSE] Firmware update task confirmed, attaching to progress tracker:',
+            taskHandle,
+          );
+
+          await store.dispatch('firmware/setFirmwareUpdateTask', {
+            taskHandle,
+            initiator: false,
+          });
+          return;
+        }
+
+        // TaskStarted may arrive before Payload.TargetUri is populated.
+        if (!targetUri && attempt < TASK_ATTACH_RETRIES - 1) {
+          console.log(
+            '[SSE] Task payload not ready, retrying:',
+            taskHandle,
+            `(attempt ${attempt + 1}/${TASK_ATTACH_RETRIES})`,
+          );
+          await new Promise((resolve) =>
+            setTimeout(resolve, TASK_ATTACH_DELAY_MS),
+          );
+          continue;
+        }
+
+        console.log(
+          '[SSE] Task is not firmware-related, ignoring:',
+          taskHandle,
+          'TargetUri:',
+          targetUri || '(empty)',
+        );
         return;
       }
-
-      console.log('[SSE] Firmware update task confirmed, attaching to progress tracker:', taskHandle);
-
-      // Use Pinia FirmwareStore to start tracking this task
-      // Initiator: false because we're observing via SSE (someone else started it)
-      firmwareStore.setFirmwareUpdateTask({
-        TaskHandle: taskHandle,
-        Initiator: false,
-      });
     } catch (error) {
       console.warn('[SSE] Failed to check task details:', taskHandle, error);
     }

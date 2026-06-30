@@ -90,7 +90,7 @@ export interface EventRecord {
      */
     readonly OriginAddress?: string | null;
     /** A link to the resource or object that originated the condition. */
-    readonly OriginOfCondition?: OdataV4IdRef;
+    readonly OriginOfCondition?: OdataV4IdRef | string;
     /**
      * Indicates whether the OriginOfCondition link is unavailable.
      * @nullable

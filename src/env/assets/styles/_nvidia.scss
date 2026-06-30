@@ -208,3 +208,18 @@ $loading-color-100: #76b900;
   border-color: var(--colors-actionBorderSecondaryActive);
   color: var(--colors-actionFgSecondary);
 }
+
+// NVIDIA radio/checkbox selected state: fill with the brand green instead of
+// the global black. The :root prefix keeps specificity above the global form
+// styles (injected early via sass additionalData) so this stays NVIDIA-only.
+:root .form-check-input:checked {
+  background-color: var(--colors-brand);
+  border-color: var(--colors-brand);
+}
+
+:root .form-check-input:focus {
+  border-color: var(--colors-brand);
+  box-shadow:
+    0 0 0 2px var(--colors-n000),
+    0 0 0 4px var(--colors-n900);
+}

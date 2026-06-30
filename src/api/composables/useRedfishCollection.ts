@@ -26,6 +26,20 @@ function shouldRetry(failureCount: number, error: unknown): boolean {
 }
 
 /**
+ * When an $expand request fails, fall back to listing + per-member GET unless
+ * the error is auth/forbidden (retrying without expand won't help).
+ */
+export function shouldFallbackFromExpand(error: unknown): boolean {
+  const status = (error as { response?: { status?: number } })?.response
+    ?.status;
+  if (status === undefined) return false;
+  if (status === 401 || status === 403) return false;
+  if (status === 400 || status === 501) return true;
+  if (status >= 500 && status < 600) return true;
+  return false;
+}
+
+/**
  * Redfish OData query parameters (Redfish-first naming)
  */
 export interface RedfishQueryParameters {
@@ -292,9 +306,7 @@ export async function fetchRedfishCollection<T>(
         // If members only have @odata.id, $expand wasn't applied - fall through
       }
     } catch (e: unknown) {
-      const err = e as { response?: { status?: number } };
-      // 400/501 = $expand not supported by this endpoint, fallback
-      if (!(err?.response?.status === 400 || err?.response?.status === 501)) {
+      if (!shouldFallbackFromExpand(e)) {
         throw e;
       }
     }
@@ -395,9 +407,7 @@ export async function fetchSubResource<T>(
       }
       // $expand returned but sub-resource wasn't expanded — fall through
     } catch (e: unknown) {
-      const err = e as { response?: { status?: number } };
-      // 400/501 = $expand not supported by this endpoint, fall through
-      if (!(err?.response?.status === 400 || err?.response?.status === 501)) {
+      if (!shouldFallbackFromExpand(e)) {
         throw e;
       }
     }

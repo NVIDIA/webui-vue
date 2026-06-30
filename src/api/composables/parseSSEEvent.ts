@@ -191,7 +191,7 @@ export function isEventForResource(
   Event: EventRecord,
   ResourcePath: string,
 ): boolean {
-  const OriginUri = Event.OriginOfCondition?.['@odata.id'];
+  const OriginUri = getOriginUri(Event);
   if (!OriginUri) return false;
 
   // Normalize paths for comparison
@@ -219,8 +219,13 @@ export function matchesMessageId(
 
 /**
  * Extract the OriginOfCondition URI string from an EventRecord.
- * Convenience helper for accessing the @odata.id.
+ * Some BMC implementations send a plain URI string; Redfish schema uses
+ * an @odata.id object — accept both.
  */
 export function getOriginUri(Event: EventRecord): string | undefined {
-  return Event.OriginOfCondition?.['@odata.id'];
+  const origin = Event.OriginOfCondition;
+  if (typeof origin === 'string') {
+    return origin;
+  }
+  return origin?.['@odata.id'];
 }

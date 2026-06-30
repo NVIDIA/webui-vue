@@ -12,10 +12,15 @@
 import { computed } from 'vue';
 import { useQuery } from '@tanstack/vue-query';
 import { useRedfishCollection } from '@/api/composables/useRedfishCollection';
+import {
+  getGetManagersByIdQueryOptions,
+  getGetManagersQueryOptions,
+} from '@/api/endpoints/redfish.gen';
 import { apiInstance } from '@/api/mutator/axios-instance';
 import type { SoftwareInventory } from '@/api/model/SoftwareInventory';
 // @ts-ignore - Vuex store doesn't have TypeScript declarations
 import store from '@/store';
+import { isNvidiaPlatform } from '@/i18n';
 
 // Redfish resource types for API responses
 interface Manager {
@@ -26,8 +31,23 @@ interface Manager {
   };
 }
 
-interface Bios {
-  Links?: { ActiveSoftwareImage?: { '@odata.id'?: string } };
+interface BiosResource {
+  Links?: {
+    ActiveSoftwareImage?: { '@odata.id'?: string };
+    SoftwareImages?: { '@odata.id'?: string }[];
+  };
+}
+
+/** One BMC firmware group (primary BMC, or HGX/HMC BMC on NVIDIA). */
+export interface BmcFirmwareGroup {
+  key: 'primary' | 'hmc';
+  /** i18n key for the section heading */
+  sectionTitleKey: string;
+  firmware: SoftwareInventory[];
+  activeFirmware: SoftwareInventory | undefined;
+  backupFirmware: SoftwareInventory | undefined;
+  /** Primary platform BMC supports switch-to-backup image */
+  switchSupported: boolean;
 }
 
 /**
@@ -49,6 +69,8 @@ export function useFirmwareInventory() {
       { $expand: '.' },
     );
 
+  const isNvidia = isNvidiaPlatform();
+
   // Fetch active BMC firmware ID from cached Manager (via GlobalStore)
   const { data: BmcActiveFirmwareId, isLoading: isBmcActiveLoading } = useQuery({
     queryKey: ['firmware', 'activeBmc'],
@@ -66,95 +88,221 @@ export function useFirmwareInventory() {
     staleTime: 30000, // 30 seconds - prevents duplicate fetches across components
   });
 
-  // Fetch active BIOS firmware ID from System (may not exist on all systems)
-  const { data: BiosActiveFirmwareId, isLoading: isBiosActiveLoading } = useQuery({
-    queryKey: ['firmware', 'activeBios'],
-    queryFn: async (): Promise<string | null> => {
+  // Host BIOS firmware is defined by System/Bios Links.SoftwareImages (same as
+  // the legacy Vuex store). Heuristic Id matching incorrectly includes HGX
+  // SBIOS entries (e.g. HGX_SBIOS_FW_0) on NVIDIA platforms with no host BIOS.
+  const { data: BiosInfo, isLoading: isBiosActiveLoading } = useQuery({
+    queryKey: ['firmware', 'bios'],
+    queryFn: async (): Promise<{
+      activeId: string | null;
+      softwareImageIds: string[];
+    } | null> => {
       try {
         const systemPath = (await store.dispatch(
           'global/getSystemPath',
         )) as string | null;
         if (!systemPath) return null;
 
-        const response = await apiInstance<Bios>({
+        const response = await apiInstance<BiosResource>({
           url: `${systemPath}/Bios`,
           method: 'GET',
         });
-        const Id =
-          response?.Links?.ActiveSoftwareImage?.['@odata.id']?.split('/').pop() ?? null;
-        return Id;
+        const softwareImageIds = (response?.Links?.SoftwareImages ?? [])
+          .map((image) => image['@odata.id']?.split('/').pop())
+          .filter((id): id is string => id != null && id.length > 0);
+
+        return {
+          activeId:
+            response?.Links?.ActiveSoftwareImage?.['@odata.id']
+              ?.split('/')
+              .pop() ?? null,
+          softwareImageIds,
+        };
       } catch {
-        // BIOS endpoint may not exist on all systems
         return null;
       }
     },
     retry: false,
-    staleTime: 30000, // 30 seconds - prevents duplicate fetches across components
+    staleTime: 30000,
   });
 
-  // Categorize firmware into BMC and BIOS - returns raw SoftwareInventory
-  // Match BMC firmware by:
-  // 1. RelatedItem pointing to a Chassis containing 'BMC' (e.g., '/redfish/v1/Chassis/BMC_0')
-  // 2. Or Id containing 'BMC' but not 'HGX' 
+  const BiosActiveFirmwareId = computed(() => BiosInfo.value?.activeId ?? null);
+  const BiosSoftwareImageIds = computed(
+    () => BiosInfo.value?.softwareImageIds ?? [],
+  );
+
+  // Fetch active HGX/HMC BMC firmware ID from the HGX manager (NVIDIA only).
+  const { data: managersCollection, isLoading: isManagersLoading } = useQuery({
+    ...getGetManagersQueryOptions({
+      query: {
+        enabled: isNvidia,
+        staleTime: 30000,
+        retry: false,
+      },
+    }),
+  });
+
+  const hmcManagerId = computed(() => {
+    const hmcUri = managersCollection.value?.Members?.find((Member) =>
+      (Member['@odata.id'] ?? '').toUpperCase().includes('HGX'),
+    )?.['@odata.id'];
+    if (!hmcUri) return null;
+    return hmcUri.split('/').pop() || null;
+  });
+
+  const { data: hmcManager, isLoading: isHmcManagerLoading } = useQuery({
+    ...getGetManagersByIdQueryOptions(hmcManagerId, {
+      query: {
+        enabled: computed(() => isNvidia && !!hmcManagerId.value),
+        staleTime: 30000,
+        retry: false,
+      },
+    }),
+  });
+
+  const HmcActiveFirmwareId = computed(
+    () =>
+      hmcManager.value?.Links?.ActiveSoftwareImage?.['@odata.id']
+        ?.split('/')
+        .pop() ?? null,
+  );
+
+  const isHmcActiveLoading = computed(
+    () => isManagersLoading.value || isHmcManagerLoading.value,
+  );
+
+  // Match primary BMC firmware by RelatedItem or Id (excludes HGX BMC entries).
   const BmcFirmware = computed<SoftwareInventory[]>(() => {
     const Members = data.value?.Members ?? [];
-    const filtered = Members.filter((Item) => {
+    return Members.filter((Item) => {
       const RelatedItem = Item.RelatedItem?.[0]?.['@odata.id'];
       const chassisName = RelatedItem?.split('/').pop()?.toUpperCase();
-      // Match if RelatedItem points to a BMC chassis (but not HGX_BMC)
       if (chassisName?.includes('BMC') && !chassisName?.includes('HGX')) {
         return true;
       }
-      // Fallback: match by Id if no RelatedItem
       if (!RelatedItem && Item.Id) {
         const id = Item.Id.toUpperCase();
         return id.includes('BMC') && !id.includes('HGX');
       }
       return false;
     });
-    return filtered;
   });
 
-  // Match BIOS/UEFI firmware by RelatedItem or Id
-  const BiosFirmware = computed<SoftwareInventory[]>(() => {
+  // Match HGX/HMC BMC firmware (NVIDIA only).
+  const HgxBmcFirmware = computed<SoftwareInventory[]>(() => {
+    if (!isNvidia) return [];
     const Members = data.value?.Members ?? [];
     return Members.filter((Item) => {
       const RelatedItem = Item.RelatedItem?.[0]?.['@odata.id'];
       const chassisName = RelatedItem?.split('/').pop()?.toUpperCase();
-      // Match if RelatedItem points to BIOS
-      if (chassisName?.includes('BIOS')) {
+      if (chassisName?.includes('HGX') && chassisName?.includes('BMC')) {
         return true;
       }
-      // Fallback: match by Id if it's UEFI/BIOS
-      if (Item.Id) {
+      if (!RelatedItem && Item.Id) {
         const id = Item.Id.toUpperCase();
-        return id === 'UEFI' || id.includes('BIOS');
+        return id.includes('HGX') && id.includes('BMC');
       }
       return false;
     });
   });
 
-  // Computed properties for active/backup firmware
+  // Host BIOS/UEFI images linked from System/Bios SoftwareImages only.
+  const BiosFirmware = computed<SoftwareInventory[]>(() => {
+    const imageIds = BiosSoftwareImageIds.value;
+    if (imageIds.length === 0) return [];
+    const idSet = new Set(imageIds);
+    const Members = data.value?.Members ?? [];
+    return Members.filter((Item) => Item.Id != null && idSet.has(Item.Id));
+  });
+
+  function resolveActiveBackup(
+    firmware: SoftwareInventory[],
+    activeId: string | null | undefined,
+  ): {
+    activeFirmware: SoftwareInventory | undefined;
+    backupFirmware: SoftwareInventory | undefined;
+  } {
+    const activeFirmware =
+      (activeId
+        ? firmware.find((Fw) => Fw.Id === activeId)
+        : undefined) ?? firmware[0];
+    const resolvedActiveId = activeFirmware?.Id;
+    const backupFirmware = resolvedActiveId
+      ? firmware.find((Fw) => Fw.Id !== resolvedActiveId)
+      : undefined;
+    return { activeFirmware, backupFirmware };
+  }
+
+  // BMC card sections: one per BMC. On NVIDIA with a second HGX BMC, label them BMC and HMC.
+  const BmcGroups = computed<BmcFirmwareGroup[]>(() => {
+    const rawGroups: {
+      key: 'primary' | 'hmc';
+      firmware: SoftwareInventory[];
+      activeId: string | null | undefined;
+      switchSupported: boolean;
+    }[] = [];
+
+    if (BmcFirmware.value.length > 0) {
+      rawGroups.push({
+        key: 'primary',
+        firmware: BmcFirmware.value,
+        activeId: BmcActiveFirmwareId.value,
+        switchSupported: true,
+      });
+    }
+    if (HgxBmcFirmware.value.length > 0) {
+      rawGroups.push({
+        key: 'hmc',
+        firmware: HgxBmcFirmware.value,
+        activeId: HmcActiveFirmwareId.value,
+        switchSupported: false,
+      });
+    }
+
+    const hasMultiple = rawGroups.length > 1;
+
+    return rawGroups.map((group) => {
+      let sectionTitleKey = 'pageFirmware.sectionTitleBmcCards';
+      if (isNvidia && hasMultiple) {
+        sectionTitleKey =
+          group.key === 'hmc'
+            ? 'pageFirmware.sectionTitleHmcCards'
+            : 'pageFirmware.sectionTitleBmcCards';
+      }
+
+      const { activeFirmware, backupFirmware } = resolveActiveBackup(
+        group.firmware,
+        group.activeId,
+      );
+
+      return {
+        key: group.key,
+        sectionTitleKey,
+        firmware: group.firmware,
+        activeFirmware,
+        backupFirmware,
+        switchSupported: group.switchSupported,
+      };
+    });
+  });
+
   const isSingleFileUploadEnabled = computed(() => BiosFirmware.value.length === 0);
 
-  // Active firmware: match by ID, or fall back to first item if ID is undefined
-  const ActiveBmcFirmware = computed(() =>
-    BmcFirmware.value.find((Fw) => Fw.Id === BmcActiveFirmwareId.value) ??
-    BmcFirmware.value[0],
+  const ActiveBmcFirmware = computed(
+    () => BmcGroups.value.find((g) => g.key === 'primary')?.activeFirmware,
   );
 
-  const ActiveBiosFirmware = computed(() =>
-    BiosFirmware.value.find((Fw) => Fw.Id === BiosActiveFirmwareId.value) ??
-    BiosFirmware.value[0],
-  );
-
-  // Backup firmware: find item that doesn't match the active firmware's Id
-  // Uses the actual active firmware's Id (not the query data) to handle fallback case
-  const BackupBmcFirmware = computed(() => {
-    const activeId = ActiveBmcFirmware.value?.Id;
-    if (!activeId) return undefined;
-    return BmcFirmware.value.find((Fw) => Fw.Id !== activeId);
+  const ActiveBiosFirmware = computed(() => {
+    if (BiosFirmware.value.length === 0) return undefined;
+    return (
+      BiosFirmware.value.find((Fw) => Fw.Id === BiosActiveFirmwareId.value) ??
+      BiosFirmware.value[0]
+    );
   });
+
+  const BackupBmcFirmware = computed(
+    () => BmcGroups.value.find((g) => g.key === 'primary')?.backupFirmware,
+  );
 
   const BackupBiosFirmware = computed(() => {
     const activeId = ActiveBiosFirmware.value?.Id;
@@ -162,23 +310,30 @@ export function useFirmwareInventory() {
     return BiosFirmware.value.find((Fw) => Fw.Id !== activeId);
   });
 
+  const isBiosFirmwareAvailable = computed(
+    () => BiosSoftwareImageIds.value.length > 0 && BiosFirmware.value.length > 0,
+  );
+
   const isLoading = computed(
-    () => isInventoryLoading.value || isBmcActiveLoading.value || isBiosActiveLoading.value,
+    () =>
+      isInventoryLoading.value ||
+      isBmcActiveLoading.value ||
+      isBiosActiveLoading.value ||
+      isHmcActiveLoading.value,
   );
 
   return {
-    // Raw SoftwareInventory collections
+    BmcGroups,
     BmcFirmware,
     BiosFirmware,
     BmcActiveFirmwareId,
     BiosActiveFirmwareId,
-    // Computed active/backup firmware
     isSingleFileUploadEnabled,
     ActiveBmcFirmware,
     ActiveBiosFirmware,
     BackupBmcFirmware,
     BackupBiosFirmware,
-    // Loading/error states
+    isBiosFirmwareAvailable,
     isLoading,
     error,
     refetch,

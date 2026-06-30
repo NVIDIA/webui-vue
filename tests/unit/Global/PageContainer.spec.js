@@ -8,17 +8,29 @@ vi.mock('@/services/ManagerStatusService', () => ({
   stopManagerStatusCheck: vi.fn(),
 }));
 
+vi.mock('@/services/ToastOffsetService', () => ({
+  observeAppBannerStack: vi.fn(() => ({ disconnect: vi.fn() })),
+}));
+
 describe('PageContainer.vue', () => {
   const wrapper = mount(PageContainer, {
     global: {
       mocks: {
         $t: (key) => key,
+        $route: { path: '/' },
         $store: {
           state: {
             bmc: {
               isManagerReady: true,
             },
           },
+          getters: {
+            'global/recoveryInProgress': false,
+            'global/recoveryTimedOut': false,
+            'firmware/isFirmwareUpdateInProgress': false,
+            'firmware/firmwareUpdateInfo': { taskPercent: 0, state: null },
+          },
+          dispatch: vi.fn(() => Promise.resolve()),
         },
         $eventBus: {
           on: vi.fn(),
@@ -28,6 +40,8 @@ describe('PageContainer.vue', () => {
       stubs: {
         GlobalBanner: true,
         BootProgressBanner: true,
+        FirmwareProgressBanner: true,
+        SystemRecoveryModal: true,
       },
     },
   });

@@ -1,6 +1,14 @@
 import api from '@/store/api';
 import { getOdataId } from '@/utilities/redfishUtils';
 
+// Recovery polling after a reset that takes the BMC/system offline (e.g. BMC
+// reset, AUX power cycle). The session stays valid, so we poll until the BMC
+// responds again and then refresh the whole WebUI.
+const RECOVERY_DOWN_DELAY = 10000; // ms to wait for the system to drop before polling
+const RECOVERY_POLL_INTERVAL = 5000; // ms between recovery polls
+const RECOVERY_MAX_POLLS = 240; // ~20 minutes total
+const RECOVERY_OFFLINE_MAX_POLLS = 24; // ~2 minutes waiting for BMC to go offline
+
 const HOST_STATE = {
   on: 'xyz.openbmc_project.State.Host.HostState.Running',
   off: 'xyz.openbmc_project.State.Host.HostState.Off',
@@ -48,6 +56,10 @@ const GlobalStore = {
     manager: null,
     // Boot progress tracking (Redfish ComputerSystem.BootProgress)
     bootProgress: null, // { LastState, LastStateTime, Oem }
+    // True while waiting for the BMC/system to come back after a reset; drives
+    // the blocking SystemRecoveryModal.
+    recoveryInProgress: false,
+    recoveryTimedOut: false,
   },
   getters: {
     assetTag: (state) => state.system?.AssetTag || null,
@@ -75,6 +87,8 @@ const GlobalStore = {
     bootProgress: (state) => state.bootProgress,
     bootProgressState: (state) => state.bootProgress?.LastState || null,
     bootProgressTime: (state) => state.bootProgress?.LastStateTime || null,
+    recoveryInProgress: (state) => state.recoveryInProgress,
+    recoveryTimedOut: (state) => state.recoveryTimedOut,
   },
   mutations: {
     setServiceRoot: (state, serviceRoot) => {
@@ -112,8 +126,75 @@ const GlobalStore = {
       }
       state.bootProgress = bootProgress;
     },
+    setRecoveryInProgress: (state, inProgress) =>
+      (state.recoveryInProgress = inProgress),
+    setRecoveryTimedOut: (state, timedOut) =>
+      (state.recoveryTimedOut = timedOut),
   },
   actions: {
+    // Poll the BMC after a reset that takes it offline and refresh the entire
+    // WebUI once it is reachable again. Shows a blocking modal (the user can't
+    // act while the system is cycling). The session remains valid, so timeouts
+    // during the outage are expected and must NOT trigger logout.
+    async waitForBmcRecovery({ commit, dispatch, state }) {
+      // Avoid stacking multiple recovery loops.
+      if (state.recoveryInProgress) return;
+      const bmcPath = await dispatch('getBmcPath');
+      commit('setRecoveryInProgress', true);
+      commit('setRecoveryTimedOut', false);
+
+      try {
+        // Give the reset request time to take effect before we look for offline.
+        await new Promise((resolve) =>
+          setTimeout(resolve, RECOVERY_DOWN_DELAY),
+        );
+
+        // Wait until the BMC stops responding or leaves the Enabled state
+        // (confirms the reset actually started).
+        let sawTransition = false;
+        for (let i = 0; i < RECOVERY_OFFLINE_MAX_POLLS; i++) {
+          const managerState = await api
+            .get(bmcPath, { timeout: 10 * 1000 })
+            .then((resp) => resp?.data?.Status?.State ?? null)
+            .catch(() => null);
+          if (managerState == null || managerState !== 'Enabled') {
+            sawTransition = true;
+            break;
+          }
+          await new Promise((resolve) =>
+            setTimeout(resolve, RECOVERY_POLL_INTERVAL),
+          );
+        }
+
+        // Poll until the manager responds again after the reset. Also watch for
+        // offline/non-Enabled here — AUX cycles can be shorter than phase 1.
+        // Non-Enabled states after recovery are handled by the manager-status banner.
+        let sawOffline = sawTransition;
+        for (let i = 0; i < RECOVERY_MAX_POLLS; i++) {
+          const managerState = await api
+            .get(bmcPath, { timeout: 10 * 1000 })
+            .then((resp) => resp?.data?.Status?.State ?? null)
+            .catch(() => null);
+          if (managerState == null) {
+            sawOffline = true;
+          } else if (sawOffline) {
+            commit('setRecoveryInProgress', false);
+            // Full reload so Vue Query, SSE, and Vuex state re-sync after outage.
+            window.location.reload();
+            return;
+          } else if (managerState !== 'Enabled') {
+            sawOffline = true;
+          }
+          await new Promise((resolve) =>
+            setTimeout(resolve, RECOVERY_POLL_INTERVAL),
+          );
+        }
+
+        commit('setRecoveryTimedOut', true);
+      } finally {
+        commit('setRecoveryInProgress', false);
+      }
+    },
     async fetchServiceRoot({ commit }) {
       try {
         commit(

@@ -1,6 +1,6 @@
 <template>
   <b-modal
-    id="json-modal"
+    :id="modalId"
     :title="title"
   >
     <pre>{{ parsedJsonContent() }}</pre>
@@ -15,6 +15,10 @@
 <script>
 export default {
   props: {
+    modalId: {
+      type: String,
+      default: 'json-modal',
+    },
     title: {
       required: true,
     },

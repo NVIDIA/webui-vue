@@ -1,11 +1,15 @@
 <template>
   <div>
-    <global-banner
-      :show="!isManagerReady"
-      :message="managerBannerMessage"
-      variant="warning"
-    />
-    <boot-progress-banner />
+    <div ref="bannerStack" class="page-banner-stack">
+      <global-banner
+        :show="!isManagerReady"
+        :message="managerBannerMessage"
+        variant="warning"
+      />
+      <boot-progress-banner />
+      <firmware-progress-banner />
+    </div>
+    <system-recovery-modal />
     <main id="main-content" class="page-container">
       <slot />
     </main>
@@ -17,12 +21,20 @@ import { mapState } from 'vuex';
 import JumpLinkMixin from '@/components/Mixins/JumpLinkMixin';
 import GlobalBanner from '@/components/Global/GlobalBanner';
 import BootProgressBanner from '@/components/Global/BootProgressBanner';
+import FirmwareProgressBanner from '@/components/Global/FirmwareProgressBanner';
+import SystemRecoveryModal from '@/components/Global/SystemRecoveryModal';
 import { startManagerStatusCheck } from '@/services/ManagerStatusService';
+import { observeAppBannerStack } from '@/services/ToastOffsetService';
 import eventBus from '@/eventBus';
 
 export default {
   name: 'PageContainer',
-  components: { GlobalBanner, BootProgressBanner },
+  components: {
+    GlobalBanner,
+    BootProgressBanner,
+    FirmwareProgressBanner,
+    SystemRecoveryModal,
+  },
   mixins: [JumpLinkMixin],
   computed: {
     isManagerReady() {
@@ -34,14 +46,35 @@ export default {
       return details ? `${base} (${details})` : base;
     },
   },
-  created() {
+  async created() {
     this.managerStatusIntervalId = startManagerStatusCheck();
     this.handleSkipNavigation = () => {
       this.setFocus(this.$el);
     };
     eventBus.$on('skip-navigation', this.handleSkipNavigation);
+    // App-wide detection of an in-progress firmware update so the global
+    // FirmwareProgressBanner appears on any page after a refresh, regardless of
+    // which session started the flash. attachExistingUpdateTask self-loads the
+    // UpdateService URIs and polls, so this works without relying on SSE.
+    try {
+      await this.$store.dispatch('firmware/getUpdateServiceSettings');
+    } catch (error) {
+      console.error('[PageContainer] getUpdateServiceSettings failed:', error);
+    }
+    // Do not await — pollTask runs in the background; state updates drive the banner.
+    this.$store
+      .dispatch('firmware/attachExistingUpdateTask')
+      .catch((error) =>
+        console.error('[PageContainer] attachExistingUpdateTask failed:', error),
+      );
+  },
+  mounted() {
+    this.bannerOffsetObserver = observeAppBannerStack(this.$refs.bannerStack);
   },
   beforeUnmount() {
+    if (this.bannerOffsetObserver) {
+      this.bannerOffsetObserver.disconnect();
+    }
     if (this.managerStatusIntervalId) {
       clearInterval(this.managerStatusIntervalId);
     }

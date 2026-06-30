@@ -44,14 +44,24 @@
           :disabled="isPageDisabled || isFirmwareUpdateInProgress"
           class="mb-3"
         >
-          <div class="d-flex">
-            <b-form-radio v-model="nvidiaGBTarget" value="BMC" class="me-3">
-              BMC
-            </b-form-radio>
-            <b-form-radio v-model="nvidiaGBTarget" value="HMC">
-              HMC
-            </b-form-radio>
-          </div>
+          <b-form-radio
+            id="nvidia-target-bmc"
+            v-model="nvidiaGBTarget"
+            name="nvidia-target"
+            value="BMC"
+            inline
+          >
+            BMC
+          </b-form-radio>
+          <b-form-radio
+            id="nvidia-target-hmc"
+            v-model="nvidiaGBTarget"
+            name="nvidia-target"
+            value="HMC"
+            inline
+          >
+            HMC
+          </b-form-radio>
         </b-form-group>
 
         <b-form-group
@@ -88,6 +98,15 @@
           :disabled="isPageDisabled || isFirmwareUpdateInProgress"
         >
           {{ $t('pageFirmware.form.updateFirmware.forceUpdate') }}
+        </b-form-checkbox>
+
+        <b-form-checkbox
+          v-if="isApplyTimeOptionEnabled"
+          v-model="applyOnReset"
+          class="mb-4"
+          :disabled="isPageDisabled || isFirmwareUpdateInProgress"
+        >
+          {{ $t('pageFirmware.form.updateFirmware.applyOnReset') }}
         </b-form-checkbox>
 
         <!-- Local File Upload -->
@@ -178,6 +197,14 @@ href="#"
             </b-form-invalid-feedback>
           </b-form-group>
         </template>
+        <b-alert
+          v-if="showTaskProgressAlert"
+          variant="info"
+          :model-value="true"
+          class="mb-2"
+        >
+          {{ taskProgressLabel }}
+        </b-alert>
         <div class="progress-wrapper">
           <b-progress
             v-if="isUploading"
@@ -189,6 +216,21 @@ href="#"
             <b-progress-bar :value="uploadProgress" :max="100">
               <span class="progress-label">
                 {{ uploadProgress }}%
+              </span>
+            </b-progress-bar>
+          </b-progress>
+          <b-progress
+            v-else-if="isTaskUpdateInProgress"
+            animated
+            striped
+            class="mt-2 mb-2"
+          >
+            <b-progress-bar
+              :value="taskProgressDisplayValue"
+              :max="100"
+            >
+              <span class="progress-label">
+                {{ taskProgressLabel }}
               </span>
             </b-progress-bar>
           </b-progress>
@@ -224,6 +266,35 @@ href="#"
             </span>
           </b-form-invalid-feedback>
         </div>
+        <!-- Offer a force retry when an update failed without Force Update -->
+        <div v-if="showRetryWithForce" class="mb-3">
+          <b-btn variant="primary" @click="retryWithForce">
+            {{ $t('pageFirmware.form.updateFirmware.retryWithForce') }}
+          </b-btn>
+        </div>
+
+        <!-- Offer activation actions once an update completes -->
+        <div
+          v-if="showCompletionActions && (showRestartBmcAction || showAuxResetAction)"
+          class="mb-3"
+        >
+          <b-btn
+            v-if="showRestartBmcAction"
+            variant="secondary"
+            class="me-2"
+            @click="onRestartBmc"
+          >
+            {{ $t('pageFirmware.form.updateFirmware.restartBmc') }}
+          </b-btn>
+          <b-btn
+            v-if="showAuxResetAction"
+            variant="secondary"
+            @click="onAuxResetSystem"
+          >
+            {{ $t('pageFirmware.form.updateFirmware.auxResetSystem') }}
+          </b-btn>
+        </div>
+
         <b-btn
           data-test-id="firmware-button-startUpdate"
           type="submit"
@@ -266,6 +337,10 @@ import ModalUpdateFirmware from './FirmwareModalUpdateFirmware';
 import ModalConfirmIdentity from './FirmwareModalConfirmIdentity';
 import JsonModal from '@/components/Global/JsonModal.vue';
 import { generateValidation } from '@/components/Validators/redfishAction';
+import { mapState } from 'vuex';
+import { isNvidiaPlatform } from '@/i18n';
+
+const FIRMWARE_UPDATE_STARTED_TOAST_ID = 'firmware-update-started-toast';
 
 export default {
   components: { FormFile, ModalUpdateFirmware, ModalConfirmIdentity, JsonModal },
@@ -313,9 +388,18 @@ export default {
       errorDetails: null,
       redfishCommonError: false,
       isUpdateModalVisible: false,
+      applyOnReset: false,
+      showRetryWithForce: false,
+      showCompletionActions: false,
+      trackedUpdateInitiator: false,
+      prevFirmwareUpdateSnapshot: null,
     };
   },
   computed: {
+    ...mapState('firmware', {
+      firmwareUpdateState: (state) => state.firmwareUpdateInfo.state,
+      firmwareTaskPercent: (state) => state.firmwareUpdateInfo.taskPercent,
+    }),
     firmwareInventory() {
       return this.$store.getters['firmware/firmwareInventory'];
     },
@@ -341,14 +425,36 @@ export default {
       return this.fileSource === 'SCP';
     },
     firmwareUpdateInfo() {
-      const info = this.$store.getters['firmware/firmwareUpdateInfo'];
-      return JSON.parse(JSON.stringify(info));
+      return this.$store.state.firmware.firmwareUpdateInfo;
     },
     isFirmwareUpdateInProgress() {
       return (
         this.isUploading ||
         this.$store.getters['firmware/isFirmwareUpdateInProgress']
       );
+    },
+    showTaskProgressAlert() {
+      return (
+        !this.isUploading &&
+        (this.firmwareUpdateState === 'TaskStarted' ||
+          this.firmwareUpdateState === 'TaskCompleted')
+      );
+    },
+    isTaskUpdateInProgress() {
+      return this.firmwareUpdateState === 'TaskStarted' && !this.isUploading;
+    },
+    taskProgressPercent() {
+      return this.firmwareTaskPercent ?? 0;
+    },
+    // BMC may report PercentComplete 0 during transfer; show indeterminate bar.
+    taskProgressDisplayValue() {
+      const percent = this.taskProgressPercent;
+      return percent > 0 ? percent : 100;
+    },
+    taskProgressLabel() {
+      const percent = this.taskProgressPercent;
+      if (percent > 0) return `${percent}%`;
+      return this.$t('pageFirmware.form.updateFirmware.taskInProgress');
     },
     isForceUpdateEnabled() {
       // Deprecated http push does not support Force update
@@ -361,6 +467,13 @@ export default {
       // Force update is not supported for SimpleUpdate on Bluefield platform
       if (this.isBluefield && !this.isLocalSelected ) return false;
       return true;
+    },
+    isApplyTimeOptionEnabled() {
+      // @Redfish.OperationApplyTime is only honored on the multipart push path
+      return (
+        this.isLocalSelected &&
+        this.$store.getters['firmware/multipartHttpPushUri'] != null
+      );
     },
     computedTargets() {
       if (this.isBluefield) {
@@ -399,6 +512,15 @@ export default {
     hasFormError() {
       return this.serverError && !this.v$.$dirty && !this.v$.$anyError;
     },
+    showRestartBmcAction() {
+      if ((this.isNvidiaGB || this.isNvidiaVR) && this.nvidiaGBTarget === 'HMC') {
+        return false;
+      }
+      return true;
+    },
+    showAuxResetAction() {
+      return isNvidiaPlatform();
+    },
   },
   watch: {
     fileSource: function () {
@@ -409,12 +531,43 @@ export default {
       this.serverError = null;
       this.redfishCommonError = false;
     },
-    firmwareUpdateInfo: {
-      handler(newInfo, oldInfo) {
-        this.displayUpdateProgress(newInfo, oldInfo);
+    'firmwareUpdateInfo.initiator'(initiator) {
+      if (initiator) {
+        this.trackedUpdateInitiator = true;
+      } else if (this.isActiveFirmwareUpdateState(this.firmwareUpdateState)) {
+        this.trackedUpdateInitiator = false;
+        this.showCompletionActions = false;
+        this.showRetryWithForce = false;
+      }
+    },
+    firmwareUpdateState: {
+      handler(newState, oldState) {
+        const info = this.firmwareUpdateInfo;
+        const isInitialRun = oldState === undefined;
+        const prev = this.prevFirmwareUpdateSnapshot ?? info;
+
+        if (newState === 'TaskStarted' && oldState !== 'TaskStarted') {
+          this.trackedUpdateInitiator = !!info.initiator;
+        }
+
+        // immediate: true runs before we have a prior state; seed the snapshot
+        // only so reload/rehydrate does not look like a fresh transition.
+        if (!isInitialRun) {
+          this.displayUpdateProgress(info, {
+            state: oldState ?? prev.state,
+            initiator:
+              oldState == null ? prev.initiator : this.trackedUpdateInitiator,
+            activationResetPerformed: prev.activationResetPerformed,
+          });
+        }
+
+        this.prevFirmwareUpdateSnapshot = {
+          state: info.state,
+          initiator: info.initiator,
+          activationResetPerformed: info.activationResetPerformed,
+        };
       },
       immediate: true,
-      deep: true,
     },
     bluefieldTarget: {
       handler(newValue) {
@@ -441,6 +594,30 @@ export default {
         this.v$.form.Target.$touch();
       },
     },
+  },
+  async created() {
+    this.syncTrackedUpdateInitiator(this.firmwareUpdateInfo);
+    // Load the UpdateService URIs first: attachExistingUpdateTask matches an
+    // in-progress task's Payload.TargetUri against multipartHttpPushUri (et al),
+    // so those must be populated before the scan runs. This is the page-load
+    // fallback that surfaces a flash started by another session when SSE isn't
+    // delivering events (e.g. SSE-over-HTTP/2 unavailable).
+    try {
+      await this.$store.dispatch('firmware/getUpdateServiceSettings');
+    } catch (error) {
+      console.error(
+        '[FirmwareFormUpdate] getUpdateServiceSettings failed:',
+        error,
+      );
+    }
+    this.$store
+      .dispatch('firmware/attachExistingUpdateTask')
+      .catch((error) =>
+        console.error(
+          '[FirmwareFormUpdate] attachExistingUpdateTask failed:',
+          error,
+        ),
+      );
   },
   validations() {
     // Vuelidate v2 `required` treats File objects as empty because File has no enumerable keys.
@@ -477,11 +654,29 @@ export default {
       },
     };
   },
-  created() {
-    this.$store.dispatch('firmware/getUpdateServiceSettings');
-    this.$store.dispatch('firmware/attachExistingUpdateTask');
-  },
   methods: {
+    isActiveFirmwareUpdateState(state) {
+      return (
+        state != null &&
+        state !== 'Done' &&
+        state !== 'ResetFailed' &&
+        state !== 'WaitReadyFailed' &&
+        state !== 'TaskFailed'
+      );
+    },
+    syncTrackedUpdateInitiator(info) {
+      if (info.initiator) {
+        this.trackedUpdateInitiator = true;
+      } else if (this.isActiveFirmwareUpdateState(info.state)) {
+        this.trackedUpdateInitiator = false;
+      } else if (
+        sessionStorage.getItem('firmwareUpdateInitiator') === 'true'
+      ) {
+        this.trackedUpdateInitiator = true;
+      } else {
+        this.trackedUpdateInitiator = false;
+      }
+    },
     clearServerError() {
       this.serverError = null;
       this.redfishCommonError = false;
@@ -491,12 +686,15 @@ export default {
       modal?.show?.();
     },
     updateFirmware() {
+      this.showRetryWithForce = false;
+      this.showCompletionActions = false;
+      this.trackedUpdateInitiator = false;
       this.isUploading = true;
       this.$store.commit('firmware/setFirmwareUploadProgress', 0);
-      this.startLoader();
       this.infoToast(this.$t('pageFirmware.toast.updateStartedMessage'), {
         title: this.$t('pageFirmware.toast.updateStarted'),
         timestamp: true,
+        id: FIRMWARE_UPDATE_STARTED_TOAST_ID,
       });
       this.dispatchFileUpload()
         .then((resp) => {
@@ -510,13 +708,11 @@ export default {
           this.serverError = cause?.response?.data?.error || null;
           this.v$.$touch();
           this.validateRedfishError();
-          const lastToast = document.querySelector('.toast');
-          this.$bvToast?.hide?.(lastToast?.id);
+          this.$toast?.hide?.(FIRMWARE_UPDATE_STARTED_TOAST_ID);
         })
         .finally(() => {
           this.isUploading = false;
           this.$store.commit('firmware/setFirmwareUploadProgress', 0);
-          this.endLoader();
         });
     },
     dispatchFileUpload() {
@@ -525,6 +721,7 @@ export default {
           image: this.file,
           forceUpdate: this.form.forceUpdate,
           targets: this.form.Target,
+          applyTime: this.applyOnReset ? 'OnReset' : 'Immediate',
         });
       } else {
         return this.$store.dispatch('firmware/uploadFirmwareSimpleUpdate', {
@@ -537,41 +734,54 @@ export default {
       }
     },
     displayUpdateProgress(newInfo = {}, oldInfo = {}) {
-      const { state, taskPercent: rawPercent, errMsg, jsonErrMsg } = newInfo;
+      const { state, errMsg, jsonErrMsg } = newInfo;
       const { state: oldState, initiator: oldInitiator } = oldInfo;
       if (!state) return;
+      // Ignore transitions from an unset prior state (e.g. attachExistingUpdateTask
+      // rehydrating a task that already finished in a previous session).
+      const isStateTransition =
+        oldState != null && oldState !== state;
       if (state === 'TaskStarted') {
-        // Avoid too much time at 0%(no loading bar)
-        const percent = rawPercent <= 1 ? 1 : rawPercent;
-        this.progressLoader([percent, percent]);
-      } else if (state === 'TaskCompleted' && oldState !== state) {
-        // End loader for polling task, then start new loader for waiting for ready
-        this.endLoader();
-        this.startLoader();
-      } else if (state === 'Done' && oldState !== state) {
+        // Task polling progress is shown via the global banner / store only.
+      } else if (state === 'TaskCompleted' && isStateTransition) {
+        // Waiting for activation — no global loading bar.
+      } else if (state === 'Done' && isStateTransition) {
         this.endLoader();
         if (oldInitiator) {
+          this.showCompletionActions =
+            !this.applyOnReset && !newInfo.activationResetPerformed;
           this.infoToast(this.$t('pageFirmware.toast.verifyUpdateMessage'), {
             title: this.$t('pageFirmware.toast.verifyUpdate'),
             refreshAction: true,
           });
         }
-      } else if (state === 'ResetFailed' && oldState !== state) {
+      } else if (state === 'ResetFailed' && isStateTransition) {
         this.endLoader();
         if (oldInitiator)
           this.errorToast(this.$t('pageFirmware.toast.resetFailedMessage'));
-      } else if (state === 'WaitReadyFailed' && oldState !== state) {
-        this.endLoader();
-        if (oldInitiator)
-          this.errorToast(this.$t('pageFirmware.toast.waitReadyFailedMessage'));
-      } else if (state === 'TaskFailed' && oldState !== state) {
+      } else if (state === 'WaitReadyFailed' && isStateTransition) {
         this.endLoader();
         if (oldInitiator) {
+          if (!this.applyOnReset && !newInfo.activationResetPerformed) {
+            this.showCompletionActions = true;
+          } else {
+            this.errorToast(this.$t('pageFirmware.toast.waitReadyFailedMessage'));
+          }
+        }
+      } else if (state === 'TaskFailed' && isStateTransition) {
+        this.endLoader();
+        if (oldInitiator) {
+          // Offer a force retry when the failure wasn't already a forced update
+          this.showRetryWithForce = !this.form.forceUpdate;
           this.serverError = jsonErrMsg || null;
           this.v$.$touch();
           this.validateRedfishError(errMsg);
-          const lastToast = document.querySelector('.toast');
-          this.$bvToast?.hide?.(lastToast?.id);
+          this.$toast?.hide?.(FIRMWARE_UPDATE_STARTED_TOAST_ID);
+          if (errMsg) {
+            this.warningToast(errMsg, {
+              title: this.$t('pageFirmware.toast.updateSkipped'),
+            });
+          }
         }
       }
     },
@@ -604,6 +814,50 @@ export default {
     onFileUpload(file) {
       this.file = file;
       this.v$.file.$touch();
+    },
+    retryWithForce() {
+      this.form.forceUpdate = true;
+      this.showRetryWithForce = false;
+      this.clearServerError();
+      this.updateFirmware();
+    },
+    onRestartBmc() {
+      this.$confirm({
+        message: this.$t(
+          'pageFirmware.form.updateFirmware.confirmRestartBmcMessage',
+        ),
+        okTitle: this.$t('global.action.confirm'),
+        cancelTitle: this.$t('global.action.cancel'),
+        okVariant: 'danger',
+        cancelVariant: 'secondary',
+      }).then((confirmed) => {
+        if (!confirmed) return;
+        this.$store
+          .dispatch('firmware/restartBmc')
+          .then((message) => this.successToast(message))
+          .catch((error) => this.errorToast(error.message));
+      });
+    },
+    onAuxResetSystem() {
+      this.$confirm({
+        message: this.$t(
+          'pageFirmware.form.updateFirmware.confirmAuxResetMessage',
+        ),
+        okTitle: this.$t('global.action.confirm'),
+        cancelTitle: this.$t('global.action.cancel'),
+        okVariant: 'danger',
+        cancelVariant: 'secondary',
+      }).then((confirmed) => {
+        if (!confirmed) return;
+        this.$store
+          .dispatch('firmware/auxPowerResetSystem')
+          .then((message) =>
+            this.successToast(message, {
+              title: this.$t('pageFirmware.toast.auxResetStarted'),
+            }),
+          )
+          .catch((error) => this.errorToast(error.message));
+      });
     },
   },
 };
