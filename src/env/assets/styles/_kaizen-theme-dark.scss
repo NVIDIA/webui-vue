@@ -1,0 +1,227 @@
+// Kaizen UI Foundations dark theme semantic tokens.
+// Source: @kui/foundations-react NVIDIA Color Theme.
+:root {
+  color-scheme: dark;
+  --background-color-accent-blue: var(--color-blue-900);
+  --background-color-accent-blue-hover: var(--color-blue-900);
+  --background-color-accent-blue-selected: var(--color-blue-800);
+  --background-color-accent-blue-strong: var(--color-blue-900);
+  --background-color-accent-blue-subtle: var(--color-blue-900);
+  --background-color-accent-blue-subtle-hover: var(--color-blue-800);
+  --background-color-accent-blue-subtle-selected: var(--color-blue-500);
+  --background-color-accent-gray: var(--color-gray-600);
+  --background-color-accent-gray-hover: var(--color-gray-1000);
+  --background-color-accent-gray-selected: var(--color-gray-200);
+  --background-color-accent-gray-strong: var(--color-gray-700);
+  --background-color-accent-gray-subtle: var(--color-gray-700);
+  --background-color-accent-gray-subtle-hover: var(--color-gray-200);
+  --background-color-accent-gray-subtle-selected: var(--color-gray-600);
+  --background-color-accent-green: var(--color-green-900);
+  --background-color-accent-green-hover: var(--color-green-900);
+  --background-color-accent-green-selected: var(--color-green-800);
+  --background-color-accent-green-strong: var(--color-green-900);
+  --background-color-accent-green-subtle: var(--color-green-900);
+  --background-color-accent-green-subtle-hover: var(--color-green-800);
+  --background-color-accent-green-subtle-selected: var(--color-green-600);
+  --background-color-accent-purple: var(--color-purple-900);
+  --background-color-accent-purple-hover: var(--color-purple-900);
+  --background-color-accent-purple-selected: var(--color-purple-800);
+  --background-color-accent-purple-strong: var(--color-purple-900);
+  --background-color-accent-purple-subtle: var(--color-purple-900);
+  --background-color-accent-purple-subtle-hover: var(--color-purple-800);
+  --background-color-accent-purple-subtle-selected: var(--color-purple-700);
+  --background-color-accent-red: var(--color-red-900);
+  --background-color-accent-red-hover: var(--color-red-900);
+  --background-color-accent-red-selected: var(--color-red-800);
+  --background-color-accent-red-strong: var(--color-red-900);
+  --background-color-accent-red-subtle: var(--color-red-900);
+  --background-color-accent-red-subtle-hover: var(--color-red-800);
+  --background-color-accent-red-subtle-selected: var(--color-red-700);
+  --background-color-accent-teal: var(--color-teal-900);
+  --background-color-accent-teal-hover: var(--color-teal-900);
+  --background-color-accent-teal-selected: var(--color-teal-800);
+  --background-color-accent-teal-strong: var(--color-teal-900);
+  --background-color-accent-teal-subtle: var(--color-teal-900);
+  --background-color-accent-teal-subtle-hover: var(--color-teal-800);
+  --background-color-accent-teal-subtle-selected: var(--color-teal-500);
+  --background-color-accent-yellow: var(--color-yellow-900);
+  --background-color-accent-yellow-hover: var(--color-yellow-900);
+  --background-color-accent-yellow-selected: var(--color-yellow-800);
+  --background-color-accent-yellow-strong: var(--color-yellow-900);
+  --background-color-accent-yellow-subtle: var(--color-yellow-900);
+  --background-color-accent-yellow-subtle-hover: var(--color-yellow-800);
+  --background-color-accent-yellow-subtle-selected: var(--color-yellow-600);
+  --background-color-component-skeleton: var(--color-gray-800);
+  --background-color-component-skeleton-subtle: var(--color-gray-900);
+  --background-color-component-tooltip: var(--color-gray-800);
+  --background-color-component-track: var(--color-translucent-white-200);
+  --background-color-component-track-inverse: var(--color-translucent-black-400);
+  --background-color-feedback-danger: var(--color-red-900);
+  --background-color-feedback-danger-hover: var(--color-red-600);
+  --background-color-feedback-danger-pressed: var(--color-red-700);
+  --background-color-feedback-danger-strong: var(--color-red-500);
+  --background-color-feedback-danger-subtle-hover: var(--color-red-900);
+  --background-color-feedback-danger-subtle-pressed: var(--color-red-800);
+  --background-color-feedback-info: var(--color-blue-950);
+  --background-color-feedback-success: var(--color-green-950);
+  --background-color-feedback-warning: var(--color-yellow-950);
+  --background-color-interaction-base: var(--color-translucent-black-600);
+  --background-color-interaction-disabled: var(--color-translucent-white-100);
+  --background-color-interaction-disabled-checked: var(--color-translucent-white-500);
+  --background-color-interaction-hover: var(--color-translucent-white-100);
+  --background-color-interaction-inverse: var(--color-gray-000);
+  --background-color-interaction-inverse-hover: var(--color-gray-100);
+  --background-color-interaction-inverse-pressed: var(--color-gray-200);
+  --background-color-interaction-pressed: var(--color-translucent-white-200);
+  --background-color-interaction-primary-base: var(--color-green-300);
+  --background-color-interaction-primary-hover: var(--color-green-400);
+  --background-color-interaction-primary-selected: var(--color-green-500);
+  --background-color-interaction-selected: var(--color-gray-1000);
+  --background-color-surface-base: var(--color-gray-975);
+  --background-color-surface-blanket: var(--color-translucent-black-700);
+  --background-color-surface-glass: var(--color-translucent-black-600);
+  --background-color-surface-navigation: var(--color-gray-1000);
+  --background-color-surface-overlay: var(--color-gray-900);
+  --background-color-surface-raised: var(--color-gray-950);
+  --background-color-surface-sunken: var(--color-gray-975);
+  --border-color-accent-black: var(--color-gray-1000);
+  --border-color-accent-blue: var(--color-blue-300);
+  --border-color-accent-gray: var(--color-gray-300);
+  --border-color-accent-green: var(--color-green-300);
+  --border-color-accent-purple: var(--color-purple-300);
+  --border-color-accent-red: var(--color-red-300);
+  --border-color-accent-teal: var(--color-teal-300);
+  --border-color-accent-white: var(--color-gray-000);
+  --border-color-accent-yellow: var(--color-yellow-300);
+  --border-color-base: var(--color-translucent-white-200);
+  --border-color-brand: var(--color-brand);
+  --border-color-component-tooltip: var(--color-gray-600);
+  --border-color-disabled: var(--color-translucent-white-300);
+  --border-color-feedback-danger: var(--color-red-500);
+  --border-color-feedback-danger-hover: var(--color-red-600);
+  --border-color-feedback-danger-strong: var(--color-red-700);
+  --border-color-feedback-danger-subtle: var(--color-red-300);
+  --border-color-feedback-info: var(--color-blue-400);
+  --border-color-feedback-success: var(--color-green-400);
+  --border-color-feedback-warning: var(--color-yellow-200);
+  --border-color-interaction-base: var(--color-translucent-white-200);
+  --border-color-interaction-disabled: var(--color-translucent-white-100);
+  --border-color-interaction-hover: var(--color-translucent-white-400);
+  --border-color-interaction-inverse: var(--color-gray-000);
+  --border-color-interaction-inverse-hover: var(--color-gray-100);
+  --border-color-interaction-inverse-pressed: var(--color-gray-200);
+  --border-color-interaction-pressed: var(--color-translucent-white-400);
+  --border-color-interaction-primary-base: var(--color-green-300);
+  --border-color-interaction-primary-hover: var(--color-green-400);
+  --border-color-interaction-primary-selected: var(--color-green-500);
+  --border-color-interaction-selected: var(--text-color-brand);
+  --border-color-interaction-strong: var(--color-translucent-white-700);
+  --nv-current-theme: dark;
+  --text-color-accent-black: var(--color-gray-1000);
+  --text-color-accent-blue: var(--color-blue-300);
+  --text-color-accent-blue-strong: var(--color-blue-200);
+  --text-color-accent-blue-subtle: var(--color-blue-200);
+  --text-color-accent-gray: var(--color-gray-050);
+  --text-color-accent-green: var(--color-green-300);
+  --text-color-accent-green-strong: var(--color-green-200);
+  --text-color-accent-green-subtle: var(--color-green-200);
+  --text-color-accent-purple: var(--color-purple-200);
+  --text-color-accent-purple-strong: var(--color-purple-200);
+  --text-color-accent-purple-subtle: var(--color-purple-200);
+  --text-color-accent-red: var(--color-red-300);
+  --text-color-accent-red-strong: var(--color-red-200);
+  --text-color-accent-red-subtle: var(--color-red-200);
+  --text-color-accent-teal: var(--color-teal-300);
+  --text-color-accent-teal-strong: var(--color-teal-200);
+  --text-color-accent-teal-subtle: var(--color-teal-200);
+  --text-color-accent-white: var(--color-gray-000);
+  --text-color-accent-yellow: var(--color-yellow-300);
+  --text-color-accent-yellow-strong: var(--color-yellow-200);
+  --text-color-accent-yellow-subtle: var(--color-yellow-200);
+  --text-color-base: var(--color-gray-200);
+  --text-color-brand: var(--color-brand);
+  --text-color-component-nvidia-logo: var(--color-gray-000);
+  --text-color-disabled: var(--color-translucent-white-300);
+  --text-color-feedback-danger: var(--color-red-500);
+  --text-color-feedback-danger-inverse: var(--color-red-300);
+  --text-color-feedback-danger-strong: var(--color-red-300);
+  --text-color-feedback-danger-subtle: var(--color-red-400);
+  --text-color-feedback-info: var(--color-blue-500);
+  --text-color-feedback-info-inverse: var(--color-blue-300);
+  --text-color-feedback-success: var(--color-green-400);
+  --text-color-feedback-success-inverse: var(--color-green-300);
+  --text-color-feedback-warning: var(--color-yellow-300);
+  --text-color-feedback-warning-inverse: var(--color-yellow-200);
+  --text-color-interaction-disabled-checked: var(--color-translucent-black-600);
+  --text-color-interaction-selected: var(--color-translucent-white-200);
+  --text-color-inverse: var(--color-gray-1000);
+  --text-color-inverse-brand: var(--text-color-brand);
+  --text-color-placeholder: var(--color-gray-300);
+  --text-color-primary: var(--color-gray-000);
+  --text-color-secondary: var(--color-gray-100);
+  --text-color-strong: var(--color-gray-000);
+  --text-color-subtle: var(--color-gray-400);
+
+  // Legacy NVIDIA token aliases (button/form overrides).
+  --colors-brand: var(--color-brand);
+  --colors-g500: var(--color-brand);
+  --colors-n000: var(--color-gray-000);
+  --colors-n025: var(--color-gray-025);
+  --colors-n050: var(--color-gray-050);
+  --colors-n100: var(--color-gray-100);
+  --colors-n200: var(--color-gray-200);
+  --colors-n300: var(--color-gray-300);
+  --colors-n500: var(--color-gray-500);
+  --colors-n900: var(--color-gray-900);
+  --colors-n950: var(--color-gray-950);
+  --colors-n1000: var(--color-gray-1000);
+
+  --colors-actionBgPrimary: var(--background-color-interaction-primary-base);
+  --colors-actionBgPrimaryHover: var(--background-color-interaction-primary-hover);
+  --colors-actionBgPrimaryActive: var(--background-color-interaction-primary-selected);
+  --colors-actionBgPrimaryDisabled: var(--background-color-interaction-disabled);
+
+  --colors-actionBorderPrimary: var(--border-color-interaction-primary-base);
+  --colors-actionBorderPrimaryHover: var(--border-color-interaction-primary-hover);
+  --colors-actionBorderPrimaryActive: var(--border-color-interaction-primary-selected);
+  --colors-actionBorderPrimaryDisabled: var(--border-color-interaction-disabled);
+
+  --colors-actionFgPrimary: var(--text-color-inverse);
+  --colors-actionFgPrimaryDisabled: var(--text-color-disabled);
+
+  --colors-actionBgSecondary: var(--background-color-interaction-base);
+  --colors-actionBgSecondaryHover: var(--background-color-interaction-hover);
+  --colors-actionBgSecondaryActive: var(--background-color-interaction-pressed);
+  --colors-actionBgSecondaryDisabled: var(--background-color-interaction-disabled);
+
+  --colors-actionBorderSecondary: var(--border-color-interaction-base);
+  --colors-actionBorderSecondaryHover: var(--border-color-interaction-hover);
+  --colors-actionBorderSecondaryActive: var(--border-color-interaction-pressed);
+  --colors-actionBorderSecondaryDisabled: var(--border-color-interaction-disabled);
+
+  --colors-actionFgSecondary: var(--text-color-primary);
+  --colors-actionFgSecondaryDisabled: var(--text-color-disabled);
+}
+
+// Bootstrap tooltip/popover overrides. Bootstrap sets --bs-tooltip-* /
+// --bs-popover-* directly on the .tooltip/.popover element (deriving color
+// from --bs-body-bg, now dark), which renders dark-on-dark. A variable set on
+// the element itself always beats an inherited :root value, so we must remap
+// on the element with higher specificity than Bootstrap's own .tooltip rule.
+[data-theme='dark'] {
+  .tooltip {
+    --bs-tooltip-bg: var(--background-color-component-tooltip);
+    --bs-tooltip-color: var(--text-color-primary);
+
+    // Fully opaque tooltip so the page doesn't bleed through.
+    --bs-tooltip-opacity: 1;
+  }
+
+  .popover {
+    --bs-popover-bg: var(--background-color-surface-overlay);
+    --bs-popover-border-color: var(--border-color-base);
+    --bs-popover-header-bg: var(--background-color-surface-raised);
+    --bs-popover-header-color: var(--text-color-primary);
+    --bs-popover-body-color: var(--text-color-primary);
+  }
+}

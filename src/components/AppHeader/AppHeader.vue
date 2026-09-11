@@ -11,25 +11,30 @@
 
       <b-navbar type="dark" :aria-label="t('appHeader.applicationHeader')">
         <!-- Left aligned nav items -->
-        <b-button
-          id="app-header-trigger"
-          class="nav-trigger"
-          aria-hidden="true"
-          type="button"
-          variant="link"
-          :class="{ open: isNavigationOpen }"
-          @click="toggleNavigation"
-        >
-          <icon-close
-            v-if="isNavigationOpen"
-            :title="t('appHeader.titleHideNavigation')"
-          />
-          <icon-menu
-            v-if="!isNavigationOpen"
-            :title="t('appHeader.titleShowNavigation')"
-          />
-        </b-button>
-        <b-navbar-nav>
+        <div class="page-header-start">
+          <b-button
+            id="app-header-trigger"
+            class="nav-trigger"
+            type="button"
+            variant="link"
+            :class="{ open: isNavigationOpen }"
+            :aria-label="
+              isNavigationOpen
+                ? t('appHeader.titleHideNavigation')
+                : t('appHeader.titleShowNavigation')
+            "
+            :aria-expanded="isNavigationOpen"
+            @click="toggleNavigation"
+          >
+            <icon-close
+              v-if="isNavigationOpen"
+              :title="t('appHeader.titleHideNavigation')"
+            />
+            <icon-menu
+              v-if="!isNavigationOpen"
+              :title="t('appHeader.titleShowNavigation')"
+            />
+          </b-button>
           <b-navbar-brand
             class="me-0"
             to="/"
@@ -41,9 +46,9 @@
             <span>|</span>
             <span class="ps-3 asset-tag">{{ AssetTag }}</span>
             <span class="ps-3">{{ Model }}</span>
-            <span class="ps-3">{{ SerialNumber }}</span>
+            <span class="ps-3 serial-number">{{ SerialNumber }}</span>
           </div>
-        </b-navbar-nav>
+        </div>
         <!-- Right aligned nav items -->
         <b-navbar-nav class="ms-auto helper-menu">
           <!-- SSE Status Indicator (only shows when not connected) -->
@@ -99,7 +104,6 @@
 import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useI18n } from 'vue-i18n';
-import { useToast } from 'bootstrap-vue-next';
 
 import IconClose from '@carbon/icons-vue/es/close/20';
 import IconMenu from '@carbon/icons-vue/es/menu/20';
@@ -133,7 +137,6 @@ const emit = defineEmits<{
 
 // Composables
 const { t } = useI18n();
-const toast = useToast();
 const authStore = useAuthStore();
 const store = useStore();
 
@@ -257,27 +260,57 @@ onBeforeUnmount(() => {
       height: $header-height;
     }
 
-    // Ensure left and right navbar groups are distributed across the full width.
-    // This is defensive against structural differences in bootstrap-vue-next markup
-    // and cases where bootstrap navbar flex rules aren't taking effect.
     > .container-fluid {
       display: flex;
       align-items: center;
       width: 100%;
+      max-width: 100%;
+      min-width: 0;
       justify-content: space-between;
       flex-wrap: nowrap;
     }
 
-    .helper-menu {
-      // Ensure right-aligned items (Health/Power/Refresh/User) are pushed to the end of the header.
-      // We do this in CSS (not just via utility classes) because we've observed the margin utility
-      // class not always being applied as expected in the rendered DOM.
-      margin-inline-start: auto;
-      justify-content: flex-end;
+    .page-header-start {
+      display: flex;
+      align-items: center;
+      min-width: 0;
+      flex: 1 1 auto;
+      overflow: hidden;
 
       @include media-breakpoint-down(sm) {
-        background-color: $gray-800;
-        width: 100%;
+        flex: 0 0 auto;
+        overflow: visible;
+      }
+
+      .nav-tags {
+        min-width: 0;
+        flex: 1 1 auto;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        color: var(--text-color-secondary, #{theme-color-level(light, 3)});
+        @include media-breakpoint-down(sm) {
+          // Keep AssetTag/Model/SerialNumber in the accessibility tree on
+          // narrow viewports. display: none would drop them for screen readers.
+          @include visually-hidden;
+        }
+        .asset-tag {
+          @include media-breakpoint-down($responsive-layout-bp) {
+            @include visually-hidden;
+          }
+        }
+      }
+    }
+
+    .helper-menu {
+      flex: 0 0 auto;
+      margin-inline-start: auto;
+      justify-content: flex-end;
+      overflow: visible;
+
+      @include media-breakpoint-down(sm) {
+        background-color: $navbar-color;
+        width: auto;
         justify-content: flex-end;
 
         .nav-link,
@@ -287,7 +320,7 @@ onBeforeUnmount(() => {
 
         .nav-link:focus,
         .btn:focus {
-          @include focus-box-shadow($gray-800);
+          @include focus-box-shadow($navbar-color);
         }
       }
 
@@ -309,17 +342,6 @@ onBeforeUnmount(() => {
     .nav-link {
       transition: $focus-transition;
     }
-    .nav-tags {
-      color: theme-color-level(light, 3);
-      @include media-breakpoint-down(sm) {
-        @include visually-hidden;
-      }
-      .asset-tag {
-        @include media-breakpoint-down($responsive-layout-bp) {
-          @include visually-hidden;
-        }
-      }
-    }
   }
 
   .nav-trigger {
@@ -328,7 +350,7 @@ onBeforeUnmount(() => {
     height: $header-height;
     transition: none;
     display: inline-flex;
-    flex: 0 0 20px;
+    flex: 0 0 auto;
     align-items: center;
 
     svg {
@@ -341,7 +363,7 @@ onBeforeUnmount(() => {
     }
 
     &.open {
-      background-color: $gray-800;
+      background-color: $navbar-color;
     }
 
     @include media-breakpoint-up($responsive-layout-bp) {
@@ -355,12 +377,6 @@ onBeforeUnmount(() => {
 
     @include media-breakpoint-only(md) {
       margin-top: 4px;
-    }
-  }
-
-  .navbar-expand {
-    @include media-breakpoint-down(sm) {
-      flex-flow: wrap;
     }
   }
 
@@ -387,6 +403,7 @@ onBeforeUnmount(() => {
 }
 
 .navbar-brand {
+  flex-shrink: 0;
   padding: calc(#{$spacer} / 2);
   height: $header-height;
   line-height: 1;

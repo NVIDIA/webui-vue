@@ -236,18 +236,28 @@ svg {
   font-weight: $headings-font-weight;
   padding-inline-start: $spacer; // defining consistent padding for links and buttons
   padding-inline-end: $spacer;
-  color: theme-color('secondary');
+  // Kaizen: secondary text token keeps default items legible on the dark
+  // navigation surface; fall back to the Bootstrap secondary for other themes.
+  color: var(--text-color-secondary, #{theme-color('secondary')});
 
   &:hover {
-    background-color: theme-color-level(dark, -10.5);
-    color: theme-color('dark');
+    // Kaizen hover is a subtle translucent overlay (dark grey on dark), not a
+    // bright fill.
+    background-color: var(
+      --background-color-interaction-hover,
+      #{theme-color-level(dark, -10.5)}
+    );
+    color: var(--text-color-primary, #{theme-color('dark')});
   }
 
   &:focus {
-    background-color: theme-color-level(light, 0);
+    background-color: var(
+      --background-color-interaction-hover,
+      #{theme-color-level(light, 0)}
+    );
     // Use CSS variable for theme-ability, with Bootstrap primary as fallback
     box-shadow: inset 0 0 0 2px var(--colors-brand, #{theme-color('primary')});
-    color: theme-color('dark');
+    color: var(--text-color-primary, #{theme-color('dark')});
     outline: 0;
   }
 
@@ -260,7 +270,8 @@ svg {
 .nav-link--current {
   font-weight: $headings-font-weight;
   background-color: theme-color('secondary');
-  color: theme-color('light');
+  // Selected item uses primary (white) text for maximum contrast.
+  color: var(--text-color-primary, #{theme-color('light')});
   cursor: default;
   box-shadow: none;
 
@@ -278,7 +289,7 @@ svg {
   &:hover,
   &:focus {
     background-color: theme-color('secondary');
-    color: theme-color('light');
+    color: var(--text-color-primary, #{theme-color('light')});
   }
 }
 

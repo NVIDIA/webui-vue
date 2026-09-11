@@ -16,17 +16,18 @@ exports[`AppHeader.vue > should render correctly 1`] = `
       type="dark"
     >
       <!-- Left aligned nav items -->
-      <button
-        aria-hidden="true"
-        class="nav-trigger"
-        id="app-header-trigger"
-        type="button"
-        variant="link"
-      >
-        <!-- v-if -->
-        <anonymous-stub title="Show navigation"></anonymous-stub>
-      </button>
-      <div>
+      <div class="page-header-start">
+        <button
+          aria-expanded="false"
+          aria-label="Show navigation"
+          class="nav-trigger"
+          id="app-header-trigger"
+          type="button"
+          variant="link"
+        >
+          <!-- v-if -->
+          <anonymous-stub title="Show navigation"></anonymous-stub>
+        </button>
         <div
           class="me-0"
           to="/"

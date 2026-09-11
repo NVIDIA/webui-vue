@@ -1,3 +1,107 @@
+@import "./kaizen-colors";
+@import "./kaizen-theme-dark";
+
+// Kaizen dark theme — Bootstrap 5 variable overrides for all NVIDIA apps.
+// Do not use !default: additionalData already imported bmc/helpers, which
+// assigned these names. A second !default assignment is a silent no-op.
+$body-bg: $kaizen-gray-975;
+$body-color: $kaizen-gray-000;
+$emphasis-color: $kaizen-gray-000;
+$secondary-color: $kaizen-gray-100;
+$secondary-bg: $kaizen-gray-900;
+$tertiary-color: rgba($kaizen-gray-000, 0.5);
+$tertiary-bg: $kaizen-gray-950;
+$link-color: $kaizen-green-300;
+$link-hover-color: $kaizen-green-200;
+$border-color: #ffffff33;
+$border-color-translucent: rgba(255, 255, 255, 0.2);
+$gray-100: $kaizen-gray-900;
+$gray-200: $kaizen-gray-800;
+$gray-300: $kaizen-gray-700;
+$gray-400: $kaizen-gray-600;
+$gray-500: $kaizen-gray-500;
+$gray-600: $kaizen-gray-400;
+$gray-700: $kaizen-gray-300;
+$gray-800: $kaizen-gray-200;
+$gray-900: $kaizen-gray-100;
+$blue: $kaizen-brand;
+$green: $kaizen-green-500;
+$red: $kaizen-red-500;
+$yellow: $kaizen-yellow-300;
+$primary: $kaizen-brand;
+$secondary: $kaizen-gray-700;
+$success: $kaizen-green-500;
+$danger: $kaizen-red-500;
+$warning: $kaizen-yellow-300;
+$info: $kaizen-blue-500;
+$light: $kaizen-gray-950;
+$dark: $kaizen-gray-000;
+$navbar-color: $kaizen-gray-1000;
+$card-bg: $kaizen-gray-950;
+$card-color: $body-color;
+$card-cap-bg: $kaizen-gray-900;
+$card-border-color: $border-color-translucent;
+$table-bg: transparent;
+$table-color: $body-color;
+$table-striped-bg: rgba(255, 255, 255, 0.03);
+$table-hover-bg: rgba(255, 255, 255, 0.06);
+$table-border-color: $border-color-translucent;
+$table-group-separator-color: $border-color-translucent;
+$input-bg: $kaizen-gray-900;
+$input-color: $body-color;
+$input-border-color: $border-color-translucent;
+$input-focus-bg: $kaizen-gray-900;
+$input-focus-border-color: $kaizen-brand;
+$input-placeholder-color: $kaizen-gray-500;
+$input-disabled-bg: $kaizen-gray-800;
+
+// Native <select> caret is an SVG stroke. After $gray-* invert, keep it light
+// so it remains visible on dark field backgrounds.
+$form-select-bg: $kaizen-gray-900;
+$form-select-color: $body-color;
+$form-select-border-color: $border-color-translucent;
+$form-select-indicator-color: $kaizen-gray-200;
+$form-select-disabled-bg: $kaizen-gray-800;
+$form-select-disabled-color: $kaizen-gray-500;
+$dropdown-bg: $kaizen-gray-900;
+$dropdown-color: $body-color;
+$dropdown-border-color: $border-color-translucent;
+$dropdown-link-hover-bg: rgba(255, 255, 255, 0.08);
+$dropdown-link-active-bg: $kaizen-gray-800;
+$modal-content-bg: $kaizen-gray-900;
+$modal-content-color: $body-color;
+$modal-header-border-color: $border-color-translucent;
+$modal-footer-border-color: $border-color-translucent;
+$nav-tabs-link-active-bg: $kaizen-gray-900;
+$nav-tabs-link-active-color: $body-color;
+$nav-tabs-border-color: $border-color-translucent;
+$nav-link-color: $kaizen-gray-100;
+$nav-link-hover-color: $kaizen-gray-000;
+$list-group-bg: $kaizen-gray-950;
+$list-group-color: $body-color;
+$list-group-border-color: $border-color-translucent;
+$list-group-hover-bg: rgba(255, 255, 255, 0.06);
+$list-group-action-active-bg: $kaizen-gray-800;
+$breadcrumb-bg: transparent;
+$breadcrumb-divider-color: $secondary-color;
+$breadcrumb-active-color: $secondary-color;
+$accordion-bg: $kaizen-gray-950;
+$accordion-color: $body-color;
+$accordion-border-color: $border-color-translucent;
+$accordion-button-bg: $kaizen-gray-900;
+$accordion-button-color: $body-color;
+$accordion-button-active-bg: $kaizen-gray-800;
+$theme-colors: (
+  "primary": $primary,
+  "secondary": $secondary,
+  "success": $success,
+  "danger": $danger,
+  "warning": $warning,
+  "info": $info,
+  "light": $light,
+  "dark": $dark,
+);
+
 @font-face {
     font-family: 'DINPro';
     src: url('@/env/assets/fonts/NVIDIA_DINWebPro/DINWebPro-Light.woff') format('woff');
@@ -33,26 +137,7 @@ sans-serif,
 "Segoe UI Symbol",
 "Noto Color Emoji";
 
-// NVIDIA theme colors
-$blue: #76b900;
-$red: #f44336;
-$green: #76b900;
-$yellow: #76b900;
-
-$gray-100: #f7f7f7;
-$gray-200: #eeeeee;
-$gray-300: #dddddd;
-$gray-400: #cccccc;
-$gray-500: #999999;
-$gray-600: #333333;
-$gray-700: #222222;
-$gray-800: #1a1a1a;
-$gray-900: #111111;
-
-$primary: $blue;
-$danger: $red;
-$success: $green;
-$warning: $yellow;
+// NVIDIA theme colors — sourced from Kaizen UI Foundations (_kaizen-colors.scss).
 
 // Validation icons
 $enable-validation-icons: true;
@@ -60,9 +145,9 @@ $form-feedback-icon-valid: none;
 $form-feedback-icon-invalid: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' fill='#{$danger}'  width='32' height='32' viewbox='0 0 32 32'><path fill='none' d='M0 0h32v32H0z'/><path d='M16 2C8.3 2 2 8.3 2 16s6.3 14 14 14 14-6.3 14-14S23.7 2 16 2zm5.4 21L16 17.6 10.6 23 9 21.4l5.4-5.4L9 10.6 10.6 9l5.4 5.4L21.4 9l1.6 1.6-5.4 5.4 5.4 5.4-1.6 1.6z'/></svg>");
 
 // Progress loading bar variables
-$loading-color-0: #76b900;
+$loading-color-0: $kaizen-brand;
 $loading-color-50: $primary;
-$loading-color-100: #76b900;
+$loading-color-100: $kaizen-brand;
 
 // Progress loading bar gradient
 .progress {
@@ -96,62 +181,60 @@ $loading-color-100: #76b900;
 
 .header-logo {
     margin-top: -5px;
+    color: var(--text-color-component-nvidia-logo);
+    fill: currentcolor;
 }
 
-// Login (NVIDIA only): keep the large inline SVG from rendering at its intrinsic size.
-.login-brand svg {
-  width: 60%;
-  max-width: 320px;
-  height: auto;
-  display: block;
-  margin-inline: auto;
+// Narrow header: NVIDIA mark only. This file is loaded only for nvidia*
+// envs (CUSTOM_STYLES). Raw max-width — do not use media-breakpoint-down
+// here (additionalData compile).
+@media (max-width: 575.98px) {
+  .navbar-brand {
+    display: inline-flex;
+    align-items: center;
+    width: 1.5rem;
+    overflow: hidden;
+    padding: 0;
+  }
+
+  .navbar-brand .header-logo {
+    display: block;
+    flex-shrink: 0;
+
+    // Full artwork is ~5.42:1. Height 1.5rem makes the eye ~24px.
+    height: 1.5rem;
+    width: calc(1.5rem * 974.7 / 179.7);
+    max-width: none;
+    min-width: calc(1.5rem * 974.7 / 179.7);
+    margin-top: 0;
+
+    .logo-wordmark,
+    .logo-tm {
+      display: none;
+    }
+  }
 }
 
-// NVIDIA design tokens (subset) - used by component styles via CSS var() with fallbacks.
-// Keep these on :root so they apply app-wide when this env is selected.
-:root {
-  /* core brand + neutrals used by buttons */
-  --colors-brand: #76b900;
-  --colors-g500: #76b900;
-  --colors-n000: #ffffff;
-  --colors-n025: #fafafa;
-  --colors-n050: #f2f2f2;
-  --colors-n100: #e2e2e2;
-  --colors-n900: #202020;
-  --colors-n950: #121212;
-  --colors-n1000: #000000;
-  --colors-n500: #767676;
-  --colors-n200: #d8d8d8;
-  --colors-n300: #c6c6c6;
+// Login (NVIDIA only): size the badge by width so the wordmark stays readable.
+// Wordmark/™ paths use currentColor so they follow the Kaizen logo token (white on dark).
+// :root beats the shared 90px fallback in _login.scss (injected later).
+:root .login-brand {
+  color: var(--text-color-component-nvidia-logo);
 
-  /* button/action tokens */
-  --colors-actionBgPrimary: #76b900;
-  --colors-actionBgPrimaryHover: #8fcb2b;
-  --colors-actionBgPrimaryActive: #a7db57;
-  --colors-actionBgPrimaryDisabled: #d8d8d8;
+  svg {
+    display: block;
+    width: 100%;
+    max-width: 140px;
+    height: auto;
+    margin-inline: auto;
 
-  --colors-actionBorderPrimary: #76b900;
-  --colors-actionBorderPrimaryHover: #a7db57;
-  --colors-actionBorderPrimaryActive: #a7db57;
-  --colors-actionBorderPrimaryDisabled: #d8d8d8;
-
-  --colors-actionFgPrimary: #202020;
-  --colors-actionFgPrimaryDisabled: #767676;
-
-  /* Secondary button (NVIDIA): white fill + black border/text */
-  --colors-actionBgSecondary: var(--colors-n000);
-  --colors-actionBgSecondaryHover: var(--colors-n050);
-  --colors-actionBgSecondaryActive: var(--colors-n100);
-  --colors-actionBgSecondaryDisabled: var(--colors-n050);
-
-  --colors-actionBorderSecondary: var(--colors-n1000);
-  --colors-actionBorderSecondaryHover: var(--colors-n1000);
-  --colors-actionBorderSecondaryActive: var(--colors-n1000);
-  --colors-actionBorderSecondaryDisabled: var(--colors-n300);
-
-  --colors-actionFgSecondary: var(--colors-n1000);
-  --colors-actionFgSecondaryDisabled: var(--colors-n500);
+    @media (min-width: 768px) {
+      max-width: 180px;
+    }
+  }
 }
+
+// NVIDIA button/action tokens — aliases defined in _kaizen-colors.scss :root.
 
 // NVIDIA button styling (token-driven). Keep specificity higher than the global
 // Bootstrap/button overrides so this stays NVIDIA-only even though env styles
@@ -220,6 +303,95 @@ $loading-color-100: #76b900;
 :root .form-check-input:focus {
   border-color: var(--colors-brand);
   box-shadow:
-    0 0 0 2px var(--colors-n000),
-    0 0 0 4px var(--colors-n900);
+    0 0 0 2px var(--background-color-surface-base),
+    0 0 0 4px var(--border-color-interaction-strong, var(--color-gray-700));
+}
+
+// Login and shell surfaces
+.login-container {
+  background-color: var(--background-color-surface-base);
+
+  .login-main {
+    background-color: var(--background-color-surface-sunken);
+
+    .form-background {
+      background-color: var(--background-color-surface-raised);
+      color: var(--text-color-primary);
+    }
+  }
+
+  .login-aside {
+    background-color: var(--background-color-surface-navigation);
+    color: var(--text-color-primary);
+  }
+}
+
+// BMC _forms.scss paints .form-background controls with $white and
+// theme-color("dark"). In this theme $dark is remapped to white, so the
+// closed <select> (and typed input text) is white-on-white. NVIDIA styles
+// are prepended via additionalData, so beat those later rules with :root
+// + .form-background specificity and !important on color/border.
+:root .form-background {
+  .form-select,
+  .form-control,
+  .custom-select {
+    background-color: var(--background-color-surface-overlay) !important;
+    color: var(--text-color-primary) !important;
+    border-color: var(--border-color-base) !important;
+
+    &:focus {
+      background-color: var(--background-color-surface-overlay) !important;
+      color: var(--text-color-primary) !important;
+    }
+
+    &:disabled {
+      background-color: var(--background-color-interaction-disabled) !important;
+      color: var(--text-color-disabled) !important;
+    }
+
+    &::placeholder {
+      color: var(--text-color-secondary);
+    }
+  }
+}
+
+// Kaizen Banner/Notification: dark surface, hairline outline, status
+// accent on the inline-start edge. :root beats _alert.scss (left-only
+// border and light pastels), which is injected later via additionalData.
+:root .alert {
+  color: var(--text-color-primary);
+  background-color: var(--background-color-surface-overlay);
+  border-style: solid;
+  border-color: var(--border-color-base);
+  border-width: var(--borderWidths-sm, 1px);
+  border-inline-start-width: var(--border-width-3, 4px);
+  border-radius: var(--borderRadius-md, 0.25rem);
+  --bs-alert-color: var(--text-color-primary);
+  --bs-alert-bg: var(--background-color-surface-overlay);
+  --bs-alert-border-color: var(--border-color-base);
+  --bs-alert-link-color: var(--text-color-accent-green);
+
+  a {
+    color: var(--text-color-accent-green);
+  }
+}
+
+:root .alert.alert-info {
+  border-inline-start-color: var(--border-color-feedback-info);
+  fill: var(--border-color-feedback-info);
+}
+
+:root .alert.alert-success {
+  border-inline-start-color: var(--border-color-feedback-success);
+  fill: var(--border-color-feedback-success);
+}
+
+:root .alert.alert-warning {
+  border-inline-start-color: var(--border-color-feedback-warning);
+  fill: var(--border-color-feedback-warning);
+}
+
+:root .alert.alert-danger {
+  border-inline-start-color: var(--border-color-feedback-danger);
+  fill: var(--border-color-feedback-danger);
 }

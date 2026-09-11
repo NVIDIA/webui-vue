@@ -14,6 +14,9 @@ vi.mock('@/assets/images/logo-header.svg?component', () => ({
 vi.mock('@/assets/images/login-company-logo.svg?component', () => ({
   default: SvgStub,
 }));
+vi.mock('@/assets/images/nvidia-logo-login.svg?component', () => ({
+  default: SvgStub,
+}));
 vi.mock('@/assets/images/built-on-openbmc-logo.svg?component', () => ({
   default: SvgStub,
 }));

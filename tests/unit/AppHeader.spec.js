@@ -162,6 +162,13 @@ describe('AppHeader.vue', () => {
   let wrapper;
 
   beforeEach(() => {
+    if (typeof global.ResizeObserver === 'undefined') {
+      global.ResizeObserver = class {
+        observe() {}
+        unobserve() {}
+        disconnect() {}
+      };
+    }
     store.dispatch = vi.fn();
     wrapper = shallowMount(AppHeader, {
       global: {

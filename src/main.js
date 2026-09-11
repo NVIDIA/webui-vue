@@ -4,7 +4,7 @@ import { VueQueryPlugin, useQueryClient } from '@tanstack/vue-query';
 import { setQueryClient } from '@/api/mutator/axios-instance';
 
 import App from './App.vue';
-import i18n from './i18n';
+import i18n, { isNvidiaPlatform } from './i18n';
 
 import router from './router';
 
@@ -79,6 +79,10 @@ import {
 } from 'bootstrap-vue-next';
 
 const app = createApp(App);
+
+if (isNvidiaPlatform()) {
+  document.documentElement.dataset.theme = 'dark';
+}
 
 // Create Pinia instance for modern state management (SSE store)
 const pinia = createPinia();

@@ -99,6 +99,7 @@ export default {
 
 <style lang="scss" scoped>
 .app-container {
+  min-width: 400px;
   display: grid;
   grid-template-columns: 100%;
   grid-template-rows: auto;
@@ -119,6 +120,8 @@ export default {
   position: sticky;
   top: 0;
   z-index: $zindex-fixed + 1;
+  min-width: 400px;
+  border-bottom: var(--borderWidths-sm, 1px) solid var(--border-color-base);
 }
 
 .app-navigation {
@@ -127,6 +130,12 @@ export default {
 
 .app-content {
   grid-area: content;
-  background-color: $white;
+  // Single owner for shell surface + text. NVIDIA Kaizen tokens win
+  // when defined; otherwise keep Bootstrap body bg / inherited color.
+  background-color: var(
+    --background-color-surface-base,
+    var(--bs-body-bg, #{$white})
+  );
+  color: var(--text-color-primary, inherit);
 }
 </style>

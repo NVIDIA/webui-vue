@@ -2,68 +2,132 @@
 @import "bootstrap/scss/variables";
 @import "bootstrap/scss/mixins";
 
+// Lock the document to the viewport while the login layout is mounted so
+// stacked 100vh panes / sibling chrome cannot create a page scrollbar.
+html.login-page,
+html.login-page body,
+html.login-page #app {
+  height: 100%;
+  overflow: hidden;
+}
+
+.login-layout {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  min-height: 100vh;
+  min-height: 100dvh;
+  max-height: 100vh;
+  max-height: 100dvh;
+  overflow: hidden;
+}
+
 .login-container {
-    background: $gray-100;
-    display: flex;
-    flex-direction: column;
-    gap: $spacer * 2;
-    max-width: 1400px;
-    min-width: 320px;
-    min-height: 100vh;
-    justify-content: space-around;
+  background: var(--background-color-surface-base, var(--bs-body-bg, #{$gray-100}));
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  width: 100%;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
 
-    @include media-breakpoint-up('md') {
-      background: $white;
-      flex-direction: row;
-    }
+  @include media-breakpoint-up('md') {
+    background: var(--background-color-surface-base, var(--bs-body-bg, #{$white}));
+    flex-direction: row;
   }
+}
 
-  .login-main {
-    min-height: 50vh;
+.login-main {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-width: 0;
+  min-height: 0;
+  padding: $spacer * 2;
+  overflow-x: hidden;
+  overflow-y: auto;
+  background: var(--background-color-surface-sunken, #{$gray-100});
+
+  @include media-breakpoint-up('md') {
+    flex: 1 1 75%;
     padding: $spacer * 3;
+  }
+}
+
+.login-panel {
+  width: 100%;
+  max-width: 100%;
+
+  // Historic field content width is 175px; include input padding + border.
+  // Multiply in CSS calc — $input-border-width is var(--bs-border-width).
+  @include media-breakpoint-up('sm') {
+    max-width: calc(175px + (#{$input-padding-x} * 2) + (#{$input-border-width} * 2));
+  }
+}
+
+.login-brand {
+  margin-bottom: $spacer * 2;
+
+  @include media-breakpoint-up('md') {
+    margin-bottom: $spacer * 3;
+  }
+
+  // Shared fallback: nvidia-logo-login.svg is 351×258px intrinsically and
+  // LoginLayout is used on every platform. NVIDIA builds override this with
+  // :root .login-brand svg in _nvidia.scss.
+  svg {
+    display: block;
+    width: 90px;
+    height: auto;
+    margin-inline: auto;
+  }
+}
+
+.login-title {
+  margin-bottom: $spacer * 2;
+}
+
+.login-form {
+  width: 100%;
+
+  .form-control,
+  .form-select,
+  .input-password-toggle-container,
+  .btn[type='submit'] {
     width: 100%;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-
-    @include media-breakpoint-up('md') {
-      background: $gray-100;
-      flex: 1 1 75%;
-      min-height: 100vh;
-    }
+    max-width: 100%;
+    box-sizing: border-box;
   }
+}
 
-  .login-form {
-    @include media-breakpoint-up('md') {
-      max-width: 360px;
-    }
+.login-aside {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: flex-end;
+  justify-content: flex-end;
+  gap: $spacer * 1.5;
+  min-width: 0;
+  min-height: 0;
+  padding: $spacer $spacer * 2;
+  background: var(--background-color-surface-navigation, var(--background-color-surface-base, transparent));
+
+  @include media-breakpoint-up('md') {
+    flex: 1 1 25%;
+    padding: $spacer $spacer * 3 $spacer * 2;
   }
+}
 
-  .login-aside {
-    display: flex;
-    align-items: flex-end;
-    justify-content: flex-end;
-    gap: $spacer * 1.5;
-    margin-inline-end: $spacer * 3;
-    margin-bottom: $spacer;
-
-    @include media-breakpoint-up('md') {
-      min-height: 100vh;
-      padding-bottom: $spacer;
-      flex: 1 1 25%;
-      margin-bottom: 0;
-    }
+.login-aside__logo-brand:not(:empty) {
+  &::after {
+    content: '';
+    display: inline-block;
+    height: 2.5rem;
+    width: 2px;
+    background-color: $gray-200;
+    margin-inline-start: $spacer * 1.5;
+    vertical-align: middle;
   }
-
-  .login-aside__logo-brand:not(:empty) {
-    &::after {
-      content: '';
-      display: inline-block;
-      height: 2.5rem;
-      width: 2px;
-      background-color: $gray-200;
-      margin-inline-start: $spacer * 1.5;
-      vertical-align: middle;
-    }
-  }
+}

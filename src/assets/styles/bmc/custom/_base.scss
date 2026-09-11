@@ -1,3 +1,23 @@
+// Floor the shell at 400px. Narrower viewports get a horizontal
+// scrollbar instead of crushing the header. At 400px and up, clip
+// leftover overflow so a stray scrollbar cannot shrink the viewport.
+#app {
+  min-width: 400px;
+}
+
+html.login-page #app {
+  min-width: 100%;
+}
+
+@media (min-width: 400px) {
+  html,
+  body,
+  #app {
+    overflow-x: clip;
+    max-width: 100%;
+  }
+}
+
 dt,
 legend,
 label {
