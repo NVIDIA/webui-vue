@@ -6,6 +6,27 @@
     <b-alert v-if="!isSSEConnected && !isLoading" variant="warning" show>
       {{ $t('pageEventLogs.sseDisconnected') || 'Real-time updates unavailable. Data may be stale.' }}
     </b-alert>
+    <b-row v-if="systemOptions.length > 1">
+      <b-col>
+        <b-form-group
+          class="d-flex align-items-center select-system"
+          :label="$t('pageInventory.system')"
+          label-for="selectSystem"
+          label-cols-sm="auto"
+          label-cols-lg="auto"
+          content-cols-sm="auto"
+          content-cols-lg="auto"
+        >
+          <b-form-select
+            id="selectSystem"
+            v-model="selectedSystemId"
+            :options="systemOptions"
+            aria-required="true"
+            @update:model-value="onChangeSystem"
+          />
+        </b-form-group>
+      </b-col>
+    </b-row>
     <b-row class="align-items-start">
       <b-col sm="8" xl="6" class="d-sm-flex align-items-end mb-4">
         <search
@@ -292,7 +313,7 @@ import i18n from '@/i18n';
 import { useModal } from 'bootstrap-vue-next';
 import { useEventLog } from '@/api/composables/useEventLog';
 import { downloadAsJson, downloadBlob } from '@/utilities/exportUtils';
-import { computed, toRefs } from 'vue';
+import { computed, ref, watch } from 'vue';
 
 export default {
   components: {
@@ -331,12 +352,34 @@ export default {
   },
   setup() {
     const bvModal = useModal();
+    const selectedSystemId = ref(null);
 
-    // Use the new Vue Query + SSE composable for event logs
-    const eventLog = useEventLog();
+    // Scope entries and ClearLog to the selected ComputerSystem. Id values
+    // collide across BMC and HMC EventLog collections.
+    const eventLog = useEventLog({ systemId: selectedSystemId });
+
+    watch(
+      eventLog.systemIds,
+      (ids) => {
+        if (!ids.length) {
+          selectedSystemId.value = null;
+          return;
+        }
+        if (!selectedSystemId.value || !ids.includes(selectedSystemId.value)) {
+          selectedSystemId.value = ids[0];
+        }
+      },
+      { immediate: true },
+    );
+
+    const systemOptions = computed(() =>
+      eventLog.systemIds.value.map((id) => ({ value: id, text: id })),
+    );
 
     return {
       bvModal,
+      selectedSystemId,
+      systemOptions,
       // Event log data and state from composable
       eventLogEntries: eventLog.entries,
       isLoading: eventLog.isLoading,
@@ -599,6 +642,10 @@ export default {
         }
       }
     },
+    onChangeSystem() {
+      this.currentPage = 1;
+      this.clearSelectedRows(this.$refs.table);
+    },
     onChangeDateTimeFilter({ fromDate, toDate }) {
       this.filterStartDate = fromDate;
       this.filterEndDate = toDate;
@@ -649,3 +696,15 @@ export default {
   },
 };
 </script>
+
+<style lang="scss" scoped>
+.select-system {
+  margin-bottom: 0 !important;
+
+  & div:has(#selectSystem) {
+    margin-bottom: 0 !important;
+    align-items: center !important;
+    display: flex !important;
+  }
+}
+</style>

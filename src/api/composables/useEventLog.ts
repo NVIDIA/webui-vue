@@ -8,7 +8,7 @@
  *
  * Follows Redfish-first naming conventions.
  */
-import { computed, watch, type Ref, type ComputedRef } from 'vue';
+import { computed, unref, watch, type Ref, type ComputedRef, type MaybeRef } from 'vue';
 import { useMutation, useQueryClient, useQueries } from '@tanstack/vue-query';
 import { apiInstance } from '@/api/mutator/axios-instance';
 import { checkFilterSupport } from './useRedfishCollection';
@@ -109,6 +109,90 @@ function getEntriesUri(systemId: string, logServiceId: string): string {
   return `/redfish/v1/Systems/${encodeURIComponent(systemId)}/LogServices/${encodeURIComponent(logServiceId)}/Entries`;
 }
 
+export type EventLogTarget = { systemId: string; logServiceId: string };
+
+export type EventLogServiceSnapshot = {
+  isPending: boolean;
+  collection: LogServiceCollection | undefined;
+};
+
+/**
+ * Indices into a ComputerSystem Id list for the active system (or all,
+ * if unscoped). This is the single selected-system predicate; entry
+ * indices and scoped targets are derived from it.
+ */
+export function getActiveSystemIndices(
+  systemIds: string[],
+  scoped: boolean,
+  systemId: string | null | undefined,
+): number[] {
+  if (scoped && !systemId) return [];
+  return systemIds
+    .map((id, index) => ({ id, index }))
+    .filter(({ id }) => !scoped || id === systemId)
+    .map(({ index }) => index);
+}
+
+/** Indices into entry query results for the active system (or all, if unscoped). */
+export function getActiveEventLogIndices(
+  targets: EventLogTarget[],
+  scoped: boolean,
+  systemId: string | null | undefined,
+): number[] {
+  return getActiveSystemIndices(
+    targets.map((target) => target.systemId),
+    scoped,
+    systemId,
+  );
+}
+
+/**
+ * Event Logs Id values are unique per ComputerSystem collection, not globally.
+ * Scoped callers (the Event Logs page) must never concatenate collections.
+ * An unset systemId returns no targets so the table stays empty until a
+ * system is selected.
+ */
+export function getScopedEventLogTargets(
+  targets: EventLogTarget[],
+  scoped: boolean,
+  systemId: string | null | undefined,
+): EventLogTarget[] {
+  return getActiveEventLogIndices(targets, scoped, systemId).map(
+    (index) => targets[index],
+  );
+}
+
+export function uniqueEventLogSystemIds(targets: EventLogTarget[]): string[] {
+  const ids: string[] = [];
+  const seen = new Set<string>();
+  for (const target of targets) {
+    if (seen.has(target.systemId)) continue;
+    seen.add(target.systemId);
+    ids.push(target.systemId);
+  }
+  return ids;
+}
+
+/**
+ * Build EventLog query targets from LogServices snapshots.
+ * Skip a system while its LogServices query is pending so a slow or
+ * unreachable HMC cannot block BMC entries (NVBug 6639611).
+ */
+export function getEventLogEntryTargets(
+  systemIds: string[],
+  snapshots: ReadonlyArray<EventLogServiceSnapshot>,
+): EventLogTarget[] {
+  const targets: EventLogTarget[] = [];
+  systemIds.forEach((systemId, index) => {
+    const snapshot = snapshots[index];
+    if (!snapshot || snapshot.isPending) return;
+    for (const logServiceId of getEventLogServiceIds(snapshot.collection)) {
+      targets.push({ systemId, logServiceId });
+    }
+  });
+  return targets;
+}
+
 type QueryResult<T> = Record<string, unknown>;
 
 function normalizeQueries<T>(queries: unknown): QueryResult<T>[] {
@@ -125,6 +209,30 @@ function unwrapRefValue<T>(value: T | Ref<T | undefined> | undefined): T | undef
   return value as T;
 }
 
+function isQueryFlagTrue(
+  query: QueryResult<unknown> | undefined,
+  flag: 'isPending' | 'isError' | 'isFetching',
+): boolean {
+  if (!query) return flag === 'isPending';
+  return !!unwrapRefValue<boolean>(
+    (query[flag] ?? false) as Ref<boolean> | boolean,
+  );
+}
+
+function toLogServiceSnapshot(
+  result: QueryResult<LogServiceCollection> | undefined,
+): EventLogServiceSnapshot {
+  if (!result) {
+    return { isPending: true, collection: undefined };
+  }
+  return {
+    isPending: isQueryFlagTrue(result, 'isPending'),
+    collection: unwrapRefValue<LogServiceCollection>(
+      result.data as Ref<LogServiceCollection | undefined> | LogServiceCollection | undefined,
+    ),
+  };
+}
+
 // ============================================================================
 // Composable
 // ============================================================================
@@ -135,6 +243,12 @@ export interface UseEventLogOptions {
    * @default true
    */
   enableSSE?: boolean;
+  /**
+   * When provided, entries and ClearLog are limited to this ComputerSystem.
+   * Pass a ref from the Event Logs page selector. Omit for health rollup,
+   * which still needs unresolved events from every system.
+   */
+  systemId?: MaybeRef<string | null | undefined>;
 }
 
 export interface UseEventLogReturn {
@@ -142,6 +256,8 @@ export interface UseEventLogReturn {
   entries: ComputedRef<LogEntry[]>;
   highPriorityEvents: ComputedRef<LogEntry[]>;
   healthStatus: ComputedRef<string>;
+  /** ComputerSystem Ids that expose an EventLog service, in Systems order. */
+  systemIds: ComputedRef<string[]>;
 
   // Query state
   isLoading: ComputedRef<boolean>;
@@ -168,6 +284,8 @@ export interface UseEventLogReturn {
 
 export function useEventLog(options: UseEventLogOptions = {}): UseEventLogReturn {
   const { enableSSE = true } = options;
+  const isSystemScoped = options.systemId !== undefined;
+  const selectedSystemId = computed(() => unref(options.systemId) ?? null);
 
   const queryClient = useQueryClient();
   const sseStore = useSSEStore();
@@ -203,33 +321,46 @@ export function useEventLog(options: UseEventLogOptions = {}): UseEventLogReturn
     normalizeQueries<LogServiceCollection>(logServicesQueries),
   );
 
-  const entryTargets = computed(() => {
-    const targets: { systemId: string; logServiceId: string }[] = [];
-    const results = logServicesResults.value;
+  const entryTargets = computed(() =>
+    getEventLogEntryTargets(
+      systemIds.value,
+      systemIds.value.map((_, index) =>
+        toLogServiceSnapshot(logServicesResults.value[index]),
+      ),
+    ),
+  );
 
-    if (results.length < systemIds.value.length) {
-      return targets;
-    }
+  const eventLogSystemIds = computed(() =>
+    uniqueEventLogSystemIds(entryTargets.value),
+  );
 
-    const hasPending = results.some((q) =>
-      unwrapRefValue<boolean>(q.isPending as Ref<boolean> | boolean),
-    );
-    if (hasPending) {
-      return targets;
-    }
+  const activeSystemIndices = computed(() =>
+    getActiveSystemIndices(
+      systemIds.value,
+      isSystemScoped,
+      selectedSystemId.value,
+    ),
+  );
 
-    systemIds.value.forEach((systemId, index) => {
-      const collection = unwrapRefValue<LogServiceCollection>(
-        results[index]?.data as Ref<LogServiceCollection | undefined> | LogServiceCollection | undefined,
-      );
-      const logServiceIds = getEventLogServiceIds(collection);
-      for (const logServiceId of logServiceIds) {
-        targets.push({ systemId, logServiceId });
-      }
-    });
+  // Until a system is selected, keep LogServices discovery in the loading
+  // state. After selection, only the selected system's queries can block.
+  const pendingLogServiceIndices = computed(() =>
+    isSystemScoped && !selectedSystemId.value
+      ? systemIds.value.map((_, index) => index)
+      : activeSystemIndices.value,
+  );
 
-    return targets;
-  });
+  const activeEntryIndices = computed(() =>
+    getActiveEventLogIndices(
+      entryTargets.value,
+      isSystemScoped,
+      selectedSystemId.value,
+    ),
+  );
+
+  const scopedTargets = computed(() =>
+    activeEntryIndices.value.map((index) => entryTargets.value[index]),
+  );
 
   const entriesQueries = useQueries({
     queries: computed(() =>
@@ -258,7 +389,7 @@ export function useEventLog(options: UseEventLogOptions = {}): UseEventLogReturn
 
   if (enableSSE) {
     const fetchNewEntries = async () => {
-      const targets = entryTargets.value;
+      const targets = scopedTargets.value;
       if (targets.length === 0) {
         invalidateEntryQueries();
         return;
@@ -288,18 +419,18 @@ export function useEventLog(options: UseEventLogOptions = {}): UseEventLogReturn
             if (newEntries.length === 0) return;
 
             const existingIds = new Set(currentEntries.map((entry) => entry['@odata.id']));
-            const merged = [...currentEntries];
+            const members = [...currentEntries];
             for (const entry of newEntries) {
               const id = entry['@odata.id'];
               if (id && existingIds.has(id)) continue;
               if (id) existingIds.add(id);
-              merged.push(entry);
+              members.push(entry);
             }
 
             queryClient.setQueryData<LogEntryCollection>(queryKey, (old) => ({
               ...(old ?? response),
-              Members: merged,
-              'Members@odata.count': merged.length,
+              Members: members,
+              'Members@odata.count': members.length,
             }));
           }),
         );
@@ -349,53 +480,72 @@ export function useEventLog(options: UseEventLogOptions = {}): UseEventLogReturn
   // -------------------------------------------------------------------------
 
   const entries = computed(() => {
+    if (isSystemScoped && !selectedSystemId.value) {
+      return [] as LogEntry[];
+    }
     if (entriesResults.value.length < entryTargets.value.length) {
       return [] as LogEntry[];
     }
-    const hasPending = entriesResults.value.some((q) =>
-      unwrapRefValue<boolean>(q.isPending as Ref<boolean> | boolean),
+    const activeIndices = activeEntryIndices.value;
+    const hasPending = activeIndices.some((index) =>
+      isQueryFlagTrue(entriesResults.value[index], 'isPending'),
     );
     if (hasPending) {
       return [] as LogEntry[];
     }
 
-    const merged: LogEntry[] = [];
+    const logEntries: LogEntry[] = [];
     const seen = new Set<string>();
-    for (const result of entriesResults.value) {
+    activeIndices.forEach((index) => {
+      const result = entriesResults.value[index];
       const collection = unwrapRefValue<LogEntryCollection>(
-        result.data as Ref<LogEntryCollection | undefined> | LogEntryCollection | undefined,
+        result?.data as Ref<LogEntryCollection | undefined> | LogEntryCollection | undefined,
       );
       const members = Array.from(collection?.Members ?? []);
       for (const entry of members) {
         const id = entry['@odata.id'];
         if (id && seen.has(id)) continue;
         if (id) seen.add(id);
-        merged.push(entry);
+        logEntries.push(entry);
       }
-    }
-    return merged;
+    });
+    return logEntries;
   });
 
   const highPriorityEvents = computed(() => getHighPriorityEvents(entries.value));
 
   const isLoading = computed(() =>
     systemsQuery.isPending.value ||
-    logServicesResults.value.some((q) => unwrapRefValue<boolean>(q.isPending as Ref<boolean> | boolean)) ||
-    entriesResults.value.some((q) => unwrapRefValue<boolean>(q.isPending as Ref<boolean> | boolean)),
+    pendingLogServiceIndices.value.some((index) =>
+      isQueryFlagTrue(logServicesResults.value[index], 'isPending'),
+    ) ||
+    activeEntryIndices.value.some((index) =>
+      isQueryFlagTrue(entriesResults.value[index], 'isPending'),
+    ),
   );
   const isError = computed(() =>
     systemsQuery.isError.value ||
-    logServicesResults.value.some((q) => unwrapRefValue<boolean>(q.isError as Ref<boolean> | boolean)) ||
-    entriesResults.value.some((q) => unwrapRefValue<boolean>(q.isError as Ref<boolean> | boolean)),
+    activeSystemIndices.value.some((index) =>
+      isQueryFlagTrue(logServicesResults.value[index], 'isError'),
+    ) ||
+    activeEntryIndices.value.some((index) =>
+      isQueryFlagTrue(entriesResults.value[index], 'isError'),
+    ),
   );
   const error = computed<Error | null>(() => {
+    const activeLogServices = activeSystemIndices.value.map(
+      (index) => logServicesResults.value[index],
+    );
+    const activeEntries = activeEntryIndices.value.map(
+      (index) => entriesResults.value[index],
+    );
     const rawError =
       systemsQuery.error.value ||
-      unwrapRefValue<Error | null>(logServicesResults.value.find((q) =>
-        unwrapRefValue<boolean>(q.isError as Ref<boolean> | boolean),
+      unwrapRefValue<Error | null>(activeLogServices.find((q) =>
+        isQueryFlagTrue(q, 'isError'),
       )?.error as Ref<Error | null> | Error | null) ||
-      unwrapRefValue<Error | null>(entriesResults.value.find((q) =>
-        unwrapRefValue<boolean>(q.isError as Ref<boolean> | boolean),
+      unwrapRefValue<Error | null>(activeEntries.find((q) =>
+        isQueryFlagTrue(q, 'isError'),
       )?.error as Ref<Error | null> | Error | null) ||
       null;
 
@@ -407,8 +557,12 @@ export function useEventLog(options: UseEventLogOptions = {}): UseEventLogReturn
   });
   const isFetching = computed(() =>
     systemsQuery.isFetching.value ||
-    logServicesResults.value.some((q) => unwrapRefValue<boolean>(q.isFetching as Ref<boolean> | boolean)) ||
-    entriesResults.value.some((q) => unwrapRefValue<boolean>(q.isFetching as Ref<boolean> | boolean)),
+    pendingLogServiceIndices.value.some((index) =>
+      isQueryFlagTrue(logServicesResults.value[index], 'isFetching'),
+    ) ||
+    activeEntryIndices.value.some((index) =>
+      isQueryFlagTrue(entriesResults.value[index], 'isFetching'),
+    ),
   );
 
   const healthStatus = computed(() =>
@@ -422,8 +576,8 @@ export function useEventLog(options: UseEventLogOptions = {}): UseEventLogReturn
   // Mutations: CRUD operations
   // -------------------------------------------------------------------------
 
-  function invalidateEntryQueries() {
-    for (const target of entryTargets.value) {
+  function invalidateEntryQueries(targets: EventLogTarget[] = entryTargets.value) {
+    for (const target of targets) {
       const queryKey = getGetSystemLogServiceEntriesQueryKey(
         target.systemId,
         target.logServiceId,
@@ -485,7 +639,7 @@ export function useEventLog(options: UseEventLogOptions = {}): UseEventLogReturn
    * Delete all log entries (clear log)
    */
   async function deleteAllLogs(): Promise<string> {
-    const targets = entryTargets.value;
+    const targets = scopedTargets.value;
     if (targets.length === 0) {
       throw new Error('EventLog entries not available');
     }
@@ -498,7 +652,7 @@ export function useEventLog(options: UseEventLogOptions = {}): UseEventLogReturn
         return apiInstance({ url, method: 'POST' });
       }),
     );
-    invalidateEntryQueries();
+    invalidateEntryQueries(targets);
     return i18n.global.t('pageEventLogs.toast.successDelete', entries.value.length);
   }
 
@@ -647,6 +801,7 @@ export function useEventLog(options: UseEventLogOptions = {}): UseEventLogReturn
     entries,
     highPriorityEvents,
     healthStatus,
+    systemIds: eventLogSystemIds,
 
     // Query state
     isLoading,
