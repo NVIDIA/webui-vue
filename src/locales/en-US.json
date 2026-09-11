@@ -451,6 +451,10 @@
     "pageFirmware": {
         "cardActionSwitchToRunning": "Switch to running",
         "cardBodyVersion": "Version",
+        "cardBodySlotId": "Slot",
+        "cardBodyFirmwareState": "Firmware state",
+        "cardBodyBuildType": "Build type",
+        "cardBodyComparisonNumber": "Firmware comparison number",
         "cardTitleBackup": "Backup image",
         "cardTitleRunning": "Running image",
         "sectionTitleBmcCards": "BMC",
@@ -464,6 +468,7 @@
         "tableHeaderHealthStatus": "Health Status",
         "tableHeaderFirmware": "Firmware",
         "tableHeaderVersion": "Version",
+        "tableHeaderBackupVersion": "Backup Version",
         "viewMore": "View More",
         "viewLess": "View Less",
         "expand": "Expand",

@@ -10,7 +10,7 @@
       <div class="mb-3">
         <b-table
           :items="firmwareInventory"
-          :fields="fields"
+          :fields="tableFields"
           responsive="sm"
         >
           <template #cell(select)="data">
@@ -29,6 +29,9 @@
           </template>
           <template #cell(version)="data">
             {{ dataFormatter(data.item.version) }}
+          </template>
+          <template #cell(backupVersion)="data">
+            {{ dataFormatter(data.item.backupVersion) }}
           </template>
           <template #cell(health)="data">
             <status-icon :status="statusIcon(data.item.status)" />
@@ -58,20 +61,34 @@ export default {
       { $expand: '.' },
     );
 
-    // Map raw Redfish SoftwareInventory to table rows
+    // Map raw Redfish SoftwareInventory to table rows. NVIDIA dual-slot APs
+    // expose the inactive image as Oem.Nvidia.InactiveFirmwareSlot.Version
+    // (typically absent on CPLD and non-slot inventory).
     const firmwareInventory = computed(() => {
       const members = data.value?.Members ?? [];
-      return members.map((item) => ({
-        name: item.Id || item['@odata.id']?.split('/').pop() || '',
-        version: item.Version || '--',
-        status: item.Status?.Health || 'N/A',
-        id: item['@odata.id'] || '',
-        updateable: item.Updateable !== false,
-        checked: false,
-      }));
+      return members.map((item) => {
+        const inactiveVersion =
+          item?.Oem?.Nvidia?.InactiveFirmwareSlot?.Version;
+        return {
+          name: item.Id || item['@odata.id']?.split('/').pop() || '',
+          version: item.Version || '--',
+          backupVersion:
+            inactiveVersion != null && inactiveVersion !== ''
+              ? inactiveVersion
+              : null,
+          status: item.Status?.Health || 'N/A',
+          id: item['@odata.id'] || '',
+          updateable: item.Updateable !== false,
+          checked: false,
+        };
+      });
     });
 
-    return { firmwareInventory };
+    const showBackupVersion = computed(() =>
+      firmwareInventory.value.some((item) => item.backupVersion != null),
+    );
+
+    return { firmwareInventory, showBackupVersion };
   },
   data() {
     return {
@@ -87,6 +104,18 @@ export default {
       hasFirmwareInventoryCheckbox:
         import.meta.env.VITE_HIDE_FIRMWARE_INVENTORY_CHECKBOX !== 'true',
     };
+  },
+  computed: {
+    tableFields() {
+      if (!this.showBackupVersion) return this.fields;
+      const fields = [...this.fields];
+      const versionIndex = fields.findIndex((field) => field.key === 'version');
+      fields.splice(versionIndex + 1, 0, {
+        key: 'backupVersion',
+        label: this.$t('pageFirmware.tableHeaderBackupVersion'),
+      });
+      return fields;
+    },
   },
   beforeUnmount() {
     this.$store.commit('firmware/setCheckedItems', []);
