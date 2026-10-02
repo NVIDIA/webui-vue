@@ -88,14 +88,14 @@ current tree and are the behavior specified below.
    they are present. The route is not gated on a platform name or on
    NVLink.
 
-10. **The Vera Rubin mock tree is not in this repo.** `.env.nvidia-vr`
+10. **The nvidia-vr mock tree is not in this repo.** `.env.nvidia-vr`
     exists and has no mock mode. `package.json` has no `dev:vr` script.
     The LP30 mock pattern on other branches points `VITE_MOCK_DIR` at
-    `./mockups/...`. The `../../../mockup/nvidia-vera-rubin-baseboard/...`
-    path is for a `mockup-viewer/vendor/webui-vue` checkout. The env file
-    added here uses a path relative to this repo, or is left for the
-    developer to point at a local mockup checkout. It must not claim a
-    directory that is not there.
+    `./mockups/...`. A checkout that vendors this UI under another repo
+    uses a different relative path. The env file added here does not name
+    a directory that is not in the tree, and it does not embed a platform
+    codename. Point `VITE_MOCK_DIR` at a local mockup from an uncommitted
+    override.
 
 ## Background and References
 
@@ -122,12 +122,31 @@ current tree and are the behavior specified below.
     `Oem.Nvidia.MNNVLinkTopology` (`ModuleID`, `PeerType`, `HostID`,
     `TraySlotNumber`, `IBGUID`, `ChassisSerialNumber`).
   - Port: `Oem.Nvidia.RXWidth`, `Oem.Nvidia.TXWidth`.
-  - Port Metrics: `EarlyHealthIndication`, `EffectiveBER`,
+  - Port Metrics: `EffectiveBER`,
     `NVLinkDataRxBandwidthGbps`, `NVLinkDataTxBandwidthGbps`, raw Rx/Tx
     bandwidth, `BitErrorRate`, `SymbolErrors`,
     `NVLinkErrors.RuntimeError`, `NVLinkErrors.TrainingError`,
     `LinkDownReasonCode`, `LinkDownedCount`. CPU ports use
     `PacketCRCErrors`, `PacketReplayErrors`, `BandwidthBytesPerSecond`.
+- NVLink early health is specified by the health-agent SADD,
+  `nvidia-sdl/design/nvl-health-agent_sadd.md` at
+  `9c77eb3ee8dd4cd0d1c299bf50ae608fb9edc8e5` in
+  `dgx/devops/openbmc-automation`. `NvidiaPortMetrics.v1_9_0` adds two
+  read-only `Oem.Nvidia` properties on Port Metrics:
+  - `EarlyHealthIndication`: `Unknown`, `Attention`, or `Healthy`.
+    This is an enum. Older captures that show a boolean are stale.
+  - `AttentionTriggerReason`, meaningful when the indication is
+    `Attention`: `Unknown`, `RawBER`, `EffectiveBER`, `SymbolBER`,
+    `PLRTXBandwidthLoss`, `PLRRXBandwidthLoss`, `RecoveryBandwidthLoss`,
+    `PortTotalBandwidthLoss`, `LinkDownCount`, `SymbolErrorCount`.
+  The agent publishes those properties for GPU NVLink ports at
+  `Systems/.../Processors/GPU_<n>/Ports/NVLink_<m>/Metrics`. The same
+  two properties also exist on switch ports under
+  `Fabrics/.../Switches/.../Ports/.../Metrics`. Switch ports are not
+  processor ports. A state change writes a Manager EventLog entry,
+  `NvidiaMessageRegistry.1.0.NVLinkPortHealthStateChanged`, whose
+  `OriginOfCondition` is the Port URI. CPU system-bus NVLink ports are
+  outside that agent, so they do not gain these two properties.
   - ProcessorMetrics: `NVLinkDataRxBandwidthGbps`,
     `NVLinkDataTxBandwidthGbps`, `NVLinkRawRxBandwidthGbps`,
     `NVLinkRawTxBandwidthGbps`.
@@ -149,9 +168,12 @@ current tree and are the behavior specified below.
    block when that processor has NVLink ports.
 4. A processor with neither feature shows only the identity fields. No
    empty NVLink table. No empty power form.
-5. Expanding one NVLink port loads that port's Metrics and that
-   processor's ProcessorMetrics. Expanding a second port on the same
-   processor reuses the cached ProcessorMetrics response.
+5. Expanding one GPU NVLink port loads that port's Metrics and that
+   processor's ProcessorMetrics. The Metrics block shows
+   `EarlyHealthIndication`. It shows `AttentionTriggerReason` when the
+   indication is `Attention`. Expanding a second port on the same
+   processor reuses the cached ProcessorMetrics response. Expanding a
+   CPU NVLink port loads packet counters only.
 6. The Resource Management power-limit page stays. It and this page share
    `usePowerLimits()`. Saving a limit from the row uses `setCpuLimit` or
    `setGpuLimit`.
@@ -176,7 +198,14 @@ current tree and are the behavior specified below.
 - A Hardware Status item named NVLink.
 - A link map. This UI does not require `Links.ConnectedPorts` or an
   NVLink fabric.
+- Switch NVLink ports under `Fabrics/.../Switches`. The health agent
+  exposes early health there, and this page does not walk that tree.
+- An EventLog page, toast, or subscriber for
+  `NVLinkPortHealthStateChanged`. The Manager log already stores that
+  entry. This page shows the current Metrics value.
 - FEC histograms, port Settings, or `ClearEarlyHealthIndication`.
+  The health agent does not define a clear action. The indication is
+  the current firmware value.
 - BIOS `NvLinkC2cLoopbackMode`, error injection, or
   `NVLinkReferenceClockEnabled`.
 - A Pinia processor store.
@@ -256,8 +285,9 @@ hide it, using the same condition as `showLeds` in `Inventory.vue`.
 
 #### 1. Processors page, rows collapsed
 
-This is the first paint. The Vera Rubin capture lists GPU_0–GPU_3 and
-CPU_0–CPU_1. No Ports or Metrics requests have been sent.
+This is the first paint. The nvidia-vr reference mock lists
+GPU_0–GPU_3 and CPU_0–CPU_1. No Ports or Metrics requests have been
+sent.
 
 ```
 +------------------------------------------------------------------+
@@ -300,8 +330,8 @@ does not disappear the way the inventory section does when
 #### 2. GPU row expanded, NVLink at a glance
 
 Expanding GPU_0 loads that processor's NVLink ports and nothing else.
-In the Vera Rubin capture that is 36 ports, LinkUp, 400 Gbps, width x2,
-health OK. Port Metrics are not requested yet.
+In the nvidia-vr reference mock that is 36 ports, LinkUp, 400 Gbps,
+width x2, health OK. Port Metrics are not requested yet.
 
 Power controls render only when this GPU's EnvironmentMetrics entry has
 a settable range. The fields match the existing GPU form: power limit,
@@ -357,7 +387,8 @@ ProcessorMetrics. The other 35 ports stay closed and are not fetched.
 +------------------------------------------------------------------+
 | v  NVLink_0   LinkUp    OK     400 Gbps   x2                     |
 +------------------------------------------------------------------+
-|  Early health indication          false                         |
+|  Early health indication          Attention                     |
+|  Attention trigger                RawBER                        |
 |  Effective BER                    ...                           |
 |  Data Rx bandwidth                ... Gbps                      |
 |  Data Tx bandwidth                ... Gbps                      |
@@ -379,6 +410,11 @@ ProcessorMetrics. The other 35 ports stay closed and are not fetched.
 +------------------------------------------------------------------+
 ```
 
+`EarlyHealthIndication` is `Unknown`, `Attention`, or `Healthy`.
+The Attention trigger row is rendered only when the indication is
+`Attention`. `Healthy` and `Unknown` omit it. CPU port details never
+include either property.
+
 The four processor figures are `Oem.Nvidia` on ProcessorMetrics:
 `NVLinkDataRxBandwidthGbps`, `NVLinkDataTxBandwidthGbps`,
 `NVLinkRawRxBandwidthGbps`, `NVLinkRawTxBandwidthGbps`. They are the
@@ -388,9 +424,10 @@ secondary group.
 
 #### 4. CPU row expanded
 
-CPU ports are `ProcessorModule_{n}_SysBus_0_NVLink_{0-13}`. The Vera
-Rubin capture has 14 of them. They do not show speed, width, or link
-status. Power controls render only when this CPU has a settable
+CPU ports are `ProcessorModule_{n}_SysBus_0_NVLink_{0-13}`. The
+nvidia-vr reference mock has 14 of them. They do not show speed,
+width, or link status. They also do not show early health. That pair
+of properties is published for GPU NVLink ports. Power controls render only when this CPU has a settable
 `PowerLimitWatts` range. The CPU form is the setpoint and its range,
 saved with `setCpuLimit`.
 
@@ -541,6 +578,17 @@ Glance cells come from the Port resource. `TotalNumberNVLinks` and
 `useProcessors()`. Missing topology properties are omitted rather than
 shown as a blank group.
 
+GPU port details, after Metrics and ProcessorMetrics load, lead with
+`Oem.Nvidia.EarlyHealthIndication`. When that value is `Attention`,
+the next line is `Oem.Nvidia.AttentionTriggerReason`. Both strings are
+shown as returned. The rest of the GPU Metrics fields stay the
+bandwidth and error counters already on the port. The health agent
+refreshes those two properties on its existing poll, about 30 seconds.
+This page does not add its own timer. An open port's query key is the
+Port URI path plus `Metrics`, so an SSE event whose
+`OriginOfCondition` is that Port URI invalidates the open Metrics
+query. The page does not render the EventLog entry.
+
 ### Identify LED
 
 The checkbox is shown under the same condition Inventory uses today:
@@ -570,16 +618,15 @@ setting:
 
 - `VITE_ENV_NAME=nvidia-vr`
 - `VITE_MOCK_MODE=true`
-- `VITE_MOCK_DIR` to the Vera Rubin BMC+HMC `redfish` directory
+- `VITE_MOCK_DIR` unset in the committed file
 
 Add `"dev:vr": "vite --mode nvidia-vr.mock"` to `package.json`.
 
-If the mockup is checked out inside this repo, `VITE_MOCK_DIR` follows
-the LP30 shape, for example
-`./mockups/nvidia-vera-rubin-baseboard/BMC+HMC/redfish`. That directory
-is not in the tree today. Until it is, the env file documents the
-variable and the browser check runs against a local checkout of the
-mockup. Do not commit the `mockup-viewer/vendor/webui-vue` relative path
+The BMC+HMC Redfish tree for this profile is not in the checkout. A
+developer sets `VITE_MOCK_DIR` in an uncommitted local env file. Do not
+commit that path: the directory name used by the external mockup
+checkout contains a forbidden codename, and this document does not
+repeat it. Do not commit a vendor-relative path from a nested checkout
 as if it resolved here.
 
 ### Tests
@@ -613,5 +660,6 @@ Browser check with `npm run dev:vr`, watching the network log:
 - The existing power-limit page still saves.
 - Sensors still load.
 
-Before any commit, run the forbidden-codename scan in
-`.cursor/rules/commit-format-rule.mdc`.
+Before any commit, scan the branch diff against
+`config/codenames.cfg` in `dgx/devops/openbmc-automation`. The matcher
+is case-insensitive and treats any non-letter as a word boundary.
