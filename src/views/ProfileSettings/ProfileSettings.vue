@@ -120,8 +120,9 @@
                 <b-form-invalid-feedback role="alert">
                   <template
                     v-if="
-                      v$.form.newPassword.minLength?.$invalid ||
-                      v$.form.newPassword.maxLength?.$invalid
+                      showPasswordLengthHelp &&
+                      (v$.form.newPassword.minLength?.$invalid ||
+                        v$.form.newPassword.maxLength?.$invalid)
                     "
                   >
                     {{

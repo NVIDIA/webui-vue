@@ -166,8 +166,9 @@
                   </template>
                   <template
                     v-if="
-                      v$.form.password.minLength?.$invalid ||
-                      v$.form.password.maxLength?.$invalid
+                      showPasswordLengthHelp &&
+                      (v$.form.password.minLength?.$invalid ||
+                        v$.form.password.maxLength?.$invalid)
                     "
                   >
                     {{
