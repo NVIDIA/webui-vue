@@ -741,6 +741,8 @@
             "manual": "手动",
             "maxFailedLoginAttempts": "最大登录失败次数",
             "noSpecialCharactersExceptUnderscore": "除下划线外没有特殊字符",
+            "passwordMustBeAtLeast": "密码必须至少为 {min} 个字符",
+            "passwordMustBeAtMost": "密码不得超过 {max} 个字符",
             "passwordMustBeBetween": "密码必须在 {min} – {max} 个字符之间",
             "passwordsDoNotMatch": "密码不匹配",
             "privilege": "权限",

@@ -755,6 +755,8 @@
             "manual": "Ручное",
             "maxFailedLoginAttempts": "Максимальное количество попыток входа",
             "noSpecialCharactersExceptUnderscore": "Никаких специальных символов, кроме знака подчёркивания",
+            "passwordMustBeAtLeast": "Пароль должен содержать не менее {min} символов",
+            "passwordMustBeAtMost": "Пароль должен содержать не более {max} символов",
             "passwordMustBeBetween": "Пароль должен быть от {min} до {max} символов",
             "passwordsDoNotMatch": "Пароли не совпадают",
             "privilege": "Привилегии",

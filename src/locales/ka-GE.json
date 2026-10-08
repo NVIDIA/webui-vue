@@ -640,6 +640,8 @@
             "manual": "ხელით",
             "maxFailedLoginAttempts": "მაქს. წარუმატებელი შესვლის მცდელობები",
             "noSpecialCharactersExceptUnderscore": "არ გამოიყენოთ სპეციალური სიმბოლოები ქვედა ტირეს გარდა",
+            "passwordMustBeAtLeast": "პაროლი უნდა შედგებოდეს მინიმუმ {min} სიმბოლოსგან",
+            "passwordMustBeAtMost": "პაროლი უნდა შედგებოდეს მაქსიმუმ {max} სიმბოლოსგან",
             "passwordMustBeBetween": "პაროლის სიგრძე {min} - {max} სიმბოლო უნდა იყოს",
             "passwordsDoNotMatch": "პაროლები არ ემთხვევა",
             "privilege": "პრივილეგია",

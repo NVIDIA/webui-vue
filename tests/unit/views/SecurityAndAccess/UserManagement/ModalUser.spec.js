@@ -227,7 +227,24 @@ describe('ModalUser.vue', () => {
       const rules = passwordRules();
       expect(rules.minLength).toBeUndefined();
       expect(rules.maxLength).toBeUndefined();
-      expect(wrapper.vm.showPasswordLengthHelp).toBe(false);
+      expect(wrapper.vm.passwordLengthHelp).toBeNull();
+    });
+
+    it('explains a minimum when the maximum is missing', async () => {
+      await wrapper.setProps({
+        passwordRequirements: {
+          minLength: 8,
+          maxLength: null,
+        },
+      });
+
+      const rules = passwordRules();
+      expect(rules.minLength.$validator('short')).toBe(false);
+      expect(rules.maxLength).toBeUndefined();
+      expect(wrapper.vm.passwordLengthHelp).toEqual({
+        key: 'pageUserManagement.modal.passwordMustBeAtLeast',
+        params: { min: 8 },
+      });
     });
   });
 });

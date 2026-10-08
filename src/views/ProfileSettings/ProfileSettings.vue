@@ -93,15 +93,10 @@
               label-for="input-1"
             >
               <b-form-text
-                v-if="showPasswordLengthHelp"
+                v-if="passwordLengthHelp"
                 id="password-help-block"
               >
-                {{
-                  t('pageUserManagement.modal.passwordMustBeBetween', {
-                    min: passwordRequirements.minLength,
-                    max: passwordRequirements.maxLength,
-                  })
-                }}
+                {{ t(passwordLengthHelp.key, passwordLengthHelp.params) }}
               </b-form-text>
               <input-password-toggle>
                 <b-form-input
@@ -109,7 +104,7 @@
                   v-model="form.newPassword"
                   type="password"
                   :aria-describedby="
-                    showPasswordLengthHelp ? 'password-help-block' : undefined
+                    passwordLengthHelp ? 'password-help-block' : undefined
                   "
                   autocomplete="new-password"
                   :state="getValidationState(v$.form.newPassword)"
@@ -118,19 +113,8 @@
                   @input="v$.form.newPassword.$touch()"
                 />
                 <b-form-invalid-feedback role="alert">
-                  <template
-                    v-if="
-                      showPasswordLengthHelp &&
-                      (v$.form.newPassword.minLength?.$invalid ||
-                        v$.form.newPassword.maxLength?.$invalid)
-                    "
-                  >
-                    {{
-                      t('pageProfileSettings.newPassLabelTextInfo', {
-                        min: passwordRequirements.minLength,
-                        max: passwordRequirements.maxLength,
-                      })
-                    }}
+                  <template v-if="passwordLengthError">
+                    {{ t(passwordLengthError.key, passwordLengthError.params) }}
                   </template>
                 </b-form-invalid-feedback>
               </input-password-toggle>
@@ -209,7 +193,7 @@ import { useToast } from 'bootstrap-vue-next';
 import { useVuelidate } from '@vuelidate/core';
 import { sameAs } from '@vuelidate/validators';
 import {
-  isPasswordLengthLimit,
+  passwordLengthMessage,
   passwordLengthValidators,
 } from '@/components/Validators/passwordLength';
 import { format } from 'date-fns-tz';
@@ -261,10 +245,11 @@ const passwordRequirements = computed(
   () => store.getters['userManagement/accountPasswordRequirements'],
 );
 
-const showPasswordLengthHelp = computed(
-  () =>
-    isPasswordLengthLimit(passwordRequirements.value?.minLength) &&
-    isPasswordLengthLimit(passwordRequirements.value?.maxLength),
+const passwordLengthHelp = computed(() =>
+  passwordLengthMessage(
+    passwordRequirements.value?.minLength,
+    passwordRequirements.value?.maxLength,
+  ),
 );
 
 // Fetch account settings on mount
@@ -298,6 +283,15 @@ const rules = computed(() => ({
 }));
 
 const v$ = useVuelidate(rules, { form });
+
+const passwordLengthError = computed(() => {
+  if (!passwordLengthHelp.value) return null;
+  const field = v$.value.form.newPassword;
+  if (field.minLength?.$invalid || field.maxLength?.$invalid) {
+    return passwordLengthHelp.value;
+  }
+  return null;
+});
 
 function getValidationState(model: { $dirty?: boolean; $error?: boolean } | undefined) {
   if (!model) return null;

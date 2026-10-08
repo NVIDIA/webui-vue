@@ -785,6 +785,8 @@
             "manual": "Manual",
             "maxFailedLoginAttempts": "Max failed login attempts",
             "noSpecialCharactersExceptUnderscore": "No special characters except underscore",
+            "passwordMustBeAtLeast": "Password must be at least {min} characters",
+            "passwordMustBeAtMost": "Password must be at most {max} characters",
             "passwordMustBeBetween": "Password must be between {min} – {max} characters",
             "passwordsDoNotMatch": "Passwords do not match",
             "privilege": "Privilege",
