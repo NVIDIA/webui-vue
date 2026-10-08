@@ -92,7 +92,10 @@
               :label="t('pageProfileSettings.newPassword')"
               label-for="input-1"
             >
-              <b-form-text id="password-help-block">
+              <b-form-text
+                v-if="showPasswordLengthHelp"
+                id="password-help-block"
+              >
                 {{
                   t('pageUserManagement.modal.passwordMustBeBetween', {
                     min: passwordRequirements.minLength,
@@ -105,7 +108,9 @@
                   id="password"
                   v-model="form.newPassword"
                   type="password"
-                  aria-describedby="password-help-block"
+                  :aria-describedby="
+                    showPasswordLengthHelp ? 'password-help-block' : undefined
+                  "
                   autocomplete="new-password"
                   :state="getValidationState(v$.form.newPassword)"
                   data-test-id="profileSettings-input-newPassword"
@@ -115,8 +120,8 @@
                 <b-form-invalid-feedback role="alert">
                   <template
                     v-if="
-                      v$.form.newPassword.minLength.$invalid ||
-                      v$.form.newPassword.maxLength.$invalid
+                      v$.form.newPassword.minLength?.$invalid ||
+                      v$.form.newPassword.maxLength?.$invalid
                     "
                   >
                     {{
@@ -201,7 +206,11 @@ import { useStore } from 'vuex';
 import { useI18n } from 'vue-i18n';
 import { useToast } from 'bootstrap-vue-next';
 import { useVuelidate } from '@vuelidate/core';
-import { maxLength, minLength, sameAs } from '@vuelidate/validators';
+import { sameAs } from '@vuelidate/validators';
+import {
+  isPasswordLengthLimit,
+  passwordLengthValidators,
+} from '@/components/Validators/passwordLength';
 import { format } from 'date-fns-tz';
 
 import InputPasswordToggle from '@/components/Global/InputPasswordToggle.vue';
@@ -251,6 +260,12 @@ const passwordRequirements = computed(
   () => store.getters['userManagement/accountPasswordRequirements'],
 );
 
+const showPasswordLengthHelp = computed(
+  () =>
+    isPasswordLengthLimit(passwordRequirements.value?.minLength) &&
+    isPasswordLengthLimit(passwordRequirements.value?.maxLength),
+);
+
 // Fetch account settings on mount
 store.dispatch('userManagement/getAccountSettings');
 
@@ -271,10 +286,10 @@ const form = reactive({
 
 const rules = computed(() => ({
   form: {
-    newPassword: {
-      minLength: minLength(passwordRequirements.value?.minLength ?? 1),
-      maxLength: maxLength(passwordRequirements.value?.maxLength ?? 128),
-    },
+    newPassword: passwordLengthValidators(
+      passwordRequirements.value?.minLength,
+      passwordRequirements.value?.maxLength,
+    ),
     confirmPassword: {
       sameAsPassword: sameAs(form.newPassword),
     },

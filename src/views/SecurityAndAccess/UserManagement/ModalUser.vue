@@ -135,7 +135,10 @@
               :label="$t('pageUserManagement.modal.userPassword')"
               label-for="password"
             >
-              <b-form-text id="password-help-block">
+              <b-form-text
+                v-if="showPasswordLengthHelp"
+                id="password-help-block"
+              >
                 {{
                   $t('pageUserManagement.modal.passwordMustBeBetween', {
                     min: passwordRequirements.minLength,
@@ -150,7 +153,9 @@
                   type="password"
                   autocomplete="new-password"
                   data-test-id="userManagement-input-password"
-                  aria-describedby="password-help-block"
+                  :aria-describedby="
+                    showPasswordLengthHelp ? 'password-help-block' : null
+                  "
                   :state="getValidationState(v$.form.password)"
                   class="form-control-with-button"
                   @input="v$.form.password.$touch()"
@@ -161,8 +166,8 @@
                   </template>
                   <template
                     v-if="
-                      v$.form.password.minLength.$invalid ||
-                      v$.form.password.maxLength.$invalid
+                      v$.form.password.minLength?.$invalid ||
+                      v$.form.password.maxLength?.$invalid
                     "
                   >
                     {{
@@ -240,12 +245,15 @@
 import {
   required,
   maxLength,
-  minLength,
   requiredIf,
   helpers,
   sameAs,
 } from '@vuelidate/validators';
 import VuelidateMixin from '@/components/Mixins/VuelidateMixin.js';
+import {
+  isPasswordLengthLimit,
+  passwordLengthValidators,
+} from '@/components/Validators/passwordLength';
 import { useVuelidate } from '@vuelidate/core';
 
 import InputPasswordToggle from '@/components/Global/InputPasswordToggle';
@@ -314,6 +322,12 @@ export default {
     privilegeTypes() {
       return this.$store.getters['userManagement/accountRoles'];
     },
+    showPasswordLengthHelp() {
+      return (
+        isPasswordLengthLimit(this.passwordRequirements.minLength) &&
+        isPasswordLengthLimit(this.passwordRequirements.maxLength)
+      );
+    },
   },
   watch: {
     user: function (value) {
@@ -342,8 +356,10 @@ export default {
           required: requiredIf(function () {
             return this.requirePassword();
           }),
-          minLength: minLength(this.passwordRequirements.minLength),
-          maxLength: maxLength(this.passwordRequirements.maxLength),
+          ...passwordLengthValidators(
+            this.passwordRequirements.minLength,
+            this.passwordRequirements.maxLength,
+          ),
         },
         passwordConfirmation: {
           required: requiredIf(function () {

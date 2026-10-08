@@ -202,4 +202,32 @@ describe('ModalUser.vue', () => {
       expect(wrapper.vm.v$.form.password.minLength.$params.min).toBe(8);
     });
   });
+
+  describe('password length limits', () => {
+    function passwordRules() {
+      return wrapper.vm.$options.validations.call(wrapper.vm).form.password;
+    }
+
+    it('rejects a password outside the service limits', () => {
+      const rules = passwordRules();
+
+      expect(rules.maxLength.$validator('a'.repeat(20))).toBe(true);
+      expect(rules.maxLength.$validator('a'.repeat(21))).toBe(false);
+      expect(rules.minLength.$validator('short')).toBe(false);
+    });
+
+    it('does not treat a null maximum as zero', async () => {
+      await wrapper.setProps({
+        passwordRequirements: {
+          minLength: null,
+          maxLength: null,
+        },
+      });
+
+      const rules = passwordRules();
+      expect(rules.minLength).toBeUndefined();
+      expect(rules.maxLength).toBeUndefined();
+      expect(wrapper.vm.showPasswordLengthHelp).toBe(false);
+    });
+  });
 });
