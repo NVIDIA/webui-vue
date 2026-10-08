@@ -109,9 +109,9 @@
                 <!-- Status state -->
                 <dt>{{ $t('pageInventory.table.statusState') }}:</dt>
                 <dd>{{ dataFormatter(item.statusState) }}</dd>
-                <!-- Health Rollup -->
-                <dt v-if="item.healthRollup">{{ $t('pageInventory.table.healthRollup') }}:</dt>
-                <dd v-if="item.healthRollup">{{ dataFormatter(item.healthRollup) }}</dd>
+                <!-- Health -->
+                <dt>{{ $t('pageInventory.table.health') }}:</dt>
+                <dd>{{ dataFormatter(item.health) }}</dd>
               </dl>
             </b-col>
           </b-row>

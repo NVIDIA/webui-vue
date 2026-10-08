@@ -38,7 +38,6 @@ const ProcessorStore = {
         return {
           id: Id,
           health: Status.Health,
-          healthRollup: Status.HealthRollup,
           partNumber: PartNumber,
           sparePartNumber: SparePartNumber,
           serialNumber: SerialNumber,

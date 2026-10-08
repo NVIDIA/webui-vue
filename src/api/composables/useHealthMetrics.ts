@@ -101,14 +101,22 @@ function extractComponentName(MetricProperty: string): string {
 
 /**
  * Format component name for display.
- * Removes prefix and replaces underscores with spaces.
+ * Strips a leading vendor prefix (e.g. "HGX_") and replaces underscores with
+ * spaces, but keeps the component-type token when it is the leading segment
+ * (e.g. "CPU_1", "CX_0") so the tooltip does not show a bare index.
  *
  * Examples:
  * - "HGX_GPU_0" -> "GPU 0"
  * - "HGX_Baseboard_0" -> "Baseboard 0"
+ * - "CPU_0" -> "CPU 0"
+ * - "CX_0" -> "CX 0"
  */
-function formatComponentName(ComponentKey: string): string {
-  return ComponentKey.replace(/^[A-Z]+_/, '').replace(/_/g, ' ') || 'System';
+export function formatComponentName(ComponentKey: string): string {
+  const WithoutPrefix = ComponentKey.replace(/^[A-Z]+_/, '');
+  // Only drop the leading token when a type token remains. "CPU_0" would
+  // otherwise become "0".
+  const Key = /^[A-Za-z]/.test(WithoutPrefix) ? WithoutPrefix : ComponentKey;
+  return Key.replace(/_/g, ' ') || 'System';
 }
 
 /**

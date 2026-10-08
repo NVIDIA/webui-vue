@@ -93,9 +93,9 @@
                 <dd>{{ dataFormatter(item.statusState) }}</dd>
               </dl>
               <dl>
-                <!-- Health Rollup state -->
-                <dt>{{ $t('pageInventory.table.statusHealthRollup') }}:</dt>
-                <dd>{{ dataFormatter(item.healthRollup) }}</dd>
+                <!-- Health -->
+                <dt>{{ $t('pageInventory.table.health') }}:</dt>
+                <dd>{{ dataFormatter(item.health) }}</dd>
               </dl>
             </b-col>
           </b-row>

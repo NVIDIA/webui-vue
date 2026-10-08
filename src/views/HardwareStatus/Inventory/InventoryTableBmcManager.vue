@@ -88,9 +88,9 @@
                 <!-- Power state -->
                 <dt>{{ $t('pageInventory.table.power') }}:</dt>
                 <dd>{{ dataFormatter(item.powerState) }}</dd>
-                <!-- Health rollup -->
-                <dt>{{ $t('pageInventory.table.healthRollup') }}:</dt>
-                <dd>{{ dataFormatter(item.healthRollup) }}</dd>
+                <!-- Health -->
+                <dt>{{ $t('pageInventory.table.health') }}:</dt>
+                <dd>{{ dataFormatter(item.health) }}</dd>
                 <!-- BMC date and time -->
                 <dt>{{ $t('pageInventory.table.bmcDateTime') }}:</dt>
                 <dd>

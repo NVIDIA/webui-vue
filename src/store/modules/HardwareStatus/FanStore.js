@@ -29,7 +29,6 @@ const FanStore = {
           name: Name,
           speed: SpeedPercent.Reading,
           statusState: Status.State,
-          healthRollup: Status.HealthRollup,
           partNumber: PartNumber,
           serialNumber: SerialNumber,
         };

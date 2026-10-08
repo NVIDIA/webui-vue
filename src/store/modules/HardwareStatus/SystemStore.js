@@ -36,7 +36,6 @@ const SystemStore = {
       system.powerState = data.PowerState;
       system.serialNumber = data.SerialNumber;
       system.partNumber = data.PartNumber;
-      system.healthRollup = data.Status?.HealthRollup;
       system.subModel = data.SubModel;
       system.statusState = data.Status?.State;
       system.systemType = data.SystemType;

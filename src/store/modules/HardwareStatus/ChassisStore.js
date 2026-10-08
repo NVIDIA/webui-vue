@@ -42,7 +42,6 @@ const ChassisStore = {
           manufacturer: Manufacturer,
           powerState: PowerState,
           statusState: Status.State,
-          healthRollup: Status.HealthRollup,
           assetTag: AssetTag,
           model: Model,
           maxPowerWatts: MaxPowerWatts,

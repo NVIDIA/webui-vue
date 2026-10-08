@@ -90,9 +90,9 @@
                 <!-- Status state -->
                 <dt>{{ $t('pageInventory.table.statusState') }}:</dt>
                 <dd>{{ dataFormatter(item.statusState) }}</dd>
-                <!-- Status Health rollup state -->
-                <dt>{{ $t('pageInventory.table.statusHealthRollup') }}:</dt>
-                <dd>{{ dataFormatter(item.statusHealth) }}</dd>
+                <!-- Health -->
+                <dt>{{ $t('pageInventory.table.health') }}:</dt>
+                <dd>{{ dataFormatter(item.health) }}</dd>
                 <!-- Efficiency percent -->
                 <dt>{{ $t('pageInventory.table.efficiencyPercent') }}:</dt>
                 <dd>

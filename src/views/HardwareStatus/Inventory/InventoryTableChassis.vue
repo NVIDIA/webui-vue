@@ -80,9 +80,9 @@
                 <!-- Power state -->
                 <dt>{{ $t('pageInventory.table.power') }}:</dt>
                 <dd>{{ dataFormatter(item.power) }}</dd>
-                <!-- Health rollup -->
-                <dt>{{ $t('pageInventory.table.healthRollup') }}:</dt>
-                <dd>{{ dataFormatter(item.healthRollup) }}</dd>
+                <!-- Health -->
+                <dt>{{ $t('pageInventory.table.health') }}:</dt>
+                <dd>{{ dataFormatter(item.health) }}</dd>
               </dl>
             </b-col>
           </b-row>
