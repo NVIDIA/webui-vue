@@ -395,3 +395,34 @@ $loading-color-100: $kaizen-brand;
   border-inline-start-color: var(--border-color-feedback-danger);
   fill: var(--border-color-feedback-danger);
 }
+
+// Toast fills come from theme-color-light(), a near-white tint, while text
+// uses theme-color("dark"). Here $dark is near-white, so the toast is light
+// text on an off-white background. Use the Kaizen feedback surfaces instead.
+// !important beats Bootstrap .text-bg-* and .bg-* utilities, which set color
+// and background-color with !important of their own.
+// Header, body, and the close icon are scoped to these four types. Other
+// toast variants keep Bootstrap's own text color and close glyph.
+// Every NVIDIA env imports this file, and it imports the Kaizen dark theme.
+// Feedback fills are dark (*-900 / *-950) and Bootstrap's close glyph is a
+// black SVG, so the icon has to be inverted here. A light theme would be a
+// separate stylesheet and would not include this rule. [data-bs-theme] is
+// not set on the document, so that selector would drop the icon treatment.
+@each $type in (success, info, danger, warning) {
+  :root .toast.text-bg-#{$type},
+  :root .toast.bg-#{$type},
+  :root .b-toast-#{$type} .toast {
+    color: var(--text-color-primary) !important;
+    background-color: var(--background-color-feedback-#{$type}) !important;
+    border-inline-start-color: var(--border-color-feedback-#{$type}) !important;
+
+    .toast-header,
+    .toast-body {
+      color: var(--text-color-primary) !important;
+    }
+
+    .btn-close {
+      filter: invert(1) grayscale(100%);
+    }
+  }
+}

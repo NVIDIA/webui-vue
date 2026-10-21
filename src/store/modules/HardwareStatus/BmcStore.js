@@ -1,6 +1,13 @@
 import api from '@/store/api';
 import i18n from '@/i18n';
 import { getOdataId } from '@/utilities/redfishUtils';
+import { toValidDate } from '@/utilities/dateUtils';
+import { resetToDefaultsTargets } from './resetToDefaultsTargets';
+import {
+  bmcManagersAwaitingEnabled,
+  isBmcManager,
+  isManagerEnabled,
+} from './managerReadiness';
 
 // Helper function to format uptime seconds into a human-readable string
 const formatUptime = (seconds) => {
@@ -50,7 +57,7 @@ const BmcStore = {
   mutations: {
     setBmcInfo: (state, data) => {
       const bmc = {};
-      bmc.dateTime = new Date(data.DateTime);
+      bmc.dateTime = toValidDate(data.DateTime);
       bmc.description = data.Description;
       bmc.firmwareVersion = data.FirmwareVersion;
       bmc.graphicalConsoleConnectTypes =
@@ -60,7 +67,7 @@ const BmcStore = {
         data?.GraphicalConsole?.MaxConcurrentSessions;
       bmc.health = data?.Status?.Health ?? null;
       bmc.id = data.Id;
-      bmc.lastResetTime = new Date(data.LastResetTime);
+      bmc.lastResetTime = toValidDate(data.LastResetTime);
       bmc.identifyLed = data.LocationIndicatorActive;
       bmc.locationNumber = data.Location?.PartLocation?.ServiceLabel;
       bmc.manufacturer = data.manufacturer;
@@ -135,13 +142,13 @@ const BmcStore = {
               for (const provider in data.Oem) {
                 if (data.Oem[provider]?.UptimeSeconds !== undefined) {
                   uptimeSeconds = data.Oem[provider].UptimeSeconds;
-                  date = new Date(data.DateTime);
+                  date = toValidDate(data.DateTime);
                   break;
                 }
               }
             }
             
-            if (uptimeSeconds !== null && !isNaN(date.getTime())) {
+            if (uptimeSeconds !== null && date) {
               // Use the server-provided uptime value
               const lastResetTime = new Date(date.getTime() - (uptimeSeconds * 1000));
               
@@ -173,9 +180,7 @@ const BmcStore = {
         );
 
         const results = await Promise.all(bmcPromises);
-        const notReady = results.filter(
-          (manager) => manager?.Status?.State !== 'Enabled',
-        );
+        const notReady = bmcManagersAwaitingEnabled(results);
         const allManagersReady = notReady.length === 0;
         commit('setManagerReady', allManagersReady);
         if (!allManagersReady) {
@@ -186,13 +191,7 @@ const BmcStore = {
         } else {
           commit('setManagerNotReadyDetails', '');
         }
-        const resetToDefaultsUris = results.flatMap(
-          (bmc) => {
-            const uri = bmc.Actions?.["#Manager.ResetToDefaults"]?.['target'];
-            if (uri) return { "Id": bmc.Id, "target": uri }
-          }
-        );
-        commit('setResetToDefaultsUris', resetToDefaultsUris);
+        commit('setResetToDefaultsUris', resetToDefaultsTargets(results));
         return results;
       } catch (error) {
         console.log(error);
@@ -248,7 +247,8 @@ const BmcStore = {
         .map((member, idx) => ({ member, idx }))
         .filter(({ idx }) => {
           const existing = state.bmc[idx];
-          return !existing || existing.statusState !== 'Enabled';
+          if (existing && !isBmcManager(existing)) return false;
+          return !isManagerEnabled(existing);
         });
 
       // All are Enabled from previous data
@@ -271,9 +271,7 @@ const BmcStore = {
           ),
         );
 
-        const stillNotReady = results.filter(
-          (m) => m?.Status?.State !== 'Enabled',
-        );
+        const stillNotReady = bmcManagersAwaitingEnabled(results);
         const allReady = stillNotReady.length === 0;
         commit('setManagerReady', allReady);
 
@@ -292,24 +290,37 @@ const BmcStore = {
         return false;
       }
     },
-    async calculateUpTime({ commit }, { currentDate, lastResetTime}) {
-      // Get BMC path from the global store if needed
-      const date = new Date(currentDate);
-      const lastDate = new Date(lastResetTime);
-      const milliseconds = parseInt(date - lastDate);
+    async calculateUpTime(_context, { currentDate, lastResetTime }) {
+      const date = toValidDate(currentDate);
+      const lastDate = toValidDate(lastResetTime);
+      // Service managers omit LastResetTime. An Invalid Date must not be
+      // stored: it is truthy, and formatting it throws during render.
+      if (!date || !lastDate) {
+        return {
+          date,
+          lastResetTime: lastDate,
+          upTime: null,
+          uptimeSeconds: null,
+        };
+      }
+      const milliseconds = date.getTime() - lastDate.getTime();
       if (milliseconds < 0) {
-        commit('setBmcUpTime', '0/NA');
-        return { date, lastResetTime: lastDate, upTime: '0/NA', uptimeSeconds: 0 };
-      } 
+        return {
+          date,
+          lastResetTime: lastDate,
+          upTime: '0/NA',
+          uptimeSeconds: 0,
+        };
+      }
 
       const seconds = milliseconds / 1000;
       const upTime = formatUptime(seconds);
-      
-      return { 
-        date, 
-        lastResetTime: lastDate, 
+
+      return {
+        date,
+        lastResetTime: lastDate,
         upTime,
-        uptimeSeconds: seconds
+        uptimeSeconds: seconds,
       };
     },
     async getBmcUpTime({ dispatch, state }) {

@@ -9,6 +9,7 @@ import i18n, { isNvidiaPlatform } from './i18n';
 import router from './router';
 
 import { format } from 'date-fns-tz';
+import { toFormatDate } from '@/utilities/dateUtils';
 
 //Do not change store import.
 //Exact match alias set to support
@@ -185,33 +186,33 @@ app.config.globalProperties.$confirm = (messageOrOptions, options = {}) => {
 //Filters
 const filter = {
   formatDate(value) {
+    const date = toFormatDate(value);
+    if (!date) return;
     const isUtcDisplay = store.getters['global/isUtcDisplay'];
 
-    if (value instanceof Date) {
-      if (isUtcDisplay) {
-        return value.toISOString().substring(0, 10);
-      }
-      const pattern = `yyyy-MM-dd`;
-      const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-      return format(value, pattern, { timezone });
+    if (isUtcDisplay) {
+      return date.toISOString().substring(0, 10);
     }
+    const pattern = `yyyy-MM-dd`;
+    const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    return format(date, pattern, { timezone });
   },
   formatTime(value) {
+    const date = toFormatDate(value);
+    if (!date) return;
     const isUtcDisplay = store.getters['global/isUtcDisplay'];
 
-    if (value instanceof Date) {
-      if (isUtcDisplay) {
-        let timeOptions = {
-          timeZone: 'UTC',
-          hourCycle: 'h23',
-        };
-        return `${value.toLocaleTimeString('default', timeOptions)} UTC`;
-      }
-      const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-      const shortTz = this.shortTimeZone(value);
-      const pattern = `HH:mm:ss ('${shortTz}' O)`;
-      return format(value, pattern, { timezone }).replace('GMT', 'UTC');
+    if (isUtcDisplay) {
+      let timeOptions = {
+        timeZone: 'UTC',
+        hourCycle: 'h23',
+      };
+      return `${date.toLocaleTimeString('default', timeOptions)} UTC`;
     }
+    const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    const shortTz = this.shortTimeZone(date);
+    const pattern = `HH:mm:ss ('${shortTz}' O)`;
+    return format(date, pattern, { timezone }).replace('GMT', 'UTC');
   },
   shortTimeZone(value) {
     const longTZ = value

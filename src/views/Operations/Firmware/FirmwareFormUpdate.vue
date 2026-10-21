@@ -39,7 +39,7 @@
         </b-form-group>
 
         <b-form-group
-          v-else-if="isNvidiaGB || isNvidiaVR"
+          v-else-if="showNvidiaBmcTargetChoice"
           :label="$t('pageFirmware.form.updateFirmware.target')"
           :disabled="isPageDisabled || isFirmwareUpdateInProgress"
           class="mb-3"
@@ -339,6 +339,7 @@ import JsonModal from '@/components/Global/JsonModal.vue';
 import { generateValidation } from '@/components/Validators/redfishAction';
 import { mapState } from 'vuex';
 import { isNvidiaPlatform } from '@/i18n';
+import { hasMultipleBmcManagers } from '@/store/modules/HardwareStatus/managerReadiness';
 
 const FIRMWARE_UPDATE_STARTED_TOAST_ID = 'firmware-update-started-toast';
 
@@ -400,6 +401,13 @@ export default {
       firmwareUpdateState: (state) => state.firmwareUpdateInfo.state,
       firmwareTaskPercent: (state) => state.firmwareUpdateInfo.taskPercent,
     }),
+    showNvidiaBmcTargetChoice() {
+      if (!(this.isNvidiaGB || this.isNvidiaVR)) return false;
+      // False while Managers is still empty, so the radios appear only
+      // after a second BMC (the HMC) is known. The template has no v-else
+      // on this group, and nvidiaGBTarget stays 'BMC' for one BMC.
+      return hasMultipleBmcManagers(this.$store.getters['bmc/bmc']);
+    },
     firmwareInventory() {
       return this.$store.getters['firmware/firmwareInventory'];
     },

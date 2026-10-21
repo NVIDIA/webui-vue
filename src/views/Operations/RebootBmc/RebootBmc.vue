@@ -28,14 +28,14 @@
           <b-row>
             <b-col>
               <h3 class="mb-3">{{ $t('pageRebootBmc.lastRebootTimes') }}</h3>
-              <div v-if="Managers.length && !isManagersLoading">
+              <div v-if="availableManagers.length && !isManagersLoading">
                 <b-table
                   hover
                   responsive
                   striped
                   bordered
                   class="mb-3"
-                  :items="Managers"
+                  :items="availableManagers"
                   :fields="managerFields"
                   data-test-id="rebootBmc-table-managers"
                 >
@@ -44,11 +44,11 @@
                   </template>
                   
                   <template #cell(timestamp)="data">
-                    <span v-if="data.item.lastRebootTime">
+                    <span v-if="validDate(data.item.lastRebootTime)">
                       {{ $filters.formatDate(data.item.lastRebootTime) }}
                       {{ $filters.formatTime(data.item.lastRebootTime) }}
                     </span>
-                    <span v-else-if="data.item.lastResetTime">
+                    <span v-else-if="validDate(data.item.lastResetTime)">
                       {{ $filters.formatDate(data.item.lastResetTime) }}
                       {{ $filters.formatTime(data.item.lastResetTime) }}
                     </span>
@@ -156,6 +156,7 @@ import BVToastMixin from '@/components/Mixins/BVToastMixin';
 import LoadingBarMixin from '@/components/Mixins/LoadingBarMixin';
 import { mapGetters } from 'vuex';
 import { isNvidiaPlatform } from '@/i18n';
+import { toValidDate } from '@/utilities/dateUtils';
 
 export default {
   name: 'RebootBmc',
@@ -184,8 +185,10 @@ export default {
         { key: 'upTime', label: this.$t('pageRebootBmc.table.upTime') },
       ];
     },
-    
-    // Managers with reset options
+
+    // Managers that expose Manager.Reset. On a host with only BMC_0, that is
+    // the only row. An HMC or any other manager is included when it has the
+    // action, and omitted when it does not.
     availableManagers() {
       return this.Managers.filter(manager => 
         manager.resetOptions && manager.resetOptions.allowableValues && 
@@ -228,6 +231,9 @@ export default {
       });
   },
   methods: {
+    validDate(value) {
+      return toValidDate(value) != null;
+    },
     onClick() {
       // Use either selected or single option
       const resetOption = this.selectedResetType || 

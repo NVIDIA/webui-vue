@@ -1,7 +1,8 @@
 import api from '@/store/api';
 import i18n from '@/i18n';
 import { startManagerStatusCheck } from '@/services/ManagerStatusService';
-import redfishUtils, { getOdataId } from '@/utilities/redfishUtils';
+import redfishUtils from '@/utilities/redfishUtils';
+import { describeManagerReset } from './managerResetOption';
 /**
  * Watch for serverStatus changes in GlobalStore module
  * to set isOperationInProgress state
@@ -228,6 +229,10 @@ const ControlStore = {
         // Get manager resources
         const managers = await dispatch('bmc/getBmcInfo', null, { root: true });
         
+        const forceGracefulRestart =
+          import.meta.env.VITE_ENV_NAME === 'nvidia-gb' ||
+          import.meta.env.VITE_ENV_NAME === 'nvidia-vr';
+
         const managersInfo = await Promise.all(managers.map(async (manager) => {
           // Define custom defaults for manager actions
           const managerDefaults = {
@@ -238,47 +243,19 @@ const ControlStore = {
               }
             }
           };
-          
-          // Use redfishUtils with already loaded manager resource and defaults in a single call
-          const managerActions = await redfishUtils.discoverActions(manager, managerDefaults);
-          const resetAction = managerActions['Manager.Reset'];
-          
-          // Extract allowable values for ResetType
-          let allowableValues = [];
-          if (resetAction && resetAction.parameters && resetAction.parameters.ResetType) {
-            allowableValues = resetAction.parameters.ResetType.allowableValues;
-          }
-          
-          // Special case for NVIDIA
-          if (import.meta.env.VITE_ENV_NAME === 'nvidia-gb' || import.meta.env.VITE_ENV_NAME === 'nvidia-vr') {
-            allowableValues = ['GracefulRestart'];
-          }
-          
-          // Special case for NVIDIA: Determine label based on manager ID
-          const displayName = manager.Id === 'BMC_0' ? 'BMC' : 
-                            manager.Id === 'HGX_BMC_0' ? 'HMC' : 
-                            manager.Id;
-          
-          // Construct the target path for the action, with validation
-          let targetPath;
-          if (resetAction && resetAction.target) {
-            targetPath = resetAction.target;
-          } else if (getOdataId(manager)) {
-            targetPath = `${getOdataId(manager)}/Actions/Manager.Reset`;
-          } else {
-            console.warn(`Manager ${manager.Id || 'unknown'} missing @odata.id property`);
-            targetPath = `/redfish/v1/Managers/${manager.Id || 'default'}/Actions/Manager.Reset`;
-          }
-          
+
+          // No Actions means there is no Manager.Reset target to discover.
+          // Skipping the call avoids a warning for managers that are not
+          // reset targets.
+          const managerActions = manager.Actions
+            ? await redfishUtils.discoverActions(manager, managerDefaults)
+            : {};
+
           return {
             ...manager,
-            id: manager.Id,
-            displayName,
-            resetOptions: {
-              label: displayName,
-              allowableValues,
-              target: targetPath
-            }
+            ...describeManagerReset(manager, managerActions, {
+              forceGracefulRestart,
+            }),
           };
         }));
 
